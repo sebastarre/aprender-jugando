@@ -4,14 +4,41 @@ Página de juegos didácticos para chicos. Arranca con **Geografía** (países,
 capitales y banderas sobre un mapa interactivo) y está preparada para ir
 sumando otras materias.
 
-## Cómo abrirla
+## Cómo usarla
 
-Doble clic en **`index.html`**. No hace falta instalar nada ni tener internet:
-el mapa, los datos de los 194 países y las 194 banderas están dentro de la
-carpeta.
+**En la computadora:** doble clic en `index.html`. No hace falta instalar nada
+ni tener internet: el mapa, los 194 países y las 194 banderas están dentro de
+la carpeta.
 
-Si algún día querés publicarla en internet, subí la carpeta entera a cualquier
-hosting de archivos estáticos (GitHub Pages, Netlify, etc.).
+**En el celular (como app):** está publicada en
+
+**https://sebastarre.github.io/aprender-jugando/**
+
+- **Android (Chrome):** entrás y tocás *Instalar* en el cartel de arriba, o el
+  menú ⋮ → *Instalar aplicación*.
+- **iPhone (Safari):** entrás, tocás *Compartir* y después *Agregar a inicio*.
+
+Queda con su propio ícono, se abre a pantalla completa sin barra del navegador
+y, una vez instalada, **funciona sin internet**: la primera visita guarda los
+0,86 MB de la app en el teléfono.
+
+## Publicar cambios
+
+La página vive en el repositorio `sebastarre/aprender-jugando`, rama `main`,
+servida por GitHub Pages. Para que los cambios lleguen al celular:
+
+```bash
+node herramientas/generar-sw.js
+```
+
+```bash
+git add -A && git commit -m "lo que cambiaste" && git push
+```
+
+El primer comando es importante: `sw.js` guarda la lista de archivos y una
+versión sacada del contenido. Si no se regenera, los celulares que ya tienen
+la app siguen usando la copia vieja. Con la versión nueva, la app se actualiza
+sola la próxima vez que se abre con internet.
 
 ## Los juegos
 
@@ -44,6 +71,9 @@ El progreso y el botón de sonido se guardan en el navegador (`localStorage`).
 
 ```
 index.html                 Todas las pantallas (se muestran de a una)
+manifest.json              Datos de la app instalable: nombre, ícono, colores
+sw.js                      Service worker: guarda la app para usarla sin internet
+                           (generado — ver herramientas/generar-sw.js)
 css/estilos.css            Estilos
 js/
   datos/paises.js          194 países: nombre, capital, continente, coordenadas
@@ -51,6 +81,7 @@ js/
   nucleo/util.js           Utilidades chicas (mezclar, crear elementos, etc.)
   nucleo/almacen.js        Récords y preferencias en localStorage
   nucleo/sonido.js         Sonidos generados con Web Audio (sin archivos)
+  nucleo/pwa.js            Registra el service worker y el cartel de "Instalar"
   mapa.js                  Motor del mapa: proyección, dibujo, zoom y clics
   juegos/geografia.js      Los tres juegos de geografía
   app.js                   Materias, pantallas y navegación
@@ -93,6 +124,14 @@ node herramientas/generar-datos.js
 ```bash
 node herramientas/bajar-banderas.js
 ```
+
+Para rehacer los íconos de la app (usa Chrome o Edge en segundo plano):
+
+```bash
+node herramientas/generar-iconos.js
+```
+
+Después de cualquiera de los tres, correr `node herramientas/generar-sw.js`.
 
 ## Créditos
 
