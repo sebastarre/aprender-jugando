@@ -1,0 +1,11 @@
+# Ajustes locales del editor y del asistente
+.claude/settings.local.json
+.impeccable/
+
+# Descargas temporales de las herramientas
+herramientas/cache/
+
+# Archivos del sistema
+Thumbs.db
+desktop.ini
+.DS_Store

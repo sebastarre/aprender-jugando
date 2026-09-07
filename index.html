@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Aprender Jugando</title>
+<meta name="description" content="Juegos didácticos para chicos: geografía, mapas, capitales y banderas.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌎</text></svg>">
+
+<!-- App instalable (PWA): ícono propio, pantalla completa y sin internet -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#4c6ef5">
+<link rel="apple-touch-icon" href="assets/icono-apple-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Aprender">
+
+<link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+
+<div id="fondo-deco" aria-hidden="true"></div>
+
+<header class="barra">
+  <button class="btn-icono" id="btn-atras" hidden aria-label="Volver">←</button>
+  <a class="marca" href="#/" aria-label="Ir al inicio">
+    <span class="marca-globo">🌎</span>
+    <span class="marca-texto">Aprender<b>Jugando</b></span>
+  </a>
+  <div class="barra-derecha">
+    <span class="chip-estrellas" id="chip-estrellas" title="Estrellas conseguidas">⭐ <b>0</b></span>
+    <button class="btn-icono" id="btn-sonido" aria-label="Activar o silenciar sonido">🔊</button>
+  </div>
+</header>
+
+<main id="app">
+
+  <!-- ============ INICIO: MATERIAS ============ -->
+  <section class="pantalla" id="pantalla-inicio">
+    <h1 class="titulo-grande">¿Qué querés aprender hoy?</h1>
+    <p class="subtitulo">Elegí una materia y empezá a jugar.</p>
+
+    <div class="instalar" id="instalar" hidden>
+      <span class="instalar-icono" aria-hidden="true">📲</span>
+      <div class="instalar-cuerpo">
+        <b>Tenelo como app en el celular</b>
+        <span class="instalar-boton">Se instala con su propio ícono y después funciona sin internet.</span>
+        <span class="instalar-ios">En iPhone: tocá <b>Compartir</b> y después <b>«Agregar a inicio»</b>.</span>
+      </div>
+      <button class="btn-secundario instalar-boton" type="button" id="btn-instalar">Instalar</button>
+    </div>
+
+    <div class="grilla-cards" id="grilla-materias"></div>
+  </section>
+
+  <!-- ============ JUEGOS DE UNA MATERIA ============ -->
+  <section class="pantalla" id="pantalla-materia" hidden>
+    <h1 class="titulo-grande" id="titulo-materia"></h1>
+    <p class="subtitulo" id="subtitulo-materia"></p>
+    <div class="grilla-cards" id="grilla-juegos"></div>
+  </section>
+
+  <!-- ============ CONFIGURACIÓN DE PARTIDA ============ -->
+  <section class="pantalla" id="pantalla-config" hidden>
+    <h1 class="titulo-grande" id="titulo-config"></h1>
+    <p class="subtitulo" id="subtitulo-config"></p>
+
+    <div class="bloque-config">
+      <h2 class="etiqueta-grupo">1. Elegí la zona</h2>
+      <div class="grilla-continentes" id="grilla-continentes"></div>
+    </div>
+
+    <div class="bloque-config" id="bloque-modo" hidden>
+      <h2 class="etiqueta-grupo">2. Elegí cómo jugar</h2>
+      <div class="fila-opciones" id="fila-modo"></div>
+    </div>
+
+    <div class="bloque-config">
+      <h2 class="etiqueta-grupo" id="titulo-cantidad">2. ¿Cuántas preguntas?</h2>
+      <div class="fila-opciones" id="fila-cantidad"></div>
+    </div>
+
+    <div class="zona-empezar">
+      <p class="resumen-partida" id="resumen-partida"></p>
+      <button class="btn-gigante" id="btn-empezar" disabled>¡Empezar!</button>
+    </div>
+  </section>
+
+  <!-- ============ JUEGO ============ -->
+  <section class="pantalla pantalla-juego" id="pantalla-juego" hidden>
+    <div class="hud">
+      <div class="hud-izq">
+        <div class="progreso-envase">
+          <div class="progreso-barra"><i id="progreso-relleno"></i></div>
+          <span class="progreso-texto" id="progreso-texto">1 / 10</span>
+        </div>
+      </div>
+      <div class="hud-der">
+        <div class="marcador" title="Puntos"><span>🏆</span><b id="marcador-puntos">0</b></div>
+        <div class="vidas" id="vidas" title="Intentos para esta pregunta"></div>
+      </div>
+    </div>
+
+    <div class="pregunta" id="pregunta">
+      <div class="pregunta-texto" id="pregunta-texto"></div>
+      <img class="pregunta-bandera" id="pregunta-bandera" alt=""
+           src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" hidden>
+    </div>
+
+    <div class="zona-mapa" id="zona-mapa">
+      <div id="mapa"></div>
+      <div class="controles-mapa">
+        <button class="btn-mapa" data-zoom="mas" aria-label="Acercar">+</button>
+        <button class="btn-mapa" data-zoom="menos" aria-label="Alejar">−</button>
+        <button class="btn-mapa" data-zoom="reset" aria-label="Ver todo">⛶</button>
+      </div>
+      <div class="pista-mapa" id="pista-mapa">Arrastrá para mover · rueda para acercar</div>
+    </div>
+
+    <div class="zona-opciones" id="zona-opciones" hidden></div>
+
+    <div class="aviso" id="aviso" hidden></div>
+  </section>
+
+  <!-- ============ RESULTADOS ============ -->
+  <section class="pantalla" id="pantalla-fin" hidden>
+    <div class="tarjeta-fin">
+      <div class="estrellas-fin" id="estrellas-fin"></div>
+      <h1 class="titulo-fin" id="titulo-fin"></h1>
+      <p class="subtitulo" id="subtitulo-fin"></p>
+      <div class="stats-fin">
+        <div class="stat"><b id="stat-puntos">0</b><span>puntos</span></div>
+        <div class="stat"><b id="stat-aciertos">0</b><span>aciertos</span></div>
+        <div class="stat"><b id="stat-precision">0%</b><span>precisión</span></div>
+        <div class="stat"><b id="stat-record">0</b><span>tu récord</span></div>
+      </div>
+      <div class="repaso" id="repaso" hidden>
+        <h2 class="etiqueta-grupo">Para repasar</h2>
+        <div class="lista-repaso" id="lista-repaso"></div>
+      </div>
+      <div class="botones-fin">
+        <button class="btn-gigante" id="btn-otra-vez">Jugar de nuevo</button>
+        <button class="btn-secundario" id="btn-cambiar-zona">Cambiar zona</button>
+        <button class="btn-secundario" id="btn-al-inicio">Menú principal</button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="pie">
+  Hecho para aprender jugando · Mapas de Natural Earth · Banderas de flagcdn.com
+</footer>
+
+<script src="js/datos/paises.js"></script>
+<script src="js/datos/geografia.js"></script>
+<script src="js/nucleo/util.js"></script>
+<script src="js/nucleo/almacen.js"></script>
+<script src="js/nucleo/sonido.js"></script>
+<script src="js/nucleo/pwa.js"></script>
+<script src="js/mapa.js"></script>
+<script src="js/juegos/geografia.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

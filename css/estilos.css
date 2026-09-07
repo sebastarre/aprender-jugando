@@ -1,0 +1,656 @@
+/* ============================================================
+   Aprender Jugando — hoja de estilos única
+   Paleta clara, botones grandes y textos legibles para chicos.
+   ============================================================ */
+
+:root {
+  --tinta:        #1d2b4a;
+  --tinta-suave:  #5a6b8c;
+  --papel:        #f4f7ff;
+  --tarjeta:      #ffffff;
+  --borde:        #dfe6f7;
+
+  --primario:     #4c6ef5;
+  --primario-osc: #3550c9;
+  --exito:        #21b573;
+  --exito-osc:    #178a58;
+  --error:        #ef4a5e;
+  --error-osc:    #c02b3e;
+  --aviso:        #f5a524;
+  --violeta:      #8b5cf6;
+  --agua:         #cfe6f7;
+
+  --radio:   22px;
+  --radio-s: 14px;
+  --sombra:  0 6px 0 var(--sombra-color, #d8def0);
+  --sombra-suave: 0 10px 30px rgba(29, 43, 74, .10);
+  --fuente: "Baloo 2", "Trebuchet MS", "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family: var(--fuente);
+  color: var(--tinta);
+  background: var(--papel);
+  font-size: 17px;
+  line-height: 1.45;
+  -webkit-text-size-adjust: 100%;
+  overflow-x: hidden;
+}
+
+/* Manchas de color de fondo, puramente decorativas */
+#fondo-deco {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(38rem 28rem at 8% -6%,  #ffe7b0 0%, transparent 60%),
+    radial-gradient(34rem 26rem at 98% 4%,  #d7e4ff 0%, transparent 62%),
+    radial-gradient(40rem 30rem at 50% 108%, #d6f5e4 0%, transparent 60%);
+}
+
+/* ---------------- Barra superior ---------------- */
+.barra {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px clamp(12px, 3vw, 28px);
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  /* opaca a propósito: si fuera translúcida se vería el contenido pasando
+     por detrás al scrollear (el marcador y los corazones asomaban rotos) */
+  background: var(--papel);
+  border-bottom: 2px solid var(--borde);
+  box-shadow: 0 4px 12px rgba(29, 43, 74, .06);
+}
+
+.marca {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: inherit;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: .2px;
+}
+.marca-globo { font-size: 1.6rem; animation: girar 14s linear infinite; }
+.marca-texto b { color: var(--primario); }
+@keyframes girar { to { transform: rotate(360deg); } }
+
+.barra-derecha { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+
+.chip-estrellas {
+  background: #fff5da;
+  border: 2px solid #ffd97a;
+  color: #8a6300;
+  padding: 5px 13px;
+  border-radius: 999px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.btn-icono {
+  font: inherit;
+  font-size: 1.2rem;
+  line-height: 1;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 2px solid var(--borde);
+  background: var(--tarjeta);
+  color: var(--tinta);
+  cursor: pointer;
+  transition: transform .12s, background .12s;
+}
+.btn-icono:hover { background: #eef2ff; transform: translateY(-2px); }
+.btn-icono:active { transform: translateY(0); }
+.btn-icono.apagado { opacity: .45; }
+
+/* ---------------- Estructura ---------------- */
+#app {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: clamp(16px, 3vw, 34px) clamp(12px, 3vw, 28px) 40px;
+}
+
+.pantalla { animation: entrar .32s ease both; }
+@keyframes entrar {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.titulo-grande {
+  font-size: clamp(1.7rem, 4.6vw, 2.7rem);
+  margin: .2em 0 .1em;
+  text-align: center;
+  line-height: 1.15;
+}
+.subtitulo {
+  text-align: center;
+  color: var(--tinta-suave);
+  margin: 0 0 1.6em;
+  font-size: 1.05rem;
+}
+
+/* ---------------- Tarjetas de materias y juegos ---------------- */
+.grilla-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 18px;
+}
+
+.card {
+  --sombra-color: #d8def0;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  padding: 22px 20px 20px;
+  border: 3px solid var(--borde);
+  border-radius: var(--radio);
+  background: var(--tarjeta);
+  box-shadow: var(--sombra);
+  cursor: pointer;
+  transition: transform .14s, box-shadow .14s, border-color .14s;
+}
+.card:hover:not(:disabled) {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 0 var(--sombra-color);
+  border-color: var(--card-color, var(--primario));
+}
+.card:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 3px 0 var(--sombra-color); }
+.card:disabled { cursor: not-allowed; opacity: .62; }
+
+.card-icono {
+  font-size: 2.6rem;
+  line-height: 1;
+  width: 66px;
+  height: 66px;
+  display: grid;
+  place-items: center;
+  border-radius: 20px;
+  background: var(--card-suave, #eef2ff);
+  margin-bottom: 6px;
+}
+.card-titulo { font-size: 1.3rem; font-weight: 700; }
+.card-texto { color: var(--tinta-suave); font-size: .97rem; line-height: 1.35; }
+
+.card-cinta {
+  position: absolute;
+  top: 14px;
+  right: -6px;
+  background: var(--violeta);
+  color: #fff;
+  font-size: .78rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 6px 0 0 6px;
+  letter-spacing: .4px;
+  text-transform: uppercase;
+}
+.card-record {
+  margin-top: 8px;
+  font-size: .87rem;
+  font-weight: 700;
+  color: #8a6300;
+  background: #fff5da;
+  border-radius: 999px;
+  padding: 3px 12px;
+}
+
+/* ---------------- Configuración de partida ---------------- */
+.bloque-config { margin-bottom: 26px; }
+
+.etiqueta-grupo {
+  font-size: 1.05rem;
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  color: var(--tinta-suave);
+  margin: 0 0 12px;
+}
+
+.grilla-continentes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+  gap: 14px;
+}
+
+.opcion {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  border: 3px solid var(--borde);
+  background: var(--tarjeta);
+  border-radius: var(--radio-s);
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: transform .12s, border-color .12s, background .12s;
+}
+.opcion:hover { transform: translateY(-3px); border-color: var(--op-color, var(--primario)); }
+.opcion[aria-pressed="true"] {
+  border-color: var(--op-color, var(--primario));
+  background: var(--op-suave, #eef2ff);
+  box-shadow: inset 0 0 0 2px var(--op-color, var(--primario));
+}
+.opcion-icono { font-size: 1.7rem; line-height: 1; flex: none; }
+.opcion-cuerpo { display: flex; flex-direction: column; min-width: 0; overflow-wrap: anywhere; }
+.opcion-nombre { font-weight: 700; }
+.opcion-detalle { font-size: .85rem; color: var(--tinta-suave); }
+
+.fila-opciones { display: flex; flex-wrap: wrap; gap: 12px; }
+.fila-opciones .opcion { min-width: 120px; }
+
+.zona-empezar { text-align: center; margin-top: 30px; }
+.resumen-partida { color: var(--tinta-suave); min-height: 1.5em; margin: 0 0 14px; }
+
+/* ---------------- Botones grandes ---------------- */
+.btn-gigante {
+  font: inherit;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #fff;
+  background: var(--primario);
+  border: none;
+  border-radius: 999px;
+  padding: 16px 46px;
+  cursor: pointer;
+  box-shadow: 0 6px 0 var(--primario-osc);
+  transition: transform .12s, box-shadow .12s, background .12s;
+}
+.btn-gigante:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 9px 0 var(--primario-osc); }
+.btn-gigante:active:not(:disabled) { transform: translateY(4px); box-shadow: 0 2px 0 var(--primario-osc); }
+.btn-gigante:disabled { background: #b9c3e0; box-shadow: 0 6px 0 #97a3c6; cursor: not-allowed; }
+
+.btn-secundario {
+  font: inherit;
+  font-weight: 700;
+  color: var(--tinta);
+  background: var(--tarjeta);
+  border: 3px solid var(--borde);
+  border-radius: 999px;
+  padding: 12px 26px;
+  cursor: pointer;
+  transition: transform .12s, border-color .12s;
+}
+.btn-secundario:hover { transform: translateY(-2px); border-color: var(--primario); }
+
+/* ---------------- HUD del juego ---------------- */
+.pantalla-juego { display: flex; flex-direction: column; gap: 12px; }
+
+.hud {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.hud-izq { flex: 1 1 220px; }
+.hud-der { display: flex; align-items: center; gap: 14px; }
+
+.progreso-envase { display: flex; align-items: center; gap: 10px; }
+.progreso-barra {
+  flex: 1;
+  height: 14px;
+  background: #e3e9f8;
+  border-radius: 999px;
+  overflow: hidden;
+}
+.progreso-barra i {
+  display: block;
+  height: 100%;
+  width: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--primario), var(--violeta));
+  /* se anima con transform (no con width) para que no recalcule el layout */
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform .35s ease;
+}
+.progreso-texto { font-weight: 700; color: var(--tinta-suave); white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+.marcador {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #fff5da;
+  border: 2px solid #ffd97a;
+  border-radius: 999px;
+  padding: 4px 14px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #8a6300;
+  font-variant-numeric: tabular-nums;
+}
+.marcador.sube { animation: latir .4s ease; }
+@keyframes latir { 50% { transform: scale(1.22); } }
+
+.vidas { display: flex; gap: 4px; font-size: 1.35rem; line-height: 1; }
+.vidas span { transition: transform .25s, filter .25s, opacity .25s; }
+.vidas span.gastada { filter: grayscale(1); opacity: .3; transform: scale(.8); }
+
+/* ---------------- Pregunta ---------------- */
+.pregunta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  background: var(--tarjeta);
+  border: 3px solid var(--borde);
+  border-radius: var(--radio);
+  padding: 16px 22px;
+  box-shadow: var(--sombra-suave);
+  text-align: center;
+}
+.pregunta-texto { font-size: clamp(1.15rem, 3vw, 1.6rem); }
+.pregunta-texto b { color: var(--primario); }
+.pregunta-bandera {
+  /* alto fijo: así el bloque no cambia de tamaño cuando la imagen termina
+     de cargar y el mapa puede calcular bien el espacio que le queda */
+  height: clamp(62px, 9vw, 104px);
+  width: auto;
+  border-radius: 10px;
+  border: 3px solid #fff;
+  box-shadow: 0 4px 14px rgba(29, 43, 74, .28);
+  display: block;
+}
+
+/* ---------------- Mapa ---------------- */
+.zona-mapa {
+  position: relative;
+  width: 100%;
+  margin-inline: auto;          /* el ancho máximo lo pone js/mapa.js según la zona */
+  background: var(--agua);
+  border: 3px solid var(--borde);
+  border-radius: var(--radio);
+  overflow: hidden;
+  box-shadow: var(--sombra-suave);
+  touch-action: none;
+}
+#mapa { display: block; }
+#mapa svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: min(70vh, 700px);
+  cursor: grab;
+  background: var(--agua);
+}
+#mapa svg.arrastrando { cursor: grabbing; }
+
+.pais {
+  fill: #e8eef0;
+  stroke: #9fb4bd;
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+  transition: fill .18s;
+}
+.pais.jugable { fill: #d9e8c9; stroke: #86a06a; cursor: pointer; }
+.pais.jugable:hover { fill: #c2dca8; }
+.punto {
+  fill: #d9e8c9;
+  stroke: #6f8a52;
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+  cursor: pointer;
+}
+.punto:hover { fill: #c2dca8; }
+
+.pais.correcto, .punto.correcto { fill: var(--exito); stroke: var(--exito-osc); }
+.pais.fallo,    .punto.fallo    { fill: var(--error); stroke: var(--error-osc); }
+.pais.revelado, .punto.revelado { fill: var(--aviso); stroke: #b9740a; animation: palpitar 1s ease-in-out 3; }
+@keyframes palpitar { 50% { opacity: .35; } }
+
+.etiqueta-mapa {
+  font-family: var(--fuente);
+  font-weight: 700;
+  fill: #fff;
+  paint-order: stroke;
+  stroke: rgba(29, 43, 74, .85);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+.controles-mapa {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.btn-mapa {
+  width: 40px;
+  height: 40px;
+  font-size: 1.15rem;
+  font-family: var(--fuente);
+  font-weight: 700;
+  border-radius: 12px;
+  border: 2px solid var(--borde);
+  background: rgba(255, 255, 255, .93);
+  color: var(--tinta);
+  cursor: pointer;
+}
+.btn-mapa:hover { background: #fff; border-color: var(--primario); }
+
+.pista-mapa {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  font-size: .8rem;
+  color: var(--tinta-suave);
+  background: rgba(255, 255, 255, .85);
+  padding: 3px 10px;
+  border-radius: 999px;
+  pointer-events: none;
+  transition: opacity .4s;
+}
+
+/* ---------------- Opciones (quiz de banderas) ---------------- */
+.zona-opciones {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 14px;
+}
+.btn-opcion {
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  background: var(--tarjeta);
+  border: 3px solid var(--borde);
+  border-radius: var(--radio-s);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: inherit;
+  transition: transform .12s, border-color .12s, background .12s;
+}
+.btn-opcion img {
+  width: 100%;
+  max-width: 180px;
+  border-radius: 8px;
+  border: 2px solid #fff;
+  box-shadow: 0 3px 10px rgba(29, 43, 74, .2);
+}
+.btn-opcion:hover:not(:disabled) { transform: translateY(-4px); border-color: var(--primario); }
+.btn-opcion.correcta { border-color: var(--exito); background: #e6f8ef; }
+.btn-opcion.incorrecta { border-color: var(--error); background: #fdeaec; }
+.btn-opcion:disabled { cursor: default; }
+
+/* ---------------- Aviso flotante ---------------- */
+.aviso {
+  position: fixed;
+  left: 50%;
+  bottom: 26px;
+  transform: translateX(-50%);
+  z-index: 40;
+  background: var(--tinta);
+  color: #fff;
+  font-size: 1.05rem;
+  font-weight: 700;
+  padding: 12px 24px;
+  border-radius: 999px;
+  box-shadow: 0 8px 26px rgba(29, 43, 74, .35);
+  animation: subir .28s ease both;
+  max-width: min(92vw, 560px);
+  text-align: center;
+}
+.aviso.bien  { background: var(--exito); }
+.aviso.mal   { background: var(--error); }
+.aviso.dato  { background: var(--aviso); color: #3a2500; }
+@keyframes subir {
+  from { opacity: 0; transform: translate(-50%, 18px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
+}
+
+/* ---------------- Pantalla final ---------------- */
+.tarjeta-fin {
+  background: var(--tarjeta);
+  border: 3px solid var(--borde);
+  border-radius: var(--radio);
+  padding: clamp(20px, 4vw, 38px);
+  box-shadow: var(--sombra-suave);
+  text-align: center;
+}
+.estrellas-fin { font-size: 3rem; line-height: 1; letter-spacing: 8px; }
+.estrellas-fin span { display: inline-block; animation: aparecer-estrella .45s ease both; }
+.estrellas-fin span:nth-child(2) { animation-delay: .18s; }
+.estrellas-fin span:nth-child(3) { animation-delay: .36s; }
+.estrellas-fin .apagada { filter: grayscale(1); opacity: .3; }
+@keyframes aparecer-estrella {
+  from { transform: scale(0) rotate(-45deg); opacity: 0; }
+  60%  { transform: scale(1.3) rotate(8deg); }
+  to   { transform: scale(1) rotate(0); opacity: 1; }
+}
+.titulo-fin { font-size: clamp(1.6rem, 4.4vw, 2.4rem); margin: .3em 0 .1em; }
+
+.stats-fin {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 12px;
+  margin: 22px 0;
+}
+.stat {
+  background: var(--papel);
+  border: 2px solid var(--borde);
+  border-radius: var(--radio-s);
+  padding: 12px 6px;
+}
+.stat b { display: block; font-size: 1.8rem; line-height: 1.1; color: var(--primario); font-variant-numeric: tabular-nums; }
+.stat span { font-size: .85rem; color: var(--tinta-suave); }
+
+.repaso { text-align: left; margin: 8px 0 24px; }
+.lista-repaso {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 10px;
+}
+.item-repaso {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--papel);
+  border: 2px solid var(--borde);
+  border-radius: var(--radio-s);
+  padding: 10px 12px;
+}
+.item-repaso img {
+  width: 46px;
+  height: 32px;
+  object-fit: cover;
+  border-radius: 5px;
+  border: 1px solid #cfd8ea;
+  flex: none;
+}
+.item-repaso .ir-nombre { font-weight: 700; line-height: 1.2; }
+.item-repaso .ir-dato { font-size: .85rem; color: var(--tinta-suave); }
+
+.botones-fin { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+
+/* ---------------- Pie ---------------- */
+/* durante la partida se esconde: así el mapa entra sin que la página scrollee */
+body.jugando .pie { display: none; }
+
+.pie {
+  text-align: center;
+  color: var(--tinta-suave);
+  font-size: .85rem;
+  padding: 10px 16px 26px;
+}
+
+/* ---------------- Accesibilidad y responsive ---------------- */
+:where(button, a):focus-visible {
+  outline: 4px solid var(--violeta);
+  outline-offset: 3px;
+}
+
+@media (max-width: 620px) {
+  body { font-size: 16px; }
+  .marca-texto { display: none; }
+  .card-icono { font-size: 2.2rem; width: 56px; height: 56px; }
+  .btn-gigante { width: 100%; }
+  #mapa svg { max-height: 52vh; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
+
+/* [hidden] tiene que ganarle a los display de las pantallas */
+[hidden] { display: none !important; }
+
+/* El nombre bajo cada bandera aparece recién cuando la pregunta terminó */
+.nombre-opcion { min-height: 1.4em; font-size: .95rem; }
+
+/* ---------------- Cartel para instalar la app ---------------- */
+.instalar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  background: var(--tarjeta);
+  border: 3px dashed var(--primario);
+  border-radius: var(--radio);
+  padding: 14px 18px;
+  margin: 0 0 22px;
+}
+.instalar-icono { font-size: 1.9rem; line-height: 1; }
+.instalar-cuerpo { flex: 1 1 240px; display: flex; flex-direction: column; }
+.instalar-cuerpo b { font-size: 1.05rem; }
+.instalar-cuerpo span { color: var(--tinta-suave); font-size: .93rem; }
+.instalar #btn-instalar { flex: none; }
+
+/* según el navegador se muestra el botón o las instrucciones de iPhone */
+.instalar .instalar-ios,
+.instalar[data-modo="ios"] .instalar-boton { display: none; }
+.instalar[data-modo="ios"] .instalar-ios { display: inline; }
+
+/* ---------------- Espacio seguro (notch) en modo app ---------------- */
+.barra { padding-top: calc(12px + env(safe-area-inset-top, 0px)); }
+#app {
+  padding-left: calc(clamp(12px, 3vw, 28px) + env(safe-area-inset-left, 0px));
+  padding-right: calc(clamp(12px, 3vw, 28px) + env(safe-area-inset-right, 0px));
+  padding-bottom: calc(40px + env(safe-area-inset-bottom, 0px));
+}
