@@ -54,6 +54,11 @@ window.Util = (function () {
     return 'assets/banderas/' + String(id).toLowerCase() + '.png';
   }
 
+  /** "1 partida" / "3 partidas", sin tener que repetirlo en cada pantalla. */
+  function plural(n, singular, plural_) {
+    return n + ' ' + (n === 1 ? singular : (plural_ || singular + 's'));
+  }
+
   /** Promesa que se resuelve después de ms milisegundos. */
   function esperar(ms) {
     return new Promise(function (res) { setTimeout(res, ms); });
@@ -62,6 +67,6 @@ window.Util = (function () {
   return {
     mezclar: mezclar, muestra: muestra, alAzar: alAzar, unaDe: unaDe,
     limitar: limitar, $: $, crear: crear, vaciar: vaciar,
-    escapar: escapar, bandera: bandera, esperar: esperar
+    escapar: escapar, bandera: bandera, esperar: esperar, plural: plural
   };
 })();

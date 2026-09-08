@@ -1,8 +1,8 @@
 # Aprender Jugando
 
-Página de juegos didácticos para chicos. Arranca con **Geografía** (países,
-capitales y banderas sobre un mapa interactivo) y está preparada para ir
-sumando otras materias.
+Página de juegos didácticos para chicos. Tiene **Geografía** (países, capitales
+y banderas sobre un mapa interactivo) y **Matemática** (tablas, cuentas y la
+hora), y está preparada para ir sumando otras materias.
 
 ## Cómo usarla
 
@@ -20,7 +20,7 @@ la carpeta.
 
 Queda con su propio ícono, se abre a pantalla completa sin barra del navegador
 y, una vez instalada, **funciona sin internet**: la primera visita guarda los
-0,86 MB de la app en el teléfono.
+0,90 MB de la app en el teléfono.
 
 ## Publicar cambios
 
@@ -42,9 +42,10 @@ sola la próxima vez que se abre con internet.
 
 ## Los juegos
 
-Los tres juegos de geografía funcionan igual: aparece una consigna y hay
-**3 intentos**. Si se fallan los tres, el mapa muestra dónde estaba la
-respuesta antes de pasar a la siguiente pregunta.
+Todos funcionan igual: aparece una consigna y hay **3 intentos**. Si se fallan
+los tres, se muestra la respuesta correcta antes de pasar a la siguiente.
+
+**Geografía**
 
 | Juego | Consigna | Cómo se responde |
 |---|---|---|
@@ -52,20 +53,47 @@ respuesta antes de pasar a la siguiente pregunta.
 | Capitales | «¿De qué país es capital Lima?» | Clic en el país en el mapa |
 | Banderas | Muestra una bandera | Clic en el mapa, o eligiendo entre 4 banderas |
 
-**Zonas:** todo el mundo, América, América del Sur, América del Norte (con
-Centro y Caribe), Europa, África, Asia y Oceanía. Se elige también cuántas
-preguntas tiene la partida.
+Zonas: todo el mundo, América, América del Sur, América del Norte (con Centro
+y Caribe), Europa, África, Asia y Oceanía.
+
+**Matemática**
+
+| Juego | Consigna | Opciones de partida |
+|---|---|---|
+| Tablas de multiplicar | «¿Cuánto es 7 × 8?» | Una tabla del 2 al 12, o mezcladas |
+| Sumas y restas | «¿Cuánto es 34 − 17?» | Cuatro niveles; sumas, restas o mezcladas |
+| La hora | Dibuja un reloj de agujas | En punto, y media, y cuarto, o de 5 en 5 |
+
+Las preguntas de matemática se generan en cada partida, así que nunca sale dos
+veces la misma ronda. Las tres respuestas incorrectas no son al azar: son los
+errores típicos (correrse una fila de la tabla, cambiar la suma por la resta,
+leer la aguja equivocada), para que acertar signifique algo.
+
+En los dos casos se elige también cuántas preguntas tiene la partida.
 
 **Puntaje:** 3 puntos si acierta al primer intento, 2 al segundo, 1 al tercero.
 Al final se ganan hasta 3 estrellas según el porcentaje y se guarda el récord
-de esa combinación de juego + zona + cantidad. Los países fallados aparecen
-en «Para repasar» con su bandera y su capital.
+de esa combinación de juego y opciones. Lo que se falló aparece al final en
+«Para repasar».
 
 Los países muy chiquitos (Malta, Nauru, el Vaticano, las islas del Caribe...)
 no se ven como manchas en el mapa: se dibujan como un puntito clickeable. Si el
 chico falla una vez con uno de ellos, el juego le avisa que busque el punto.
 
-El progreso y el botón de sonido se guardan en el navegador (`localStorage`).
+## Perfiles y modo parental
+
+El botón de la esquina superior derecha abre el perfil. Ahí se ve cuántas
+partidas jugó, su precisión, las estrellas y cómo va en cada materia. Pueden
+convivir varios chicos en el mismo dispositivo: cada uno tiene su avatar y sus
+datos separados, y se cambia de uno a otro con un toque.
+
+Dentro del perfil está el **modo parental**, protegido con un PIN de 4 números
+que se elige la primera vez que se entra. Muestra en qué está flojo (lo que más
+falla, ordenado por cantidad de veces) y las últimas partidas con fecha y
+resultado. También permite borrar el progreso de un jugador.
+
+Todo se guarda en el navegador (`localStorage`), en el dispositivo: no viaja a
+ningún servidor.
 
 ## Estructura
 
@@ -79,11 +107,14 @@ js/
   datos/paises.js          194 países: nombre, capital, continente, coordenadas
   datos/geografia.js       Contornos de los países para dibujar el mapa
   nucleo/util.js           Utilidades chicas (mezclar, crear elementos, etc.)
-  nucleo/almacen.js        Récords y preferencias en localStorage
+  nucleo/almacen.js        Perfiles, récords, historial y errores en localStorage
   nucleo/sonido.js         Sonidos generados con Web Audio (sin archivos)
+  nucleo/opciones.js       La botonera de respuestas (tarjetas para elegir)
+  nucleo/motor.js          El motor de partidas, común a todas las materias
   nucleo/pwa.js            Registra el service worker y el cartel de "Instalar"
   mapa.js                  Motor del mapa: proyección, dibujo, zoom y clics
   juegos/geografia.js      Los tres juegos de geografía
+  juegos/matematica.js     Los tres juegos de matemática
   app.js                   Materias, pantallas y navegación
 assets/banderas/           Una imagen por país (ar.png, br.png, ...)
 herramientas/              Scripts para regenerar los datos (no hacen falta para jugar)
@@ -93,24 +124,35 @@ herramientas/              Scripts para regenerar los datos (no hacen falta para
 La navegación usa el `#` de la dirección (`#/materia/geografia`,
 `#/juego/geografia/paises`), así que el botón «atrás» del navegador funciona.
 
-## Agregar una materia nueva
+## Cómo se agrega un juego o una materia
 
-1. Creá `js/juegos/<materia>.js` exponiendo un objeto global con la lista de
-   juegos y una función `iniciar(config, ganchos)`, tal como hace
-   `js/juegos/geografia.js`.
-2. Sumá el `<script>` en `index.html` antes de `js/app.js`.
-3. En `js/app.js`, dentro de `MATERIAS`, poné la materia en `disponible: true`
-   y apuntá `juegos` a la lista del paso 1.
+Las rondas, los 3 intentos, el puntaje, los corazones, los mensajes y la
+pantalla de resultados ya los maneja `js/nucleo/motor.js`. Un juego nuevo sólo
+define **qué se pregunta** y **cómo se responde**:
 
-Las materias que todavía no existen (Matemática, Lengua, Ciencias) ya están
-listadas con el cartel «Pronto»: alcanza con completarlas.
+```js
+{
+  id: 'mi-juego', nombre: '...', icono: '🎯', color: '#4c6ef5', suave: '#e8edff',
+  texto: 'Una línea explicando de qué se trata.',
+  opciones:   function ()    { return [ /* grupos de botones de configuración */ ]; },
+  cantidades: function (sel) { return { lista: [5, 10, 20], total: null, unidad: '' }; },
+  resumen:    function (sel) { return 'lo elegido, en una línea'; },
+  jugar:      function (sel, ganchos) { Motor.jugar({ items, render, ... }); }
+}
+```
 
-## Agregar un juego de geografía
+`js/juegos/matematica.js` es el ejemplo más corto para copiar.
 
-En `js/juegos/geografia.js`, agregá una entrada a `JUEGOS` (id, nombre, ícono,
-color y texto) y contemplá ese `id` en `mostrarPregunta()` para armar la
-consigna. Todo el resto —intentos, puntaje, revelado, resultados— ya es común
-a todos los juegos.
+**Para una materia nueva:**
+
+1. Creá `js/juegos/<materia>.js` con una lista `JUEGOS` como la de arriba, más
+   `claveItem(item)` (con qué nombre se guardan sus errores), `repaso(item)`
+   (cómo se muestra en la lista de repaso) y `limpiar()`.
+2. Sumá su `<script>` en `index.html` antes de `js/app.js`.
+3. Agregala en `MATERIAS`, dentro de `js/app.js`, con su `modulo`.
+
+Lengua y Ciencias ya figuran ahí con el cartel «Pronto»: alcanza con darles un
+módulo para que se activen solas.
 
 ## Regenerar los datos (opcional)
 

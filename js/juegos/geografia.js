@@ -1,21 +1,183 @@
 /* ============================================================
-   Juegos de geografía.
+   Materia: Geografía.
 
-   Los tres juegos comparten el mismo motor: se plantea una pregunta,
-   el chico tiene 3 intentos y, si falla los tres, el mapa muestra
-   solo la respuesta correcta antes de pasar a la siguiente.
+   Sólo se ocupa de lo propio del mapa y las banderas; la ronda, los
+   intentos y el puntaje los maneja js/nucleo/motor.js.
+
+   Cada juego declara:
+     opciones()   los grupos de botones de la pantalla de configuración
+     cantidades() cuántas preguntas se pueden pedir
+     resumen()    la línea que describe la partida elegida
+     jugar()      arma las preguntas y arranca el motor
    ============================================================ */
 window.Geografia = (function () {
   'use strict';
 
-  var INTENTOS = 3;
-  var PUNTOS_POR_INTENTO = [3, 2, 1];       // según en qué intento acierte
-  var ESPERA_ACIERTO = 420;    // cuánto se ve el acierto antes de la próxima pregunta
-  var ESPERA_FALLO = 260;      // bloqueo cortito tras un error (evita el doble clic)
-  var MARCA_FALLO = 520;       // cuánto queda pintado en rojo el país equivocado
-  var ESPERA_REVELAR = 1500;   // tiempo para mirar dónde estaba la respuesta
+  var MARCA_FALLO = 520;      // cuánto queda pintado en rojo el país equivocado
+  var mapa = null;            // mapa de la partida en curso
+  var partida = null;         // datos que necesitan los callbacks del motor
 
-  /* ---------------------- catálogo de juegos ---------------------- */
+  /* ---------------------- opciones compartidas ---------------------- */
+  function opcionesZona() {
+    return {
+      id: 'zona',
+      titulo: 'Elegí la zona',
+      tipo: 'grilla',
+      items: Mapa.zonas().map(function (z) {
+        return {
+          id: z.id,
+          nombre: z.nombre,
+          icono: z.icono,
+          detalle: z.cantidad + ' países' + (z.nota ? ' · ' + z.nota : '')
+        };
+      })
+    };
+  }
+
+  function cantidadesDeZona(sel) {
+    // antes de elegir zona se muestran las cantidades del mundo entero,
+    // así la opción por defecto no se pierde al pintar la pantalla
+    var total = Mapa.paisesDeZona(sel.zona || 'mundo').length;
+    var lista = [5, 10, 20, 40].filter(function (n) { return n < total; });
+    lista.push('todos');
+    return { lista: lista, total: total, unidad: 'países' };
+  }
+
+  function resumenZona(sel) {
+    var zona = Mapa.ZONAS[sel.zona];
+    if (!zona) return null;
+    var cant = sel.cantidad === 'todos' ? Mapa.paisesDeZona(sel.zona).length : sel.cantidad;
+    return zona.nombre + ' · ' + cant + ' preguntas';
+  }
+
+  /* ---------------------- armado del tablero ---------------------- */
+  function prepararMapa(sel, candidatos) {
+    Util.$('zona-mapa').hidden = false;
+    Util.$('zona-opciones').hidden = true;
+    mapa = Mapa.crear(Util.$('mapa'), {
+      zona: sel.zona,
+      jugables: candidatos.map(function (p) { return p.id; }),
+      onClic: function (id) { Motor.responder(id); }
+    });
+    var pista = Util.$('pista-mapa');
+    pista.textContent = ('ontouchstart' in window)
+      ? 'Arrastrá para mover · pellizcá para acercar'
+      : 'Arrastrá para mover · rueda para acercar';
+    pista.style.opacity = '1';
+    setTimeout(function () { pista.style.opacity = '0'; }, 5000);
+  }
+
+  function prepararOpciones() {
+    Util.$('zona-mapa').hidden = true;
+    Util.$('zona-opciones').hidden = false;
+    mapa = null;
+  }
+
+  function elegirPreguntas(sel) {
+    var candidatos = Mapa.paisesDeZona(sel.zona);
+    var cantidad = sel.cantidad === 'todos'
+      ? candidatos.length
+      : Math.min(sel.cantidad, candidatos.length);
+    return { candidatos: candidatos, preguntas: Util.muestra(candidatos, cantidad) };
+  }
+
+  function nombreDe(id) {
+    for (var i = 0; i < window.PAISES.length; i++) {
+      if (window.PAISES[i].id === id) return window.PAISES[i].nombre;
+    }
+    return null;
+  }
+
+  /* ---------------------- callbacks del motor (sobre el mapa) ---------------------- */
+  function aciertoEnMapa(pais) {
+    mapa.marcar(pais.id, 'correcto');
+    mapa.etiqueta(pais, pais.nombre);
+  }
+
+  function falloEnMapa(pais, idClickeado) {
+    if (!idClickeado) return;
+    mapa.marcar(idClickeado, 'fallo');
+    setTimeout(function () { if (mapa) mapa.desmarcar(idClickeado, 'fallo'); }, MARCA_FALLO);
+  }
+
+  function textoFalloEnMapa(pais, idClickeado) {
+    var nombre = nombreDe(idClickeado);
+    var texto = (nombre && nombre !== pais.nombre) ? 'Ese es ' + nombre + '.' : '¡Casi!';
+    // si el país es diminuto, la pista va en el mismo aviso
+    if (pais.mini && !partida.pistaDada) {
+      partida.pistaDada = true;
+      texto += ' Es muy chiquito: buscá el puntito 🔍 ·';
+    }
+    return texto;
+  }
+
+  function revelarEnMapa(pais) {
+    mapa.limpiarMarcas();
+    mapa.marcar(pais.id, 'revelado');
+    if (pais.mini || !mapa.estaEnVista(pais)) mapa.enfocar(pais, pais.mini ? 7 : 3);
+    mapa.etiqueta(pais, pais.nombre);
+  }
+
+  /* ---------------------- callbacks del quiz de banderas ---------------------- */
+  /** Al terminar la pregunta se muestra de quién era cada bandera. */
+  function mostrarNombresOpciones() {
+    Opciones.botones().forEach(function (b) {
+      b.querySelector('.nombre-opcion').textContent = b.getAttribute('data-nombre');
+    });
+  }
+
+  function armarOpcionesBanderas(correcto, candidatos) {
+    var otros = candidatos.filter(function (p) { return p.id !== correcto.id; });
+    var mismos = otros.filter(function (p) { return p.sub === correcto.sub; });
+    var elegidos = Util.muestra(mismos.length >= 3 ? mismos : otros, 3);
+    if (elegidos.length < 3) elegidos = Util.muestra(otros, 3);
+
+    Opciones.armar(Util.mezclar(elegidos.concat([correcto])), {
+      // el nombre viaja en el botón pero se muestra recién al responder
+      atributos: function (p) { return { 'data-nombre': p.nombre }; },
+      contenido: function (p, i) {
+        var caja = Util.crear('span', 'opcion-bandera');
+        var img = new Image();
+        img.src = Util.bandera(p.id);
+        img.alt = 'Bandera número ' + (i + 1);
+        caja.appendChild(img);
+        caja.appendChild(Util.crear('span', 'nombre-opcion', ''));
+        return caja;
+      },
+      alElegir: function (p, btn) {
+        if (p.id !== correcto.id) { btn.classList.add('incorrecta'); btn.disabled = true; }
+        else btn.classList.add('correcta');
+        Motor.responder(p.id);
+      }
+    });
+  }
+
+  /* ---------------------- los tres juegos ---------------------- */
+  function consigna(html) { Util.$('pregunta-texto').innerHTML = html; }
+
+  function mostrarBandera(pais) {
+    var visual = Util.$('pregunta-visual');
+    Util.vaciar(visual);
+    var img = new Image();
+    img.className = 'pregunta-bandera';
+    img.alt = 'Bandera del país que hay que encontrar';
+    img.onload = function () { if (mapa) mapa.ajustarPanel(); };
+    img.src = Util.bandera(pais.id);
+    visual.appendChild(img);
+    visual.hidden = false;
+  }
+
+  function ganchosDeMapa(extra) {
+    var base = {
+      alAcertar: function (pais) { aciertoEnMapa(pais); },
+      alFallar: function (pais, id) { falloEnMapa(pais, id); },
+      textoFallo: function (pais, id) { return textoFalloEnMapa(pais, id); },
+      alRevelar: function (pais) { revelarEnMapa(pais); }
+    };
+    Object.keys(extra || {}).forEach(function (k) { base[k] = extra[k]; });
+    return base;
+  }
+
   var JUEGOS = [
     {
       id: 'paises',
@@ -24,8 +186,29 @@ window.Geografia = (function () {
       color: '#4c6ef5',
       suave: '#e8edff',
       texto: 'Te decimos un país y lo buscás en el mapa.',
-      usaMapa: true
+      opciones: function () { return [opcionesZona()]; },
+      cantidades: cantidadesDeZona,
+      resumen: resumenZona,
+      jugar: function (sel, ganchos) {
+        var elegidas = elegirPreguntas(sel);
+        partida = { pistaDada: false };
+        prepararMapa(sel, elegidas.candidatos);
+        Motor.jugar(Object.assign(ganchosDeMapa({
+          items: elegidas.preguntas,
+          render: function (pais) {
+            Util.$('pregunta-visual').hidden = true;
+            consigna('¿Dónde está <b>' + Util.escapar(pais.nombre) + '</b>?');
+            mapa.limpiarMarcas();
+            mapa.reiniciar();
+            partida.pistaDada = false;
+          },
+          textoRevelado: function (pais) {
+            return 'Era ' + pais.nombre + '. ¡Ahora ya sabés dónde queda!';
+          }
+        }), ganchos));
+      }
     },
+
     {
       id: 'capitales',
       nombre: 'Capitales',
@@ -33,8 +216,29 @@ window.Geografia = (function () {
       color: '#f5a524',
       suave: '#fff3dc',
       texto: 'Te mostramos una capital: marcá a qué país pertenece.',
-      usaMapa: true
+      opciones: function () { return [opcionesZona()]; },
+      cantidades: cantidadesDeZona,
+      resumen: resumenZona,
+      jugar: function (sel, ganchos) {
+        var elegidas = elegirPreguntas(sel);
+        partida = { pistaDada: false };
+        prepararMapa(sel, elegidas.candidatos);
+        Motor.jugar(Object.assign(ganchosDeMapa({
+          items: elegidas.preguntas,
+          render: function (pais) {
+            Util.$('pregunta-visual').hidden = true;
+            consigna('¿De qué país es capital <b>' + Util.escapar(pais.capital) + '</b>?');
+            mapa.limpiarMarcas();
+            mapa.reiniciar();
+            partida.pistaDada = false;
+          },
+          textoRevelado: function (pais) {
+            return 'Era ' + pais.nombre + ': ahí está ' + pais.capital;
+          }
+        }), ganchos));
+      }
     },
+
     {
       id: 'banderas',
       nombre: 'Banderas',
@@ -42,331 +246,83 @@ window.Geografia = (function () {
       color: '#ef4a5e',
       suave: '#ffe9ec',
       texto: 'Reconocé las banderas del mundo, en el mapa o eligiendo.',
-      usaMapa: true,
-      modos: [
-        { id: 'mapa', nombre: 'En el mapa', icono: '🗺️', detalle: 'Buscá el país de la bandera' },
-        { id: 'quiz', nombre: 'Elegir bandera', icono: '🎯', detalle: 'Cuatro banderas, una correcta' }
-      ]
+      opciones: function () {
+        return [opcionesZona(), {
+          id: 'modo',
+          titulo: 'Elegí cómo jugar',
+          tipo: 'fila',
+          porDefecto: 'mapa',
+          items: [
+            { id: 'mapa', nombre: 'En el mapa', icono: '🗺️', detalle: 'Buscá el país de la bandera' },
+            { id: 'quiz', nombre: 'Elegir bandera', icono: '🎯', detalle: 'Cuatro banderas, una correcta' }
+          ]
+        }];
+      },
+      cantidades: cantidadesDeZona,
+      resumen: resumenZona,
+      jugar: function (sel, ganchos) {
+        var elegidas = elegirPreguntas(sel);
+        partida = { pistaDada: false };
+
+        if (sel.modo === 'quiz') {
+          prepararOpciones();
+          return Motor.jugar(Object.assign({
+            items: elegidas.preguntas,
+            render: function (pais) {
+              Util.$('pregunta-visual').hidden = true;
+              consigna('¿Cuál es la bandera de <b>' + Util.escapar(pais.nombre) + '</b>?');
+              armarOpcionesBanderas(pais, elegidas.candidatos);
+            },
+            alAcertar: function () {
+              Util.$('zona-opciones').querySelectorAll('.btn-opcion')
+                .forEach(function (b) { b.disabled = true; });
+              mostrarNombresOpciones();
+            },
+            alRevelar: function (pais) {
+              Util.$('zona-opciones').querySelectorAll('.btn-opcion').forEach(function (b) {
+                b.disabled = true;
+                if (b.getAttribute('data-id') === pais.id) b.classList.add('correcta');
+              });
+              mostrarNombresOpciones();
+            },
+            textoRevelado: function (pais) {
+              return 'Era ' + pais.nombre + '. ¡Mirá bien su bandera!';
+            }
+          }, ganchos));
+        }
+
+        prepararMapa(sel, elegidas.candidatos);
+        Motor.jugar(Object.assign(ganchosDeMapa({
+          items: elegidas.preguntas,
+          render: function (pais) {
+            consigna('¿De qué país es esta bandera?');
+            mostrarBandera(pais);
+            mapa.limpiarMarcas();
+            mapa.reiniciar();
+            partida.pistaDada = false;
+          },
+          textoRevelado: function (pais) {
+            return 'Era ' + pais.nombre + '. ¡Ahora ya sabés dónde queda!';
+          }
+        }), ganchos));
+      }
     }
   ];
 
-  function juegoPorId(id) {
-    for (var i = 0; i < JUEGOS.length; i++) if (JUEGOS[i].id === id) return JUEGOS[i];
-    return null;
-  }
-
-  /* ---------------------- estado de la partida ---------------------- */
-  var e = null;          // estado actual
-  var mapa = null;
-  var alTerminar = null;
-  var temporizadores = [];
-
-  function luego(fn, ms) { temporizadores.push(setTimeout(fn, ms)); }
-  function limpiarTiempos() {
-    temporizadores.forEach(clearTimeout);
-    temporizadores = [];
-  }
-
-  /* ---------------------- avisos flotantes ---------------------- */
-  function aviso(texto, tipo) {
-    var el = Util.$('aviso');
-    el.textContent = texto;
-    el.className = 'aviso ' + (tipo || '');
-    el.hidden = false;
-    // reinicia la animación de entrada
-    el.style.animation = 'none';
-    void el.offsetWidth;
-    el.style.animation = '';
-  }
-  function ocultarAviso() { Util.$('aviso').hidden = true; }
-
-  /* ---------------------- arranque ---------------------- */
-  function iniciar(config, ganchos) {
-    limpiarTiempos();
-    ocultarAviso();
-    alTerminar = ganchos.alTerminar;
-
-    var juego = juegoPorId(config.juego);
-    var candidatos = Mapa.paisesDeZona(config.zona);
-    var cantidad = config.cantidad === 'todos'
-      ? candidatos.length
-      : Math.min(config.cantidad, candidatos.length);
-
-    e = {
-      juego: juego,
-      modo: config.modo || 'mapa',
-      zona: config.zona,
-      preguntas: Util.muestra(candidatos, cantidad),
-      candidatos: candidatos,
-      indice: 0,
-      intento: 0,
-      puntos: 0,
-      aciertos: 0,
-      perfectos: 0,
-      errores: [],
-      bloqueado: false,
-      pistaDada: false
-    };
-
-    var conMapa = !(e.juego.id === 'banderas' && e.modo === 'quiz');
-    Util.$('zona-mapa').hidden = !conMapa;
-    Util.$('zona-opciones').hidden = conMapa;
-
-    if (conMapa) {
-      mapa = Mapa.crear(Util.$('mapa'), {
-        zona: config.zona,
-        jugables: candidatos.map(function (p) { return p.id; }),
-        onClic: manejarClicMapa
-      });
-      var pista = Util.$('pista-mapa');
-      pista.textContent = ('ontouchstart' in window)
-        ? 'Arrastrá para mover · pellizcá para acercar'
-        : 'Arrastrá para mover · rueda para acercar';
-      pista.style.opacity = '1';
-      luego(function () { pista.style.opacity = '0'; }, 5000);
-    } else {
-      mapa = null;
-    }
-
-    mostrarPregunta();
-  }
-
-  function actual() { return e.preguntas[e.indice]; }
-
-  /* ---------------------- pintar la pregunta ---------------------- */
-  function mostrarPregunta() {
-    e.intento = 0;
-    e.bloqueado = false;
-    e.pistaDada = false;
-    ocultarAviso();
-    if (mapa) { mapa.limpiarMarcas(); mapa.reiniciar(); }
-
-    var p = actual();
-    var texto = Util.$('pregunta-texto');
-    var img = Util.$('pregunta-bandera');
-    img.hidden = true;
-
-    if (e.juego.id === 'paises') {
-      texto.innerHTML = '¿Dónde está <b>' + Util.escapar(p.nombre) + '</b>?';
-    } else if (e.juego.id === 'capitales') {
-      texto.innerHTML = '¿De qué país es capital <b>' + Util.escapar(p.capital) + '</b>?';
-    } else if (e.modo === 'quiz') {
-      texto.innerHTML = '¿Cuál es la bandera de <b>' + Util.escapar(p.nombre) + '</b>?';
-      armarOpciones(p);
-    } else {
-      texto.innerHTML = '¿De qué país es esta bandera?';
-      img.onload = function () { if (mapa) mapa.ajustarPanel(); };
-      img.src = Util.bandera(p.id);
-      img.alt = 'Bandera del país que hay que encontrar';
-      img.hidden = false;
-    }
-
-    pintarHUD();
-  }
-
-  function pintarHUD() {
-    var total = e.preguntas.length;
-    Util.$('progreso-texto').textContent = (e.indice + 1) + ' / ' + total;
-    Util.$('progreso-relleno').style.transform = 'scaleX(' + (e.indice / total) + ')';
-    Util.$('marcador-puntos').textContent = e.puntos;
-
-    var vidas = Util.$('vidas');
-    Util.vaciar(vidas);
-    for (var i = 0; i < INTENTOS; i++) {
-      var s = Util.crear('span', i < e.intento ? 'gastada' : '', '❤️');
-      vidas.appendChild(s);
-    }
-  }
-
-  /* ---------------------- opciones del quiz de banderas ---------------------- */
-  function armarOpciones(correcto) {
-    var zona = Util.$('zona-opciones');
-    Util.vaciar(zona);
-
-    var otros = e.candidatos.filter(function (p) { return p.id !== correcto.id; });
-    var mismos = otros.filter(function (p) { return p.sub === correcto.sub; });
-    var elegidos = Util.muestra(mismos.length >= 3 ? mismos : otros, 3);
-    if (elegidos.length < 3) elegidos = Util.muestra(otros, 3);
-
-    Util.mezclar(elegidos.concat([correcto])).forEach(function (p, i) {
-      var btn = Util.crear('button', 'btn-opcion');
-      btn.type = 'button';
-      var img = new Image();
-      img.src = Util.bandera(p.id);
-      img.alt = 'Bandera número ' + (i + 1);   // el nombre se revela recién al responder
-      btn.appendChild(img);
-      btn.appendChild(Util.crear('span', 'nombre-opcion', ''));
-      btn.setAttribute('data-id', p.id);
-      btn.setAttribute('data-nombre', p.nombre);
-      btn.addEventListener('click', function () { manejarClicOpcion(p.id, btn); });
-      zona.appendChild(btn);
-    });
-  }
-
-  /** Al terminar la pregunta se muestra de quién era cada bandera. */
-  function mostrarNombresOpciones() {
-    Util.$('zona-opciones').querySelectorAll('.btn-opcion').forEach(function (b) {
-      b.querySelector('.nombre-opcion').textContent = b.getAttribute('data-nombre');
-    });
-  }
-
-  /* ---------------------- respuestas ---------------------- */
-  function manejarClicMapa(id) {
-    if (!e || e.bloqueado) return;
-    Sonido.despertar();
-    if (id === actual().id) return acertar();
-    fallar(id);
-  }
-
-  function manejarClicOpcion(id, btn) {
-    if (!e || e.bloqueado) return;
-    Sonido.despertar();
-    if (id === actual().id) {
-      btn.classList.add('correcta');
-      return acertar();
-    }
-    btn.classList.add('incorrecta');
-    btn.disabled = true;
-    fallar(id);
-  }
-
-  function nombreDe(id) {
-    for (var i = 0; i < window.PAISES.length; i++) if (window.PAISES[i].id === id) return window.PAISES[i].nombre;
-    return null;
-  }
-
-  function acertar() {
-    e.bloqueado = true;
-    var p = actual();
-    var ganados = PUNTOS_POR_INTENTO[e.intento] || 1;
-    e.puntos += ganados;
-    e.aciertos++;
-    if (e.intento === 0) e.perfectos++;
-
-    if (mapa) {
-      mapa.marcar(p.id, 'correcto');
-      mapa.etiqueta(p, p.nombre);
-    } else {
-      Util.$('zona-opciones').querySelectorAll('.btn-opcion').forEach(function (b) { b.disabled = true; });
-      mostrarNombresOpciones();
-    }
-    Sonido.tocar('acierto');
-
-    Util.$('marcador-puntos').textContent = e.puntos;
-    var caja = Util.$('marcador-puntos').parentNode;
-    caja.classList.add('sube');
-    luego(function () { caja.classList.remove('sube'); }, 400);
-
-    aviso(festejo() + ' +' + ganados + (ganados === 1 ? ' punto' : ' puntos'), 'bien');
-    luego(siguiente, ESPERA_ACIERTO);
-  }
-
-  function fallar(idClickeado) {
-    e.intento++;
-    e.bloqueado = true;
-    pintarHUD();
-    Sonido.tocar('error');
-
-    var p = actual();
-    var nombre = nombreDe(idClickeado);
-
-    if (mapa && idClickeado) {
-      mapa.marcar(idClickeado, 'fallo');
-      luego(function () { mapa.desmarcar(idClickeado, 'fallo'); }, MARCA_FALLO);
-    }
-
-    if (e.intento >= INTENTOS) {
-      luego(revelar, 160);
-      return;
-    }
-
-    var quedan = INTENTOS - e.intento;
-    var base = nombre && nombre !== p.nombre ? 'Ese es ' + nombre + '. ' : '¡Casi! ';
-    var texto = base + 'Te ' + (quedan === 1 ? 'queda 1 intento' : 'quedan ' + quedan + ' intentos');
-
-    // si el país es diminuto, la pista va en el mismo aviso (no en uno aparte:
-    // con los tiempos cortos el segundo cartel no llegaría a leerse)
-    if (mapa && p.mini && !e.pistaDada) {
-      e.pistaDada = true;
-      texto += ' · Es muy chiquito: buscá el puntito 🔍';
-    }
-    aviso(texto, 'mal');
-
-    luego(function () { e.bloqueado = false; }, ESPERA_FALLO);
-  }
-
-  function revelar() {
-    var p = actual();
-    e.errores.push(p);
-    Sonido.tocar('revelar');
-
-    if (mapa) {
-      mapa.limpiarMarcas();
-      mapa.marcar(p.id, 'revelado');
-      if (p.mini || !mapa.estaEnVista(p)) mapa.enfocar(p, p.mini ? 7 : 3);
-      mapa.etiqueta(p, p.nombre);
-    } else {
-      Util.$('zona-opciones').querySelectorAll('.btn-opcion').forEach(function (b) {
-        b.disabled = true;
-        if (b.getAttribute('data-id') === p.id) b.classList.add('correcta');
-      });
-      mostrarNombresOpciones();
-    }
-
-    var mensaje;
-    if (!mapa) mensaje = 'Era ' + p.nombre + '. ¡Mirá bien su bandera!';
-    else if (e.juego.id === 'capitales') mensaje = 'Era ' + p.nombre + ': ahí está ' + p.capital;
-    else mensaje = 'Era ' + p.nombre + '. ¡Ahora ya sabés dónde queda!';
-    aviso(mensaje, 'dato');
-    luego(siguiente, ESPERA_REVELAR);
-  }
-
-  function festejo() {
-    return Util.alAzar(['¡Muy bien! 🎉', '¡Excelente! ⭐', '¡Perfecto! 👏', '¡Genial! 🙌', '¡Lo lograste! 🥳']);
-  }
-
-  /* ---------------------- avance ---------------------- */
-  function siguiente() {
-    limpiarTiempos();
-    e.indice++;
-    if (e.indice >= e.preguntas.length) return finalizar();
-    mostrarPregunta();
-  }
-
-  function finalizar() {
-    Util.$('progreso-relleno').style.transform = 'scaleX(1)';
-    ocultarAviso();
-    var total = e.preguntas.length;
-    var resultado = {
-      juego: e.juego,
-      modo: e.modo,
-      zona: e.zona,
-      total: total,
-      puntos: e.puntos,
-      aciertos: e.aciertos,
-      perfectos: e.perfectos,
-      maximo: total * PUNTOS_POR_INTENTO[0],
-      precision: total ? Math.round(e.aciertos / total * 100) : 0,
-      errores: e.errores.slice()
-    };
-    e = null;
-    if (alTerminar) alTerminar(resultado);
-  }
-
-  /** Corta la partida en curso (por ejemplo al tocar "Volver"). */
-  function abandonar() {
-    limpiarTiempos();
-    ocultarAviso();
-    e = null;
-    mapa = null;
-  }
-
   return {
+    id: 'geografia',
     JUEGOS: JUEGOS,
-    juegoPorId: juegoPorId,
-    iniciar: iniciar,
+    /** Clave con la que se guardan los errores de esta materia. */
+    claveItem: function (pais) { return pais.id; },
+    /** Cómo se dibuja un error en la lista de repaso. */
+    repaso: function (pais) {
+      return {
+        imagen: Util.bandera(pais.id),
+        nombre: pais.nombre,
+        dato: 'Capital: ' + pais.capital + ' · ' + pais.sub
+      };
+    },
     mapaActual: function () { return mapa; },
-    abandonar: abandonar,
-    INTENTOS: INTENTOS
+    limpiar: function () { mapa = null; partida = null; }
   };
 })();

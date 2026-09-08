@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Aprender Jugando</title>
-<meta name="description" content="Juegos didácticos para chicos: geografía, mapas, capitales y banderas.">
+<meta name="description" content="Juegos didácticos para chicos: geografía, mapas, capitales, banderas y matemática.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌎</text></svg>">
 
 <!-- App instalable (PWA): ícono propio, pantalla completa y sin internet -->
@@ -31,6 +31,7 @@
   <div class="barra-derecha">
     <span class="chip-estrellas" id="chip-estrellas" title="Estrellas conseguidas">⭐ <b>0</b></span>
     <button class="btn-icono" id="btn-sonido" aria-label="Activar o silenciar sonido">🔊</button>
+    <button class="btn-icono btn-perfil" id="btn-perfil" aria-label="Ver mi perfil">🦊</button>
   </div>
 </header>
 
@@ -39,7 +40,7 @@
   <!-- ============ INICIO: MATERIAS ============ -->
   <section class="pantalla" id="pantalla-inicio">
     <h1 class="titulo-grande">¿Qué querés aprender hoy?</h1>
-    <p class="subtitulo">Elegí una materia y empezá a jugar.</p>
+    <p class="subtitulo" id="saludo-inicio">Elegí una materia y empezá a jugar.</p>
 
     <div class="instalar" id="instalar" hidden>
       <span class="instalar-icono" aria-hidden="true">📲</span>
@@ -66,20 +67,8 @@
     <h1 class="titulo-grande" id="titulo-config"></h1>
     <p class="subtitulo" id="subtitulo-config"></p>
 
-    <div class="bloque-config">
-      <h2 class="etiqueta-grupo">1. Elegí la zona</h2>
-      <div class="grilla-continentes" id="grilla-continentes"></div>
-    </div>
-
-    <div class="bloque-config" id="bloque-modo" hidden>
-      <h2 class="etiqueta-grupo">2. Elegí cómo jugar</h2>
-      <div class="fila-opciones" id="fila-modo"></div>
-    </div>
-
-    <div class="bloque-config">
-      <h2 class="etiqueta-grupo" id="titulo-cantidad">2. ¿Cuántas preguntas?</h2>
-      <div class="fila-opciones" id="fila-cantidad"></div>
-    </div>
+    <!-- los bloques de opciones los arma cada juego (js/app.js) -->
+    <div id="bloques-opciones"></div>
 
     <div class="zona-empezar">
       <p class="resumen-partida" id="resumen-partida"></p>
@@ -104,8 +93,7 @@
 
     <div class="pregunta" id="pregunta">
       <div class="pregunta-texto" id="pregunta-texto"></div>
-      <img class="pregunta-bandera" id="pregunta-bandera" alt=""
-           src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" hidden>
+      <div class="pregunta-visual" id="pregunta-visual" hidden></div>
     </div>
 
     <div class="zona-mapa" id="zona-mapa">
@@ -120,7 +108,10 @@
 
     <div class="zona-opciones" id="zona-opciones" hidden></div>
 
-    <div class="aviso" id="aviso" hidden></div>
+    <!-- El cartel va acá abajo, en su propio lugar reservado: si flotara
+         encima taparía el mapa, y si apareciera y desapareciera el mapa
+         cambiaría de tamaño en cada respuesta. -->
+    <div class="aviso" id="aviso" role="status" aria-live="polite"></div>
   </section>
 
   <!-- ============ RESULTADOS ============ -->
@@ -141,8 +132,61 @@
       </div>
       <div class="botones-fin">
         <button class="btn-gigante" id="btn-otra-vez">Jugar de nuevo</button>
-        <button class="btn-secundario" id="btn-cambiar-zona">Cambiar zona</button>
+        <button class="btn-secundario" id="btn-cambiar-zona">Cambiar opciones</button>
         <button class="btn-secundario" id="btn-al-inicio">Menú principal</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PERFIL ============ -->
+  <section class="pantalla" id="pantalla-perfil" hidden>
+    <div class="cabecera-perfil">
+      <span class="avatar-grande" id="perfil-avatar">🦊</span>
+      <div>
+        <h1 class="titulo-perfil" id="perfil-nombre">Jugador</h1>
+        <p class="subtitulo perfil-sub" id="perfil-desde"></p>
+      </div>
+    </div>
+
+    <div class="stats-fin" id="perfil-stats"></div>
+
+    <h2 class="etiqueta-grupo">Cómo vas en cada materia</h2>
+    <div class="lista-materias" id="perfil-materias"></div>
+
+    <h2 class="etiqueta-grupo">Elegí quién juega</h2>
+    <div class="grilla-perfiles" id="grilla-perfiles"></div>
+
+    <div class="acciones-perfil">
+      <button class="btn-secundario" id="btn-nuevo-perfil">➕ Agregar jugador</button>
+      <button class="btn-secundario" id="btn-parental">🔒 Modo parental</button>
+    </div>
+  </section>
+
+  <!-- ============ MODO PARENTAL ============ -->
+  <section class="pantalla" id="pantalla-parental" hidden>
+    <h1 class="titulo-grande">🔒 Modo parental</h1>
+
+    <div class="tarjeta-pin" id="caja-pin">
+      <p class="subtitulo" id="texto-pin">Ingresá el PIN para ver el detalle.</p>
+      <input class="campo-pin" id="campo-pin" type="password" inputmode="numeric"
+             maxlength="4" autocomplete="off" aria-label="PIN de cuatro números" placeholder="••••">
+      <p class="error-pin" id="error-pin" hidden>PIN incorrecto.</p>
+      <button class="btn-gigante" id="btn-pin">Entrar</button>
+      <button class="btn-texto" id="btn-olvide-pin" hidden>Olvidé el PIN</button>
+    </div>
+
+    <div id="caja-parental" hidden>
+      <p class="subtitulo" id="parental-sub"></p>
+
+      <h2 class="etiqueta-grupo">En qué está flojo</h2>
+      <div class="lista-repaso" id="parental-fallos"></div>
+
+      <h2 class="etiqueta-grupo">Últimas partidas</h2>
+      <div class="tabla-partidas" id="parental-partidas"></div>
+
+      <div class="acciones-perfil">
+        <button class="btn-secundario" id="btn-cambiar-pin">Cambiar PIN</button>
+        <button class="btn-secundario peligro" id="btn-borrar-progreso">Borrar el progreso de este jugador</button>
       </div>
     </div>
   </section>
@@ -158,9 +202,12 @@
 <script src="js/nucleo/util.js"></script>
 <script src="js/nucleo/almacen.js"></script>
 <script src="js/nucleo/sonido.js"></script>
+<script src="js/nucleo/opciones.js"></script>
+<script src="js/nucleo/motor.js"></script>
 <script src="js/nucleo/pwa.js"></script>
 <script src="js/mapa.js"></script>
 <script src="js/juegos/geografia.js"></script>
+<script src="js/juegos/matematica.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

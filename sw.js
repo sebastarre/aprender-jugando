@@ -2,7 +2,7 @@
    Guarda toda la app en el celular para que funcione sin internet. */
 'use strict';
 
-const VERSION = 'aprender-jugando-a062aaefba';
+const VERSION = 'aprender-jugando-6fe23af6e8';
 const ARCHIVOS = [
   "./assets/banderas/ad.png",
   "./assets/banderas/ae.png",
@@ -208,8 +208,11 @@ const ARCHIVOS = [
   "./js/datos/geografia.js",
   "./js/datos/paises.js",
   "./js/juegos/geografia.js",
+  "./js/juegos/matematica.js",
   "./js/mapa.js",
   "./js/nucleo/almacen.js",
+  "./js/nucleo/motor.js",
+  "./js/nucleo/opciones.js",
   "./js/nucleo/pwa.js",
   "./js/nucleo/sonido.js",
   "./js/nucleo/util.js",
