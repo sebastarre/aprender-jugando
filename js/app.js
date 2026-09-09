@@ -125,13 +125,41 @@
     return lista;
   }
 
+  /* ---------------------- monedas ---------------------- */
+  /* Repetir lo que ya sabés rinde menos: acertar algo por primera vez paga 5,
+     la segunda 3, después 2, y de ahí en adelante 1. El piso es 1 y no 0 para
+     que volver a tu juego preferido siga dando algo, aunque sea poco. */
+  var MONEDAS_POR_NOVEDAD = [5, 3, 2, 1];
+  var TOPE_MONEDAS = 30;      // por partida; empareja los juegos que generan
+                              // preguntas nuevas siempre (las cuentas difíciles)
+
+  function calcularMonedas(materia, acertados) {
+    var repetidosAca = {};    // si el mismo ítem sale dos veces, la segunda ya decae
+    var total = 0, nuevos = 0, repasados = 0;
+
+    acertados.forEach(function (item) {
+      var clave = materia.modulo.claveItem(item);
+      var previas = Almacen.aciertosDe(materia.id + ':' + clave) + (repetidosAca[clave] || 0);
+      repetidosAca[clave] = (repetidosAca[clave] || 0) + 1;
+      total += MONEDAS_POR_NOVEDAD[Math.min(previas, MONEDAS_POR_NOVEDAD.length - 1)];
+      if (previas === 0) nuevos++; else repasados++;
+    });
+
+    return {
+      total: Math.min(total, TOPE_MONEDAS),
+      topeAlcanzado: total > TOPE_MONEDAS,
+      nuevos: nuevos,
+      repasados: repasados
+    };
+  }
+
   /* ---------------------- estado ---------------------- */
   var sel = { materia: null, juego: null, valores: {}, cantidad: 10 };
   var grupos = [];
   var ultimoResultado = null;
   var bienvenida = { nombre: '', edad: null, avatar: null, editando: null };
   var PANTALLAS = ['bienvenida', 'juegos', 'aprender', 'materia', 'lecciones', 'leccion',
-                   'config', 'juego', 'fin', 'perfil', 'parental'];
+                   'config', 'juego', 'fin', 'perfil', 'tienda', 'parental'];
   var CON_SECCIONES = ['juegos', 'aprender', 'materia', 'lecciones'];
 
   function mostrar(nombre) {
@@ -202,10 +230,18 @@
     });
   }
 
+  /** Los 12 de siempre, mas los que haya comprado en la tienda. */
+  function avataresDisponibles() {
+    var comprados = Catalogo.AVATARES
+      .filter(function (a) { return Almacen.tieneComprado(a.id); })
+      .map(function (a) { return a.emoji; });
+    return Almacen.AVATARES.concat(comprados);
+  }
+
   function pintarAvatares() {
     var caja = $('grilla-avatares');
     Util.vaciar(caja);
-    Almacen.AVATARES.forEach(function (a, i) {
+    avataresDisponibles().forEach(function (a, i) {
       var b = Util.crear('button', 'boton-avatar', a);
       b.type = 'button';
       b.setAttribute('aria-label', 'Monigote ' + (i + 1));
@@ -520,6 +556,16 @@
     Almacen.registrarErrores(materia.id, r.errores.map(function (item) {
       return { clave: materia.modulo.claveItem(item), nombre: materia.modulo.repaso(item).nombre };
     }));
+
+    // las monedas se calculan ANTES de anotar los aciertos, si no lo recién
+    // acertado ya contaría como repetido
+    var acertados = r.acertados || [];
+    var premio = calcularMonedas(materia, acertados);
+    Almacen.registrarAciertos(materia.id, acertados.map(function (item) {
+      return materia.modulo.claveItem(item);
+    }));
+    Almacen.sumarMonedas(premio.total);
+    pintarPremio(premio);
     pintarBarraSuperior();
 
     var cont = $('estrellas-fin');
@@ -537,6 +583,21 @@
     pintarRepaso(materia, r.errores);
     Sonido.tocar(esRecord && r.puntos > 0 ? 'record' : 'fin');
     irA('#/fin');
+  }
+
+  /** Cuántas monedas dejó la partida, y por qué. */
+  function pintarPremio(premio) {
+    var caja = $('premio-monedas');
+    Util.vaciar(caja);
+    caja.hidden = premio.total === 0;
+    if (!premio.total) return;
+
+    caja.appendChild(Util.crear('b', 'premio-cifra', '+' + premio.total + ' 🪙'));
+    var partes = [];
+    if (premio.nuevos) partes.push(Util.plural(premio.nuevos, 'nuevo'));
+    if (premio.repasados) partes.push(Util.plural(premio.repasados, 'repasado'));
+    if (premio.topeAlcanzado) partes.push('tope de la partida');
+    if (partes.length) caja.appendChild(Util.crear('span', 'premio-detalle', partes.join(' · ')));
   }
 
   /** Si esta partida destrabó algún juego, se avisa acá. */
@@ -687,6 +748,102 @@
     });
   }
 
+  /* ---------------------- tienda ---------------------- */
+  function pintarTienda() {
+    $('tienda-saldo').textContent = 'Tenés ' + Util.plural(Almacen.monedas(), 'moneda') +
+      ' para gastar. Se ganan jugando.';
+
+    pintarSeccionTienda($('tienda-temas'), 'tema', Catalogo.TEMAS, function (item) {
+      // vista previa: tres círculos con los colores del tema
+      var c = item.colores || { primario: '#4c6ef5', violeta: '#8b5cf6', agua: '#cfe6f7' };
+      var muestra = Util.crear('span', 'muestra-tema');
+      [c.primario, c.violeta, c.agua].forEach(function (color) {
+        var punto = Util.crear('span', 'muestra-punto');
+        punto.style.background = color;
+        muestra.appendChild(punto);
+      });
+      return muestra;
+    });
+
+    pintarSeccionTienda($('tienda-fondos'), 'fondo', Catalogo.FONDOS, function (item) {
+      var muestra = Util.crear('span', 'muestra-fondo');
+      if (item.deco) muestra.style.background = item.deco;
+      return muestra;
+    });
+
+    pintarSeccionTienda($('tienda-avatares'), 'avatar', Catalogo.AVATARES, null, true);
+  }
+
+  /**
+   * Una sección de la tienda. `tipo` es lo que se equipa ('tema', 'fondo',
+   * 'avatar'); `vistaPrevia` devuelve el dibujito de cada tarjeta.
+   */
+  function pintarSeccionTienda(caja, tipo, items, vistaPrevia, esAvatar) {
+    Util.vaciar(caja);
+    items.forEach(function (item) {
+      var idCompra = tipo === 'avatar' ? item.id : tipo + ':' + item.id;
+      var tiene = item.precio === 0 || Almacen.tieneComprado(idCompra);
+      var puesto = esAvatar
+        ? (Almacen.activo() && Almacen.activo().avatar === item.emoji)
+        : Almacen.equipado(tipo) === item.id ||
+          (!Almacen.equipado(tipo) && item.precio === 0);
+
+      var b = Util.crear('button', 'card-tienda' + (esAvatar ? ' card-avatar' : ''));
+      b.type = 'button';
+      b.setAttribute('aria-pressed', puesto ? 'true' : 'false');
+
+      if (vistaPrevia) b.appendChild(vistaPrevia(item));
+      else b.appendChild(Util.crear('span', 'avatar-muestra', item.icono));
+
+      if (!esAvatar) {
+        b.appendChild(Util.crear('b', 'tienda-nombre', item.nombre));
+        if (item.texto) b.appendChild(Util.crear('span', 'tienda-texto', item.texto));
+      }
+
+      var pie = Util.crear('span', 'tienda-pie');
+      if (puesto) pie.appendChild(Util.crear('span', 'etiqueta-puesta', 'En uso'));
+      else if (tiene) pie.appendChild(Util.crear('span', 'etiqueta-tuya', 'Tuyo'));
+      else {
+        var precio = Util.crear('span', 'etiqueta-precio', item.precio + ' 🪙');
+        if (Almacen.monedas() < item.precio) precio.classList.add('no-alcanza');
+        pie.appendChild(precio);
+      }
+      b.appendChild(pie);
+
+      b.addEventListener('click', function () {
+        manejarCompra(tipo, item, idCompra, tiene, esAvatar);
+      });
+      caja.appendChild(b);
+    });
+  }
+
+  function manejarCompra(tipo, item, idCompra, tiene, esAvatar) {
+    if (!tiene) {
+      if (Almacen.monedas() < item.precio) {
+        Sonido.tocar('error');
+        window.alert('Te faltan ' + (item.precio - Almacen.monedas()) +
+                     ' monedas para eso. ¡Seguí jugando!');
+        return;
+      }
+      if (!window.confirm('¿Comprar ' + item.nombre + ' por ' + item.precio + ' monedas?')) return;
+      if (!Almacen.comprar(idCompra, item.precio)) return;
+      Sonido.tocar('record');
+    } else {
+      Sonido.tocar('clic');
+    }
+
+    // comprado o ya comprado: se pone en uso
+    if (esAvatar) {
+      var yo = Almacen.activo();
+      if (yo) Almacen.actualizarPerfil(yo.id, { avatar: item.emoji });
+    } else {
+      Almacen.equipar(tipo, item.id);
+      Temas.aplicar();
+    }
+    pintarBarraSuperior();
+    pintarTienda();
+  }
+
   /* ---------------------- modo parental ---------------------- */
   function pintarParental() {
     $('caja-parental').hidden = true;
@@ -773,7 +930,7 @@
 
   /* ---------------------- barra superior ---------------------- */
   function pintarBarraSuperior() {
-    $('chip-estrellas').querySelector('b').textContent = Almacen.estrellas();
+    $('chip-monedas').querySelector('b').textContent = Almacen.monedas();
     var yo = Almacen.activo();
     $('btn-perfil').textContent = yo ? yo.avatar : '🙂';
     $('btn-perfil').setAttribute('aria-label', yo ? 'Perfil de ' + yo.nombre : 'Perfil');
@@ -863,6 +1020,12 @@
       return mostrar('perfil');
     }
 
+    if (partes[0] === 'tienda') {
+      cortarPartida();
+      pintarTienda();
+      return mostrar('tienda');
+    }
+
     if (partes[0] === 'parental') {
       cortarPartida();
       pintarParental();
@@ -889,7 +1052,7 @@
       var l = Leccion.actual();
       return irA(l ? '#/lecciones/' + l.materia : '#/aprender');
     }
-    if (partes[0] === 'parental') return irA('#/perfil');
+    if (partes[0] === 'parental' || partes[0] === 'tienda') return irA('#/perfil');
     irA('#/juegos');
   }
 
@@ -949,6 +1112,7 @@
       pintarAvatares();
       mostrar('bienvenida');
     });
+    $('btn-tienda').addEventListener('click', function () { Sonido.tocar('clic'); irA('#/tienda'); });
     $('btn-parental').addEventListener('click', function () { Sonido.tocar('clic'); irA('#/parental'); });
 
     /* modo parental */
@@ -990,6 +1154,7 @@
   }
 
   /* ---------------------- arranque ---------------------- */
+  Temas.aplicar();              // antes de pintar, para que no parpadee
   pintarBarraSuperior();
   pintarBotonSonido();
   conectar();

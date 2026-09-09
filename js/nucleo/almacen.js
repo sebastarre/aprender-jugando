@@ -25,7 +25,12 @@ window.Almacen = (function () {
       historial: [],
       errores: {},
       estrellasPorJuego: {},   // para saber qué juegos ya se desbloquearon
-      lecciones: {}            // lecciones de la sección Aprender ya leídas
+      lecciones: {},           // lecciones de la sección Aprender ya leídas
+      aciertosPorItem: {},     // cuántas veces acertó cada cosa (rinde menos repetir)
+      monedas: 0,              // saldo para gastar en la tienda
+      monedasTotales: 0,       // cuántas juntó en total, para el perfil
+      comprado: {},            // 'tema:selva' -> true
+      equipado: {}             // 'tema' -> 'selva'
     };
   }
 
@@ -226,6 +231,66 @@ window.Almacen = (function () {
     guardar();
   }
 
+  /** Cuántas veces ya acertó esta misma cosa. */
+  function aciertosDe(clave) {
+    return mio().aciertosPorItem[clave] || 0;
+  }
+
+  /** Suma uno al contador de cada cosa que acertó. */
+  function registrarAciertos(materia, claves) {
+    var a = mio().aciertosPorItem;
+    claves.forEach(function (clave) {
+      var k = materia + ':' + clave;
+      a[k] = (a[k] || 0) + 1;
+    });
+    guardar();
+  }
+
+  /* ---------------------- monedas ---------------------- */
+  function monedas() { return mio().monedas || 0; }
+  function monedasTotales() { return mio().monedasTotales || 0; }
+
+  function sumarMonedas(n) {
+    if (!n) return monedas();
+    mio().monedas = monedas() + n;
+    mio().monedasTotales = monedasTotales() + n;
+    guardar();
+    return mio().monedas;
+  }
+
+  /** Descuenta si alcanza; devuelve si se pudo. */
+  function gastarMonedas(n) {
+    if (monedas() < n) return false;
+    mio().monedas = monedas() - n;
+    guardar();
+    return true;
+  }
+
+  /* ---------------------- tienda ---------------------- */
+  function tieneComprado(id) {
+    return !!(mio().comprado && mio().comprado[id]);
+  }
+
+  /** Compra si alcanza la plata y no lo tenía. Devuelve si se pudo. */
+  function comprar(id, precio) {
+    if (tieneComprado(id)) return true;
+    if (!gastarMonedas(precio)) return false;
+    if (!mio().comprado) mio().comprado = {};
+    mio().comprado[id] = true;
+    guardar();
+    return true;
+  }
+
+  function equipar(tipo, id) {
+    if (!mio().equipado) mio().equipado = {};
+    mio().equipado[tipo] = id;
+    guardar();
+  }
+
+  function equipado(tipo) {
+    return (mio().equipado && mio().equipado[tipo]) || null;
+  }
+
   /** Lo que más se falla, de mayor a menor. */
   function masFallados(cuantos, materia) {
     var e = mio().errores;
@@ -320,6 +385,11 @@ window.Almacen = (function () {
     mejorDeJuego: mejorDeJuego,
     registrarPartida: registrarPartida, registrarErrores: registrarErrores,
     estrellasDeJuego: estrellasDeJuego,
+    aciertosDe: aciertosDe, registrarAciertos: registrarAciertos,
+    monedas: monedas, monedasTotales: monedasTotales,
+    sumarMonedas: sumarMonedas, gastarMonedas: gastarMonedas,
+    comprar: comprar, tieneComprado: tieneComprado,
+    equipar: equipar, equipado: equipado,
     marcarLeccion: marcarLeccion, leccionVista: leccionVista, cuantasLecciones: cuantasLecciones,
     masFallados: masFallados, estadisticas: estadisticas, borrarProgreso: borrarProgreso,
     sonidoActivo: sonidoActivo, setSonido: setSonido,

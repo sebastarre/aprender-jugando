@@ -102,6 +102,28 @@ Las edades y los requisitos están declarados en cada juego (`edadMin` y
 `requiere`, en `js/juegos/*.js`) y en cada lección (`edadMin`, en
 `js/aprender/contenido.js`). Cambiarlos es cambiar un número.
 
+## Monedas y tienda
+
+Cada respuesta correcta da monedas, pero **rinde menos repetir lo que ya
+sabés**: la primera vez que acertás algo paga 5 🪙, la segunda 3, después 2, y
+de ahí en adelante 1. La idea es que aprender un país nuevo valga más que
+volver a acertar el mismo cien veces. El piso es 1 y no 0 para que volver a tu
+juego preferido siga dando algo.
+
+Hay un tope de **30 🪙 por partida**. Sin tope quedaba desparejo: geografía
+tiene 194 países (se agotan y decaen), pero las cuentas de nivel experto casi
+nunca se repiten y pagarían 5 siempre.
+
+Con esas monedas se compran, en la **tienda** (el chip de arriba a la derecha,
+o el botón en el perfil): temas de color que cambian toda la app, fondos y
+monigotes extra para el perfil. **Todo es cosmético a propósito**: no se
+compran pistas, ni intentos, ni juegos.
+
+Los temas funcionan pisando variables de CSS, así que agregar uno es agregar
+una entrada a `js/tienda/catalogo.js`. Lo único que un tema no puede tocar es
+`--exito` y `--error`: el verde de «acertaste» y el rojo de «erraste» son
+iguales en todos los temas.
+
 ## Perfiles y modo parental
 
 El botón de la esquina superior derecha abre el perfil. Ahí se ve cuántas
@@ -139,6 +161,8 @@ js/
   juegos/matematica.js     Los tres juegos de matemática
   aprender/contenido.js    El texto y los dibujos de las lecciones
   aprender/leccion.js      Visor de lecciones (los pasos, de a uno)
+  tienda/catalogo.js       Qué se puede comprar: temas, fondos y monigotes
+  tienda/temas.js          Aplica el tema y el fondo equipados
   app.js                   Las dos secciones, las pantallas y la navegación
 assets/banderas/           Una imagen por país (ar.png, br.png, ...)
 herramientas/              Scripts para regenerar los datos (no hacen falta para jugar)
@@ -155,7 +179,7 @@ navegador funciona:
 | `#/leccion/sumar-llevando` | Una lección |
 | `#/materia/geografia` | Los juegos de una materia |
 | `#/juego/geografia/paises` | Configurar la partida |
-| `#/perfil` · `#/parental` | Perfil y modo parental |
+| `#/perfil` · `#/tienda` · `#/parental` | Perfil, tienda y modo parental |
 
 ## Cómo se agrega un juego o una materia
 

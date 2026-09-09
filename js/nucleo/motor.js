@@ -66,6 +66,7 @@ window.Motor = (function () {
       puntos: 0,
       aciertos: 0,
       perfectos: 0,
+      acertados: [],        // los ítems que respondió bien (para las monedas)
       errores: [],
       bloqueado: false
     };
@@ -115,6 +116,7 @@ window.Motor = (function () {
     var ganados = PUNTOS_POR_INTENTO[e.intento] || 1;
     e.puntos += ganados;
     e.aciertos++;
+    e.acertados.push(item);
     if (e.intento === 0) e.perfectos++;
 
     if (e.cfg.alAcertar) e.cfg.alAcertar(item, respuesta);
@@ -184,6 +186,7 @@ window.Motor = (function () {
       perfectos: e.perfectos,
       maximo: total * PUNTOS_POR_INTENTO[0],
       precision: total ? Math.round(e.aciertos / total * 100) : 0,
+      acertados: e.acertados.slice(),
       errores: e.errores.slice()
     };
     var alTerminar = e.cfg.alTerminar;

@@ -50,10 +50,12 @@ body {
   position: fixed;
   inset: 0;
   z-index: -1;
-  background:
+  /* --deco lo pone js/tienda/temas.js cuando hay un tema o un fondo comprado;
+     si no hay nada equipado, quedan estas manchas de siempre */
+  background: var(--deco,
     radial-gradient(38rem 28rem at 8% -6%,  #ffe7b0 0%, transparent 60%),
     radial-gradient(34rem 26rem at 98% 4%,  #d7e4ff 0%, transparent 62%),
-    radial-gradient(40rem 30rem at 50% 108%, #d6f5e4 0%, transparent 60%);
+    radial-gradient(40rem 30rem at 50% 108%, #d6f5e4 0%, transparent 60%));
 }
 
 /* ---------------- Barra superior ---------------- */
@@ -87,16 +89,6 @@ body {
 @keyframes girar { to { transform: rotate(360deg); } }
 
 .barra-derecha { margin-left: auto; display: flex; align-items: center; gap: 10px; }
-
-.chip-estrellas {
-  background: #fff5da;
-  border: 2px solid #ffd97a;
-  color: #8a6300;
-  padding: 5px 13px;
-  border-radius: 999px;
-  font-weight: 700;
-  white-space: nowrap;
-}
 
 .btn-icono {
   font: inherit;
@@ -1168,3 +1160,116 @@ body.sin-perfil .pie { display: none; }
   .punto-bola { width: 20px; height: 20px; }
   .puntitos, .puntitos-fila { gap: 7px; }
 }
+
+/* ============================================================
+   Monedas
+   ============================================================ */
+.chip-monedas {
+  display: inline-block;
+  background: #fff5da;
+  border: 2px solid #ffd97a;
+  color: #8a6300;
+  padding: 5px 13px;
+  border-radius: 999px;
+  font-weight: 700;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: transform .12s, border-color .12s;
+}
+.chip-monedas:hover { transform: translateY(-2px); border-color: #f0b429; }
+.chip-monedas.sube { animation: latir .4s ease; }
+
+.premio-monedas {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  margin: 2px 0 18px;
+}
+.premio-cifra {
+  font-size: 1.5rem;
+  color: #8a6300;
+  background: #fff5da;
+  border: 3px solid #ffd97a;
+  border-radius: 999px;
+  padding: 4px 20px;
+  animation: aparecer-desbloqueo .35s ease both;
+}
+.premio-detalle { font-size: .88rem; color: var(--tinta-suave); }
+
+/* ============================================================
+   Tienda
+   ============================================================ */
+.tienda-nota { margin: -1em 0 1.8em; font-size: .92rem; }
+
+.grilla-tienda {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 14px;
+  margin-bottom: 28px;
+}
+.grilla-avatares-tienda {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.card-tienda {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+  padding: 16px 14px 14px;
+  border: 3px solid var(--borde);
+  border-radius: var(--radio);
+  background: var(--tarjeta);
+  transition: transform .14s, border-color .14s, box-shadow .14s;
+}
+.card-tienda:hover { transform: translateY(-4px); box-shadow: var(--sombra-suave); }
+.card-tienda[aria-pressed="true"] {
+  border-color: var(--primario);
+  box-shadow: inset 0 0 0 2px var(--primario);
+}
+
+.tienda-nombre { font-size: 1.05rem; }
+.tienda-texto { font-size: .85rem; color: var(--tinta-suave); line-height: 1.3; }
+.tienda-pie { margin-top: 4px; }
+
+.etiqueta-precio, .etiqueta-tuya, .etiqueta-puesta {
+  display: inline-block;
+  font-size: .85rem;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 3px 12px;
+  border: 2px solid transparent;
+}
+.etiqueta-precio { background: #fff5da; border-color: #ffd97a; color: #8a6300; }
+.etiqueta-precio.no-alcanza { background: #f1f4fb; border-color: #d5ddee; color: var(--tinta-suave); }
+.etiqueta-tuya { background: var(--papel); border-color: var(--borde); color: var(--tinta-suave); }
+.etiqueta-puesta { background: #e6f8ef; border-color: #b6e6cd; color: var(--exito-osc); }
+
+/* vistas previas */
+.muestra-tema { display: flex; gap: 6px; margin-bottom: 4px; }
+.muestra-punto {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 6px rgba(29, 43, 74, .18);
+}
+.muestra-fondo {
+  width: 100%;
+  height: 62px;
+  border-radius: var(--radio-s);
+  border: 2px solid var(--borde);
+  background: var(--papel);
+  margin-bottom: 4px;
+}
+
+.card-avatar { padding: 12px 8px 10px; gap: 4px; }
+.avatar-muestra { font-size: 2.2rem; line-height: 1.1; }
