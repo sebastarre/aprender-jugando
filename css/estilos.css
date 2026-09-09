@@ -1313,6 +1313,14 @@ body.sin-perfil .pie { display: none; }
   transition: transform .14s, box-shadow .14s;
 }
 .tarjeta-examen:hover { transform: translateY(-3px); }
+
+/* El repaso usa la misma tarjeta que el examen pero en el color de "acertar":
+   son dos cosas distintas y no tienen que confundirse de un vistazo. */
+.tarjeta-repaso {
+  border-color: var(--exito);
+  background: linear-gradient(120deg, #e9f9ee 0%, var(--tarjeta) 70%);
+}
+.tarjeta-repaso .examen-flecha { color: var(--exito-osc); }
 .examen-icono { font-size: 2.2rem; line-height: 1; flex: none; }
 .examen-cuerpo { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .examen-cuerpo b { font-size: 1.2rem; }

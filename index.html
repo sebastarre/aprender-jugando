@@ -117,6 +117,16 @@
       <button class="btn-secundario instalar-boton" type="button" id="btn-instalar">Instalar</button>
     </div>
 
+    <!-- Aparece sólo cuando hay errores juntados como para armar una ronda. -->
+    <button class="tarjeta-examen tarjeta-repaso" id="btn-repaso" type="button" hidden>
+      <span class="examen-icono" aria-hidden="true">🔁</span>
+      <span class="examen-cuerpo">
+        <b>Repasar lo que fallaste</b>
+        <span id="repaso-detalle">Volvemos sobre las preguntas que te costaron.</span>
+      </span>
+      <span class="examen-flecha" aria-hidden="true">→</span>
+    </button>
+
     <button class="tarjeta-examen" id="btn-examen" type="button" hidden>
       <span class="examen-icono" aria-hidden="true">📝</span>
       <span class="examen-cuerpo">
@@ -410,11 +420,13 @@
 <script src="js/nucleo/sonido.js"></script>
 <script src="js/nucleo/opciones.js"></script>
 <script src="js/nucleo/motor.js"></script>
+<script src="js/nucleo/mezcla.js"></script>
 <script src="js/nucleo/pwa.js"></script>
 <script src="js/mapa.js"></script>
 <script src="js/juegos/geografia.js"></script>
 <script src="js/juegos/matematica.js"></script>
 <script src="js/juegos/examen.js"></script>
+<script src="js/juegos/repaso.js"></script>
 <script src="js/aprender/contenido.js"></script>
 <script src="js/aprender/leccion.js"></script>
 <script src="js/tienda/catalogo.js"></script>

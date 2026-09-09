@@ -66,7 +66,16 @@ window.Geografia = (function () {
       : Math.min(sel.cantidad, candidatos.length);
     var ctx = { zona: sel.zona, candidatos: candidatos, modo: modo || sel.modo || 'mapa' };
 
-    return Util.muestra(candidatos, cantidad).map(function (pais) {
+    // Practicando, los países que viene fallando salen más seguido. En el
+    // examen no: ahí se mide, y un sorteo cargado hacia lo flojo daría una
+    // nota más baja que lo que el chico realmente sabe.
+    var sorteados = sel.sinPesar
+      ? Util.muestra(candidatos, cantidad)
+      : Util.muestraPesada(candidatos, cantidad, function (pais) {
+          return Almacen.pesoDe('geografia', pais.id);
+        });
+
+    return sorteados.map(function (pais) {
       // se copia el país para no ensuciar la lista global de PAISES
       var item = Object.assign({}, pais);
       item.__ctx = ctx;
@@ -243,7 +252,7 @@ window.Geografia = (function () {
       cantidades: cantidadesDeZona,
       resumen: resumenZona,
 
-      examen: function (comun) { return { zona: comun.zona }; },
+      examen: function (comun) { return { zona: comun.zona, sinPesar: true }; },
       preguntas: function (sel) { return elegirPreguntas(sel, 'mapa'); },
       montar: function (pais) {
         asegurarMapa(pais.__ctx);
@@ -273,7 +282,7 @@ window.Geografia = (function () {
       cantidades: cantidadesDeZona,
       resumen: resumenZona,
 
-      examen: function (comun) { return { zona: comun.zona }; },
+      examen: function (comun) { return { zona: comun.zona, sinPesar: true }; },
       preguntas: function (sel) { return elegirPreguntas(sel, 'mapa'); },
       montar: function (pais) {
         asegurarMapa(pais.__ctx);
@@ -314,7 +323,7 @@ window.Geografia = (function () {
       resumen: resumenZona,
 
       // en el examen las banderas siempre van sobre el mapa
-      examen: function (comun) { return { zona: comun.zona, modo: 'mapa' }; },
+      examen: function (comun) { return { zona: comun.zona, modo: 'mapa', sinPesar: true }; },
       preguntas: function (sel) { return elegirPreguntas(sel); },
       montar: function (pais) {
         if (pais.__ctx.modo === 'quiz') {
@@ -373,6 +382,56 @@ window.Geografia = (function () {
     JUEGOS: JUEGOS,
     /** Clave con la que se guardan aciertos y errores de esta materia. */
     claveItem: function (pais) { return pais.id; },
+    /**
+     * Rearma una pregunta a partir de su clave. Lo usa el modo Repaso, que
+     * sólo guarda la clave del país que se falló, no la pregunta entera.
+     * Va siempre sobre el planisferio: un repaso mezcla países de cualquier
+     * continente, y como la zona no cambia entre preguntas, el mapa se reusa.
+     */
+    itemDeClave: function (clave, juegoId) {
+      var pais = null;
+      for (var i = 0; i < window.PAISES.length; i++) {
+        if (window.PAISES[i].id === clave) { pais = window.PAISES[i]; break; }
+      }
+      if (!pais) return null;
+      var item = Object.assign({}, pais);
+      item.__ctx = {
+        zona: 'mundo',
+        candidatos: window.PAISES,
+        // repasando banderas se eligen entre cuatro: buscar un país chiquito
+        // en el planisferio de un celular es demasiado castigo para un repaso
+        modo: juegoId === 'banderas' ? 'quiz' : 'mapa'
+      };
+      return item;
+    },
+    /**
+     * Con todas las preguntas del repaso ya armadas, achica el mapa a la
+     * zona más chica que las contenga a todas.
+     *
+     * Sin esto el repaso va al planisferio, donde Ecuador mide nueve
+     * píxeles: encontrarlo ahí no es repasar, es pelearse con el mapa.
+     * Si el repaso cruza continentes no queda otra que el mundo entero.
+     */
+    ajustarContexto: function (items) {
+      if (!items.length) return;
+      var ids = items.map(function (it) { return it.id; });
+
+      var zonas = Mapa.zonas().slice().sort(function (a, b) {
+        return a.cantidad - b.cantidad;          // de la más chica a la más grande
+      });
+      var elegida = null;
+      for (var i = 0; i < zonas.length && !elegida; i++) {
+        var enZona = {};
+        Mapa.paisesDeZona(zonas[i].id).forEach(function (p) { enZona[p.id] = true; });
+        if (ids.every(function (id) { return enZona[id]; })) elegida = zonas[i].id;
+      }
+      if (!elegida) elegida = 'mundo';
+
+      var candidatos = Mapa.paisesDeZona(elegida);
+      items.forEach(function (it) {
+        it.__ctx = Object.assign({}, it.__ctx, { zona: elegida, candidatos: candidatos });
+      });
+    },
     /** Cómo se dibuja en la lista de repaso. */
     repaso: function (pais) {
       return {

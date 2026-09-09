@@ -48,30 +48,17 @@ window.Examen = (function () {
     return Util.mezclar(items);
   }
 
-  /** Corre el examen. `ganchos.alTerminar(resultado)` recibe el resultado. */
+  /**
+   * Corre el examen. `ganchos.alTerminar(resultado)` recibe el resultado.
+   *
+   * Mezclar preguntas de varios juegos lo hace js/nucleo/mezcla.js, que
+   * comparte con el modo Repaso; acá sólo van las reglas del examen.
+   * Con mostrarResultado en false, Mezcla no llama a alAcertar ni a
+   * alFallar, así que el chico ve que su respuesta quedó anotada pero no
+   * si estuvo bien.
+   */
   function jugar(items, ganchos) {
-    var cache = {};                    // los ganchos de cada juego, una sola vez
-    function deJuego(item) {
-      var clave = item.__materia + '/' + item.__juego.id;
-      if (!cache[clave]) cache[clave] = item.__juego.ganchos();
-      return cache[clave];
-    }
-
-    Motor.jugar({
-      items: items,
-      intentos: 1,
-      mostrarResultado: false,
-      render: function (item) { item.__juego.montar(item); },
-      esCorrecta: function (item, respuesta) {
-        var g = deJuego(item);
-        return g.esCorrecta ? g.esCorrecta(item, respuesta) : item.id === respuesta;
-      },
-      alResponder: function (item, respuesta) {
-        var g = deJuego(item);
-        if (g.alResponder) g.alResponder(item, respuesta);
-      },
-      alTerminar: ganchos.alTerminar
-    });
+    Mezcla.jugar(items, { intentos: 1, mostrarResultado: false }, ganchos);
   }
 
   /** La nota clásica: del 1 al 10. */

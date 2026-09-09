@@ -298,6 +298,7 @@
     $('saludo-juegos').textContent = saludo() + 'Elegí una materia y practicá jugando.';
     // el examen sólo tiene sentido si ya hay algo desbloqueado para rendir
     $('btn-examen').hidden = juegosParaExamen().length === 0;
+    pintarTarjetaRepaso();
 
     var cont = $('grilla-materias');
     Util.vaciar(cont);
@@ -540,6 +541,8 @@
   /* ---------------------- resultados ---------------------- */
   function terminarPartida(r) {
     ultimoResultado = r;
+    tipoUltimaPartida = 'juego';
+    $('btn-cambiar-zona').hidden = false;    // el repaso lo esconde
     var materia = materiaPorId(sel.materia);
     var juego = juegoPorId(materia, sel.juego);
     var trabadosAntes = trabadosAhora();
@@ -558,7 +561,11 @@
       aciertos: r.aciertos, total: r.total, estrellas: estrellas
     });
     Almacen.registrarErrores(materia.id, r.errores.map(function (item) {
-      return { clave: materia.modulo.claveItem(item), nombre: materia.modulo.repaso(item).nombre };
+      return {
+        clave: materia.modulo.claveItem(item),
+        nombre: materia.modulo.repaso(item).nombre,
+        juego: juego.id                     // para que Repaso sepa qué tablero armar
+      };
     }));
 
     // las monedas se calculan ANTES de anotar los aciertos, si no lo recién
@@ -643,13 +650,19 @@
     return 'Mirá lo de abajo antes de volver a jugar. ¡Vas a mejorar!';
   }
 
+  /**
+   * La lista de "para repasar" del final de una partida. `materia` puede ser
+   * null: en el repaso y el examen los ítems son de varias materias y cada
+   * uno se trae la suya en `__materia`.
+   */
   function pintarRepaso(materia, errores) {
     var caja = $('repaso');
     var lista = $('lista-repaso');
     Util.vaciar(lista);
     caja.hidden = errores.length === 0;
     errores.forEach(function (item) {
-      lista.appendChild(itemRepaso(materia.modulo.repaso(item)));
+      var m = materia || materiaPorId(item.__materia);
+      if (m) lista.appendChild(itemRepaso(m.modulo.repaso(item)));
     });
   }
 
@@ -669,6 +682,127 @@
     if (datos.dato) cuerpo.appendChild(Util.crear('div', 'ir-dato', datos.dato));
     item.appendChild(cuerpo);
     return item;
+  }
+
+  /* ---------------------- repaso ---------------------- */
+  /**
+   * Con qué juego se vuelve a preguntar algo que se falló.
+   *
+   * Hay dos casos. En matemática la pregunta sólo la sabe dibujar un juego:
+   * una tabla puesta en el tablero de sumas sale "7 undefined 8". Esas
+   * materias avisan cuál es con `juegoDeClave`, y si está trabado la
+   * pregunta se saltea. En geografía, en cambio, cualquier juego sabe
+   * preguntar por cualquier país, así que se prefiere el que la generó y
+   * si no se puede, sirve otro.
+   */
+  function juegoParaRepasar(materiaId, juegoId, clave) {
+    var materia = materiaPorId(materiaId);
+    if (!materia || !materia.disponible || !materia.modulo.itemDeClave) return null;
+
+    var exigido = materia.modulo.juegoDeClave ? materia.modulo.juegoDeClave(clave) : null;
+    var candidatos = exigido
+      ? [juegoPorId(materia, exigido)]
+      : [juegoPorId(materia, juegoId)].concat(juegosVisibles(materia));
+
+    var elegido = candidatos.filter(function (j) {
+      return j && estadoDeJuego(materia, j).jugable;
+    })[0];
+    return elegido ? { materia: materia, juego: elegido } : null;
+  }
+
+  function pintarTarjetaRepaso() {
+    var boton = $('btn-repaso');
+    boton.hidden = !Repaso.hayParaRepasar();
+    if (boton.hidden) return;
+    $('repaso-detalle').textContent =
+      'Volvemos sobre las preguntas que te costaron. Tenés ' +
+      Util.plural(Repaso.cuantosPendientes(), 'cosa', 'cosas') + ' para repasar.';
+  }
+
+  function arrancarRepaso() {
+    var items = Repaso.armarItems(juegoParaRepasar);
+    if (!items.length) return irA('#/juegos');
+    itemsDelRepaso = items;
+    Repaso.jugar(items, { alTerminar: terminarRepaso });
+  }
+
+  var itemsDelRepaso = [];
+  /* Para que "Jugar de nuevo" sepa si repetir la partida o el repaso. */
+  var tipoUltimaPartida = 'juego';
+
+  function terminarRepaso(r) {
+    ultimoResultado = r;
+    tipoUltimaPartida = 'repaso';
+    var acertados = r.acertados || [];
+
+    // lo acertado baja de la lista de errores: dos aciertos y sale
+    acertados.forEach(function (item) {
+      Almacen.descontarError(item.__materia, item.__clave);
+    });
+
+    // lo que volvió a fallar suma de nuevo, así sigue siendo prioritario
+    var porMateria = {};
+    r.errores.forEach(function (item) {
+      var m = materiaPorId(item.__materia);
+      if (!porMateria[item.__materia]) porMateria[item.__materia] = [];
+      porMateria[item.__materia].push({
+        clave: item.__clave, nombre: m.modulo.repaso(item).nombre, juego: item.__juego.id
+      });
+    });
+    Object.keys(porMateria).forEach(function (mid) {
+      Almacen.registrarErrores(mid, porMateria[mid]);
+    });
+
+    // monedas: mismo cálculo que en cualquier partida, agrupando por materia
+    var aciertosPorMateria = {};
+    acertados.forEach(function (item) {
+      if (!aciertosPorMateria[item.__materia]) aciertosPorMateria[item.__materia] = [];
+      aciertosPorMateria[item.__materia].push(item.__clave);
+    });
+    var todas = [];
+    Object.keys(aciertosPorMateria).forEach(function (mid) {
+      aciertosPorMateria[mid].forEach(function (c) { todas.push(mid + ':' + c); });
+    });
+    var premio = calcularMonedas(todas);
+    Object.keys(aciertosPorMateria).forEach(function (mid) {
+      Almacen.registrarAciertos(mid, aciertosPorMateria[mid]);
+    });
+    Almacen.sumarMonedas(premio.total);
+
+    var proporcion = r.maximo ? r.puntos / r.maximo : 0;
+    var estrellas = proporcion >= 0.9 ? 3 : proporcion >= 0.7 ? 2 : proporcion >= 0.4 ? 1 : 0;
+    if (estrellas > 0) Almacen.sumarEstrellas(estrellas);
+
+    var clave = 'repaso/repaso:' + itemsDelRepaso.length + ' preguntas';
+    var esRecord = Almacen.anotar(clave, r.puntos, r.aciertos, r.total);
+    Almacen.registrarPartida({
+      materia: 'repaso', juego: 'repaso', tipo: 'repaso',
+      detalle: 'Repaso · ' + Util.plural(itemsDelRepaso.length, 'pregunta'),
+      puntos: r.puntos, maximo: r.maximo,
+      aciertos: r.aciertos, total: r.total, estrellas: estrellas
+    });
+
+    pintarPremio($('premio-monedas'), premio);
+    pintarBarraSuperior();
+
+    var cont = $('estrellas-fin');
+    Util.vaciar(cont);
+    for (var i = 0; i < 3; i++) cont.appendChild(Util.crear('span', i < estrellas ? '' : 'apagada', '⭐'));
+
+    $('titulo-fin').textContent = r.aciertos === r.total ? '¡Te las sacaste todas! 🔁' : 'Repaso terminado';
+    $('subtitulo-fin').textContent = r.aciertos
+      ? 'Sacaste ' + Util.plural(r.aciertos, 'cosa', 'cosas') + ' de tu lista de repaso.'
+      : 'No salió ninguna esta vez. Quedan para el próximo repaso.';
+    $('stat-puntos').textContent = r.puntos;
+    $('stat-aciertos').textContent = r.aciertos + '/' + r.total;
+    $('stat-precision').textContent = r.precision + '%';
+    $('stat-record').textContent = Almacen.record(clave).puntos;
+
+    $('desbloqueo').hidden = true;
+    $('btn-cambiar-zona').hidden = true;      // el repaso no tiene opciones que cambiar
+    pintarRepaso(null, r.errores);
+    Sonido.tocar(esRecord && r.puntos > 0 ? 'record' : 'fin');
+    irA('#/fin');
   }
 
   /* ---------------------- examen ---------------------- */
@@ -816,7 +950,8 @@
       var m = materiaPorId(item.__materia);
       if (!erroresPorMateria[item.__materia]) erroresPorMateria[item.__materia] = [];
       erroresPorMateria[item.__materia].push({
-        clave: m.modulo.claveItem(item), nombre: m.modulo.repaso(item).nombre
+        clave: m.modulo.claveItem(item), nombre: m.modulo.repaso(item).nombre,
+        juego: item.__juego.id
       });
     });
     Object.keys(erroresPorMateria).forEach(function (mid) {
@@ -1219,8 +1354,10 @@
     est.ultimas.forEach(function (p) {
       var materia = materiaPorId(p.materia);
       var fila = Util.crear('div', 'fila-partida');
-      // los exámenes se distinguen de las partidas sueltas
-      var icono = p.tipo === 'examen' ? '📝' : (materia ? materia.icono : '•');
+      // exámenes y repasos se distinguen de las partidas sueltas
+      var icono = p.tipo === 'examen' ? '📝'
+                : p.tipo === 'repaso' ? '🔁'
+                : (materia ? materia.icono : '•');
       fila.appendChild(Util.crear('span', 'fila-icono', icono));
       var cuerpo = Util.crear('div', 'fila-cuerpo');
       cuerpo.appendChild(Util.crear('div', 'fila-nombre', p.detalle || p.juego));
@@ -1329,6 +1466,13 @@
       cortarPartida();
       pintarPerfil();
       return mostrar('perfil');
+    }
+
+    if (partes[0] === 'repasando') {
+      if (!Repaso.hayParaRepasar()) return irA('#/juegos');
+      cortarPartida();
+      mostrar('juego');
+      return arrancarRepaso();
     }
 
     if (partes[0] === 'examen') {
@@ -1450,7 +1594,10 @@
       Sonido.despertar(); Sonido.tocar('clic');
       irA('#/jugar');
     });
-    $('btn-otra-vez').addEventListener('click', function () { Sonido.tocar('clic'); irA('#/jugar'); });
+    $('btn-otra-vez').addEventListener('click', function () {
+      Sonido.tocar('clic');
+      irA(tipoUltimaPartida === 'repaso' ? '#/repasando' : '#/jugar');
+    });
     $('btn-cambiar-zona').addEventListener('click', function () {
       Sonido.tocar('clic');
       irA('#/juego/' + sel.materia + '/' + sel.juego);
@@ -1475,6 +1622,10 @@
       pintarInterruptorSonido();
       pintarBotonSonido();
       Sonido.despertar(); Sonido.tocar('clic');
+    });
+    $('btn-repaso').addEventListener('click', function () {
+      Sonido.despertar(); Sonido.tocar('clic');
+      irA('#/repasando');
     });
     $('btn-examen').addEventListener('click', function () {
       Sonido.despertar(); Sonido.tocar('clic');

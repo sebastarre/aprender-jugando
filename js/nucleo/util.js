@@ -17,6 +17,34 @@ window.Util = (function () {
     return mezclar(arr).slice(0, Math.min(n, arr.length));
   }
 
+  /**
+   * Como muestra(), pero los que pesan más salen más seguido.
+   * `peso(item)` devuelve un número mayor que cero; se sortea sin repetir,
+   * así que una partida nunca trae dos veces la misma pregunta.
+   *
+   * Se usa para que lo que el chico falla vuelva a aparecer antes que lo que
+   * ya sabe. Ningún peso puede ser 0: hasta lo más sabido tiene que poder
+   * salir, si no un país aprendido no se vuelve a ver nunca.
+   */
+  function muestraPesada(arr, n, peso) {
+    var quedan = arr.slice();
+    var pesos = quedan.map(function (x) { return Math.max(0.0001, peso(x)); });
+    var total = pesos.reduce(function (a, b) { return a + b; }, 0);
+    var salida = [];
+    var cuantos = Math.min(n, quedan.length);
+
+    for (var k = 0; k < cuantos; k++) {
+      var dardo = Math.random() * total;
+      var i = 0;
+      while (i < quedan.length - 1 && dardo > pesos[i]) { dardo -= pesos[i]; i++; }
+      salida.push(quedan[i]);
+      total -= pesos[i];
+      quedan.splice(i, 1);
+      pesos.splice(i, 1);
+    }
+    return salida;
+  }
+
   function alAzar(arr) {
     return arr[Math.floor(Math.random() * arr.length)];
   }
@@ -65,7 +93,8 @@ window.Util = (function () {
   }
 
   return {
-    mezclar: mezclar, muestra: muestra, alAzar: alAzar, unaDe: unaDe,
+    mezclar: mezclar, muestra: muestra, muestraPesada: muestraPesada,
+    alAzar: alAzar, unaDe: unaDe,
     limitar: limitar, $: $, crear: crear, vaciar: vaciar,
     escapar: escapar, bandera: bandera, esperar: esperar, plural: plural
   };

@@ -127,6 +127,45 @@ para no redibujar 177 países en cada pregunta.
 En el modo parental los exámenes se listan con 📝 para distinguirlos de las
 partidas sueltas.
 
+## Repaso: lo que fallaste vuelve
+
+La app anota cada error, y eso se usa para dos cosas.
+
+**Las preguntas no salen al azar parejo.** Practicando, lo que viene fallando
+aparece más seguido que lo que ya sabe: un país que erró y nunca acertó pesa
+6, uno que nunca vio pesa 3, y uno que acierta siempre pesa 1. Ningún peso es
+0 a propósito: si lo fuera, un país ya aprendido no se vuelve a ver nunca.
+Medido sobre Sudamérica, lo flojo sale unas cinco veces más que lo sabido.
+
+**El examen no hace nada de esto.** Ahí se mide, y un sorteo cargado hacia lo
+flojo daría una nota más baja que lo que el chico realmente sabe. Los juegos
+reciben `sinPesar: true` cuando la partida es un examen.
+
+Las cuentas de sumar y restar quedan afuera del pesado: su pozo es enorme
+(hasta 999 + 999) y casi nunca se repite una cuenta, así que priorizar no
+cambiaría nada. Sí entran las tablas y el reloj, que son pozos chicos y de
+memorizar.
+
+Además hay una tarjeta **Repasar lo que fallaste** arriba de todo en Jugar,
+que arma una partida sólo con eso. Aparece recién con 5 errores juntados
+(con menos quedaría una partida de dos preguntas). Reglas normales: tres
+intentos y te dice en el momento si acertaste, porque esto es para aprender.
+
+Dos detalles que importan:
+
+- **Acertar no borra el error de una.** Baja el contador, así que hacen falta
+  tantos aciertos como fallos para sacarlo de la lista. Acertar una vez de
+  casualidad no lo da por aprendido.
+- **El mapa se achica a la zona justa.** Si las preguntas del repaso son todas
+  sudamericanas, se juega sobre Sudamérica y no sobre el planisferio, donde
+  Ecuador mide nueve píxeles. Sólo si el repaso cruza continentes se abre al
+  mundo entero.
+
+Una pregunta la dibuja el juego del que salió. En matemática eso es
+obligatorio: una tabla puesta en el tablero de sumas saldría «7 undefined 8»,
+así que si ese juego está trabado la pregunta se saltea. En geografía no, que
+cualquier juego sabe preguntar por cualquier país.
+
 ## Monedas y tienda
 
 Cada respuesta correcta da monedas, pero **rinde menos repetir lo que ya
@@ -229,11 +268,13 @@ js/
   nucleo/sonido.js         Sonidos generados con Web Audio (sin archivos)
   nucleo/opciones.js       La botonera de respuestas (tarjetas para elegir)
   nucleo/motor.js          El motor de partidas, común a todas las materias
+  nucleo/mezcla.js         Partidas con preguntas de varias materias mezcladas
   nucleo/pwa.js            Registra el service worker y el cartel de "Instalar"
   mapa.js                  Motor del mapa: proyección, dibujo, zoom y clics
   juegos/geografia.js      Los tres juegos de geografía
   juegos/matematica.js     Los tres juegos de matemática
   juegos/examen.js         Modo examen: mezcla juegos y pone la nota
+  juegos/repaso.js         Modo repaso: rearma las preguntas que se fallaron
   aprender/contenido.js    El texto y los dibujos de las lecciones
   aprender/leccion.js      Visor de lecciones (los pasos, de a uno)
   tienda/catalogo.js       Las paletas (gratis y de la tienda), fondos y monigotes

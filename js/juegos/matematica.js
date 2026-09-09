@@ -119,6 +119,42 @@ window.Matematica = (function () {
     return 'cinco';
   }
 
+  /**
+   * Saca `cantidad` preguntas de un pozo finito, dándole prioridad a lo que
+   * el chico viene fallando. Si se piden más preguntas que ítems tiene el
+   * pozo (por ejemplo 20 preguntas de la tabla del 7, que sólo tiene 10),
+   * se dan vueltas sucesivas: dentro de cada vuelta no se repite nada.
+   *
+   * Las cuentas de sumar y restar no pasan por acá: su pozo es enorme
+   * (hasta 999 + 999) y casi nunca se repite una, así que pesar no cambiaría
+   * nada y costaría armar cien mil ítems para tirar veinte.
+   */
+  /* Las tres fábricas de ítems, sueltas para que las pueda usar también
+     itemDeClave() cuando el modo Repaso rearma una pregunta vieja. */
+  function cuentaTabla(a, b) {
+    return { id: a + 'x' + b, a: a, b: b, resultado: a * b };
+  }
+
+  function horaDelReloj(hora, minuto) {
+    return { id: 'h' + hora + '_' + minuto, hora: hora, minuto: minuto,
+             texto: comoTexto(hora, minuto) };
+  }
+
+  function sortearDelPozo(pozo, cantidad, sinPesar) {
+    function vuelta(n) {
+      return sinPesar
+        ? Util.muestra(pozo, n)
+        : Util.muestraPesada(pozo, n, function (it) {
+            return Almacen.pesoDe('matematica', it.id);
+          });
+    }
+    var salida = [];
+    while (salida.length < cantidad) {
+      salida = salida.concat(vuelta(Math.min(pozo.length, cantidad - salida.length)));
+    }
+    return salida;
+  }
+
   /* ============================================================
      1. Tablas de multiplicar
      ============================================================ */
@@ -145,15 +181,16 @@ window.Matematica = (function () {
       return nombre + ' · ' + sel.cantidad + ' preguntas';
     },
 
-    examen: function () { return { tabla: 'mezcla' }; },
+    examen: function () { return { tabla: 'mezcla', sinPesar: true }; },
     preguntas: function (sel) {
-      var items = [];
-      for (var i = 0; i < sel.cantidad; i++) {
-        var a = (!sel.tabla || sel.tabla === 'mezcla') ? entero(2, 12) : parseInt(sel.tabla, 10);
-        var b = entero(1, 10);
-        items.push({ id: a + 'x' + b, a: a, b: b, resultado: a * b });
+      var mezcla = !sel.tabla || sel.tabla === 'mezcla';
+      var desde = mezcla ? 2 : parseInt(sel.tabla, 10);
+      var hasta = mezcla ? 12 : desde;
+      var pozo = [];
+      for (var a = desde; a <= hasta; a++) {
+        for (var b = 1; b <= 10; b++) pozo.push(cuentaTabla(a, b));
       }
-      return items;
+      return sortearDelPozo(pozo, sel.cantidad, sel.sinPesar);
     },
     montar: function (it) {
       prepararTablero();
@@ -350,20 +387,14 @@ window.Matematica = (function () {
       return pasoPorId(sel.paso).nombre + ' · ' + sel.cantidad + ' preguntas';
     },
 
-    examen: function (comun, edad) { return { paso: pasoPorEdad(edad) }; },
+    examen: function (comun, edad) { return { paso: pasoPorEdad(edad), sinPesar: true }; },
     preguntas: function (sel) {
       var paso = pasoPorId(sel.paso).paso;
-      var items = [];
-      for (var i = 0; i < sel.cantidad; i++) {
-        var hora = entero(1, 12);
-        var minuto = (entero(0, Math.floor(59 / paso)) * paso) % 60;
-        items.push({
-          id: 'h' + hora + '_' + minuto,
-          hora: hora, minuto: minuto,
-          texto: comoTexto(hora, minuto)
-        });
+      var pozo = [];
+      for (var hora = 1; hora <= 12; hora++) {
+        for (var minuto = 0; minuto < 60; minuto += paso) pozo.push(horaDelReloj(hora, minuto));
       }
-      return items;
+      return sortearDelPozo(pozo, sel.cantidad, sel.sinPesar);
     },
     montar: function (it) {
       prepararTablero();
@@ -414,6 +445,35 @@ window.Matematica = (function () {
     /** Lo usa también la lección sobre el reloj, en la sección Aprender. */
     dibujarReloj: dibujarReloj,
     claveItem: function (item) { return item.id; },
+    /**
+     * Rearma una pregunta a partir de su clave, para el modo Repaso.
+     * Las claves dicen solas de qué juego son: '7x8' es una tabla,
+     * 'h3_30' es el reloj, '12+5' es una cuenta.
+     */
+    /**
+     * Qué juego sabe dibujar esta pregunta. Acá es obligatorio: una tabla
+     * mostrada por el tablero de sumas sale "7 undefined 8". Si ese juego
+     * está trabado, el repaso saltea la pregunta en vez de romperla.
+     */
+    juegoDeClave: function (clave) {
+      if (/^\d+x\d+$/.test(clave)) return 'tablas';
+      if (/^h\d+_\d+$/.test(clave)) return 'reloj';
+      return 'cuentas';
+    },
+    itemDeClave: function (clave) {
+      var m = /^(\d+)x(\d+)$/.exec(clave);
+      if (m) return cuentaTabla(+m[1], +m[2]);
+
+      m = /^h(\d+)_(\d+)$/.exec(clave);
+      if (m) return horaDelReloj(+m[1], +m[2]);
+
+      m = /^(\d+)([+−])(\d+)$/.exec(clave);
+      if (m) {
+        var a = +m[1], op = m[2], b = +m[3];
+        return { id: clave, a: a, op: op, b: b, resultado: op === '+' ? a + b : a - b };
+      }
+      return null;
+    },
     repaso: function (item) {
       if (item.op) {
         return { simbolo: '➕', nombre: item.a + ' ' + item.op + ' ' + item.b, dato: 'Da ' + item.resultado };

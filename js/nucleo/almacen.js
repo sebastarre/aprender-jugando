@@ -208,6 +208,8 @@ window.Almacen = (function () {
       fecha: Date.now(),
       materia: p.materia,
       juego: p.juego,
+      // 'examen' o 'repaso'; el modo parental los lista con otro ícono
+      tipo: p.tipo || null,
       detalle: p.detalle || '',
       puntos: p.puntos,
       maximo: p.maximo,
@@ -226,14 +228,49 @@ window.Almacen = (function () {
       var clave = materia + ':' + item.clave;
       if (!e[clave]) e[clave] = { materia: materia, nombre: item.nombre, veces: 0 };
       e[clave].nombre = item.nombre;
+      // de qué juego salió, para que Repaso sepa qué tablero armar
+      if (item.juego) e[clave].juego = item.juego;
       e[clave].veces++;
     });
+    guardar();
+  }
+
+  /**
+   * Baja el contador de un error porque lo volvió a acertar. No lo borra de
+   * una: hacen falta tantos aciertos como fallos para sacarlo de la lista,
+   * así que acertar una vez de casualidad no lo da por aprendido.
+   */
+  function descontarError(materia, clave) {
+    var e = mio().errores;
+    var k = materia + ':' + clave;
+    if (!e[k]) return;
+    e[k].veces--;
+    if (e[k].veces <= 0) delete e[k];
     guardar();
   }
 
   /** Cuántas veces ya acertó esta misma cosa. */
   function aciertosDe(clave) {
     return mio().aciertosPorItem[clave] || 0;
+  }
+
+  /**
+   * Cuánto conviene que esta pregunta vuelva a salir. Cuanto más alto, más
+   * seguido aparece en el sorteo de una partida.
+   *
+   * La idea es simple: lo que falla mucho y acierta poco tiene que volver
+   * pronto; lo que ya acierta siempre, de vez en cuando. Nunca cero, para
+   * que nada desaparezca del todo.
+   */
+  function pesoDe(materia, clave) {
+    var k = materia + ':' + clave;
+    var err = mio().errores[k];
+    var fallos = err ? err.veces : 0;
+    var aciertos = aciertosDe(k);
+
+    if (!fallos) return aciertos ? 1 : 3;   // nunca lo falló: sabido, o sin ver
+    if (!aciertos) return 6;                // lo falló y nunca le salió
+    return fallos > aciertos ? 4 : 2;
   }
 
   /** Suma uno al contador de cada cosa que acertó. */
@@ -295,10 +332,20 @@ window.Almacen = (function () {
   function masFallados(cuantos, materia) {
     var e = mio().errores;
     return Object.keys(e)
-      .map(function (k) { return e[k]; })
+      .map(function (k) {
+        // la clave del ítem va en el nombre de la propiedad ('geografia:AR');
+        // se devuelve suelta para que Repaso pueda rearmar la pregunta
+        var x = e[k];
+        return Object.assign({ clave: k.slice(k.indexOf(':') + 1) }, x);
+      })
       .filter(function (x) { return !materia || x.materia === materia; })
       .sort(function (a, b) { return b.veces - a.veces; })
       .slice(0, cuantos || 8);
+  }
+
+  /** Cuántas cosas distintas tiene pendientes de repasar. */
+  function cuantosErrores() {
+    return Object.keys(mio().errores).length;
   }
 
   /** Días seguidos jugando, contando hasta hoy. */
@@ -384,8 +431,9 @@ window.Almacen = (function () {
     record: record, anotar: anotar, estrellas: estrellas, sumarEstrellas: sumarEstrellas,
     mejorDeJuego: mejorDeJuego,
     registrarPartida: registrarPartida, registrarErrores: registrarErrores,
+    descontarError: descontarError, cuantosErrores: cuantosErrores,
     estrellasDeJuego: estrellasDeJuego,
-    aciertosDe: aciertosDe, registrarAciertos: registrarAciertos,
+    aciertosDe: aciertosDe, registrarAciertos: registrarAciertos, pesoDe: pesoDe,
     monedas: monedas, monedasTotales: monedasTotales,
     sumarMonedas: sumarMonedas, gastarMonedas: gastarMonedas,
     comprar: comprar, tieneComprado: tieneComprado,
