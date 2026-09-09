@@ -1028,10 +1028,11 @@
       b.type = 'button';
       b.setAttribute('aria-pressed', puesta ? 'true' : 'false');
 
-      // vista previa: los colores de la paleta, como se van a ver
-      var c = tema.colores || { primario: '#2563eb', violeta: '#7c3aed', rosa: '#ec4899', papel: '#eff6ff' };
+      // vista previa: la barra primero, que es lo que más se nota al cambiar
+      var c = tema.colores ||
+              { barra: '#1d4ed8', primario: '#2563eb', rosa: '#ec4899', papel: '#dfeafe' };
       var muestra = Util.crear('span', 'muestra-tema');
-      [c.primario, c.violeta, c.rosa, c.papel].forEach(function (color) {
+      [c.barra, c.primario, c.rosa, c.papel].forEach(function (color) {
         var punto = Util.crear('span', 'muestra-punto');
         punto.style.background = color;
         muestra.appendChild(punto);

@@ -149,21 +149,38 @@ una entrada a `js/tienda/catalogo.js`. Lo único que un tema no puede tocar es
 `--exito` y `--error`: el verde de «acertaste» y el rojo de «erraste» son
 iguales en todos los temas.
 
+Un tema pisa cuatro cosas grandes, y son las que hacen que se note el cambio:
+
+- `--barra` — la barra de arriba, que va de color pleno. Es lo que más se ve,
+  porque está en todas las pantallas. `--sobre-barra` es el texto que va encima
+  y `--marca-acento`, el color de «Jugando» en el logo.
+- `--papel` — el fondo de la app. No es casi blanco: cada tema lo tiñe fuerte.
+- `--tarjeta` y `--borde` — las tarjetas, apenas teñidas para que no queden
+  como recortes blancos pegados encima.
+- `--seleccion` — el relleno de lo que está elegido (una edad, un avatar, una
+  pestaña). Si esto no se pisa, el azul de la paleta de casa se cuela en todas.
+
+Los colores de cada materia (Geografía azul, Matemática violeta) **no** son del
+tema: son fijos a propósito, para que una materia se reconozca por su color
+tenga la paleta que tenga.
+
 Si agregás un tema con un color primario claro (naranja, amarillo), acordate de
 ponerle también `sobre-primario` oscuro: el texto blanco sobre esos tonos no
 llega al contraste mínimo. El tema Mandarina es el ejemplo.
 
 ## Los colores
 
-La paleta base es azul (#2563eb) + amarillo (#f59e0b) + rosa (#ec4899), sobre
-fondo azul muy claro. Sale de una paleta de referencia para apps de aprendizaje
-infantil, y está elegida para que el texto llegue a 4.5:1 de contraste en todos
-lados.
+La paleta base es azul (#2563eb) + amarillo (#f59e0b) + rosa (#ec4899), con la
+barra de arriba en azul pleno (#1d4ed8) sobre fondo azul claro. Sale de una
+paleta de referencia para apps de aprendizaje infantil, y está elegida para que
+el texto llegue a 4.5:1 de contraste en todos lados.
 
 Además de esa, hay otras dos paletas gratis que se eligen en
 **Personalización**: Recreo (rosa y violeta) y Mandarina (naranja y azul). Las
 tres están armadas con el mismo criterio de contraste, así que cambiar de una a
-otra no rompe la legibilidad en ninguna pantalla.
+otra no rompe la legibilidad en ninguna pantalla. Las siete paletas (las tres
+gratis y las cuatro de la tienda) se midieron una por una: el par más ajustado
+da 4.54:1.
 
 Donde va texto blanco encima de un color fuerte se usan las variantes oscuras
 (`--exito-osc`, `--error-osc`, `--rosa-osc`): en el tono vivo el blanco queda

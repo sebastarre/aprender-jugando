@@ -30,8 +30,9 @@ window.Temas = (function () {
     // la barra del navegador en el celular acompaña al tema
     var meta = document.querySelector('meta[name="theme-color"]');
     if (meta) {
+      // la barra de arriba es lo que se ve pegado al reloj del celular
       meta.setAttribute('content',
-        (tema.colores && tema.colores.primario) || '#4c6ef5');
+        (tema.colores && tema.colores.barra) || '#1d4ed8');
     }
   }
 

@@ -9,9 +9,19 @@
      ningún tema: tienen que significar siempre lo mismo. */
   --tinta:        #0f172a;
   --tinta-suave:  #475569;
-  --papel:        #eff6ff;
+  --papel:        #dfeafe;
   --tarjeta:      #ffffff;
-  --borde:        #dbe7fe;
+  --borde:        #b9d3fb;
+
+  /* La barra de arriba es de color pleno: es lo que hace que se note de
+     entrada qué paleta está puesta. Cada tema la pisa con su propio tono. */
+  --barra:         #1d4ed8;
+  --barra-borde:   #1e3a8a;
+  --sobre-barra:   #ffffff;
+  --marca-acento:  #fcd34d;
+
+  /* el relleno de lo que está elegido (una edad, un avatar, una pestaña) */
+  --seleccion:     #cfe0fd;
 
   --primario:       #2563eb;
   --primario-osc:   #1d4ed8;
@@ -24,11 +34,11 @@
   --violeta:      #7c3aed;
   --rosa:         #ec4899;
   --rosa-osc:     #be185d;
-  --agua:         #b9dbff;
+  --agua:         #a8cffa;
 
   --radio:   22px;
   --radio-s: 14px;
-  --sombra:  0 6px 0 var(--sombra-color, #d8def0);
+  --sombra:  0 6px 0 var(--sombra-color, var(--borde));
   --sombra-suave: 0 10px 30px rgba(29, 43, 74, .10);
   --fuente: "Baloo 2", "Trebuchet MS", "Segoe UI", system-ui, -apple-system, sans-serif;
 }
@@ -59,9 +69,9 @@ body {
   /* --deco lo pone js/tienda/temas.js cuando hay un tema o un fondo comprado;
      si no hay nada equipado, quedan estas manchas de siempre */
   background: var(--deco,
-    radial-gradient(38rem 28rem at 8% -6%,   #fde7a9 0%, transparent 60%),
-    radial-gradient(34rem 26rem at 98% 4%,   #c7dbff 0%, transparent 62%),
-    radial-gradient(40rem 30rem at 50% 108%, #fbd0e4 0%, transparent 60%));
+    radial-gradient(38rem 28rem at 8% -6%,   #ffd97a 0%, transparent 58%),
+    radial-gradient(34rem 26rem at 98% 4%,   #9dc2fb 0%, transparent 60%),
+    radial-gradient(40rem 30rem at 50% 108%, #f7aed0 0%, transparent 58%));
 }
 
 /* ---------------- Barra superior ---------------- */
@@ -75,9 +85,10 @@ body {
   z-index: 30;
   /* opaca a propósito: si fuera translúcida se vería el contenido pasando
      por detrás al scrollear (el marcador y los corazones asomaban rotos) */
-  background: var(--papel);
-  border-bottom: 2px solid var(--borde);
-  box-shadow: 0 4px 12px rgba(29, 43, 74, .06);
+  background: var(--barra);
+  color: var(--sobre-barra);
+  border-bottom: 3px solid var(--barra-borde);
+  box-shadow: 0 6px 18px rgba(15, 23, 42, .18);
 }
 
 .marca {
@@ -91,7 +102,7 @@ body {
   letter-spacing: .2px;
 }
 .marca-globo { font-size: 1.6rem; animation: girar 14s linear infinite; }
-.marca-texto b { color: var(--primario); }
+.marca-texto b { color: var(--marca-acento); }
 @keyframes girar { to { transform: rotate(360deg); } }
 
 .barra-derecha { margin-left: auto; display: flex; align-items: center; gap: 10px; }
@@ -109,7 +120,7 @@ body {
   cursor: pointer;
   transition: transform .12s, background .12s;
 }
-.btn-icono:hover { background: #eef2ff; transform: translateY(-2px); }
+.btn-icono:hover { background: var(--papel); transform: translateY(-2px); }
 .btn-icono:active { transform: translateY(0); }
 .btn-icono.apagado { opacity: .45; }
 
@@ -147,7 +158,7 @@ body {
 }
 
 .card {
-  --sombra-color: #d8def0;
+  --sombra-color: var(--borde);
   position: relative;
   display: flex;
   flex-direction: column;
@@ -180,7 +191,7 @@ body {
   display: grid;
   place-items: center;
   border-radius: 20px;
-  background: var(--card-suave, #eef2ff);
+  background: var(--card-suave, var(--seleccion));
   margin-bottom: 6px;
 }
 .card-titulo { font-size: 1.3rem; font-weight: 700; }
@@ -242,7 +253,7 @@ body {
 .opcion:hover { transform: translateY(-3px); border-color: var(--op-color, var(--primario)); }
 .opcion[aria-pressed="true"] {
   border-color: var(--op-color, var(--primario));
-  background: var(--op-suave, #eef2ff);
+  background: var(--op-suave, var(--seleccion));
   box-shadow: inset 0 0 0 2px var(--op-color, var(--primario));
 }
 .opcion-icono { font-size: 1.7rem; line-height: 1; flex: none; }
@@ -303,7 +314,7 @@ body {
 .progreso-barra {
   flex: 1;
   height: 14px;
-  background: #e3e9f8;
+  background: var(--borde);
   border-radius: 999px;
   overflow: hidden;
 }
@@ -312,7 +323,7 @@ body {
   height: 100%;
   width: 100%;
   border-radius: 999px;
-  background: linear-gradient(90deg, var(--primario), var(--violeta));
+  background: linear-gradient(90deg, var(--primario), var(--rosa));
   /* se anima con transform (no con width) para que no recalcule el layout */
   transform: scaleX(0);
   transform-origin: left center;
@@ -735,7 +746,7 @@ body.jugando .pie { display: none; }
 
 .barra-progreso {
   height: 10px;
-  background: #e3e9f8;
+  background: var(--borde);
   border-radius: 999px;
   overflow: hidden;
   margin-top: 6px;
@@ -764,7 +775,7 @@ body.jugando .pie { display: none; }
 .perfil-chip:hover { transform: translateY(-3px); border-color: var(--primario); }
 .perfil-chip[aria-pressed="true"] {
   border-color: var(--primario);
-  background: #eef2ff;
+  background: var(--seleccion);
   box-shadow: inset 0 0 0 2px var(--primario);
 }
 .perfil-chip-avatar { font-size: 1.6rem; line-height: 1; }
@@ -855,12 +866,12 @@ body.jugando .pie { display: none; }
 
 #tab-aprender[aria-current="page"] {
   border-color: var(--violeta);
-  background: #f1ebff;
+  background: var(--seleccion);
   box-shadow: inset 0 0 0 2px var(--violeta);
 }
 #tab-juegos[aria-current="page"] {
   border-color: var(--primario);
-  background: #eef2ff;
+  background: var(--seleccion);
   box-shadow: inset 0 0 0 2px var(--primario);
 }
 
@@ -936,7 +947,7 @@ body.sin-perfil .pie { display: none; }
 .boton-edad:hover { transform: translateY(-3px); border-color: var(--primario); }
 .boton-edad[aria-pressed="true"] {
   border-color: var(--primario);
-  background: #eef2ff;
+  background: var(--seleccion);
   box-shadow: inset 0 0 0 2px var(--primario);
 }
 
@@ -959,7 +970,7 @@ body.sin-perfil .pie { display: none; }
 .boton-avatar:hover { transform: scale(1.08); border-color: var(--primario); }
 .boton-avatar[aria-pressed="true"] {
   border-color: var(--primario);
-  background: #eef2ff;
+  background: var(--seleccion);
   box-shadow: inset 0 0 0 3px var(--primario);
   transform: scale(1.06);
 }
@@ -1325,7 +1336,7 @@ body.rindiendo .vidas { display: none; }
 
 /* La respuesta elegida se marca en neutro: registrada, sin decir si va bien. */
 .pais.elegida, .punto.elegida { fill: var(--primario); stroke: var(--primario-osc); }
-.btn-opcion.elegida { border-color: var(--primario); background: #eef2ff; }
+.btn-opcion.elegida { border-color: var(--primario); background: var(--seleccion); }
 
 .nota-grande {
   font-size: clamp(3.4rem, 12vw, 5rem);
@@ -1404,7 +1415,7 @@ body.rindiendo .vidas { display: none; }
   padding: 3px;
   border-radius: 999px;
   border: 2px solid var(--borde);
-  background: #e3e9f8;
+  background: var(--borde);
   cursor: pointer;
   transition: background .16s, border-color .16s;
 }

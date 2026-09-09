@@ -16,7 +16,8 @@ window.Catalogo = (function () {
 
   /* Las únicas variables que un tema puede cambiar. */
   var VARIABLES = ['primario', 'primario-osc', 'sobre-primario', 'violeta', 'rosa',
-                   'rosa-osc', 'papel', 'tarjeta', 'borde', 'tinta', 'tinta-suave', 'agua'];
+                   'rosa-osc', 'papel', 'tarjeta', 'borde', 'tinta', 'tinta-suave', 'agua',
+                   'barra', 'barra-borde', 'sobre-barra', 'marca-acento', 'seleccion'];
 
   /* Las tres primeras son gratis: son las paletas base que se eligen desde
      Personalización. Las de abajo se compran en la tienda. */
@@ -31,13 +32,15 @@ window.Catalogo = (function () {
       texto: 'Rosa y violeta de golosina.',
       colores: {
         'primario': '#db2777', 'primario-osc': '#9d174d', 'sobre-primario': '#ffffff',
+        'barra': '#9d174d', 'barra-borde': '#6d132f', 'sobre-barra': '#ffffff',
+        'marca-acento': '#fbcfe8', 'seleccion': '#fcd5e8',
         'violeta': '#8b5cf6', 'rosa': '#f59e0b', 'rosa-osc': '#b45309',
-        'papel': '#fdf2f8', 'tarjeta': '#ffffff', 'borde': '#fbcfe8',
-        'tinta': '#500724', 'tinta-suave': '#8f4f6f', 'agua': '#bfdbfe'
+        'papel': '#ffe3f1', 'tarjeta': '#fff8fc', 'borde': '#f9a8d4',
+        'tinta': '#4a0725', 'tinta-suave': '#8a3d61', 'agua': '#ddd6fe'
       },
-      deco: 'radial-gradient(38rem 28rem at 8% -6%, #fbcfe8 0%, transparent 60%),' +
-            'radial-gradient(34rem 26rem at 98% 4%, #ddd6fe 0%, transparent 62%),' +
-            'radial-gradient(40rem 30rem at 50% 108%, #fde68a 0%, transparent 60%)'
+      deco: 'radial-gradient(38rem 28rem at 8% -6%, #f9a8d4 0%, transparent 58%),' +
+            'radial-gradient(34rem 26rem at 98% 4%, #c4b5fd 0%, transparent 60%),' +
+            'radial-gradient(40rem 30rem at 50% 108%, #fcd34d 0%, transparent 58%)'
     },
     {
       id: 'mandarina', nombre: 'Mandarina', icono: '🍊', precio: 0,
@@ -46,65 +49,75 @@ window.Catalogo = (function () {
         'primario': '#ea580c', 'primario-osc': '#c2410c',
         // sobre naranja el texto va oscuro: en blanco no se leería
         'sobre-primario': '#3a1105',
-        'violeta': '#2563eb', 'rosa': '#0891b2', 'rosa-osc': '#0e7490',
-        'papel': '#fff7ed', 'tarjeta': '#ffffff', 'borde': '#fed7aa',
-        'tinta': '#431407', 'tinta-suave': '#8a5a44', 'agua': '#bfdbfe'
+        'barra': '#9a3412', 'barra-borde': '#6b2410', 'sobre-barra': '#ffffff',
+        'marca-acento': '#fed7aa', 'seleccion': '#ffdcb0',
+        'violeta': '#2563eb', 'rosa': '#f59e0b', 'rosa-osc': '#b45309',
+        'papel': '#ffe6c9', 'tarjeta': '#fffaf2', 'borde': '#fdba74',
+        'tinta': '#431407', 'tinta-suave': '#7c4a2c', 'agua': '#a8cffa'
       },
-      deco: 'radial-gradient(38rem 28rem at 8% -6%, #fed7aa 0%, transparent 60%),' +
-            'radial-gradient(34rem 26rem at 98% 4%, #bfdbfe 0%, transparent 62%),' +
-            'radial-gradient(40rem 30rem at 50% 108%, #fef08a 0%, transparent 60%)'
+      deco: 'radial-gradient(38rem 28rem at 8% -6%, #fdba74 0%, transparent 58%),' +
+            'radial-gradient(34rem 26rem at 98% 4%, #93c5fd 0%, transparent 60%),' +
+            'radial-gradient(40rem 30rem at 50% 108%, #fde047 0%, transparent 58%)'
     },
     {
       id: 'selva', nombre: 'Selva', icono: '🌿', precio: 120,
       texto: 'Verdes de bosque.',
       colores: {
-        'primario': '#16a34a', 'primario-osc': '#15803d', 'sobre-primario': '#ffffff',
+        'primario': '#15803d', 'primario-osc': '#14532d', 'sobre-primario': '#ffffff',
+        'barra': '#166534', 'barra-borde': '#0f3d20', 'sobre-barra': '#ffffff',
+        'marca-acento': '#fde047', 'seleccion': '#c3eed3',
         'violeta': '#65a30d', 'rosa': '#f97316', 'rosa-osc': '#c2410c',
-        'papel': '#f0fdf4', 'tarjeta': '#ffffff', 'borde': '#bbf7d0',
-        'tinta': '#14532d', 'tinta-suave': '#4d7c5f', 'agua': '#a7dfc4'
+        'papel': '#d7f5e1', 'tarjeta': '#f7fffa', 'borde': '#86efac',
+        'tinta': '#14532d', 'tinta-suave': '#3f6b50', 'agua': '#a7dfc4'
       },
-      deco: 'radial-gradient(38rem 28rem at 8% -6%, #d9f99d 0%, transparent 60%),' +
-            'radial-gradient(34rem 26rem at 98% 4%, #a7f3d0 0%, transparent 62%),' +
-            'radial-gradient(40rem 30rem at 50% 108%, #fef08a 0%, transparent 60%)'
+      deco: 'radial-gradient(38rem 28rem at 8% -6%, #bef264 0%, transparent 58%),' +
+            'radial-gradient(34rem 26rem at 98% 4%, #6ee7b7 0%, transparent 60%),' +
+            'radial-gradient(40rem 30rem at 50% 108%, #fde047 0%, transparent 58%)'
     },
     {
       id: 'oceano', nombre: 'Océano', icono: '🌊', precio: 120,
       texto: 'Azules de agua honda.',
       colores: {
-        'primario': '#0284c7', 'primario-osc': '#0369a1', 'sobre-primario': '#ffffff',
+        'primario': '#0369a1', 'primario-osc': '#075985', 'sobre-primario': '#ffffff',
+        'barra': '#075985', 'barra-borde': '#053b58', 'sobre-barra': '#ffffff',
+        'marca-acento': '#7dd3fc', 'seleccion': '#c0e3f8',
         'violeta': '#6366f1', 'rosa': '#06b6d4', 'rosa-osc': '#0e7490',
-        'papel': '#f0f9ff', 'tarjeta': '#ffffff', 'borde': '#bae6fd',
-        'tinta': '#0c4a6e', 'tinta-suave': '#47708c', 'agua': '#a5dcf7'
+        'papel': '#d3ecfb', 'tarjeta': '#f5fbff', 'borde': '#7dd3fc',
+        'tinta': '#0c4a6e', 'tinta-suave': '#3d6c88', 'agua': '#8ecdf3'
       },
-      deco: 'radial-gradient(38rem 28rem at 8% -6%, #bae6fd 0%, transparent 60%),' +
-            'radial-gradient(34rem 26rem at 98% 4%, #a5f3fc 0%, transparent 62%),' +
-            'radial-gradient(40rem 30rem at 50% 108%, #c7d2fe 0%, transparent 60%)'
+      deco: 'radial-gradient(38rem 28rem at 8% -6%, #7dd3fc 0%, transparent 58%),' +
+            'radial-gradient(34rem 26rem at 98% 4%, #67e8f9 0%, transparent 60%),' +
+            'radial-gradient(40rem 30rem at 50% 108%, #a5b4fc 0%, transparent 58%)'
     },
     {
       id: 'uva', nombre: 'Uva', icono: '🍇', precio: 150,
       texto: 'Violetas profundos.',
       colores: {
         'primario': '#7c3aed', 'primario-osc': '#6d28d9', 'sobre-primario': '#ffffff',
+        'barra': '#5b21b6', 'barra-borde': '#3f1580', 'sobre-barra': '#ffffff',
+        'marca-acento': '#f5d0fe', 'seleccion': '#ddc9fb',
         'violeta': '#a855f7', 'rosa': '#ec4899', 'rosa-osc': '#be185d',
-        'papel': '#faf5ff', 'tarjeta': '#ffffff', 'borde': '#e9d5ff',
-        'tinta': '#3b0764', 'tinta-suave': '#75569b', 'agua': '#bfdbfe'
+        'papel': '#e9dcfd', 'tarjeta': '#fbf7ff', 'borde': '#c4b5fd',
+        'tinta': '#3b0764', 'tinta-suave': '#6b4e93', 'agua': '#bfdbfe'
       },
-      deco: 'radial-gradient(38rem 28rem at 8% -6%, #e9d5ff 0%, transparent 60%),' +
-            'radial-gradient(34rem 26rem at 98% 4%, #c7d2fe 0%, transparent 62%),' +
-            'radial-gradient(40rem 30rem at 50% 108%, #fbcfe8 0%, transparent 60%)'
+      deco: 'radial-gradient(38rem 28rem at 8% -6%, #d8b4fe 0%, transparent 58%),' +
+            'radial-gradient(34rem 26rem at 98% 4%, #a5b4fc 0%, transparent 60%),' +
+            'radial-gradient(40rem 30rem at 50% 108%, #f9a8d4 0%, transparent 58%)'
     },
     {
       id: 'menta', nombre: 'Menta', icono: '🧊', precio: 180,
       texto: 'Turquesa fresquito.',
       colores: {
-        'primario': '#0d9488', 'primario-osc': '#0f766e', 'sobre-primario': '#ffffff',
+        'primario': '#0f766e', 'primario-osc': '#115e59', 'sobre-primario': '#ffffff',
+        'barra': '#115e59', 'barra-borde': '#0b3f3c', 'sobre-barra': '#ffffff',
+        'marca-acento': '#fef08a', 'seleccion': '#b9ece2',
         'violeta': '#7c3aed', 'rosa': '#f43f5e', 'rosa-osc': '#be123c',
-        'papel': '#f0fdfa', 'tarjeta': '#ffffff', 'borde': '#99f6e4',
-        'tinta': '#134e4a', 'tinta-suave': '#4a7c76', 'agua': '#a5e8e0'
+        'papel': '#cdf3ec', 'tarjeta': '#f4fffd', 'borde': '#5eead4',
+        'tinta': '#134e4a', 'tinta-suave': '#3d6f6a', 'agua': '#a5e8e0'
       },
-      deco: 'radial-gradient(38rem 28rem at 8% -6%, #99f6e4 0%, transparent 60%),' +
-            'radial-gradient(34rem 26rem at 98% 4%, #bfdbfe 0%, transparent 62%),' +
-            'radial-gradient(40rem 30rem at 50% 108%, #ddd6fe 0%, transparent 60%)'
+      deco: 'radial-gradient(38rem 28rem at 8% -6%, #5eead4 0%, transparent 58%),' +
+            'radial-gradient(34rem 26rem at 98% 4%, #93c5fd 0%, transparent 60%),' +
+            'radial-gradient(40rem 30rem at 50% 108%, #c4b5fd 0%, transparent 58%)'
     }
   ];
 
