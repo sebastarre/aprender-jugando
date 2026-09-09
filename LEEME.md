@@ -140,8 +140,8 @@ tiene 194 países (se agotan y decaen), pero las cuentas de nivel experto casi
 nunca se repiten y pagarían 5 siempre.
 
 Con esas monedas se compran, en la **tienda** (el chip de arriba a la derecha,
-o el botón en el perfil): temas de color que cambian toda la app, fondos y
-monigotes extra para el perfil. **Todo es cosmético a propósito**: no se
+o el botón en Personalización): temas de color que cambian toda la app, fondos
+y monigotes extra para el perfil. **Todo es cosmético a propósito**: no se
 compran pistas, ni intentos, ni juegos.
 
 Los temas funcionan pisando variables de CSS, así que agregar uno es agregar
@@ -151,7 +151,7 @@ iguales en todos los temas.
 
 Si agregás un tema con un color primario claro (naranja, amarillo), acordate de
 ponerle también `sobre-primario` oscuro: el texto blanco sobre esos tonos no
-llega al contraste mínimo. El tema Atardecer es el ejemplo.
+llega al contraste mínimo. El tema Mandarina es el ejemplo.
 
 ## Los colores
 
@@ -160,6 +160,11 @@ fondo azul muy claro. Sale de una paleta de referencia para apps de aprendizaje
 infantil, y está elegida para que el texto llegue a 4.5:1 de contraste en todos
 lados.
 
+Además de esa, hay otras dos paletas gratis que se eligen en
+**Personalización**: Recreo (rosa y violeta) y Mandarina (naranja y azul). Las
+tres están armadas con el mismo criterio de contraste, así que cambiar de una a
+otra no rompe la legibilidad en ninguna pantalla.
+
 Donde va texto blanco encima de un color fuerte se usan las variantes oscuras
 (`--exito-osc`, `--error-osc`, `--rosa-osc`): en el tono vivo el blanco queda
 por debajo del mínimo legible. Los tonos vivos se usan para rellenos —el país
@@ -167,12 +172,23 @@ correcto en el mapa, el borde de una tarjeta— donde no llevan texto encima.
 
 ## Perfiles y modo parental
 
-El botón de la esquina superior derecha abre el perfil. Ahí se ve cuántas
-partidas jugó, su precisión, las estrellas y cómo va en cada materia. Pueden
-convivir varios chicos en el mismo dispositivo: cada uno tiene su avatar y sus
-datos separados, y se cambia de uno a otro con un toque.
+El botón de la esquina superior derecha abre un menú con tres opciones: **ver
+mi perfil**, **configuración** y **personalización**. Está pensado para que se
+le puedan ir sumando entradas sin rehacer nada.
 
-Dentro del perfil está el **modo parental**, protegido con un PIN de 4 números
+En el **perfil** se ve cuántas partidas jugó, su precisión, las estrellas y cómo
+va en cada materia.
+
+En **configuración** están los ajustes generales: prender y apagar los sonidos,
+cambiar el nombre y la edad (la edad decide qué juegos y lecciones aparecen), y
+elegir quién juega. Pueden convivir varios chicos en el mismo dispositivo: cada
+uno tiene su avatar y sus datos separados, y se cambia de uno a otro con un
+toque.
+
+En **personalización** están las paletas de colores: las tres gratis y las que
+se compran con monedas.
+
+Dentro de configuración está el **modo parental**, protegido con un PIN de 4 números
 que se elige la primera vez que se entra. Muestra en qué está flojo (lo que más
 falla, ordenado por cantidad de veces) y las últimas partidas con fecha y
 resultado. También permite borrar el progreso de un jugador.
@@ -203,7 +219,7 @@ js/
   juegos/examen.js         Modo examen: mezcla juegos y pone la nota
   aprender/contenido.js    El texto y los dibujos de las lecciones
   aprender/leccion.js      Visor de lecciones (los pasos, de a uno)
-  tienda/catalogo.js       Qué se puede comprar: temas, fondos y monigotes
+  tienda/catalogo.js       Las paletas (gratis y de la tienda), fondos y monigotes
   tienda/temas.js          Aplica el tema y el fondo equipados
   app.js                   Las dos secciones, las pantallas y la navegación
 assets/banderas/           Una imagen por país (ar.png, br.png, ...)

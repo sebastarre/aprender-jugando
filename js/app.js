@@ -160,7 +160,7 @@
   var bienvenida = { nombre: '', edad: null, avatar: null, editando: null };
   var PANTALLAS = ['bienvenida', 'juegos', 'aprender', 'materia', 'lecciones', 'leccion',
                    'config', 'juego', 'fin', 'perfil', 'tienda', 'parental',
-                   'examen', 'nota'];
+                   'examen', 'nota', 'configuracion', 'personalizacion'];
   var CON_SECCIONES = ['juegos', 'aprender', 'materia', 'lecciones'];
 
   function mostrar(nombre) {
@@ -916,11 +916,66 @@
       lista.appendChild(fila);
     });
 
-    pintarListaPerfiles();
   }
 
-  function pintarListaPerfiles() {
-    var caja = $('grilla-perfiles');
+  /* ---------------------- menú del perfil ---------------------- */
+  function abrirMenu(abierto) {
+    $('menu-perfil').hidden = !abierto;
+    $('btn-perfil').setAttribute('aria-expanded', abierto ? 'true' : 'false');
+  }
+
+  function menuAbierto() { return !$('menu-perfil').hidden; }
+
+  /* ---------------------- configuración ---------------------- */
+  function pintarConfiguracion() {
+    var yo = Almacen.activo();
+    if (!yo) return irA('#/');
+
+    pintarInterruptorSonido();
+    $('ajuste-nombre').value = yo.nombre;
+    $('aviso-guardado').hidden = true;
+
+    var caja = $('ajuste-edad');
+    Util.vaciar(caja);
+    EDADES.forEach(function (n) {
+      var b = Util.crear('button', 'boton-edad');
+      b.type = 'button';
+      b.appendChild(Util.crear('b', null, String(n)));
+      b.appendChild(Util.crear('span', null, 'años'));
+      b.setAttribute('aria-pressed', yo.edad === n ? 'true' : 'false');
+      b.addEventListener('click', function () {
+        Sonido.despertar(); Sonido.tocar('clic');
+        caja.querySelectorAll('.boton-edad').forEach(function (o) {
+          o.setAttribute('aria-pressed', o === b ? 'true' : 'false');
+        });
+      });
+      caja.appendChild(b);
+    });
+
+    pintarPerfilesEn($('config-perfiles'), pintarConfiguracion);
+  }
+
+  function pintarInterruptorSonido() {
+    var sw = $('ajuste-sonido');
+    if (sw) sw.setAttribute('aria-checked', Almacen.sonidoActivo() ? 'true' : 'false');
+  }
+
+  function guardarDatos() {
+    var yo = Almacen.activo();
+    if (!yo) return;
+    var nombre = $('ajuste-nombre').value.trim();
+    var elegida = $('ajuste-edad').querySelector('.boton-edad[aria-pressed="true"]');
+    var edad = elegida ? parseInt(elegida.querySelector('b').textContent, 10) : yo.edad;
+
+    if (!nombre) { $('ajuste-nombre').focus(); return; }
+    Almacen.actualizarPerfil(yo.id, { nombre: nombre, edad: edad });
+    Sonido.tocar('record');
+    pintarBarraSuperior();
+    $('aviso-guardado').hidden = false;
+  }
+
+  /** El selector de jugadores, que se usa en más de una pantalla. */
+  function pintarPerfilesEn(caja, alCambiar) {
     Util.vaciar(caja);
     var activo = Almacen.activo();
     Almacen.perfiles().forEach(function (p) {
@@ -935,8 +990,67 @@
       b.addEventListener('click', function () {
         Sonido.tocar('clic');
         Almacen.usar(p.id);
+        Temas.aplicar();          // cada jugador tiene su propia paleta
         pintarBarraSuperior();
-        pintarPerfil();
+        if (alCambiar) alCambiar();
+      });
+      caja.appendChild(b);
+    });
+  }
+
+  /* ---------------------- personalización ---------------------- */
+  function pintarPersonalizacion() {
+    pintarPaletas($('paletas-gratis'), Catalogo.temasGratis(), false);
+
+    var compradas = Catalogo.temasDeTienda().filter(function (t) {
+      return Almacen.tieneComprado('tema:' + t.id);
+    });
+    pintarPaletas($('paletas-compradas'), compradas, true);
+
+    var faltan = Catalogo.temasDeTienda().length - compradas.length;
+    $('nota-tienda').textContent = compradas.length
+      ? (faltan ? 'Hay ' + Util.plural(faltan, 'paleta') + ' más en la tienda.' : 'Ya las tenés todas.')
+      : 'Todavía no compraste ninguna. Hay ' +
+        Util.plural(Catalogo.temasDeTienda().length, 'paleta') + ' en la tienda.';
+  }
+
+  function pintarPaletas(caja, temas, deTienda) {
+    Util.vaciar(caja);
+    if (!temas.length) {
+      caja.appendChild(Util.crear('p', 'vacio', 'Nada por acá todavía.'));
+      return;
+    }
+    temas.forEach(function (tema) {
+      var puesta = Almacen.equipado('tema') === tema.id ||
+                   (!Almacen.equipado('tema') && tema.id === 'clasico');
+
+      var b = Util.crear('button', 'card-tienda');
+      b.type = 'button';
+      b.setAttribute('aria-pressed', puesta ? 'true' : 'false');
+
+      // vista previa: los colores de la paleta, como se van a ver
+      var c = tema.colores || { primario: '#2563eb', violeta: '#7c3aed', rosa: '#ec4899', papel: '#eff6ff' };
+      var muestra = Util.crear('span', 'muestra-tema');
+      [c.primario, c.violeta, c.rosa, c.papel].forEach(function (color) {
+        var punto = Util.crear('span', 'muestra-punto');
+        punto.style.background = color;
+        muestra.appendChild(punto);
+      });
+      b.appendChild(muestra);
+
+      b.appendChild(Util.crear('b', 'tienda-nombre', tema.icono + ' ' + tema.nombre));
+      b.appendChild(Util.crear('span', 'tienda-texto', tema.texto));
+
+      var pie = Util.crear('span', 'tienda-pie');
+      if (puesta) pie.appendChild(Util.crear('span', 'etiqueta-puesta', 'En uso'));
+      else pie.appendChild(Util.crear('span', 'etiqueta-tuya', deTienda ? 'Tuya' : 'Gratis'));
+      b.appendChild(pie);
+
+      b.addEventListener('click', function () {
+        Sonido.despertar(); Sonido.tocar('clic');
+        Almacen.equipar('tema', tema.id);
+        Temas.aplicar();
+        pintarPersonalizacion();
       });
       caja.appendChild(b);
     });
@@ -1234,6 +1348,18 @@
       return mostrar('nota');
     }
 
+    if (partes[0] === 'configuracion') {
+      cortarPartida();
+      pintarConfiguracion();
+      return mostrar('configuracion');
+    }
+
+    if (partes[0] === 'personalizacion') {
+      cortarPartida();
+      pintarPersonalizacion();
+      return mostrar('personalizacion');
+    }
+
     if (partes[0] === 'tienda') {
       cortarPartida();
       pintarTienda();
@@ -1270,21 +1396,31 @@
       var l = Leccion.actual();
       return irA(l ? '#/lecciones/' + l.materia : '#/aprender');
     }
-    if (partes[0] === 'parental' || partes[0] === 'tienda') return irA('#/perfil');
+    if (partes[0] === 'parental') return irA('#/configuracion');
+    if (partes[0] === 'tienda') return irA('#/personalizacion');
+    if (partes[0] === 'configuracion' || partes[0] === 'personalizacion') return irA('#/perfil');
     irA('#/juegos');
   }
 
   /* ---------------------- eventos ---------------------- */
   function conectar() {
     $('btn-atras').addEventListener('click', volverAtras);
-    $('btn-perfil').addEventListener('click', function () {
+    $('btn-perfil').addEventListener('click', function (ev) {
+      ev.stopPropagation();
       Sonido.despertar(); Sonido.tocar('clic');
-      irA('#/perfil');
+      abrirMenu(!menuAbierto());
+    });
+    // el menú se cierra al elegir algo, al tocar afuera o con Escape
+    $('menu-perfil').addEventListener('click', function () { abrirMenu(false); });
+    document.addEventListener('click', function () { if (menuAbierto()) abrirMenu(false); });
+    document.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Escape' && menuAbierto()) { abrirMenu(false); $('btn-perfil').focus(); }
     });
 
     $('btn-sonido').addEventListener('click', function () {
       Almacen.setSonido(!Almacen.sonidoActivo());
       pintarBotonSonido();
+      pintarInterruptorSonido();
       Sonido.despertar();
       Sonido.tocar('clic');
     });
@@ -1331,6 +1467,14 @@
       mostrar('bienvenida');
     });
     $('btn-tienda').addEventListener('click', function () { Sonido.tocar('clic'); irA('#/tienda'); });
+    $('btn-ir-config').addEventListener('click', function () { Sonido.tocar('clic'); irA('#/configuracion'); });
+    $('btn-guardar-datos').addEventListener('click', guardarDatos);
+    $('ajuste-sonido').addEventListener('click', function () {
+      Almacen.setSonido(!Almacen.sonidoActivo());
+      pintarInterruptorSonido();
+      pintarBotonSonido();
+      Sonido.despertar(); Sonido.tocar('clic');
+    });
     $('btn-examen').addEventListener('click', function () {
       Sonido.despertar(); Sonido.tocar('clic');
       irA('#/examen');

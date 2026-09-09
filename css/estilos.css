@@ -1343,3 +1343,106 @@ body.rindiendo .vidas { display: none; }
 }
 .nota-grande.aprobado { border-color: var(--exito); color: var(--exito-osc); background: #e6f8ef; }
 .nota-grande.desaprobado { border-color: var(--error); color: var(--error-osc); background: #fdeaec; }
+
+/* ============================================================
+   Menú del perfil
+   ============================================================ */
+.envase-perfil { position: relative; }
+
+.menu-perfil {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 40;
+  min-width: 210px;
+  padding: 8px;
+  background: var(--tarjeta);
+  border: 3px solid var(--borde);
+  border-radius: var(--radio-s);
+  box-shadow: 0 12px 30px rgba(29, 43, 74, .18);
+  animation: caer-menu .16s ease both;
+}
+@keyframes caer-menu {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.item-menu {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 13px;
+  border-radius: 10px;
+  color: var(--tinta);
+  text-decoration: none;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: background .12s;
+}
+.item-menu:hover { background: var(--papel); }
+.item-icono { font-size: 1.2rem; line-height: 1; }
+
+/* ============================================================
+   Configuración
+   ============================================================ */
+.fila-ajuste {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--tarjeta);
+  border: 2px solid var(--borde);
+  border-radius: var(--radio-s);
+  padding: 12px 16px;
+  margin-bottom: 26px;
+}
+.ajuste-icono { font-size: 1.6rem; line-height: 1; flex: none; }
+
+.interruptor {
+  flex: none;
+  width: 62px;
+  height: 34px;
+  padding: 3px;
+  border-radius: 999px;
+  border: 2px solid var(--borde);
+  background: #e3e9f8;
+  cursor: pointer;
+  transition: background .16s, border-color .16s;
+}
+.interruptor span {
+  display: block;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2px 5px rgba(29, 43, 74, .3);
+  transition: transform .16s ease;
+}
+.interruptor[aria-checked="true"] { background: var(--exito); border-color: var(--exito-osc); }
+.interruptor[aria-checked="true"] span { transform: translateX(28px); }
+
+.tarjeta-ajustes {
+  background: var(--tarjeta);
+  border: 3px solid var(--borde);
+  border-radius: var(--radio);
+  padding: clamp(18px, 4vw, 26px);
+  margin-bottom: 26px;
+  text-align: center;
+}
+.tarjeta-ajustes .campo-texto { text-align: left; }
+.tarjeta-ajustes .grilla-edades { margin-bottom: 10px; }
+.nota-edad { margin: 0 0 16px; }
+.aviso-guardado {
+  margin: 12px 0 0;
+  font-weight: 700;
+  color: var(--exito-osc);
+  animation: aparecer-desbloqueo .3s ease both;
+}
+.sobre-app { text-align: left; }
+.sobre-app p { margin: 0 0 8px; }
+.sobre-app p:last-child { margin-bottom: 0; }
+
+/* ============================================================
+   Personalización
+   ============================================================ */
+#paletas-gratis .muestra-punto,
+#paletas-compradas .muestra-punto { width: 26px; height: 26px; }

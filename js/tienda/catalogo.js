@@ -18,11 +18,41 @@ window.Catalogo = (function () {
   var VARIABLES = ['primario', 'primario-osc', 'sobre-primario', 'violeta', 'rosa',
                    'rosa-osc', 'papel', 'tarjeta', 'borde', 'tinta', 'tinta-suave', 'agua'];
 
+  /* Las tres primeras son gratis: son las paletas base que se eligen desde
+     Personalización. Las de abajo se compran en la tienda. */
   var TEMAS = [
     {
-      id: 'clasico', nombre: 'Clásico', icono: '🎨', precio: 0,
-      texto: 'Con el que viene la app.',
+      id: 'clasico', nombre: 'Aula', icono: '🎨', precio: 0,
+      texto: 'La que viene con la app: azul, amarillo y rosa.',
       colores: null                       // sin pisar nada: los del CSS
+    },
+    {
+      id: 'recreo', nombre: 'Recreo', icono: '🍭', precio: 0,
+      texto: 'Rosa y violeta de golosina.',
+      colores: {
+        'primario': '#db2777', 'primario-osc': '#9d174d', 'sobre-primario': '#ffffff',
+        'violeta': '#8b5cf6', 'rosa': '#f59e0b', 'rosa-osc': '#b45309',
+        'papel': '#fdf2f8', 'tarjeta': '#ffffff', 'borde': '#fbcfe8',
+        'tinta': '#500724', 'tinta-suave': '#8f4f6f', 'agua': '#bfdbfe'
+      },
+      deco: 'radial-gradient(38rem 28rem at 8% -6%, #fbcfe8 0%, transparent 60%),' +
+            'radial-gradient(34rem 26rem at 98% 4%, #ddd6fe 0%, transparent 62%),' +
+            'radial-gradient(40rem 30rem at 50% 108%, #fde68a 0%, transparent 60%)'
+    },
+    {
+      id: 'mandarina', nombre: 'Mandarina', icono: '🍊', precio: 0,
+      texto: 'Naranja y azul, bien cálida.',
+      colores: {
+        'primario': '#ea580c', 'primario-osc': '#c2410c',
+        // sobre naranja el texto va oscuro: en blanco no se leería
+        'sobre-primario': '#3a1105',
+        'violeta': '#2563eb', 'rosa': '#0891b2', 'rosa-osc': '#0e7490',
+        'papel': '#fff7ed', 'tarjeta': '#ffffff', 'borde': '#fed7aa',
+        'tinta': '#431407', 'tinta-suave': '#8a5a44', 'agua': '#bfdbfe'
+      },
+      deco: 'radial-gradient(38rem 28rem at 8% -6%, #fed7aa 0%, transparent 60%),' +
+            'radial-gradient(34rem 26rem at 98% 4%, #bfdbfe 0%, transparent 62%),' +
+            'radial-gradient(40rem 30rem at 50% 108%, #fef08a 0%, transparent 60%)'
     },
     {
       id: 'selva', nombre: 'Selva', icono: '🌿', precio: 120,
@@ -51,32 +81,17 @@ window.Catalogo = (function () {
             'radial-gradient(40rem 30rem at 50% 108%, #c7d2fe 0%, transparent 60%)'
     },
     {
-      id: 'atardecer', nombre: 'Atardecer', icono: '🌅', precio: 150,
-      texto: 'Naranjas de cielo de tarde.',
+      id: 'uva', nombre: 'Uva', icono: '🍇', precio: 150,
+      texto: 'Violetas profundos.',
       colores: {
-        'primario': '#f97316', 'primario-osc': '#ea580c',
-        // sobre naranja el texto va oscuro: en blanco no se leería
-        'sobre-primario': '#431407',
-        'violeta': '#e11d48', 'rosa': '#d946ef', 'rosa-osc': '#a21caf',
-        'papel': '#fff7ed', 'tarjeta': '#ffffff', 'borde': '#fed7aa',
-        'tinta': '#431407', 'tinta-suave': '#8a5a44', 'agua': '#bfdbfe'
+        'primario': '#7c3aed', 'primario-osc': '#6d28d9', 'sobre-primario': '#ffffff',
+        'violeta': '#a855f7', 'rosa': '#ec4899', 'rosa-osc': '#be185d',
+        'papel': '#faf5ff', 'tarjeta': '#ffffff', 'borde': '#e9d5ff',
+        'tinta': '#3b0764', 'tinta-suave': '#75569b', 'agua': '#bfdbfe'
       },
-      deco: 'radial-gradient(38rem 28rem at 8% -6%, #fed7aa 0%, transparent 60%),' +
-            'radial-gradient(34rem 26rem at 98% 4%, #fecdd3 0%, transparent 62%),' +
-            'radial-gradient(40rem 30rem at 50% 108%, #fde68a 0%, transparent 60%)'
-    },
-    {
-      id: 'chicle', nombre: 'Chicle', icono: '🍬', precio: 150,
-      texto: 'Rosas de golosina.',
-      colores: {
-        'primario': '#db2777', 'primario-osc': '#9d174d', 'sobre-primario': '#ffffff',
-        'violeta': '#8b5cf6', 'rosa': '#f59e0b', 'rosa-osc': '#b45309',
-        'papel': '#fdf2f8', 'tarjeta': '#ffffff', 'borde': '#fbcfe8',
-        'tinta': '#500724', 'tinta-suave': '#93516f', 'agua': '#bfdbfe'
-      },
-      deco: 'radial-gradient(38rem 28rem at 8% -6%, #fbcfe8 0%, transparent 60%),' +
-            'radial-gradient(34rem 26rem at 98% 4%, #ddd6fe 0%, transparent 62%),' +
-            'radial-gradient(40rem 30rem at 50% 108%, #fef08a 0%, transparent 60%)'
+      deco: 'radial-gradient(38rem 28rem at 8% -6%, #e9d5ff 0%, transparent 60%),' +
+            'radial-gradient(34rem 26rem at 98% 4%, #c7d2fe 0%, transparent 62%),' +
+            'radial-gradient(40rem 30rem at 50% 108%, #fbcfe8 0%, transparent 60%)'
     },
     {
       id: 'menta', nombre: 'Menta', icono: '🧊', precio: 180,
@@ -165,6 +180,9 @@ window.Catalogo = (function () {
     FONDOS: FONDOS,
     AVATARES: AVATARES,
     tema: function (id) { return buscar(TEMAS, id) || TEMAS[0]; },
+    /** Las paletas base, que no hay que comprar. */
+    temasGratis: function () { return TEMAS.filter(function (t) { return !t.precio; }); },
+    temasDeTienda: function () { return TEMAS.filter(function (t) { return t.precio > 0; }); },
     fondo: function (id) { return buscar(FONDOS, id); },
     avatar: function (id) { return buscar(AVATARES, id); },
     /** Precio de cualquier cosa comprable, por su id de compra. */

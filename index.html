@@ -32,7 +32,22 @@
     <a class="chip-monedas" id="chip-monedas" href="#/tienda"
        title="Tus monedas · tocá para ir a la tienda">🪙 <b>0</b></a>
     <button class="btn-icono" id="btn-sonido" aria-label="Activar o silenciar sonido">🔊</button>
-    <button class="btn-icono btn-perfil" id="btn-perfil" aria-label="Ver mi perfil">🦊</button>
+    <div class="envase-perfil">
+      <button class="btn-icono btn-perfil" id="btn-perfil"
+              aria-label="Abrir mi menú" aria-haspopup="menu" aria-expanded="false">🦊</button>
+      <!-- Menú del perfil. Acá se van a ir sumando más opciones. -->
+      <div class="menu-perfil" id="menu-perfil" role="menu" hidden>
+        <a class="item-menu" href="#/perfil" role="menuitem">
+          <span class="item-icono" aria-hidden="true">👤</span> Ver mi perfil
+        </a>
+        <a class="item-menu" href="#/configuracion" role="menuitem">
+          <span class="item-icono" aria-hidden="true">⚙️</span> Configuración
+        </a>
+        <a class="item-menu" href="#/personalizacion" role="menuitem">
+          <span class="item-icono" aria-hidden="true">🎨</span> Personalización
+        </a>
+      </div>
+    </div>
   </div>
 </header>
 
@@ -243,13 +258,9 @@
     <h2 class="etiqueta-grupo">Cómo vas en cada materia</h2>
     <div class="lista-materias" id="perfil-materias"></div>
 
-    <h2 class="etiqueta-grupo">Elegí quién juega</h2>
-    <div class="grilla-perfiles" id="grilla-perfiles"></div>
-
     <div class="acciones-perfil">
       <button class="btn-secundario" id="btn-tienda">🪙 Tienda</button>
-      <button class="btn-secundario" id="btn-nuevo-perfil">➕ Agregar jugador</button>
-      <button class="btn-secundario" id="btn-parental">🔒 Modo parental</button>
+      <button class="btn-secundario" id="btn-ir-config">⚙️ Configuración</button>
     </div>
   </section>
 
@@ -282,6 +293,62 @@
         <button class="btn-secundario" id="btn-nota-inicio">Menú principal</button>
       </div>
     </div>
+  </section>
+
+  <!-- ============ CONFIGURACIÓN ============ -->
+  <section class="pantalla" id="pantalla-configuracion" hidden>
+    <h1 class="titulo-grande">⚙️ Configuración</h1>
+    <p class="subtitulo">Los ajustes generales de la app.</p>
+
+    <h2 class="etiqueta-grupo">Sonido</h2>
+    <div class="fila-ajuste">
+      <span class="ajuste-icono" aria-hidden="true">🔊</span>
+      <div class="fila-cuerpo">
+        <div class="fila-nombre">Sonidos del juego</div>
+        <div class="ir-dato">Los aciertos, los errores y los festejos.</div>
+      </div>
+      <button class="interruptor" id="ajuste-sonido" type="button"
+              role="switch" aria-checked="true"><span></span></button>
+    </div>
+
+    <h2 class="etiqueta-grupo">Tus datos</h2>
+    <div class="tarjeta-ajustes">
+      <label class="etiqueta-campo" for="ajuste-nombre">Nombre</label>
+      <input class="campo-texto" id="ajuste-nombre" type="text" maxlength="18" autocomplete="off">
+      <label class="etiqueta-campo" for="ajuste-edad">Edad</label>
+      <div class="grilla-edades" id="ajuste-edad"></div>
+      <p class="ir-dato nota-edad">La edad decide qué juegos y lecciones te aparecen.</p>
+      <button class="btn-gigante" id="btn-guardar-datos" type="button">Guardar</button>
+      <p class="aviso-guardado" id="aviso-guardado" hidden>¡Listo, guardado!</p>
+    </div>
+
+    <h2 class="etiqueta-grupo">Quién juega</h2>
+    <div class="grilla-perfiles" id="config-perfiles"></div>
+    <div class="acciones-perfil">
+      <button class="btn-secundario" id="btn-nuevo-perfil">➕ Agregar jugador</button>
+      <button class="btn-secundario" id="btn-parental">🔒 Modo parental</button>
+    </div>
+
+    <h2 class="etiqueta-grupo">Sobre la app</h2>
+    <div class="tarjeta-ajustes sobre-app">
+      <p>Una vez instalada, <b>funciona sin internet</b>: los mapas, las banderas
+        y las lecciones quedan guardados en el dispositivo.</p>
+      <p class="ir-dato">Todo tu progreso se guarda acá, en este dispositivo.
+        No viaja a ningún servidor.</p>
+    </div>
+  </section>
+
+  <!-- ============ PERSONALIZACIÓN ============ -->
+  <section class="pantalla" id="pantalla-personalizacion" hidden>
+    <h1 class="titulo-grande">🎨 Personalización</h1>
+    <p class="subtitulo">Elegí cómo se ve la app. Se cambia al toque.</p>
+
+    <h2 class="etiqueta-grupo">Paletas de colores</h2>
+    <div class="grilla-tienda" id="paletas-gratis"></div>
+
+    <h2 class="etiqueta-grupo">Paletas de la tienda</h2>
+    <div class="grilla-tienda" id="paletas-compradas"></div>
+    <p class="vacio tienda-nota" id="nota-tienda"></p>
   </section>
 
   <!-- ============ TIENDA ============ -->
