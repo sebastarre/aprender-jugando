@@ -19,20 +19,28 @@ window.Almacen = (function () {
 
   /* ---------------------- carga y guardado ---------------------- */
   function perfilVacio() {
-    return { estrellas: 0, records: {}, historial: [], errores: {} };
+    return {
+      estrellas: 0,
+      records: {},
+      historial: [],
+      errores: {},
+      estrellasPorJuego: {},   // para saber qué juegos ya se desbloquearon
+      lecciones: {}            // lecciones de la sección Aprender ya leídas
+    };
   }
 
   function nuevoId() {
     return 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
   }
 
+  /* Arranca sin ningún perfil: la primera pantalla que se ve es la
+     bienvenida, que pregunta el nombre y la edad. */
   function crearBase() {
-    var id = nuevoId();
     return {
-      version: 2,
-      perfiles: [{ id: id, nombre: 'Jugador', avatar: AVATARES[0], creado: Date.now() }],
-      activo: id,
-      datos: (function () { var d = {}; d[id] = perfilVacio(); return d; })(),
+      version: 3,
+      perfiles: [],
+      activo: null,
+      datos: {},
       ajustes: { sonido: true, pin: null }
     };
   }
@@ -48,8 +56,13 @@ window.Almacen = (function () {
       var viejo = localStorage.getItem(CLAVE_VIEJA);
       var base = crearBase();
       if (viejo) {
+        // había datos de la versión anterior: se conservan en un perfil,
+        // al que la pantalla de bienvenida le va a pedir nombre y edad
         var v = JSON.parse(viejo);
-        var id = base.activo;
+        var id = nuevoId();
+        base.perfiles.push({ id: id, nombre: 'Jugador', avatar: AVATARES[0], creado: Date.now() });
+        base.activo = id;
+        base.datos[id] = perfilVacio();
         base.datos[id].records = v.records || {};
         base.datos[id].estrellas = v.estrellas || 0;
         base.ajustes.sonido = v.sonido !== false;
@@ -66,7 +79,11 @@ window.Almacen = (function () {
     try { localStorage.setItem(CLAVE, JSON.stringify(datos)); } catch (error) { /* sin persistencia */ }
   }
 
+  /* Datos del perfil activo. Si todavía no hay ninguno (primera vez) devuelve
+     uno de descarte, para que nada explote antes de la bienvenida. */
+  var descarte = perfilVacio();
   function mio() {
+    if (!datos.activo) return descarte;
     if (!datos.datos[datos.activo]) datos.datos[datos.activo] = perfilVacio();
     return datos.datos[datos.activo];
   }
@@ -78,7 +95,18 @@ window.Almacen = (function () {
     for (var i = 0; i < datos.perfiles.length; i++) {
       if (datos.perfiles[i].id === datos.activo) return datos.perfiles[i];
     }
-    return datos.perfiles[0];
+    return datos.perfiles[0] || null;
+  }
+
+  /** ¿Hay que mostrar la bienvenida? (sin perfil, o sin edad cargada) */
+  function necesitaBienvenida() {
+    var yo = activo();
+    return !yo || !yo.edad;
+  }
+
+  function edad() {
+    var yo = activo();
+    return yo && yo.edad ? yo.edad : null;
   }
 
   function usar(id) {
@@ -88,12 +116,13 @@ window.Almacen = (function () {
     return true;
   }
 
-  function crearPerfil(nombre, avatar) {
+  function crearPerfil(nombre, avatar, edadAnios) {
     var id = nuevoId();
     datos.perfiles.push({
       id: id,
       nombre: (nombre || 'Jugador').slice(0, 18),
       avatar: avatar || Util.alAzar(AVATARES),
+      edad: edadAnios || null,
       creado: Date.now()
     });
     datos.datos[id] = perfilVacio();
@@ -102,11 +131,12 @@ window.Almacen = (function () {
     return id;
   }
 
-  function renombrar(id, nombre, avatar) {
+  function actualizarPerfil(id, cambios) {
     datos.perfiles.forEach(function (p) {
       if (p.id !== id) return;
-      if (nombre) p.nombre = nombre.slice(0, 18);
-      if (avatar) p.avatar = avatar;
+      if (cambios.nombre) p.nombre = cambios.nombre.slice(0, 18);
+      if (cambios.avatar) p.avatar = cambios.avatar;
+      if (cambios.edad) p.edad = cambios.edad;
     });
     guardar();
   }
@@ -156,9 +186,19 @@ window.Almacen = (function () {
   }
 
   /* ---------------------- historial y errores ---------------------- */
+  /** Estrellas juntadas en un juego concreto, ej. 'matematica/tablas'. */
+  function estrellasDeJuego(clave) {
+    return mio().estrellasPorJuego[clave] || 0;
+  }
+
   /** Guarda el resumen de una partida terminada. */
   function registrarPartida(p) {
-    var h = mio().historial;
+    var yo = mio();
+    var clave = p.materia + '/' + p.juego;
+    if (!yo.estrellasPorJuego) yo.estrellasPorJuego = {};
+    yo.estrellasPorJuego[clave] = (yo.estrellasPorJuego[clave] || 0) + (p.estrellas || 0);
+
+    var h = yo.historial;
     h.push({
       fecha: Date.now(),
       materia: p.materia,
@@ -240,6 +280,21 @@ window.Almacen = (function () {
     };
   }
 
+  /* ---------------------- lecciones de la sección Aprender ---------------------- */
+  function marcarLeccion(id) {
+    if (!mio().lecciones) mio().lecciones = {};
+    mio().lecciones[id] = Date.now();
+    guardar();
+  }
+
+  function leccionVista(id) {
+    return !!(mio().lecciones && mio().lecciones[id]);
+  }
+
+  function cuantasLecciones() {
+    return mio().lecciones ? Object.keys(mio().lecciones).length : 0;
+  }
+
   function borrarProgreso() {
     datos.datos[datos.activo] = perfilVacio();
     guardar();
@@ -259,10 +314,13 @@ window.Almacen = (function () {
   return {
     AVATARES: AVATARES,
     perfiles: perfiles, activo: activo, usar: usar, crearPerfil: crearPerfil,
-    renombrar: renombrar, borrarPerfil: borrarPerfil,
+    actualizarPerfil: actualizarPerfil, borrarPerfil: borrarPerfil,
+    necesitaBienvenida: necesitaBienvenida, edad: edad,
     record: record, anotar: anotar, estrellas: estrellas, sumarEstrellas: sumarEstrellas,
     mejorDeJuego: mejorDeJuego,
     registrarPartida: registrarPartida, registrarErrores: registrarErrores,
+    estrellasDeJuego: estrellasDeJuego,
+    marcarLeccion: marcarLeccion, leccionVista: leccionVista, cuantasLecciones: cuantasLecciones,
     masFallados: masFallados, estadisticas: estadisticas, borrarProgreso: borrarProgreso,
     sonidoActivo: sonidoActivo, setSonido: setSonido,
     hayPin: hayPin, pinCorrecto: pinCorrecto, setPin: setPin

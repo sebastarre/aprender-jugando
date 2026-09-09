@@ -1,8 +1,14 @@
 # Aprender Jugando
 
-Página de juegos didácticos para chicos. Tiene **Geografía** (países, capitales
-y banderas sobre un mapa interactivo) y **Matemática** (tablas, cuentas y la
-hora), y está preparada para ir sumando otras materias.
+App para chicos con dos mitades que se apoyan una en la otra:
+
+- **Aprender** — cursitos cortos que explican algo con dibujos y ejemplos.
+- **Jugar** — juegos para practicar eso mismo.
+
+Cada lección termina ofreciendo el juego donde usar lo que se acaba de leer, y
+cada juego tiene su lección al lado. Hoy hay **Geografía** (países, capitales y
+banderas sobre un mapa interactivo) y **Matemática** (tablas, cuentas y la
+hora), y está preparada para ir sumando materias.
 
 ## Cómo usarla
 
@@ -20,7 +26,7 @@ la carpeta.
 
 Queda con su propio ícono, se abre a pantalla completa sin barra del navegador
 y, una vez instalada, **funciona sin internet**: la primera visita guarda los
-0,90 MB de la app en el teléfono.
+0,95 MB de la app en el teléfono.
 
 ## Publicar cambios
 
@@ -80,6 +86,22 @@ Los países muy chiquitos (Malta, Nauru, el Vaticano, las islas del Caribe...)
 no se ven como manchas en el mapa: se dibujan como un puntito clickeable. Si el
 chico falla una vez con uno de ellos, el juego le avisa que busque el punto.
 
+## Cómo se adapta a cada chico
+
+La primera vez que se abre, la app pide **nombre y edad** (no hay registro ni
+cuenta: queda todo en el dispositivo). Con la edad decide qué mostrar:
+
+- Los juegos y lecciones **de su edad** aparecen listos para usar.
+- Los de hasta dos años más adelante se ven, pero con un candado que dice
+  desde qué edad se abren. Sirve para que vea que hay más cosas esperándolo.
+- Algunos juegos difíciles piden además **haber practicado el más fácil**: por
+  ejemplo, las tablas de multiplicar se abren al juntar 3 ⭐ en sumas y restas.
+  Cuando una partida destraba un juego, se avisa en la pantalla de resultados.
+
+Las edades y los requisitos están declarados en cada juego (`edadMin` y
+`requiere`, en `js/juegos/*.js`) y en cada lección (`edadMin`, en
+`js/aprender/contenido.js`). Cambiarlos es cambiar un número.
+
 ## Perfiles y modo parental
 
 El botón de la esquina superior derecha abre el perfil. Ahí se ve cuántas
@@ -115,14 +137,25 @@ js/
   mapa.js                  Motor del mapa: proyección, dibujo, zoom y clics
   juegos/geografia.js      Los tres juegos de geografía
   juegos/matematica.js     Los tres juegos de matemática
-  app.js                   Materias, pantallas y navegación
+  aprender/contenido.js    El texto y los dibujos de las lecciones
+  aprender/leccion.js      Visor de lecciones (los pasos, de a uno)
+  app.js                   Las dos secciones, las pantallas y la navegación
 assets/banderas/           Una imagen por país (ar.png, br.png, ...)
 herramientas/              Scripts para regenerar los datos (no hacen falta para jugar)
 .claude/                   Servidor local opcional para desarrollo
 ```
 
-La navegación usa el `#` de la dirección (`#/materia/geografia`,
-`#/juego/geografia/paises`), así que el botón «atrás» del navegador funciona.
+La navegación usa el `#` de la dirección, así que el botón «atrás» del
+navegador funciona:
+
+| Dirección | Qué muestra |
+|---|---|
+| `#/aprender` · `#/juegos` | Las dos secciones |
+| `#/lecciones/matematica` | Las lecciones de una materia |
+| `#/leccion/sumar-llevando` | Una lección |
+| `#/materia/geografia` | Los juegos de una materia |
+| `#/juego/geografia/paises` | Configurar la partida |
+| `#/perfil` · `#/parental` | Perfil y modo parental |
 
 ## Cómo se agrega un juego o una materia
 
@@ -142,6 +175,23 @@ define **qué se pregunta** y **cómo se responde**:
 ```
 
 `js/juegos/matematica.js` es el ejemplo más corto para copiar.
+
+**Para agregar una lección** (sección Aprender), copiá una de
+`js/aprender/contenido.js` y sumala a `LECCIONES`:
+
+```js
+{
+  id: 'mi-leccion', materia: 'matematica', titulo: '...', icono: '➕',
+  edadMin: 6, minutos: 3, resumen: 'Una línea.',
+  juego: 'matematica/cuentas',            // el juego para practicar al final
+  pasos: [
+    { titulo: '...', texto: 'Admite <b>negrita</b>.',
+      visual: function () { return '<svg>...</svg>'; },   // opcional
+      truco: 'El atajo para acordarse.',                  // opcional
+      video: 'https://...' }                              // opcional (pide internet)
+  ]
+}
+```
 
 **Para una materia nueva:**
 

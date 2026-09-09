@@ -1,17 +1,24 @@
 /* ============================================================
-   Armado de la página: materias, pantallas y navegación.
+   Armado de la página: las dos secciones (Aprender y Jugar),
+   las pantallas y la navegación.
+
+   La app tiene dos mitades que se apoyan una en la otra:
+     Aprender  cursitos cortos que explican algo (js/aprender/)
+     Jugar     juegos para practicar eso mismo   (js/juegos/)
 
    Para sumar una materia nueva:
-     1. crear js/juegos/<materia>.js con la misma forma que geografia.js
-        (una lista JUEGOS y las funciones claveItem / repaso / limpiar),
+     1. crear js/juegos/<materia>.js como geografia.js (lista JUEGOS
+        más claveItem / repaso / limpiar),
      2. sumar su <script> en index.html,
      3. agregarla acá abajo en MATERIAS.
-   Las rondas, el puntaje y los intentos ya los pone js/nucleo/motor.js.
+   Las lecciones se agregan en js/aprender/contenido.js.
    ============================================================ */
 (function () {
   'use strict';
 
   var $ = Util.$;
+  var EDADES = [4, 5, 6, 7, 8, 9, 10, 11, 12];
+  var MARGEN_EDAD = 2;        // cuántos años más adelante se muestran (bloqueados)
 
   /* ---------------------- catálogo de materias ---------------------- */
   var MATERIAS = [
@@ -57,17 +64,88 @@
     return null;
   }
 
+  /** Busca por clave 'materia/juego'. */
+  function porClave(clave) {
+    var partes = String(clave).split('/');
+    var materia = materiaPorId(partes[0]);
+    return { materia: materia, juego: juegoPorId(materia, partes[1]) };
+  }
+
+  function leccionesDe(materiaId) {
+    return window.Lecciones ? Lecciones.deMateria(materiaId) : [];
+  }
+
+  /* ---------------------- edad y desbloqueos ---------------------- */
+
+  /** ¿Se puede jugar? Y si no, por qué. */
+  function estadoDeJuego(materia, juego) {
+    var edad = Almacen.edad();
+    if (edad && juego.edadMin && edad < juego.edadMin) {
+      return { jugable: false, tipo: 'edad', motivo: 'A partir de los ' + juego.edadMin + ' años' };
+    }
+    if (juego.requiere) {
+      var tiene = Almacen.estrellasDeJuego(juego.requiere.juego);
+      if (tiene < juego.requiere.estrellas) {
+        var otro = porClave(juego.requiere.juego).juego;
+        return {
+          jugable: false, tipo: 'requisito',
+          motivo: 'Juntá ' + juego.requiere.estrellas + ' ⭐ en «' + (otro ? otro.nombre : '…') + '»',
+          progreso: tiene + ' de ' + juego.requiere.estrellas
+        };
+      }
+    }
+    return { jugable: true };
+  }
+
+  /** Los juegos que tiene sentido mostrarle: los de su edad y los que vienen. */
+  function juegosVisibles(materia) {
+    var edad = Almacen.edad();
+    return materia.juegos.filter(function (j) {
+      if (!edad || !j.edadMin) return true;
+      return j.edadMin <= edad + MARGEN_EDAD;
+    });
+  }
+
+  function leccionesVisibles(materiaId) {
+    var edad = Almacen.edad();
+    return leccionesDe(materiaId).filter(function (l) {
+      if (!edad || !l.edadMin) return true;
+      return l.edadMin <= edad + MARGEN_EDAD;
+    });
+  }
+
+  /** Foto de qué juegos están trabados, para detectar desbloqueos después. */
+  function trabadosAhora() {
+    var lista = [];
+    MATERIAS.forEach(function (m) {
+      m.juegos.forEach(function (j) {
+        if (!estadoDeJuego(m, j).jugable) lista.push(m.id + '/' + j.id);
+      });
+    });
+    return lista;
+  }
+
   /* ---------------------- estado ---------------------- */
   var sel = { materia: null, juego: null, valores: {}, cantidad: 10 };
-  var grupos = [];               // los bloques de opciones del juego actual
+  var grupos = [];
   var ultimoResultado = null;
-  var PANTALLAS = ['inicio', 'materia', 'config', 'juego', 'fin', 'perfil', 'parental'];
+  var bienvenida = { nombre: '', edad: null, avatar: null, editando: null };
+  var PANTALLAS = ['bienvenida', 'juegos', 'aprender', 'materia', 'lecciones', 'leccion',
+                   'config', 'juego', 'fin', 'perfil', 'parental'];
+  var CON_SECCIONES = ['juegos', 'aprender', 'materia', 'lecciones'];
 
   function mostrar(nombre) {
     PANTALLAS.forEach(function (p) { $('pantalla-' + p).hidden = (p !== nombre); });
-    $('btn-atras').hidden = (nombre === 'inicio');
+    $('btn-atras').hidden = (nombre === 'juegos' || nombre === 'aprender' || nombre === 'bienvenida');
+    $('secciones').hidden = CON_SECCIONES.indexOf(nombre) === -1;
     document.body.classList.toggle('jugando', nombre === 'juego');
+    document.body.classList.toggle('sin-perfil', nombre === 'bienvenida');
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function marcarSeccion(cual) {
+    $('tab-juegos').setAttribute('aria-current', cual === 'juegos' ? 'page' : 'false');
+    $('tab-aprender').setAttribute('aria-current', cual === 'aprender' ? 'page' : 'false');
   }
 
   function irA(hash) {
@@ -80,25 +158,84 @@
     MATERIAS.forEach(function (m) { if (m.modulo && m.modulo.limpiar) m.modulo.limpiar(); });
   }
 
-  /* ---------------------- inicio ---------------------- */
-  function pintarMaterias() {
+  /* ---------------------- bienvenida ---------------------- */
+  function empezarBienvenida() {
     var yo = Almacen.activo();
-    $('saludo-inicio').textContent = '¡Hola, ' + yo.nombre + '! Elegí una materia y empezá a jugar.';
+    bienvenida = {
+      nombre: yo ? yo.nombre : '',
+      edad: null,
+      avatar: yo ? yo.avatar : null,
+      editando: yo ? yo.id : null
+    };
+    $('campo-nombre').value = (yo && yo.nombre !== 'Jugador') ? yo.nombre : '';
+    $('error-nombre').hidden = true;
+    pasoBienvenida('nombre');
+    pintarEdades();
+    pintarAvatares();
+  }
 
-    var cont = $('grilla-materias');
-    Util.vaciar(cont);
-    MATERIAS.forEach(function (m) {
-      var b = tarjeta(m, function () { irA('#/materia/' + m.id); });
-      b.disabled = !m.disponible;
-      if (m.disponible) {
-        b.appendChild(Util.crear('div', 'card-texto', Util.plural(m.juegos.length, 'juego')));
-      } else {
-        b.appendChild(Util.crear('span', 'card-cinta', 'Pronto'));
-      }
-      cont.appendChild(b);
+  function pasoBienvenida(cual) {
+    ['nombre', 'edad', 'avatar'].forEach(function (p) {
+      $('bien-paso-' + p).hidden = (p !== cual);
+    });
+    if (cual === 'nombre') setTimeout(function () { $('campo-nombre').focus(); }, 120);
+  }
+
+  function pintarEdades() {
+    var caja = $('grilla-edades');
+    Util.vaciar(caja);
+    EDADES.forEach(function (n) {
+      var b = Util.crear('button', 'boton-edad');
+      b.type = 'button';
+      b.appendChild(Util.crear('b', null, String(n)));
+      b.appendChild(Util.crear('span', null, 'años'));
+      b.addEventListener('click', function () {
+        bienvenida.edad = n;
+        Sonido.despertar(); Sonido.tocar('clic');
+        caja.querySelectorAll('.boton-edad').forEach(function (o) {
+          o.setAttribute('aria-pressed', o === b ? 'true' : 'false');
+        });
+        setTimeout(function () { pasoBienvenida('avatar'); }, 180);
+      });
+      b.setAttribute('aria-pressed', 'false');
+      caja.appendChild(b);
     });
   }
 
+  function pintarAvatares() {
+    var caja = $('grilla-avatares');
+    Util.vaciar(caja);
+    Almacen.AVATARES.forEach(function (a, i) {
+      var b = Util.crear('button', 'boton-avatar', a);
+      b.type = 'button';
+      b.setAttribute('aria-label', 'Monigote ' + (i + 1));
+      b.setAttribute('aria-pressed', bienvenida.avatar === a ? 'true' : 'false');
+      b.addEventListener('click', function () {
+        bienvenida.avatar = a;
+        Sonido.tocar('clic');
+        caja.querySelectorAll('.boton-avatar').forEach(function (o) {
+          o.setAttribute('aria-pressed', o === b ? 'true' : 'false');
+        });
+      });
+      caja.appendChild(b);
+    });
+  }
+
+  function terminarBienvenida() {
+    if (!bienvenida.avatar) bienvenida.avatar = Util.alAzar(Almacen.AVATARES);
+    if (bienvenida.editando) {
+      Almacen.actualizarPerfil(bienvenida.editando, {
+        nombre: bienvenida.nombre, avatar: bienvenida.avatar, edad: bienvenida.edad
+      });
+    } else {
+      Almacen.crearPerfil(bienvenida.nombre, bienvenida.avatar, bienvenida.edad);
+    }
+    Sonido.tocar('record');
+    pintarBarraSuperior();
+    irA('#/aprender');
+  }
+
+  /* ---------------------- tarjetas ---------------------- */
   function tarjeta(datos, alTocar) {
     var b = Util.crear('button', 'card');
     b.type = 'button';
@@ -114,17 +251,113 @@
     return b;
   }
 
-  /* ---------------------- juegos de una materia ---------------------- */
+  function saludo() {
+    var yo = Almacen.activo();
+    return yo ? '¡Hola, ' + yo.nombre + '! ' : '';
+  }
+
+  /* ---------------------- sección Jugar ---------------------- */
+  function pintarMateriasJuegos() {
+    $('saludo-juegos').textContent = saludo() + 'Elegí una materia y practicá jugando.';
+    var cont = $('grilla-materias');
+    Util.vaciar(cont);
+    MATERIAS.forEach(function (m) {
+      var b = tarjeta(m, function () { irA('#/materia/' + m.id); });
+      b.disabled = !m.disponible;
+      if (m.disponible) {
+        b.appendChild(Util.crear('div', 'card-texto', Util.plural(juegosVisibles(m).length, 'juego')));
+      } else {
+        b.appendChild(Util.crear('span', 'card-cinta', 'Pronto'));
+      }
+      cont.appendChild(b);
+    });
+  }
+
   function pintarJuegos(materia) {
     $('titulo-materia').textContent = materia.icono + ' ' + materia.nombre;
-    $('subtitulo-materia').textContent = 'Elegí un juego para empezar.';
+
+    var sub = $('subtitulo-materia');
+    Util.vaciar(sub);
+    sub.appendChild(document.createTextNode('Elegí un juego para practicar. '));
+    if (leccionesVisibles(materia.id).length) {
+      var link = Util.crear('a', 'enlace-cruzado', '📚 Aprender ' + materia.nombre.toLowerCase());
+      link.href = '#/lecciones/' + materia.id;
+      sub.appendChild(link);
+    }
 
     var cont = $('grilla-juegos');
     Util.vaciar(cont);
-    materia.juegos.forEach(function (j) {
-      var b = tarjeta(j, function () { irA('#/juego/' + materia.id + '/' + j.id); });
-      var mejor = Almacen.mejorDeJuego(materia.id + '/' + j.id);
-      if (mejor > 0) b.appendChild(Util.crear('div', 'card-record', '🏆 Tu récord: ' + mejor));
+    juegosVisibles(materia).forEach(function (j) {
+      var estado = estadoDeJuego(materia, j);
+      var b = tarjeta(j, function () {
+        if (!estado.jugable) return;
+        irA('#/juego/' + materia.id + '/' + j.id);
+      });
+
+      if (estado.jugable) {
+        var mejor = Almacen.mejorDeJuego(materia.id + '/' + j.id);
+        if (mejor > 0) b.appendChild(Util.crear('div', 'card-record', '🏆 Tu récord: ' + mejor));
+      } else {
+        b.classList.add('trabada');
+        b.setAttribute('aria-disabled', 'true');
+        var candado = Util.crear('div', 'card-candado');
+        candado.appendChild(Util.crear('span', 'candado-icono', estado.tipo === 'edad' ? '🎂' : '🔒'));
+        var texto = Util.crear('span', 'candado-texto');
+        texto.appendChild(Util.crear('b', null, estado.motivo));
+        if (estado.progreso) texto.appendChild(Util.crear('span', null, 'Llevás ' + estado.progreso));
+        candado.appendChild(texto);
+        b.appendChild(candado);
+      }
+      cont.appendChild(b);
+    });
+  }
+
+  /* ---------------------- sección Aprender ---------------------- */
+  function pintarMateriasAprender() {
+    $('saludo-aprender').textContent = saludo() + 'Explicaciones cortas, con dibujos y ejemplos.';
+    var cont = $('grilla-materias-aprender');
+    Util.vaciar(cont);
+    MATERIAS.forEach(function (m) {
+      var lista = leccionesVisibles(m.id);
+      var b = tarjeta(m, function () { irA('#/lecciones/' + m.id); });
+      b.disabled = lista.length === 0;
+      if (lista.length) {
+        var leidas = lista.filter(function (l) { return Almacen.leccionVista(l.id); }).length;
+        b.appendChild(Util.crear('div', 'card-texto',
+          Util.plural(lista.length, 'lección', 'lecciones') +
+          (leidas ? ' · ' + leidas + ' leída' + (leidas === 1 ? '' : 's') : '')));
+      } else {
+        b.appendChild(Util.crear('span', 'card-cinta', 'Pronto'));
+      }
+      cont.appendChild(b);
+    });
+  }
+
+  function pintarLecciones(materia) {
+    $('titulo-lecciones').textContent = '📚 ' + materia.nombre;
+
+    var sub = $('subtitulo-lecciones');
+    Util.vaciar(sub);
+    sub.appendChild(document.createTextNode('Leelas en el orden que quieras. '));
+    if (materia.disponible) {
+      var link = Util.crear('a', 'enlace-cruzado', '🎮 Jugar a ' + materia.nombre.toLowerCase());
+      link.href = '#/materia/' + materia.id;
+      sub.appendChild(link);
+    }
+
+    var cont = $('grilla-lecciones');
+    Util.vaciar(cont);
+    leccionesVisibles(materia.id).forEach(function (l) {
+      var vista = Almacen.leccionVista(l.id);
+      var b = tarjeta({
+        icono: l.icono, nombre: l.titulo, texto: l.resumen,
+        color: materia.color, suave: materia.suave
+      }, function () { irA('#/leccion/' + l.id); });
+
+      var pie = Util.crear('div', 'card-pie');
+      pie.appendChild(Util.crear('span', 'card-minutos', '⏱️ ' + l.minutos + ' min'));
+      if (vista) pie.appendChild(Util.crear('span', 'card-leida', '✅ Leída'));
+      b.appendChild(pie);
       cont.appendChild(b);
     });
   }
@@ -146,14 +379,12 @@
 
     var caja = $('bloques-opciones');
     Util.vaciar(caja);
-
     grupos.forEach(function (grupo, i) {
       caja.appendChild(bloqueDeOpciones(grupo, i + 1, juego));
     });
 
     // el último bloque, común a todos los juegos: cuántas preguntas
     var bloqueCantidad = Util.crear('div', 'bloque-config');
-    bloqueCantidad.id = 'bloque-cantidad';
     bloqueCantidad.appendChild(
       Util.crear('h2', 'etiqueta-grupo', (grupos.length + 1) + '. ¿Cuántas preguntas?'));
     var fila = Util.crear('div', 'fila-opciones');
@@ -234,7 +465,6 @@
     });
   }
 
-  /** Lo que se le pasa al juego: las opciones elegidas, en plano. */
   function datosSeleccion() {
     var d = { cantidad: sel.cantidad };
     Object.keys(sel.valores).forEach(function (k) { d[k] = sel.valores[k]; });
@@ -255,15 +485,15 @@
       $('resumen-partida').textContent = falta.titulo + ' para continuar.';
       return;
     }
-    var texto = juego.resumen(datosSeleccion());
-    $('resumen-partida').textContent = texto + ' · ' + Motor.INTENTOS + ' intentos por pregunta';
+    $('resumen-partida').textContent =
+      juego.resumen(datosSeleccion()) + ' · ' + Motor.INTENTOS + ' intentos por pregunta';
   }
 
   /* ---------------------- jugar ---------------------- */
   function arrancarPartida() {
     var materia = materiaPorId(sel.materia);
     var juego = juegoPorId(materia, sel.juego);
-    if (!materia || !juego) return irA('#/');
+    if (!materia || !juego) return irA('#/juegos');
     juego.jugar(datosSeleccion(), { alTerminar: terminarPartida });
   }
 
@@ -272,6 +502,7 @@
     ultimoResultado = r;
     var materia = materiaPorId(sel.materia);
     var juego = juegoPorId(materia, sel.juego);
+    var trabadosAntes = trabadosAhora();
 
     var proporcion = r.maximo ? r.puntos / r.maximo : 0;
     var estrellas = proporcion >= 0.9 ? 3 : proporcion >= 0.7 ? 2 : proporcion >= 0.4 ? 1 : 0;
@@ -302,9 +533,40 @@
     $('stat-precision').textContent = r.precision + '%';
     $('stat-record').textContent = Almacen.record(clave).puntos;
 
+    pintarDesbloqueos(trabadosAntes);
     pintarRepaso(materia, r.errores);
     Sonido.tocar(esRecord && r.puntos > 0 ? 'record' : 'fin');
     irA('#/fin');
+  }
+
+  /** Si esta partida destrabó algún juego, se avisa acá. */
+  function pintarDesbloqueos(trabadosAntes) {
+    var caja = $('desbloqueo');
+    Util.vaciar(caja);
+    var ahora = trabadosAhora();
+    var nuevos = trabadosAntes.filter(function (c) { return ahora.indexOf(c) === -1; });
+    caja.hidden = nuevos.length === 0;
+    if (!nuevos.length) return;
+
+    nuevos.forEach(function (clave) {
+      var enc = porClave(clave);
+      if (!enc.juego) return;
+      var fila = Util.crear('div', 'desbloqueo-item');
+      fila.appendChild(Util.crear('span', 'desbloqueo-icono', '🔓'));
+      var cuerpo = Util.crear('div');
+      cuerpo.appendChild(Util.crear('b', null, '¡Desbloqueaste ' + enc.juego.nombre + '!'));
+      cuerpo.appendChild(Util.crear('div', 'ir-dato', enc.juego.texto));
+      fila.appendChild(cuerpo);
+      var btn = Util.crear('button', 'btn-secundario', 'Probarlo');
+      btn.type = 'button';
+      btn.addEventListener('click', function () {
+        Sonido.tocar('clic');
+        irA('#/juego/' + clave);
+      });
+      fila.appendChild(btn);
+      caja.appendChild(fila);
+    });
+    Sonido.tocar('record');
   }
 
   function tituloSegun(estrellas) {
@@ -349,14 +611,17 @@
   /* ---------------------- perfil ---------------------- */
   function pintarPerfil() {
     var yo = Almacen.activo();
+    if (!yo) return irA('#/');
     var est = Almacen.estadisticas();
 
     $('perfil-avatar').textContent = yo.avatar;
     $('perfil-nombre').textContent = yo.nombre;
-    $('perfil-desde').textContent = est.partidas === 0
-      ? 'Todavía no jugaste ninguna partida.'
-      : Util.plural(est.partidas, 'partida jugada', 'partidas jugadas') +
-        (est.racha > 1 ? ' · 🔥 ' + est.racha + ' días seguidos' : '');
+    var partes = [];
+    if (yo.edad) partes.push(yo.edad + ' años');
+    partes.push(est.partidas === 0 ? 'todavía sin partidas'
+                                   : Util.plural(est.partidas, 'partida jugada', 'partidas jugadas'));
+    if (est.racha > 1) partes.push('🔥 ' + est.racha + ' días seguidos');
+    $('perfil-desde').textContent = partes.join(' · ');
 
     var stats = $('perfil-stats');
     Util.vaciar(stats);
@@ -364,7 +629,7 @@
       ['⭐ ' + est.estrellas, 'estrellas'],
       [est.precision + '%', 'precisión'],
       [est.aciertos + '/' + est.preguntas, 'aciertos'],
-      [String(est.puntos), 'puntos en total']
+      [String(Almacen.cuantasLecciones()), 'lecciones leídas']
     ].forEach(function (par) {
       var d = Util.crear('div', 'stat');
       d.appendChild(Util.crear('b', null, par[0]));
@@ -406,9 +671,12 @@
     Almacen.perfiles().forEach(function (p) {
       var b = Util.crear('button', 'perfil-chip');
       b.type = 'button';
-      b.setAttribute('aria-pressed', p.id === activo.id ? 'true' : 'false');
+      b.setAttribute('aria-pressed', activo && p.id === activo.id ? 'true' : 'false');
       b.appendChild(Util.crear('span', 'perfil-chip-avatar', p.avatar));
-      b.appendChild(Util.crear('span', 'perfil-chip-nombre', p.nombre));
+      var cuerpo = Util.crear('span', 'perfil-chip-cuerpo');
+      cuerpo.appendChild(Util.crear('span', 'perfil-chip-nombre', p.nombre));
+      if (p.edad) cuerpo.appendChild(Util.crear('span', 'perfil-chip-edad', p.edad + ' años'));
+      b.appendChild(cuerpo);
       b.addEventListener('click', function () {
         Sonido.tocar('clic');
         Almacen.usar(p.id);
@@ -417,18 +685,6 @@
       });
       caja.appendChild(b);
     });
-  }
-
-  function nuevoPerfil() {
-    var nombre = window.prompt('¿Cómo se llama el jugador nuevo?');
-    if (nombre === null) return;
-    nombre = nombre.trim();
-    if (!nombre) return;
-    var usados = Almacen.perfiles().map(function (p) { return p.avatar; });
-    var libres = Almacen.AVATARES.filter(function (a) { return usados.indexOf(a) === -1; });
-    Almacen.crearPerfil(nombre, libres.length ? libres[0] : Util.alAzar(Almacen.AVATARES));
-    pintarBarraSuperior();
-    pintarPerfil();
   }
 
   /* ---------------------- modo parental ---------------------- */
@@ -471,7 +727,7 @@
 
     var yo = Almacen.activo();
     var est = Almacen.estadisticas();
-    $('parental-sub').textContent = 'Datos de ' + yo.nombre + ' · ' +
+    $('parental-sub').textContent = 'Datos de ' + (yo ? yo.nombre : '') + ' · ' +
       Util.plural(est.partidas, 'partida') + ' · ' + est.precision + '% de aciertos';
 
     var fallos = $('parental-fallos');
@@ -510,9 +766,8 @@
   function fechaCorta(ms) {
     var d = new Date(ms);
     var hoy = new Date();
-    var mismoDia = d.toDateString() === hoy.toDateString();
     var hora = d.getHours() + ':' + (d.getMinutes() < 10 ? '0' : '') + d.getMinutes();
-    if (mismoDia) return 'hoy ' + hora;
+    if (d.toDateString() === hoy.toDateString()) return 'hoy ' + hora;
     return d.getDate() + '/' + (d.getMonth() + 1) + ' ' + hora;
   }
 
@@ -520,8 +775,8 @@
   function pintarBarraSuperior() {
     $('chip-estrellas').querySelector('b').textContent = Almacen.estrellas();
     var yo = Almacen.activo();
-    $('btn-perfil').textContent = yo.avatar;
-    $('btn-perfil').setAttribute('aria-label', 'Perfil de ' + yo.nombre);
+    $('btn-perfil').textContent = yo ? yo.avatar : '🙂';
+    $('btn-perfil').setAttribute('aria-label', yo ? 'Perfil de ' + yo.nombre : 'Perfil');
   }
 
   function pintarBotonSonido() {
@@ -536,10 +791,47 @@
   function enrutar() {
     var partes = (location.hash || '#/').replace(/^#\/?/, '').split('/').filter(Boolean);
 
+    // sin perfil o sin edad, lo primero es la bienvenida
+    if (Almacen.necesitaBienvenida() && partes[0] !== 'bienvenida') {
+      return irA('#/bienvenida');
+    }
+
+    if (partes[0] === 'bienvenida') {
+      cortarPartida();
+      empezarBienvenida();
+      return mostrar('bienvenida');
+    }
+
+    if (partes[0] === 'aprender') {
+      cortarPartida();
+      marcarSeccion('aprender');
+      pintarMateriasAprender();
+      return mostrar('aprender');
+    }
+
+    if (partes[0] === 'lecciones' && partes[1]) {
+      var mat1 = materiaPorId(partes[1]);
+      if (!mat1 || !leccionesVisibles(mat1.id).length) return irA('#/aprender');
+      cortarPartida();
+      marcarSeccion('aprender');
+      pintarLecciones(mat1);
+      return mostrar('lecciones');
+    }
+
+    if (partes[0] === 'leccion' && partes[1]) {
+      cortarPartida();
+      var abierta = Leccion.abrir(partes[1], {
+        alJugar: function (clave) { irA('#/juego/' + clave); }
+      });
+      if (!abierta) return irA('#/aprender');
+      return mostrar('leccion');
+    }
+
     if (partes[0] === 'materia' && partes[1]) {
       var m = materiaPorId(partes[1]);
-      if (!m || !m.disponible) return irA('#/');
+      if (!m || !m.disponible) return irA('#/juegos');
       cortarPartida();
+      marcarSeccion('juegos');
       pintarJuegos(m);
       return mostrar('materia');
     }
@@ -547,20 +839,21 @@
     if (partes[0] === 'juego' && partes[1] && partes[2]) {
       var mat = materiaPorId(partes[1]);
       var jg = juegoPorId(mat, partes[2]);
-      if (!mat || !jg) return irA('#/');
+      if (!mat || !jg) return irA('#/juegos');
+      if (!estadoDeJuego(mat, jg).jugable) return irA('#/materia/' + mat.id);
       cortarPartida();
       pintarConfig(mat, jg);
       return mostrar('config');
     }
 
     if (partes[0] === 'jugar') {
-      if (!sel.juego || faltaElegir()) return irA('#/');
+      if (!sel.juego || faltaElegir()) return irA('#/juegos');
       mostrar('juego');
       return arrancarPartida();
     }
 
     if (partes[0] === 'fin') {
-      if (!ultimoResultado) return irA('#/');
+      if (!ultimoResultado) return irA('#/juegos');
       return mostrar('fin');
     }
 
@@ -577,8 +870,9 @@
     }
 
     cortarPartida();
-    pintarMaterias();
-    mostrar('inicio');
+    marcarSeccion('juegos');
+    pintarMateriasJuegos();
+    mostrar('juegos');
   }
 
   function volverAtras() {
@@ -589,8 +883,14 @@
       return irA('#/juego/' + sel.materia + '/' + sel.juego);
     }
     if (partes[0] === 'juego') return irA('#/materia/' + partes[1]);
+    if (partes[0] === 'materia') return irA('#/juegos');
+    if (partes[0] === 'lecciones') return irA('#/aprender');
+    if (partes[0] === 'leccion') {
+      var l = Leccion.actual();
+      return irA(l ? '#/lecciones/' + l.materia : '#/aprender');
+    }
     if (partes[0] === 'parental') return irA('#/perfil');
-    irA('#/');
+    irA('#/juegos');
   }
 
   /* ---------------------- eventos ---------------------- */
@@ -608,22 +908,50 @@
       Sonido.tocar('clic');
     });
 
+    /* bienvenida */
+    $('btn-bien-nombre').addEventListener('click', function () {
+      var nombre = $('campo-nombre').value.trim();
+      if (!nombre) { $('error-nombre').hidden = false; return; }
+      $('error-nombre').hidden = true;
+      bienvenida.nombre = nombre;
+      Sonido.despertar(); Sonido.tocar('clic');
+      pasoBienvenida('edad');
+    });
+    $('campo-nombre').addEventListener('keydown', function (ev) {
+      if (ev.key === 'Enter') $('btn-bien-nombre').click();
+    });
+    $('btn-bien-listo').addEventListener('click', terminarBienvenida);
+
+    /* lecciones */
+    $('btn-leccion-siguiente').addEventListener('click', function () { Leccion.siguiente(); });
+    $('btn-leccion-atras').addEventListener('click', function () { Leccion.atras(); });
+
+    /* partida */
     $('btn-empezar').addEventListener('click', function () {
       if (faltaElegir()) return;
       Sonido.despertar(); Sonido.tocar('clic');
       irA('#/jugar');
     });
-
     $('btn-otra-vez').addEventListener('click', function () { Sonido.tocar('clic'); irA('#/jugar'); });
     $('btn-cambiar-zona').addEventListener('click', function () {
       Sonido.tocar('clic');
       irA('#/juego/' + sel.materia + '/' + sel.juego);
     });
-    $('btn-al-inicio').addEventListener('click', function () { Sonido.tocar('clic'); irA('#/'); });
+    $('btn-al-inicio').addEventListener('click', function () { Sonido.tocar('clic'); irA('#/juegos'); });
 
-    $('btn-nuevo-perfil').addEventListener('click', nuevoPerfil);
+    /* perfil */
+    $('btn-nuevo-perfil').addEventListener('click', function () {
+      Sonido.tocar('clic');
+      bienvenida = { nombre: '', edad: null, avatar: null, editando: null };
+      $('campo-nombre').value = '';
+      pasoBienvenida('nombre');
+      pintarEdades();
+      pintarAvatares();
+      mostrar('bienvenida');
+    });
     $('btn-parental').addEventListener('click', function () { Sonido.tocar('clic'); irA('#/parental'); });
 
+    /* modo parental */
     $('btn-pin').addEventListener('click', intentarPin);
     $('campo-pin').addEventListener('keydown', function (ev) {
       if (ev.key === 'Enter') intentarPin();
@@ -640,7 +968,8 @@
     });
     $('btn-borrar-progreso').addEventListener('click', function () {
       var yo = Almacen.activo();
-      if (!window.confirm('Se borra todo el progreso de ' + yo.nombre + '. Esto no se puede deshacer. ¿Borrar?')) return;
+      if (!window.confirm('Se borra todo el progreso de ' + (yo ? yo.nombre : '') +
+                          '. Esto no se puede deshacer. ¿Borrar?')) return;
       Almacen.borrarProgreso();
       pintarBarraSuperior();
       abrirParental();

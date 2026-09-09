@@ -825,3 +825,346 @@ body.jugando .pie { display: none; }
   .perfil-sub { text-align: center; }
   .avatar-grande { width: 72px; height: 72px; font-size: 2.4rem; }
 }
+
+/* ============================================================
+   Las dos secciones: Aprender y Jugar
+   ============================================================ */
+.secciones {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  max-width: 1100px;
+  margin: 18px auto 0;
+  padding: 0 clamp(12px, 3vw, 28px);
+}
+.seccion {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 18px;
+  border-radius: var(--radio);
+  border: 3px solid var(--borde);
+  background: var(--tarjeta);
+  color: var(--tinta);
+  text-decoration: none;
+  transition: transform .14s, border-color .14s, box-shadow .14s;
+}
+.seccion:hover { transform: translateY(-3px); box-shadow: var(--sombra-suave); }
+.seccion-icono { font-size: 1.9rem; line-height: 1; flex: none; }
+.seccion-texto { display: flex; flex-direction: column; min-width: 0; }
+.seccion-texto b { font-size: 1.15rem; line-height: 1.2; }
+.seccion-texto small { color: var(--tinta-suave); font-size: .85rem; }
+
+#tab-aprender[aria-current="page"] {
+  border-color: var(--violeta);
+  background: #f1ebff;
+  box-shadow: inset 0 0 0 2px var(--violeta);
+}
+#tab-juegos[aria-current="page"] {
+  border-color: var(--primario);
+  background: #eef2ff;
+  box-shadow: inset 0 0 0 2px var(--primario);
+}
+
+/* ============================================================
+   Bienvenida
+   ============================================================ */
+body.sin-perfil .barra-derecha,
+body.sin-perfil .pie { display: none; }
+
+.pantalla-bienvenida { display: flex; justify-content: center; }
+.tarjeta-bienvenida {
+  width: 100%;
+  max-width: 520px;
+  background: var(--tarjeta);
+  border: 3px solid var(--borde);
+  border-radius: var(--radio);
+  padding: clamp(22px, 5vw, 38px);
+  box-shadow: var(--sombra-suave);
+  text-align: center;
+}
+.bien-globo {
+  font-size: 3.2rem;
+  line-height: 1;
+  animation: saltito 2.4s ease-in-out infinite;
+}
+@keyframes saltito {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-9px); }
+}
+
+.etiqueta-campo {
+  display: block;
+  text-align: left;
+  font-weight: 700;
+  color: var(--tinta-suave);
+  margin-bottom: 6px;
+}
+.campo-texto {
+  font: inherit;
+  font-size: 1.2rem;
+  width: 100%;
+  padding: 13px 16px;
+  margin-bottom: 16px;
+  border: 3px solid var(--borde);
+  border-radius: var(--radio-s);
+  background: var(--papel);
+  color: var(--tinta);
+}
+.campo-texto:focus { outline: none; border-color: var(--primario); }
+.error-campo { color: var(--error-osc); font-weight: 700; margin: -8px 0 12px; }
+
+.grilla-edades {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(78px, 1fr));
+  gap: 10px;
+}
+.boton-edad {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 14px 6px;
+  border: 3px solid var(--borde);
+  border-radius: var(--radio-s);
+  background: var(--papel);
+  transition: transform .12s, border-color .12s, background .12s;
+}
+.boton-edad b { font-size: 1.7rem; line-height: 1; }
+.boton-edad span { font-size: .8rem; color: var(--tinta-suave); }
+.boton-edad:hover { transform: translateY(-3px); border-color: var(--primario); }
+.boton-edad[aria-pressed="true"] {
+  border-color: var(--primario);
+  background: #eef2ff;
+  box-shadow: inset 0 0 0 2px var(--primario);
+}
+
+.grilla-avatares {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(64px, 1fr));
+  gap: 10px;
+  margin-bottom: 22px;
+}
+.boton-avatar {
+  font-size: 2rem;
+  line-height: 1;
+  aspect-ratio: 1;
+  cursor: pointer;
+  border: 3px solid var(--borde);
+  border-radius: 50%;
+  background: var(--papel);
+  transition: transform .12s, border-color .12s, background .12s;
+}
+.boton-avatar:hover { transform: scale(1.08); border-color: var(--primario); }
+.boton-avatar[aria-pressed="true"] {
+  border-color: var(--primario);
+  background: #eef2ff;
+  box-shadow: inset 0 0 0 3px var(--primario);
+  transform: scale(1.06);
+}
+
+/* ============================================================
+   Juegos trabados por edad o por requisito
+   ============================================================ */
+.card.trabada { cursor: not-allowed; opacity: .78; background: #fbfcff; }
+.card.trabada:hover { transform: none; box-shadow: var(--sombra); border-color: var(--borde); }
+.card.trabada .card-icono { filter: grayscale(1); opacity: .6; }
+
+.card-candado {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  padding: 9px 12px;
+  border-radius: var(--radio-s);
+  background: #f1f4fb;
+  border: 2px dashed #c9d3ea;
+  width: 100%;
+  text-align: left;
+}
+.candado-icono { font-size: 1.3rem; line-height: 1; flex: none; }
+.candado-texto { display: flex; flex-direction: column; min-width: 0; }
+.candado-texto b { font-size: .92rem; overflow-wrap: break-word; }
+.candado-texto span { font-size: .82rem; color: var(--tinta-suave); }
+
+.card-pie { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.card-minutos, .card-leida {
+  font-size: .84rem;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 3px 11px;
+  background: var(--papel);
+  border: 2px solid var(--borde);
+  color: var(--tinta-suave);
+}
+.card-leida { background: #e6f8ef; border-color: #b6e6cd; color: var(--exito-osc); }
+
+.enlace-cruzado {
+  display: inline-block;
+  font-weight: 700;
+  color: var(--primario);
+  text-decoration: none;
+  border-bottom: 2px solid #c9d5fb;
+  white-space: nowrap;
+}
+.enlace-cruzado:hover { border-bottom-color: var(--primario); }
+
+/* ============================================================
+   Aviso de desbloqueo en los resultados
+   ============================================================ */
+.desbloqueo { margin: 4px 0 20px; display: flex; flex-direction: column; gap: 10px; }
+.desbloqueo-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  padding: 12px 16px;
+  border-radius: var(--radio-s);
+  background: #fff8e6;
+  border: 3px solid #ffd97a;
+  animation: aparecer-desbloqueo .4s ease both;
+}
+.desbloqueo-item > div { flex: 1; min-width: 0; }
+.desbloqueo-icono { font-size: 1.7rem; line-height: 1; flex: none; }
+@keyframes aparecer-desbloqueo {
+  from { opacity: 0; transform: scale(.94); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ============================================================
+   Lecciones
+   ============================================================ */
+.leccion-cabecera { text-align: center; margin-bottom: 18px; }
+.titulo-leccion { font-size: clamp(1.4rem, 4vw, 2rem); margin: 0 0 12px; }
+
+.leccion-puntitos { display: flex; justify-content: center; gap: 8px; margin-bottom: 6px; }
+.puntito {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #dfe6f7;
+  transition: background .2s, transform .2s;
+}
+.puntito.hecho { background: var(--exito); }
+.puntito.actual { background: var(--primario); transform: scale(1.35); }
+.leccion-avance { color: var(--tinta-suave); font-size: .88rem; margin: 0; min-height: 1.3em; }
+
+.paso-tarjeta {
+  background: var(--tarjeta);
+  border: 3px solid var(--borde);
+  border-radius: var(--radio);
+  padding: clamp(20px, 4vw, 32px);
+  box-shadow: var(--sombra-suave);
+  animation: entrar .28s ease both;
+}
+.paso-titulo { font-size: clamp(1.2rem, 3.4vw, 1.6rem); margin: 0 0 .5em; }
+.paso-texto { font-size: 1.08rem; line-height: 1.55; margin: 0 0 1em; }
+.paso-texto b { color: var(--primario); }
+.paso-visual { display: flex; justify-content: center; margin: 18px 0 6px; }
+.dibujo-svg { width: clamp(150px, 40vw, 200px); height: auto; }
+
+.paso-truco {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin-top: 18px;
+  padding: 12px 16px;
+  border-radius: var(--radio-s);
+  background: #fff8e6;
+  border: 2px solid #ffd97a;
+  font-weight: 700;
+  color: #7a5600;
+  text-align: left;
+}
+.truco-icono { font-size: 1.2rem; line-height: 1.3; flex: none; }
+
+.paso-video { margin: 18px 0 6px; }
+.paso-video iframe {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radio-s);
+  border: 3px solid var(--borde);
+}
+.paso-nota { font-size: .85rem; color: var(--tinta-suave); margin: 6px 0 0; text-align: center; }
+
+.paso-final { text-align: center; }
+.final-icono { font-size: 3.4rem; line-height: 1; margin-bottom: 6px; }
+.paso-final .btn-gigante { margin-top: 10px; }
+
+.leccion-botones {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 22px;
+  flex-wrap: wrap;
+}
+
+/* ---- dibujos de las lecciones de matemática ---- */
+.cuenta-columna {
+  display: inline-block;
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(1.7rem, 6vw, 2.4rem);
+  font-weight: 700;
+  line-height: 1.15;
+}
+.cuenta-fila { display: flex; justify-content: flex-end; }
+.cd {
+  width: 1.1em;
+  text-align: center;
+  border-radius: 6px;
+}
+.cd-marca { background: #ffe9ec; color: var(--error-osc); }
+.cd-op { color: var(--tinta-suave); }
+.cuenta-llevo { font-size: .5em; color: var(--exito-osc); }
+.cd-llevo { width: 2.2em; background: #e6f8ef; border-radius: 999px; }
+.cuenta-raya { border-bottom: 4px solid var(--tinta); margin: 4px 0 6px; }
+.cuenta-resultado { color: var(--primario); }
+
+.puntitos { display: flex; flex-direction: column; gap: 9px; }
+.puntitos-fila { display: flex; gap: 9px; }
+.punto-bola {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--primario);
+  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, .14);
+}
+
+.tarjetitas { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+.tarjetita {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  min-width: 104px;
+  padding: 12px 14px;
+  border-radius: var(--radio-s);
+  background: var(--papel);
+  border: 2px solid var(--borde);
+}
+.tarjetita-icono { font-size: 1.7rem; line-height: 1; }
+.tarjetita-bandera {
+  width: 52px;
+  height: 35px;
+  object-fit: cover;
+  border-radius: 5px;
+  border: 1px solid #cfd8ea;
+}
+.tarjetita b { font-size: .95rem; text-align: center; }
+.tarjetita span { font-size: .84rem; color: var(--tinta-suave); text-align: center; }
+
+.perfil-chip-cuerpo { display: flex; flex-direction: column; min-width: 0; }
+.perfil-chip-edad { font-size: .8rem; color: var(--tinta-suave); }
+
+@media (max-width: 620px) {
+  .seccion { padding: 11px 13px; gap: 9px; }
+  .seccion-icono { font-size: 1.5rem; }
+  .seccion-texto b { font-size: 1rem; }
+  .seccion-texto small { font-size: .76rem; }
+  .punto-bola { width: 20px; height: 20px; }
+  .puntitos, .puntitos-fila { gap: 7px; }
+}

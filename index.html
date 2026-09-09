@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Aprender Jugando</title>
-<meta name="description" content="Juegos didácticos para chicos: geografía, mapas, capitales, banderas y matemática.">
+<meta name="description" content="Para chicos: cursitos cortos para aprender y juegos para practicar. Geografía y matemática.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌎</text></svg>">
 
 <!-- App instalable (PWA): ícono propio, pantalla completa y sin internet -->
@@ -35,12 +35,61 @@
   </div>
 </header>
 
+<!-- Las dos mitades de la app -->
+<nav class="secciones" id="secciones" hidden aria-label="Secciones">
+  <a class="seccion" id="tab-aprender" href="#/aprender">
+    <span class="seccion-icono" aria-hidden="true">📚</span>
+    <span class="seccion-texto">
+      <b>Aprender</b>
+      <small>Cursitos cortos</small>
+    </span>
+  </a>
+  <a class="seccion" id="tab-juegos" href="#/juegos">
+    <span class="seccion-icono" aria-hidden="true">🎮</span>
+    <span class="seccion-texto">
+      <b>Jugar</b>
+      <small>Practicá lo aprendido</small>
+    </span>
+  </a>
+</nav>
+
 <main id="app">
 
-  <!-- ============ INICIO: MATERIAS ============ -->
-  <section class="pantalla" id="pantalla-inicio">
-    <h1 class="titulo-grande">¿Qué querés aprender hoy?</h1>
-    <p class="subtitulo" id="saludo-inicio">Elegí una materia y empezá a jugar.</p>
+  <!-- ============ BIENVENIDA (primera vez) ============ -->
+  <section class="pantalla pantalla-bienvenida" id="pantalla-bienvenida" hidden>
+    <div class="tarjeta-bienvenida">
+      <div class="paso-bienvenida" id="bien-paso-nombre">
+        <div class="bien-globo">👋</div>
+        <h1 class="titulo-grande">¡Hola!</h1>
+        <p class="subtitulo">Antes de empezar, contanos quién sos.</p>
+        <label class="etiqueta-campo" for="campo-nombre">¿Cómo te llamás?</label>
+        <input class="campo-texto" id="campo-nombre" type="text" maxlength="18"
+               autocomplete="off" placeholder="Tu nombre">
+        <p class="error-campo" id="error-nombre" hidden>Escribí tu nombre para seguir.</p>
+        <button class="btn-gigante" id="btn-bien-nombre" type="button">Seguir</button>
+      </div>
+
+      <div class="paso-bienvenida" id="bien-paso-edad" hidden>
+        <div class="bien-globo">🎂</div>
+        <h1 class="titulo-grande">¿Cuántos años tenés?</h1>
+        <p class="subtitulo">Con esto elegimos los juegos justos para vos.</p>
+        <div class="grilla-edades" id="grilla-edades"></div>
+      </div>
+
+      <div class="paso-bienvenida" id="bien-paso-avatar" hidden>
+        <div class="bien-globo">✨</div>
+        <h1 class="titulo-grande">Elegí tu monigote</h1>
+        <p class="subtitulo">Va a ser tu carita en la app.</p>
+        <div class="grilla-avatares" id="grilla-avatares"></div>
+        <button class="btn-gigante" id="btn-bien-listo" type="button">¡Empezar!</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ JUGAR: materias ============ -->
+  <section class="pantalla" id="pantalla-juegos" hidden>
+    <h1 class="titulo-grande">¿A qué querés jugar?</h1>
+    <p class="subtitulo" id="saludo-juegos">Elegí una materia y practicá jugando.</p>
 
     <div class="instalar" id="instalar" hidden>
       <span class="instalar-icono" aria-hidden="true">📲</span>
@@ -55,11 +104,39 @@
     <div class="grilla-cards" id="grilla-materias"></div>
   </section>
 
+  <!-- ============ APRENDER: materias ============ -->
+  <section class="pantalla" id="pantalla-aprender" hidden>
+    <h1 class="titulo-grande">¿Qué querés aprender?</h1>
+    <p class="subtitulo" id="saludo-aprender">Explicaciones cortas, con dibujos y ejemplos.</p>
+    <div class="grilla-cards" id="grilla-materias-aprender"></div>
+  </section>
+
   <!-- ============ JUEGOS DE UNA MATERIA ============ -->
   <section class="pantalla" id="pantalla-materia" hidden>
     <h1 class="titulo-grande" id="titulo-materia"></h1>
     <p class="subtitulo" id="subtitulo-materia"></p>
     <div class="grilla-cards" id="grilla-juegos"></div>
+  </section>
+
+  <!-- ============ LECCIONES DE UNA MATERIA ============ -->
+  <section class="pantalla" id="pantalla-lecciones" hidden>
+    <h1 class="titulo-grande" id="titulo-lecciones"></h1>
+    <p class="subtitulo" id="subtitulo-lecciones"></p>
+    <div class="grilla-cards" id="grilla-lecciones"></div>
+  </section>
+
+  <!-- ============ UNA LECCIÓN ============ -->
+  <section class="pantalla" id="pantalla-leccion" hidden>
+    <div class="leccion-cabecera">
+      <h1 class="titulo-leccion" id="leccion-titulo"></h1>
+      <div class="leccion-puntitos" id="leccion-puntitos"></div>
+      <p class="leccion-avance" id="leccion-avance"></p>
+    </div>
+    <div id="leccion-cuerpo"></div>
+    <div class="leccion-botones">
+      <button class="btn-secundario" id="btn-leccion-atras" type="button" hidden>← Anterior</button>
+      <button class="btn-gigante" id="btn-leccion-siguiente" type="button">Siguiente</button>
+    </div>
   </section>
 
   <!-- ============ CONFIGURACIÓN DE PARTIDA ============ -->
@@ -126,6 +203,7 @@
         <div class="stat"><b id="stat-precision">0%</b><span>precisión</span></div>
         <div class="stat"><b id="stat-record">0</b><span>tu récord</span></div>
       </div>
+      <div class="desbloqueo" id="desbloqueo" hidden></div>
       <div class="repaso" id="repaso" hidden>
         <h2 class="etiqueta-grupo">Para repasar</h2>
         <div class="lista-repaso" id="lista-repaso"></div>
@@ -208,6 +286,8 @@
 <script src="js/mapa.js"></script>
 <script src="js/juegos/geografia.js"></script>
 <script src="js/juegos/matematica.js"></script>
+<script src="js/aprender/contenido.js"></script>
+<script src="js/aprender/leccion.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

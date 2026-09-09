@@ -83,6 +83,8 @@ window.Matematica = (function () {
     color: COLOR,
     suave: '#e8edff',
     texto: 'Practicá las tablas del 2 al 12, de a una o mezcladas.',
+    edadMin: 7,
+    requiere: { juego: 'matematica/cuentas', estrellas: 3 },
 
     opciones: function () {
       var items = [{ id: 'mezcla', nombre: 'Mezcladas', icono: '🎲', detalle: 'Todas las tablas' }];
@@ -170,6 +172,7 @@ window.Matematica = (function () {
     color: '#21b573',
     suave: '#e3f8ee',
     texto: 'Cuentas de sumar y restar, en cuatro niveles.',
+    edadMin: 5,
 
     opciones: function () {
       return [
@@ -294,6 +297,7 @@ window.Matematica = (function () {
     color: '#8b5cf6',
     suave: '#f1ebff',
     texto: 'Mirá el reloj de agujas y decí qué hora es.',
+    edadMin: 6,
 
     opciones: function () {
       return [{ id: 'paso', titulo: 'Elegí la dificultad', tipo: 'grilla', items: PASOS }];
@@ -362,6 +366,8 @@ window.Matematica = (function () {
   return {
     id: 'matematica',
     JUEGOS: [TABLAS, CUENTAS, RELOJ],
+    /** Lo usa también la lección sobre el reloj, en la sección Aprender. */
+    dibujarReloj: dibujarReloj,
     claveItem: function (item) { return item.id; },
     repaso: function (item) {
       if (item.op) {
