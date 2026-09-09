@@ -169,9 +169,11 @@ window.Matematica = (function () {
     requiere: { juego: 'matematica/cuentas', estrellas: 3 },
 
     opciones: function () {
-      var items = [{ id: 'mezcla', nombre: 'Mezcladas', icono: '🎲', detalle: 'Todas las tablas' }];
+      // el ícono de cada tabla es su propio número: doce veces la misma
+      // crucecita y un "2 × 1 … 2 × 10" abajo eran ruido, no información
+      var items = [{ id: 'mezcla', nombre: 'Mezcladas', icono: '🎲' }];
       for (var t = 2; t <= 12; t++) {
-        items.push({ id: String(t), nombre: 'Tabla del ' + t, icono: '✖️', detalle: t + ' × 1 … ' + t + ' × 10' });
+        items.push({ id: String(t), nombre: 'Tabla del ' + t, icono: String(t), iconoNumero: true });
       }
       return [{ id: 'tabla', titulo: 'Elegí la tabla', tipo: 'grilla', items: items }];
     },

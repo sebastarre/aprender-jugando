@@ -443,7 +443,8 @@
 
     var caja = Util.crear('div', grupo.tipo === 'fila' ? 'fila-opciones' : 'grilla-continentes');
     grupo.items.forEach(function (item) {
-      var b = botonOpcion(item.icono, item.nombre, item.detalle, juego.color, juego.suave);
+      var b = botonOpcion(item.icono, item.nombre, item.detalle,
+                          juego.color, juego.suave, item.iconoNumero);
       if (sel.valores[grupo.id] === item.id) b.setAttribute('aria-pressed', 'true');
       b.addEventListener('click', function () {
         sel.valores[grupo.id] = item.id;
@@ -486,12 +487,17 @@
     });
   }
 
-  function botonOpcion(icono, nombre, detalle, color, suave) {
+  /**
+   * `iconoNumero` es para cuando el ícono no es un dibujo sino un número
+   * (las tablas de multiplicar): va grande y en el color de la materia, para
+   * que se lea de un vistazo y no parezca parte del texto.
+   */
+  function botonOpcion(icono, nombre, detalle, color, suave, iconoNumero) {
     var b = Util.crear('button', 'opcion');
     b.type = 'button';
     b.setAttribute('aria-pressed', 'false');
     if (color) { b.style.setProperty('--op-color', color); b.style.setProperty('--op-suave', suave); }
-    b.appendChild(Util.crear('span', 'opcion-icono', icono));
+    b.appendChild(Util.crear('span', 'opcion-icono' + (iconoNumero ? ' numero' : ''), icono));
     var cuerpo = Util.crear('span', 'opcion-cuerpo');
     cuerpo.appendChild(Util.crear('span', 'opcion-nombre', nombre));
     if (detalle) cuerpo.appendChild(Util.crear('span', 'opcion-detalle', detalle));

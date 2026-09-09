@@ -257,6 +257,16 @@ body {
   box-shadow: inset 0 0 0 2px var(--op-color, var(--primario));
 }
 .opcion-icono { font-size: 1.7rem; line-height: 1; flex: none; }
+/* Cuando el ícono es el número mismo (las tablas): grande y en el color de la
+   materia, para que se lea de lejos y no se confunda con el texto del botón. */
+.opcion-icono.numero {
+  font-size: 2.3rem;
+  font-weight: 700;
+  color: var(--op-color, var(--primario));
+  min-width: 1.5em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
 .opcion-cuerpo { display: flex; flex-direction: column; min-width: 0; overflow-wrap: anywhere; }
 .opcion-nombre { font-weight: 700; }
 .opcion-detalle { font-size: .85rem; color: var(--tinta-suave); }
