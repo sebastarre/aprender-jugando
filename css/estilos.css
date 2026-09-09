@@ -1113,7 +1113,8 @@ body.sin-perfil .pie { display: none; }
 .cd-op { color: var(--tinta-suave); }
 .cuenta-llevo { font-size: .5em; color: var(--exito-osc); }
 .cd-llevo { width: 2.2em; background: #e6f8ef; border-radius: 999px; }
-.cuenta-raya { border-bottom: 4px solid var(--tinta); margin: 4px 0 6px; }
+/* la raya de la cuenta: es un trazo dibujado, no el borde de una tarjeta */
+.cuenta-raya { height: 4px; border-radius: 2px; background: var(--tinta); margin: 4px 0 6px; }
 .cuenta-resultado { color: var(--primario); }
 
 .puntitos { display: flex; flex-direction: column; gap: 9px; }
