@@ -102,6 +102,16 @@
       <button class="btn-secundario instalar-boton" type="button" id="btn-instalar">Instalar</button>
     </div>
 
+    <button class="tarjeta-examen" id="btn-examen" type="button" hidden>
+      <span class="examen-icono" aria-hidden="true">📝</span>
+      <span class="examen-cuerpo">
+        <b>Rendir un examen</b>
+        <span>Un intento por pregunta, sin ayudas, y la nota al final.
+          Podés mezclar materias.</span>
+      </span>
+      <span class="examen-flecha" aria-hidden="true">→</span>
+    </button>
+
     <div class="grilla-cards" id="grilla-materias"></div>
   </section>
 
@@ -243,6 +253,37 @@
     </div>
   </section>
 
+  <!-- ============ ARMAR EL EXAMEN ============ -->
+  <section class="pantalla" id="pantalla-examen" hidden>
+    <h1 class="titulo-grande">📝 Examen</h1>
+    <p class="subtitulo">Un solo intento por pregunta y no te decimos nada
+      hasta el final. Ahí va la nota.</p>
+    <div id="bloques-examen"></div>
+    <div class="zona-empezar">
+      <p class="resumen-partida" id="resumen-examen"></p>
+      <button class="btn-gigante" id="btn-rendir" disabled>Rendir</button>
+    </div>
+  </section>
+
+  <!-- ============ NOTA DEL EXAMEN ============ -->
+  <section class="pantalla" id="pantalla-nota" hidden>
+    <div class="tarjeta-fin">
+      <div class="nota-grande" id="nota-grande">–</div>
+      <h1 class="titulo-fin" id="titulo-nota"></h1>
+      <p class="subtitulo" id="subtitulo-nota"></p>
+      <div class="stats-fin" id="nota-stats"></div>
+      <div class="premio-monedas" id="premio-examen" hidden></div>
+      <div class="repaso" id="repaso-examen" hidden>
+        <h2 class="etiqueta-grupo">Lo que erraste</h2>
+        <div class="lista-repaso" id="lista-repaso-examen"></div>
+      </div>
+      <div class="botones-fin">
+        <button class="btn-gigante" id="btn-otro-examen">Rendir otro</button>
+        <button class="btn-secundario" id="btn-nota-inicio">Menú principal</button>
+      </div>
+    </div>
+  </section>
+
   <!-- ============ TIENDA ============ -->
   <section class="pantalla" id="pantalla-tienda" hidden>
     <h1 class="titulo-grande">🪙 Tienda</h1>
@@ -306,6 +347,7 @@
 <script src="js/mapa.js"></script>
 <script src="js/juegos/geografia.js"></script>
 <script src="js/juegos/matematica.js"></script>
+<script src="js/juegos/examen.js"></script>
 <script src="js/aprender/contenido.js"></script>
 <script src="js/aprender/leccion.js"></script>
 <script src="js/tienda/catalogo.js"></script>

@@ -133,13 +133,13 @@
   var TOPE_MONEDAS = 30;      // por partida; empareja los juegos que generan
                               // preguntas nuevas siempre (las cuentas difíciles)
 
-  function calcularMonedas(materia, acertados) {
+  /** `claves` viene como 'materia:item', así sirve igual para un examen mezclado. */
+  function calcularMonedas(claves) {
     var repetidosAca = {};    // si el mismo ítem sale dos veces, la segunda ya decae
     var total = 0, nuevos = 0, repasados = 0;
 
-    acertados.forEach(function (item) {
-      var clave = materia.modulo.claveItem(item);
-      var previas = Almacen.aciertosDe(materia.id + ':' + clave) + (repetidosAca[clave] || 0);
+    claves.forEach(function (clave) {
+      var previas = Almacen.aciertosDe(clave) + (repetidosAca[clave] || 0);
       repetidosAca[clave] = (repetidosAca[clave] || 0) + 1;
       total += MONEDAS_POR_NOVEDAD[Math.min(previas, MONEDAS_POR_NOVEDAD.length - 1)];
       if (previas === 0) nuevos++; else repasados++;
@@ -159,7 +159,8 @@
   var ultimoResultado = null;
   var bienvenida = { nombre: '', edad: null, avatar: null, editando: null };
   var PANTALLAS = ['bienvenida', 'juegos', 'aprender', 'materia', 'lecciones', 'leccion',
-                   'config', 'juego', 'fin', 'perfil', 'tienda', 'parental'];
+                   'config', 'juego', 'fin', 'perfil', 'tienda', 'parental',
+                   'examen', 'nota'];
   var CON_SECCIONES = ['juegos', 'aprender', 'materia', 'lecciones'];
 
   function mostrar(nombre) {
@@ -295,6 +296,9 @@
   /* ---------------------- sección Jugar ---------------------- */
   function pintarMateriasJuegos() {
     $('saludo-juegos').textContent = saludo() + 'Elegí una materia y practicá jugando.';
+    // el examen sólo tiene sentido si ya hay algo desbloqueado para rendir
+    $('btn-examen').hidden = juegosParaExamen().length === 0;
+
     var cont = $('grilla-materias');
     Util.vaciar(cont);
     MATERIAS.forEach(function (m) {
@@ -560,12 +564,11 @@
     // las monedas se calculan ANTES de anotar los aciertos, si no lo recién
     // acertado ya contaría como repetido
     var acertados = r.acertados || [];
-    var premio = calcularMonedas(materia, acertados);
-    Almacen.registrarAciertos(materia.id, acertados.map(function (item) {
-      return materia.modulo.claveItem(item);
-    }));
+    var claves = acertados.map(function (item) { return materia.modulo.claveItem(item); });
+    var premio = calcularMonedas(claves.map(function (c) { return materia.id + ':' + c; }));
+    Almacen.registrarAciertos(materia.id, claves);
     Almacen.sumarMonedas(premio.total);
-    pintarPremio(premio);
+    pintarPremio($('premio-monedas'), premio);
     pintarBarraSuperior();
 
     var cont = $('estrellas-fin');
@@ -586,8 +589,7 @@
   }
 
   /** Cuántas monedas dejó la partida, y por qué. */
-  function pintarPremio(premio) {
-    var caja = $('premio-monedas');
+  function pintarPremio(caja, premio) {
     Util.vaciar(caja);
     caja.hidden = premio.total === 0;
     if (!premio.total) return;
@@ -667,6 +669,198 @@
     if (datos.dato) cuerpo.appendChild(Util.crear('div', 'ir-dato', datos.dato));
     item.appendChild(cuerpo);
     return item;
+  }
+
+  /* ---------------------- examen ---------------------- */
+  var selExamen = { juegos: [], zona: null, cantidad: 10 };
+
+  /** Los juegos que puede rendir: los que ya tiene desbloqueados. */
+  function juegosParaExamen() {
+    var lista = [];
+    MATERIAS.forEach(function (m) {
+      if (!m.disponible) return;
+      juegosVisibles(m).forEach(function (j) {
+        if (estadoDeJuego(m, j).jugable) lista.push({ materia: m, juego: j });
+      });
+    });
+    return lista;
+  }
+
+  function hayGeografia() {
+    return selExamen.juegos.some(function (c) { return c.indexOf('geografia/') === 0; });
+  }
+
+  function pintarExamen() {
+    var caja = $('bloques-examen');
+    Util.vaciar(caja);
+    var disponibles = juegosParaExamen();
+
+    // sólo quedan elegidos los que siguen estando disponibles
+    selExamen.juegos = selExamen.juegos.filter(function (c) {
+      return disponibles.some(function (d) { return d.materia.id + '/' + d.juego.id === c; });
+    });
+
+    /* 1. qué entra */
+    var b1 = Util.crear('div', 'bloque-config');
+    b1.appendChild(Util.crear('h2', 'etiqueta-grupo', '1. Elegí qué entra'));
+    var grilla = Util.crear('div', 'grilla-continentes');
+    disponibles.forEach(function (d) {
+      var clave = d.materia.id + '/' + d.juego.id;
+      var b = botonOpcion(d.juego.icono, d.juego.nombre, d.materia.nombre,
+                          d.juego.color, d.juego.suave);
+      b.classList.add('opcion-multiple');
+      if (selExamen.juegos.indexOf(clave) !== -1) b.setAttribute('aria-pressed', 'true');
+      b.addEventListener('click', function () {
+        var i = selExamen.juegos.indexOf(clave);
+        if (i === -1) selExamen.juegos.push(clave);
+        else selExamen.juegos.splice(i, 1);
+        Sonido.despertar(); Sonido.tocar('clic');
+        pintarExamen();        // se repinta porque la zona aparece o desaparece
+      });
+      grilla.appendChild(b);
+    });
+    b1.appendChild(grilla);
+    caja.appendChild(b1);
+
+    var numero = 2;
+
+    /* 2. zona, sólo si entró algo de geografía */
+    if (hayGeografia()) {
+      var b2 = Util.crear('div', 'bloque-config');
+      b2.appendChild(Util.crear('h2', 'etiqueta-grupo', (numero++) + '. ¿De qué zona?'));
+      var gz = Util.crear('div', 'grilla-continentes');
+      Mapa.zonas().forEach(function (z) {
+        var b = botonOpcion(z.icono, z.nombre, z.cantidad + ' países', '#21b573', '#e3f8ee');
+        if (selExamen.zona === z.id) b.setAttribute('aria-pressed', 'true');
+        b.addEventListener('click', function () {
+          selExamen.zona = z.id;
+          marcarElegido(gz, b);
+          actualizarResumenExamen();
+        });
+        gz.appendChild(b);
+      });
+      b2.appendChild(gz);
+      caja.appendChild(b2);
+    }
+
+    /* 3. cuántas preguntas */
+    var b3 = Util.crear('div', 'bloque-config');
+    b3.appendChild(Util.crear('h2', 'etiqueta-grupo', numero + '. ¿Cuántas preguntas?'));
+    var fila = Util.crear('div', 'fila-opciones');
+    Examen.CANTIDADES.forEach(function (n) {
+      var b = botonOpcion(String(n), n + ' preguntas', null, '#8b5cf6', '#f1ebff');
+      if (selExamen.cantidad === n) b.setAttribute('aria-pressed', 'true');
+      b.addEventListener('click', function () {
+        selExamen.cantidad = n;
+        marcarElegido(fila, b);
+        actualizarResumenExamen();
+      });
+      fila.appendChild(b);
+    });
+    b3.appendChild(fila);
+    caja.appendChild(b3);
+
+    actualizarResumenExamen();
+  }
+
+  function faltaParaExamen() {
+    if (!selExamen.juegos.length) return 'Elegí al menos un juego';
+    if (hayGeografia() && !selExamen.zona) return 'Elegí la zona del mapa';
+    return null;
+  }
+
+  function actualizarResumenExamen() {
+    var falta = faltaParaExamen();
+    $('btn-rendir').disabled = !!falta;
+    $('resumen-examen').textContent = falta
+      ? falta + ' para poder rendir.'
+      : Util.plural(selExamen.juegos.length, 'juego') + ' · ' +
+        selExamen.cantidad + ' preguntas · 1 intento por pregunta';
+  }
+
+  function rendirExamen() {
+    if (faltaParaExamen()) return irA('#/examen');
+    var elegidos = selExamen.juegos.map(porClave).filter(function (x) { return x.juego; });
+    var items = Examen.armarItems(elegidos, {
+      zona: selExamen.zona,
+      cantidad: selExamen.cantidad
+    }, Almacen.edad());
+
+    if (!items.length) return irA('#/examen');
+    Examen.jugar(items, { alTerminar: terminarExamen });
+  }
+
+  function terminarExamen(r) {
+    ultimoResultado = r;
+    var nota = Examen.nota(r.aciertos, r.total);
+
+    // monedas: los ítems son de varias materias, así que se agrupan
+    var porMateria = {};
+    (r.acertados || []).forEach(function (item) {
+      if (!porMateria[item.__materia]) porMateria[item.__materia] = [];
+      porMateria[item.__materia].push(materiaPorId(item.__materia).modulo.claveItem(item));
+    });
+    var todas = [];
+    Object.keys(porMateria).forEach(function (mid) {
+      porMateria[mid].forEach(function (c) { todas.push(mid + ':' + c); });
+    });
+    var premio = calcularMonedas(todas);
+    Object.keys(porMateria).forEach(function (mid) {
+      Almacen.registrarAciertos(mid, porMateria[mid]);
+    });
+    Almacen.sumarMonedas(premio.total);
+
+    // los errores, para el modo parental
+    var erroresPorMateria = {};
+    r.errores.forEach(function (item) {
+      var m = materiaPorId(item.__materia);
+      if (!erroresPorMateria[item.__materia]) erroresPorMateria[item.__materia] = [];
+      erroresPorMateria[item.__materia].push({
+        clave: m.modulo.claveItem(item), nombre: m.modulo.repaso(item).nombre
+      });
+    });
+    Object.keys(erroresPorMateria).forEach(function (mid) {
+      Almacen.registrarErrores(mid, erroresPorMateria[mid]);
+    });
+
+    Almacen.registrarPartida({
+      materia: 'examen', juego: 'examen', tipo: 'examen',
+      detalle: 'Examen · ' + Util.plural(selExamen.juegos.length, 'juego'),
+      puntos: r.puntos, maximo: r.maximo,
+      aciertos: r.aciertos, total: r.total, estrellas: 0
+    });
+    pintarBarraSuperior();
+
+    $('nota-grande').textContent = nota;
+    $('nota-grande').className = 'nota-grande ' + (nota >= 6 ? 'aprobado' : 'desaprobado');
+    $('titulo-nota').textContent = nota >= 6 ? '¡Aprobaste!' : 'No alcanzó';
+    $('subtitulo-nota').textContent = Examen.comentario(nota);
+
+    var stats = $('nota-stats');
+    Util.vaciar(stats);
+    [
+      [r.aciertos + '/' + r.total, 'respuestas bien'],
+      [r.precision + '%', 'de aciertos'],
+      [String(selExamen.juegos.length), 'juegos que entraron']
+    ].forEach(function (par) {
+      var d = Util.crear('div', 'stat');
+      d.appendChild(Util.crear('b', null, par[0]));
+      d.appendChild(Util.crear('span', null, par[1]));
+      stats.appendChild(d);
+    });
+
+    pintarPremio($('premio-examen'), premio);
+
+    var caja = $('repaso-examen');
+    var lista = $('lista-repaso-examen');
+    Util.vaciar(lista);
+    caja.hidden = r.errores.length === 0;
+    r.errores.forEach(function (item) {
+      lista.appendChild(itemRepaso(materiaPorId(item.__materia).modulo.repaso(item)));
+    });
+
+    Sonido.tocar(nota >= 6 ? 'record' : 'fin');
+    irA('#/nota');
   }
 
   /* ---------------------- perfil ---------------------- */
@@ -910,7 +1104,9 @@
     est.ultimas.forEach(function (p) {
       var materia = materiaPorId(p.materia);
       var fila = Util.crear('div', 'fila-partida');
-      fila.appendChild(Util.crear('span', 'fila-icono', materia ? materia.icono : '•'));
+      // los exámenes se distinguen de las partidas sueltas
+      var icono = p.tipo === 'examen' ? '📝' : (materia ? materia.icono : '•');
+      fila.appendChild(Util.crear('span', 'fila-icono', icono));
       var cuerpo = Util.crear('div', 'fila-cuerpo');
       cuerpo.appendChild(Util.crear('div', 'fila-nombre', p.detalle || p.juego));
       cuerpo.appendChild(Util.crear('div', 'ir-dato', fechaCorta(p.fecha)));
@@ -1020,6 +1216,24 @@
       return mostrar('perfil');
     }
 
+    if (partes[0] === 'examen') {
+      cortarPartida();
+      marcarSeccion('juegos');
+      pintarExamen();
+      return mostrar('examen');
+    }
+
+    if (partes[0] === 'rindiendo') {
+      if (faltaParaExamen()) return irA('#/examen');
+      mostrar('juego');
+      return rendirExamen();
+    }
+
+    if (partes[0] === 'nota') {
+      if (!ultimoResultado) return irA('#/juegos');
+      return mostrar('nota');
+    }
+
     if (partes[0] === 'tienda') {
       cortarPartida();
       pintarTienda();
@@ -1046,7 +1260,11 @@
       return irA('#/juego/' + sel.materia + '/' + sel.juego);
     }
     if (partes[0] === 'juego') return irA('#/materia/' + partes[1]);
-    if (partes[0] === 'materia') return irA('#/juegos');
+    if (partes[0] === 'materia' || partes[0] === 'examen') return irA('#/juegos');
+    if (partes[0] === 'rindiendo' || partes[0] === 'nota') {
+      cortarPartida();
+      return irA('#/examen');
+    }
     if (partes[0] === 'lecciones') return irA('#/aprender');
     if (partes[0] === 'leccion') {
       var l = Leccion.actual();
@@ -1113,6 +1331,17 @@
       mostrar('bienvenida');
     });
     $('btn-tienda').addEventListener('click', function () { Sonido.tocar('clic'); irA('#/tienda'); });
+    $('btn-examen').addEventListener('click', function () {
+      Sonido.despertar(); Sonido.tocar('clic');
+      irA('#/examen');
+    });
+    $('btn-rendir').addEventListener('click', function () {
+      if (faltaParaExamen()) return;
+      Sonido.despertar(); Sonido.tocar('clic');
+      irA('#/rindiendo');
+    });
+    $('btn-otro-examen').addEventListener('click', function () { Sonido.tocar('clic'); irA('#/examen'); });
+    $('btn-nota-inicio').addEventListener('click', function () { Sonido.tocar('clic'); irA('#/juegos'); });
     $('btn-parental').addEventListener('click', function () { Sonido.tocar('clic'); irA('#/parental'); });
 
     /* modo parental */

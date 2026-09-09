@@ -1273,3 +1273,66 @@ body.sin-perfil .pie { display: none; }
 
 .card-avatar { padding: 12px 8px 10px; gap: 4px; }
 .avatar-muestra { font-size: 2.2rem; line-height: 1.1; }
+
+/* ============================================================
+   Examen
+   ============================================================ */
+.tarjeta-examen {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-align: left;
+  padding: 16px 20px;
+  margin-bottom: 18px;
+  border: 3px solid var(--violeta);
+  border-radius: var(--radio);
+  background: linear-gradient(120deg, #f5f0ff 0%, var(--tarjeta) 70%);
+  box-shadow: var(--sombra-suave);
+  transition: transform .14s, box-shadow .14s;
+}
+.tarjeta-examen:hover { transform: translateY(-3px); }
+.examen-icono { font-size: 2.2rem; line-height: 1; flex: none; }
+.examen-cuerpo { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.examen-cuerpo b { font-size: 1.2rem; }
+.examen-cuerpo span { color: var(--tinta-suave); font-size: .93rem; line-height: 1.35; }
+.examen-flecha { font-size: 1.4rem; color: var(--violeta); flex: none; }
+
+/* la selección múltiple se marca con un tilde, no sólo con el borde */
+.opcion-multiple[aria-pressed="true"] .opcion-icono::after {
+  content: '✓';
+  display: block;
+  font-size: .7rem;
+  color: var(--exito-osc);
+  text-align: center;
+  margin-top: -2px;
+}
+
+/* Durante el examen no se muestran ni el puntaje ni los corazones:
+   verlos subir sería saber si acertaste. */
+body.rindiendo .marcador,
+body.rindiendo .vidas { display: none; }
+
+/* La respuesta elegida se marca en neutro: registrada, sin decir si va bien. */
+.pais.elegida, .punto.elegida { fill: var(--primario); stroke: var(--primario-osc); }
+.btn-opcion.elegida { border-color: var(--primario); background: #eef2ff; }
+
+.nota-grande {
+  font-size: clamp(3.4rem, 12vw, 5rem);
+  font-weight: 700;
+  line-height: 1;
+  width: clamp(96px, 26vw, 132px);
+  height: clamp(96px, 26vw, 132px);
+  margin: 0 auto 8px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 5px solid var(--borde);
+  background: var(--papel);
+  animation: aparecer-estrella .45s ease both;
+}
+.nota-grande.aprobado { border-color: var(--exito); color: var(--exito-osc); background: #e6f8ef; }
+.nota-grande.desaprobado { border-color: var(--error); color: var(--error-osc); background: #fdeaec; }

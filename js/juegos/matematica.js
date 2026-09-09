@@ -8,6 +8,11 @@
    Las preguntas se generan cada partida (no hay lista fija), así que
    nunca sale dos veces la misma ronda. Los distractores no son al azar:
    son los errores típicos, para que elegir bien signifique algo.
+
+   Igual que geografía, cada juego separa `preguntas()` de `montar()`,
+   para que el examen pueda intercalar una pregunta de acá con una de
+   mapa. El botón elegido no se pinta solo: eso lo decide el motor, que
+   en el examen no pinta nada para no delatar la respuesta.
    ============================================================ */
 window.Matematica = (function () {
   'use strict';
@@ -44,33 +49,74 @@ window.Matematica = (function () {
     return salida;
   }
 
-  /* ---------------------- respuestas numéricas ---------------------- */
-  function armarNumeros(correcto, malos, alResponder) {
-    var lista = Util.mezclar(malos.concat([correcto])).map(function (n) {
-      return { id: n, valor: n };
-    });
-    Opciones.armar(lista, {
-      clase: 'texto',
-      contenido: function (o) { return String(o.valor); },
-      alElegir: function (o, btn) {
-        if (o.valor !== correcto) { btn.classList.add('incorrecta'); btn.disabled = true; }
-        else btn.classList.add('correcta');
-        alResponder(o.valor);
-      }
-    });
-  }
-
+  /* ---------------------- tablero ---------------------- */
   function prepararTablero() {
     Util.$('zona-mapa').hidden = true;
     Util.$('zona-opciones').hidden = false;
-    Util.$('pregunta-visual').hidden = true;
-    Util.vaciar(Util.$('pregunta-visual'));
+  }
+
+  function ocultarVisual() {
+    var visual = Util.$('pregunta-visual');
+    visual.hidden = true;
+    Util.vaciar(visual);
   }
 
   function consigna(html) { Util.$('pregunta-texto').innerHTML = html; }
 
   function cantidadesFijas() {
     return { lista: [5, 10, 20, 30], total: null, unidad: 'preguntas' };
+  }
+
+  /** Cuatro tarjetas con la respuesta correcta y tres distractores. */
+  function armarRespuestas(correcta, malas) {
+    var lista = Util.mezclar(malas.concat([correcta])).map(function (v) {
+      return { id: v, valor: v };
+    });
+    Opciones.armar(lista, {
+      clase: 'texto',
+      contenido: function (o) { return String(o.valor); },
+      alElegir: function (o) { Motor.responder(o.valor); }
+    });
+  }
+
+  /* Ganchos comunes: los tres juegos se responden con la misma botonera.
+     `correcta(item)` dice cuál era, porque cada juego la guarda distinto. */
+  function ganchosDeBotonera(correcta) {
+    return {
+      alAcertar: function (item, respuesta) {
+        Opciones.marcar(respuesta, 'correcta');
+        Opciones.bloquear();
+      },
+      alFallar: function (item, respuesta) {
+        Opciones.marcar(respuesta, 'incorrecta');
+        var b = Opciones.boton(respuesta);
+        if (b) b.disabled = true;
+      },
+      alRevelar: function (item) {
+        Opciones.bloquear();
+        Opciones.marcar(correcta(item), 'correcta');
+      },
+      alResponder: function (item, respuesta) {
+        Opciones.marcar(respuesta, 'elegida');
+        Opciones.bloquear();
+      }
+    };
+  }
+
+  /* Para el examen no hay pantalla de opciones: se elige por edad, para que
+     un chico de 6 no rinda cuentas de tres cifras. */
+  function nivelPorEdad(edad) {
+    if (!edad || edad <= 6) return 'facil';
+    if (edad <= 8) return 'medio';
+    if (edad <= 10) return 'dificil';
+    return 'experto';
+  }
+
+  function pasoPorEdad(edad) {
+    if (!edad || edad <= 6) return 'punto';
+    if (edad === 7) return 'media';
+    if (edad === 8) return 'cuarto';
+    return 'cinco';
   }
 
   /* ============================================================
@@ -99,36 +145,33 @@ window.Matematica = (function () {
       return nombre + ' · ' + sel.cantidad + ' preguntas';
     },
 
-    jugar: function (sel, ganchos) {
-      var cuantas = sel.cantidad;
+    examen: function () { return { tabla: 'mezcla' }; },
+    preguntas: function (sel) {
       var items = [];
-      for (var i = 0; i < cuantas; i++) {
-        var a = sel.tabla === 'mezcla' ? entero(2, 12) : parseInt(sel.tabla, 10);
+      for (var i = 0; i < sel.cantidad; i++) {
+        var a = (!sel.tabla || sel.tabla === 'mezcla') ? entero(2, 12) : parseInt(sel.tabla, 10);
         var b = entero(1, 10);
         items.push({ id: a + 'x' + b, a: a, b: b, resultado: a * b });
       }
+      return items;
+    },
+    montar: function (it) {
       prepararTablero();
-
-      Motor.jugar(Object.assign({
-        items: items,
+      ocultarVisual();
+      consigna('¿Cuánto es <b>' + it.a + ' × ' + it.b + '</b>?');
+      // errores típicos: correrse una fila de la tabla o sumar en vez de multiplicar
+      armarRespuestas(it.resultado, distractores(it.resultado, [
+        it.a * (it.b + 1), it.a * (it.b - 1),
+        (it.a + 1) * it.b, (it.a - 1) * it.b,
+        it.resultado + it.a, it.resultado - it.a, it.a + it.b
+      ], 3, 0));
+    },
+    ganchos: function () {
+      return Object.assign(ganchosDeBotonera(function (it) { return it.resultado; }), {
         esCorrecta: function (it, respuesta) { return respuesta === it.resultado; },
-        render: function (it) {
-          consigna('¿Cuánto es <b>' + it.a + ' × ' + it.b + '</b>?');
-          // errores típicos: correrse una fila de la tabla o sumar en vez de multiplicar
-          var malos = distractores(it.resultado, [
-            it.a * (it.b + 1), it.a * (it.b - 1),
-            (it.a + 1) * it.b, (it.a - 1) * it.b,
-            it.resultado + it.a, it.resultado - it.a, it.a + it.b
-          ], 3, 0);
-          armarNumeros(it.resultado, malos, function (v) { Motor.responder(v); });
-        },
-        alAcertar: function () { Opciones.bloquear(); },
-        alRevelar: function (it) { Opciones.bloquear(); Opciones.marcar(it.resultado, 'correcta'); },
         textoFallo: function (it, respuesta) { return 'No, ' + respuesta + ' no es.'; },
-        textoRevelado: function (it) {
-          return it.a + ' × ' + it.b + ' = ' + it.resultado;
-        }
-      }, ganchos));
+        textoRevelado: function (it) { return it.a + ' × ' + it.b + ' = ' + it.resultado; }
+      });
     }
   };
 
@@ -194,7 +237,8 @@ window.Matematica = (function () {
       return 'Nivel ' + n.nombre.toLowerCase() + ' · ' + q + ' · ' + sel.cantidad + ' preguntas';
     },
 
-    jugar: function (sel, ganchos) {
+    examen: function (comun, edad) { return { nivel: nivelPorEdad(edad), operacion: 'ambas' }; },
+    preguntas: function (sel) {
       var nivel = nivelPorId(sel.nivel);
       var modo = sel.operacion || 'ambas';
       var items = [];
@@ -204,28 +248,27 @@ window.Matematica = (function () {
         c.id = c.a + c.op + c.b;
         items.push(c);
       }
+      return items;
+    },
+    montar: function (it) {
       prepararTablero();
-
-      Motor.jugar(Object.assign({
-        items: items,
+      ocultarVisual();
+      consigna('¿Cuánto es <b>' + it.a + ' ' + it.op + ' ' + it.b + '</b>?');
+      // errores típicos: contarse uno, olvidarse de llevar, o cambiar la operación
+      armarRespuestas(it.resultado, distractores(it.resultado, [
+        it.resultado + 1, it.resultado - 1,
+        it.resultado + 10, it.resultado - 10,
+        it.op === '+' ? it.a - it.b : it.a + it.b
+      ], 3, 0));
+    },
+    ganchos: function () {
+      return Object.assign(ganchosDeBotonera(function (it) { return it.resultado; }), {
         esCorrecta: function (it, respuesta) { return respuesta === it.resultado; },
-        render: function (it) {
-          consigna('¿Cuánto es <b>' + it.a + ' ' + it.op + ' ' + it.b + '</b>?');
-          // errores típicos: contarse uno, olvidarse de llevar, o cambiar la operación
-          var malos = distractores(it.resultado, [
-            it.resultado + 1, it.resultado - 1,
-            it.resultado + 10, it.resultado - 10,
-            it.op === '+' ? it.a - it.b : it.a + it.b
-          ], 3, 0);
-          armarNumeros(it.resultado, malos, function (v) { Motor.responder(v); });
-        },
-        alAcertar: function () { Opciones.bloquear(); },
-        alRevelar: function (it) { Opciones.bloquear(); Opciones.marcar(it.resultado, 'correcta'); },
         textoFallo: function (it, respuesta) { return 'No, ' + respuesta + ' no es.'; },
         textoRevelado: function (it) {
           return it.a + ' ' + it.op + ' ' + it.b + ' = ' + it.resultado;
         }
-      }, ganchos));
+      });
     }
   };
 
@@ -307,7 +350,8 @@ window.Matematica = (function () {
       return pasoPorId(sel.paso).nombre + ' · ' + sel.cantidad + ' preguntas';
     },
 
-    jugar: function (sel, ganchos) {
+    examen: function (comun, edad) { return { paso: pasoPorEdad(edad) }; },
+    preguntas: function (sel) {
       var paso = pasoPorId(sel.paso).paso;
       var items = [];
       for (var i = 0; i < sel.cantidad; i++) {
@@ -319,53 +363,54 @@ window.Matematica = (function () {
           texto: comoTexto(hora, minuto)
         });
       }
+      return items;
+    },
+    montar: function (it) {
       prepararTablero();
+      consigna('¿Qué hora marca el reloj?');
+      var visual = Util.$('pregunta-visual');
+      visual.innerHTML = dibujarReloj(it.hora, it.minuto);
+      visual.hidden = false;
 
-      Motor.jugar(Object.assign({
-        items: items,
+      // confusiones típicas: leer la aguja al revés, o pasarse una hora
+      var otraHora = it.hora === 12 ? 1 : it.hora + 1;
+      var horaAntes = it.hora === 1 ? 12 : it.hora - 1;
+      var candidatos = [
+        comoTexto(otraHora, it.minuto),
+        comoTexto(horaAntes, it.minuto),
+        comoTexto(it.hora, (it.minuto + 30) % 60),
+        comoTexto(it.hora, (it.minuto + 15) % 60),
+        comoTexto(it.hora, (it.minuto + 45) % 60)
+      ].filter(function (t, i, a) { return t !== it.texto && a.indexOf(t) === i; });
+
+      armarRespuestas(it.texto, Util.muestra(candidatos, 3));
+    },
+    ganchos: function () {
+      return Object.assign(ganchosDeBotonera(function (it) { return it.texto; }), {
         esCorrecta: function (it, respuesta) { return respuesta === it.texto; },
-        render: function (it) {
-          consigna('¿Qué hora marca el reloj?');
-          var visual = Util.$('pregunta-visual');
-          visual.innerHTML = dibujarReloj(it.hora, it.minuto);
-          visual.hidden = false;
-
-          // confusiones típicas: leer la aguja al revés, o pasarse una hora
-          var otraHora = it.hora === 12 ? 1 : it.hora + 1;
-          var horaAntes = it.hora === 1 ? 12 : it.hora - 1;
-          var candidatos = [
-            comoTexto(otraHora, it.minuto),
-            comoTexto(horaAntes, it.minuto),
-            comoTexto(it.hora, (it.minuto + 30) % 60),
-            comoTexto(it.hora, (it.minuto + 15) % 60),
-            comoTexto(it.hora, (it.minuto + 45) % 60)
-          ].filter(function (t) { return t !== it.texto; });
-
-          var malos = Util.muestra(candidatos.filter(function (t, i, a) { return a.indexOf(t) === i; }), 3);
-          var lista = Util.mezclar(malos.concat([it.texto])).map(function (t) {
-            return { id: t, valor: t };
-          });
-          Opciones.armar(lista, {
-            clase: 'texto',
-            contenido: function (o) { return o.valor; },
-            alElegir: function (o, btn) {
-              if (o.valor !== it.texto) { btn.classList.add('incorrecta'); btn.disabled = true; }
-              else btn.classList.add('correcta');
-              Motor.responder(o.valor);
-            }
-          });
-        },
-        alAcertar: function () { Opciones.bloquear(); },
-        alRevelar: function (it) { Opciones.bloquear(); Opciones.marcar(it.texto, 'correcta'); },
         textoFallo: function (it, respuesta) { return 'No son las ' + respuesta + '.'; },
         textoRevelado: function (it) { return 'Eran las ' + it.texto; }
-      }, ganchos));
+      });
     }
   };
 
+  var JUEGOS = [TABLAS, CUENTAS, RELOJ];
+
+  // jugar() es igual para los tres: armar preguntas y arrancar el motor
+  JUEGOS.forEach(function (juego) {
+    juego.jugar = function (sel, ganchos) {
+      var items = juego.preguntas(sel);
+      juego.montar(items[0]);
+      Motor.jugar(Object.assign({
+        items: items,
+        render: function (item) { juego.montar(item); }
+      }, juego.ganchos(), ganchos));
+    };
+  });
+
   return {
     id: 'matematica',
-    JUEGOS: [TABLAS, CUENTAS, RELOJ],
+    JUEGOS: JUEGOS,
     /** Lo usa también la lección sobre el reloj, en la sección Aprender. */
     dibujarReloj: dibujarReloj,
     claveItem: function (item) { return item.id; },

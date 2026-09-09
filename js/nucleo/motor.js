@@ -27,6 +27,7 @@ window.Motor = (function () {
   var ESPERA_ACIERTO = 420;             // cuánto se ve el acierto
   var ESPERA_FALLO = 260;               // bloqueo cortito (evita el doble clic)
   var ESPERA_REVELAR = 1500;            // tiempo para mirar la respuesta correcta
+  var ESPERA_MUDO = 320;                // en el examen no hay nada que leer
 
   var e = null;                         // estado de la partida en curso
   var temporizadores = [];
@@ -61,6 +62,9 @@ window.Motor = (function () {
     e = {
       cfg: config,
       items: config.items,
+      intentos: config.intentos || INTENTOS,
+      // en modo examen no se dice si estuvo bien hasta el final
+      mudo: config.mostrarResultado === false,
       indice: 0,
       intento: 0,
       puntos: 0,
@@ -70,6 +74,7 @@ window.Motor = (function () {
       errores: [],
       bloqueado: false
     };
+    document.body.classList.toggle('rindiendo', e.mudo);
     mostrarRonda();
   }
 
@@ -91,7 +96,8 @@ window.Motor = (function () {
 
     var vidas = Util.$('vidas');
     Util.vaciar(vidas);
-    for (var i = 0; i < INTENTOS; i++) {
+    if (e.intentos <= 1) return;      // con un solo intento no hay nada que mostrar
+    for (var i = 0; i < e.intentos; i++) {
       vidas.appendChild(Util.crear('span', i < e.intento ? 'gastada' : '', '❤️'));
     }
   }
@@ -119,6 +125,12 @@ window.Motor = (function () {
     e.acertados.push(item);
     if (e.intento === 0) e.perfectos++;
 
+    if (e.mudo) {
+      // examen: se marca que quedó registrada, sin decir si estuvo bien
+      if (e.cfg.alResponder) e.cfg.alResponder(item, respuesta);
+      return luego(siguiente, ESPERA_MUDO);
+    }
+
     if (e.cfg.alAcertar) e.cfg.alAcertar(item, respuesta);
     Sonido.tocar('acierto');
 
@@ -135,13 +147,24 @@ window.Motor = (function () {
     e.intento++;
     e.bloqueado = true;
     pintarHUD();
-    Sonido.tocar('error');
 
     var item = actual();
-    var quedan = INTENTOS - e.intento;
+    var quedan = e.intentos - e.intento;
+
+    if (e.mudo) {
+      // examen: ni sonido ni color; si se le acabaron los intentos, pasa
+      if (e.cfg.alResponder) e.cfg.alResponder(item, respuesta);
+      if (e.intento >= e.intentos) {
+        e.errores.push(item);
+        return luego(siguiente, ESPERA_MUDO);
+      }
+      return luego(function () { if (e) e.bloqueado = false; }, ESPERA_FALLO);
+    }
+
+    Sonido.tocar('error');
     if (e.cfg.alFallar) e.cfg.alFallar(item, respuesta, quedan);
 
-    if (e.intento >= INTENTOS) {
+    if (e.intento >= e.intentos) {
       luego(revelar, 160);
       return;
     }
@@ -178,6 +201,7 @@ window.Motor = (function () {
   function finalizar() {
     Util.$('progreso-relleno').style.transform = 'scaleX(1)';
     limpiarAviso();
+    document.body.classList.remove('rindiendo');
     var total = e.items.length;
     var resultado = {
       total: total,
@@ -198,6 +222,7 @@ window.Motor = (function () {
   function abandonar() {
     limpiarTiempos();
     limpiarAviso();
+    document.body.classList.remove('rindiendo');
     e = null;
   }
 

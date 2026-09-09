@@ -8,14 +8,22 @@
      opciones()   los grupos de botones de la pantalla de configuración
      cantidades() cuántas preguntas se pueden pedir
      resumen()    la línea que describe la partida elegida
-     jugar()      arma las preguntas y arranca el motor
+     preguntas()  arma la lista de ítems
+     montar()     prepara el tablero y pinta UN ítem
+     jugar()      junta las dos anteriores y arranca el motor
+
+   `montar` se banca que lo llamen ítem por ítem, y cada ítem se lleva
+   su contexto adentro (`__ctx`). Eso es lo que permite que el examen
+   mezcle una pregunta de mapa con una de matemática: el tablero se
+   arma en cada pregunta, no una sola vez al empezar.
    ============================================================ */
 window.Geografia = (function () {
   'use strict';
 
   var MARCA_FALLO = 520;      // cuánto queda pintado en rojo el país equivocado
-  var mapa = null;            // mapa de la partida en curso
-  var partida = null;         // datos que necesitan los callbacks del motor
+  var mapa = null;            // mapa vivo
+  var zonaDelMapa = null;     // de qué zona es, para no rehacerlo al pedo
+  var pistaDada = false;
 
   /* ---------------------- opciones compartidas ---------------------- */
   function opcionesZona() {
@@ -50,35 +58,73 @@ window.Geografia = (function () {
     return zona.nombre + ' · ' + cant + ' preguntas';
   }
 
-  /* ---------------------- armado del tablero ---------------------- */
-  function prepararMapa(sel, candidatos) {
+  /** Los ítems de una partida, cada uno con el contexto que necesita. */
+  function elegirPreguntas(sel, modo) {
+    var candidatos = Mapa.paisesDeZona(sel.zona);
+    var cantidad = sel.cantidad === 'todos'
+      ? candidatos.length
+      : Math.min(sel.cantidad, candidatos.length);
+    var ctx = { zona: sel.zona, candidatos: candidatos, modo: modo || sel.modo || 'mapa' };
+
+    return Util.muestra(candidatos, cantidad).map(function (pais) {
+      // se copia el país para no ensuciar la lista global de PAISES
+      var item = Object.assign({}, pais);
+      item.__ctx = ctx;
+      return item;
+    });
+  }
+
+  /* ---------------------- tableros ---------------------- */
+  /** Deja el mapa listo para esa zona, reusándolo si ya era la misma. */
+  function asegurarMapa(ctx) {
     Util.$('zona-mapa').hidden = false;
     Util.$('zona-opciones').hidden = true;
+
+    if (mapa && zonaDelMapa === ctx.zona) {
+      mapa.limpiarMarcas();
+      mapa.reiniciar();
+      return mapa;
+    }
+
     mapa = Mapa.crear(Util.$('mapa'), {
-      zona: sel.zona,
-      jugables: candidatos.map(function (p) { return p.id; }),
+      zona: ctx.zona,
+      jugables: ctx.candidatos.map(function (p) { return p.id; }),
       onClic: function (id) { Motor.responder(id); }
     });
+    zonaDelMapa = ctx.zona;
+
     var pista = Util.$('pista-mapa');
     pista.textContent = ('ontouchstart' in window)
       ? 'Arrastrá para mover · pellizcá para acercar'
       : 'Arrastrá para mover · rueda para acercar';
     pista.style.opacity = '1';
     setTimeout(function () { pista.style.opacity = '0'; }, 5000);
+    return mapa;
   }
 
-  function prepararOpciones() {
+  function prepararBotonera() {
     Util.$('zona-mapa').hidden = true;
     Util.$('zona-opciones').hidden = false;
-    mapa = null;
   }
 
-  function elegirPreguntas(sel) {
-    var candidatos = Mapa.paisesDeZona(sel.zona);
-    var cantidad = sel.cantidad === 'todos'
-      ? candidatos.length
-      : Math.min(sel.cantidad, candidatos.length);
-    return { candidatos: candidatos, preguntas: Util.muestra(candidatos, cantidad) };
+  function consigna(html) { Util.$('pregunta-texto').innerHTML = html; }
+
+  function ocultarVisual() {
+    var visual = Util.$('pregunta-visual');
+    visual.hidden = true;
+    Util.vaciar(visual);
+  }
+
+  function mostrarBandera(pais) {
+    var visual = Util.$('pregunta-visual');
+    Util.vaciar(visual);
+    var img = new Image();
+    img.className = 'pregunta-bandera';
+    img.alt = 'Bandera del país que hay que encontrar';
+    img.onload = function () { if (mapa) mapa.ajustarPanel(); };
+    img.src = Util.bandera(pais.id);
+    visual.appendChild(img);
+    visual.hidden = false;
   }
 
   function nombreDe(id) {
@@ -88,38 +134,41 @@ window.Geografia = (function () {
     return null;
   }
 
-  /* ---------------------- callbacks del motor (sobre el mapa) ---------------------- */
-  function aciertoEnMapa(pais) {
-    mapa.marcar(pais.id, 'correcto');
-    mapa.etiqueta(pais, pais.nombre);
-  }
-
-  function falloEnMapa(pais, idClickeado) {
-    if (!idClickeado) return;
-    mapa.marcar(idClickeado, 'fallo');
-    setTimeout(function () { if (mapa) mapa.desmarcar(idClickeado, 'fallo'); }, MARCA_FALLO);
-  }
-
-  function textoFalloEnMapa(pais, idClickeado) {
-    var nombre = nombreDe(idClickeado);
-    var texto = (nombre && nombre !== pais.nombre) ? 'Ese es ' + nombre + '.' : '¡Casi!';
-    // si el país es diminuto, la pista va en el mismo aviso
-    if (pais.mini && !partida.pistaDada) {
-      partida.pistaDada = true;
-      texto += ' Es muy chiquito: buscá el puntito 🔍 ·';
+  /* ---------------------- ganchos sobre el mapa ---------------------- */
+  var ganchosMapa = {
+    alAcertar: function (pais) {
+      if (!mapa) return;
+      mapa.marcar(pais.id, 'correcto');
+      mapa.etiqueta(pais, pais.nombre);
+    },
+    alFallar: function (pais, idClickeado) {
+      if (!mapa || !idClickeado) return;
+      mapa.marcar(idClickeado, 'fallo');
+      setTimeout(function () { if (mapa) mapa.desmarcar(idClickeado, 'fallo'); }, MARCA_FALLO);
+    },
+    textoFallo: function (pais, idClickeado) {
+      var nombre = nombreDe(idClickeado);
+      var texto = (nombre && nombre !== pais.nombre) ? 'Ese es ' + nombre + '.' : '¡Casi!';
+      if (pais.mini && !pistaDada) {
+        pistaDada = true;
+        texto += ' Es muy chiquito: buscá el puntito 🔍 ·';
+      }
+      return texto;
+    },
+    alRevelar: function (pais) {
+      if (!mapa) return;
+      mapa.limpiarMarcas();
+      mapa.marcar(pais.id, 'revelado');
+      if (pais.mini || !mapa.estaEnVista(pais)) mapa.enfocar(pais, pais.mini ? 7 : 3);
+      mapa.etiqueta(pais, pais.nombre);
+    },
+    // en el examen: se marca que quedó registrada, sin decir si estuvo bien
+    alResponder: function (pais, idClickeado) {
+      if (mapa && idClickeado) mapa.marcar(idClickeado, 'elegida');
     }
-    return texto;
-  }
+  };
 
-  function revelarEnMapa(pais) {
-    mapa.limpiarMarcas();
-    mapa.marcar(pais.id, 'revelado');
-    if (pais.mini || !mapa.estaEnVista(pais)) mapa.enfocar(pais, pais.mini ? 7 : 3);
-    mapa.etiqueta(pais, pais.nombre);
-  }
-
-  /* ---------------------- callbacks del quiz de banderas ---------------------- */
-  /** Al terminar la pregunta se muestra de quién era cada bandera. */
+  /* ---------------------- botonera de banderas ---------------------- */
   function mostrarNombresOpciones() {
     Opciones.botones().forEach(function (b) {
       b.querySelector('.nombre-opcion').textContent = b.getAttribute('data-nombre');
@@ -144,40 +193,43 @@ window.Geografia = (function () {
         caja.appendChild(Util.crear('span', 'nombre-opcion', ''));
         return caja;
       },
-      alElegir: function (p, btn) {
-        if (p.id !== correcto.id) { btn.classList.add('incorrecta'); btn.disabled = true; }
-        else btn.classList.add('correcta');
-        Motor.responder(p.id);
-      }
+      // el botón sólo avisa; pintarlo es cosa del motor, que en el examen
+      // no pinta nada para no delatar la respuesta
+      alElegir: function (p) { Motor.responder(p.id); }
     });
   }
 
+  var ganchosBanderas = {
+    alAcertar: function (pais) {
+      Opciones.marcar(pais.id, 'correcta');
+      Opciones.bloquear();
+      mostrarNombresOpciones();
+    },
+    alFallar: function (pais, elegida) {
+      Opciones.marcar(elegida, 'incorrecta');
+      var b = Opciones.boton(elegida);
+      if (b) b.disabled = true;
+    },
+    alRevelar: function (pais) {
+      Opciones.bloquear();
+      Opciones.marcar(pais.id, 'correcta');
+      mostrarNombresOpciones();
+    },
+    alResponder: function (pais, elegida) {
+      Opciones.marcar(elegida, 'elegida');
+      Opciones.bloquear();
+    },
+    textoRevelado: function (pais) {
+      return 'Era ' + pais.nombre + '. ¡Mirá bien su bandera!';
+    }
+  };
+
+  /** Junta los ganchos de un tablero con los que trae quien llama. */
+  function con(base, extra, ganchos) {
+    return Object.assign({}, base, extra, ganchos || {});
+  }
+
   /* ---------------------- los tres juegos ---------------------- */
-  function consigna(html) { Util.$('pregunta-texto').innerHTML = html; }
-
-  function mostrarBandera(pais) {
-    var visual = Util.$('pregunta-visual');
-    Util.vaciar(visual);
-    var img = new Image();
-    img.className = 'pregunta-bandera';
-    img.alt = 'Bandera del país que hay que encontrar';
-    img.onload = function () { if (mapa) mapa.ajustarPanel(); };
-    img.src = Util.bandera(pais.id);
-    visual.appendChild(img);
-    visual.hidden = false;
-  }
-
-  function ganchosDeMapa(extra) {
-    var base = {
-      alAcertar: function (pais) { aciertoEnMapa(pais); },
-      alFallar: function (pais, id) { falloEnMapa(pais, id); },
-      textoFallo: function (pais, id) { return textoFalloEnMapa(pais, id); },
-      alRevelar: function (pais) { revelarEnMapa(pais); }
-    };
-    Object.keys(extra || {}).forEach(function (k) { base[k] = extra[k]; });
-    return base;
-  }
-
   var JUEGOS = [
     {
       id: 'paises',
@@ -190,23 +242,21 @@ window.Geografia = (function () {
       opciones: function () { return [opcionesZona()]; },
       cantidades: cantidadesDeZona,
       resumen: resumenZona,
-      jugar: function (sel, ganchos) {
-        var elegidas = elegirPreguntas(sel);
-        partida = { pistaDada: false };
-        prepararMapa(sel, elegidas.candidatos);
-        Motor.jugar(Object.assign(ganchosDeMapa({
-          items: elegidas.preguntas,
-          render: function (pais) {
-            Util.$('pregunta-visual').hidden = true;
-            consigna('¿Dónde está <b>' + Util.escapar(pais.nombre) + '</b>?');
-            mapa.limpiarMarcas();
-            mapa.reiniciar();
-            partida.pistaDada = false;
-          },
+
+      examen: function (comun) { return { zona: comun.zona }; },
+      preguntas: function (sel) { return elegirPreguntas(sel, 'mapa'); },
+      montar: function (pais) {
+        asegurarMapa(pais.__ctx);
+        ocultarVisual();
+        consigna('¿Dónde está <b>' + Util.escapar(pais.nombre) + '</b>?');
+        pistaDada = false;
+      },
+      ganchos: function () {
+        return con(ganchosMapa, {
           textoRevelado: function (pais) {
             return 'Era ' + pais.nombre + '. ¡Ahora ya sabés dónde queda!';
           }
-        }), ganchos));
+        });
       }
     },
 
@@ -222,23 +272,21 @@ window.Geografia = (function () {
       opciones: function () { return [opcionesZona()]; },
       cantidades: cantidadesDeZona,
       resumen: resumenZona,
-      jugar: function (sel, ganchos) {
-        var elegidas = elegirPreguntas(sel);
-        partida = { pistaDada: false };
-        prepararMapa(sel, elegidas.candidatos);
-        Motor.jugar(Object.assign(ganchosDeMapa({
-          items: elegidas.preguntas,
-          render: function (pais) {
-            Util.$('pregunta-visual').hidden = true;
-            consigna('¿De qué país es capital <b>' + Util.escapar(pais.capital) + '</b>?');
-            mapa.limpiarMarcas();
-            mapa.reiniciar();
-            partida.pistaDada = false;
-          },
+
+      examen: function (comun) { return { zona: comun.zona }; },
+      preguntas: function (sel) { return elegirPreguntas(sel, 'mapa'); },
+      montar: function (pais) {
+        asegurarMapa(pais.__ctx);
+        ocultarVisual();
+        consigna('¿De qué país es capital <b>' + Util.escapar(pais.capital) + '</b>?');
+        pistaDada = false;
+      },
+      ganchos: function () {
+        return con(ganchosMapa, {
           textoRevelado: function (pais) {
             return 'Era ' + pais.nombre + ': ahí está ' + pais.capital;
           }
-        }), ganchos));
+        });
       }
     },
 
@@ -264,61 +312,68 @@ window.Geografia = (function () {
       },
       cantidades: cantidadesDeZona,
       resumen: resumenZona,
-      jugar: function (sel, ganchos) {
-        var elegidas = elegirPreguntas(sel);
-        partida = { pistaDada: false };
 
-        if (sel.modo === 'quiz') {
-          prepararOpciones();
-          return Motor.jugar(Object.assign({
-            items: elegidas.preguntas,
-            render: function (pais) {
-              Util.$('pregunta-visual').hidden = true;
-              consigna('¿Cuál es la bandera de <b>' + Util.escapar(pais.nombre) + '</b>?');
-              armarOpcionesBanderas(pais, elegidas.candidatos);
-            },
-            alAcertar: function () {
-              Util.$('zona-opciones').querySelectorAll('.btn-opcion')
-                .forEach(function (b) { b.disabled = true; });
-              mostrarNombresOpciones();
-            },
-            alRevelar: function (pais) {
-              Util.$('zona-opciones').querySelectorAll('.btn-opcion').forEach(function (b) {
-                b.disabled = true;
-                if (b.getAttribute('data-id') === pais.id) b.classList.add('correcta');
-              });
-              mostrarNombresOpciones();
-            },
-            textoRevelado: function (pais) {
-              return 'Era ' + pais.nombre + '. ¡Mirá bien su bandera!';
-            }
-          }, ganchos));
+      // en el examen las banderas siempre van sobre el mapa
+      examen: function (comun) { return { zona: comun.zona, modo: 'mapa' }; },
+      preguntas: function (sel) { return elegirPreguntas(sel); },
+      montar: function (pais) {
+        if (pais.__ctx.modo === 'quiz') {
+          prepararBotonera();
+          ocultarVisual();
+          consigna('¿Cuál es la bandera de <b>' + Util.escapar(pais.nombre) + '</b>?');
+          armarOpcionesBanderas(pais, pais.__ctx.candidatos);
+          return;
         }
-
-        prepararMapa(sel, elegidas.candidatos);
-        Motor.jugar(Object.assign(ganchosDeMapa({
-          items: elegidas.preguntas,
-          render: function (pais) {
-            consigna('¿De qué país es esta bandera?');
-            mostrarBandera(pais);
-            mapa.limpiarMarcas();
-            mapa.reiniciar();
-            partida.pistaDada = false;
-          },
+        asegurarMapa(pais.__ctx);
+        consigna('¿De qué país es esta bandera?');
+        mostrarBandera(pais);
+        pistaDada = false;
+      },
+      /* Este juego tiene dos tableros, así que los ganchos dependen del ítem:
+         el motor recibe unos que preguntan por el modo antes de actuar. */
+      ganchos: function () {
+        function segunModo(nombre) {
+          return function (item) {
+            var set = item.__ctx.modo === 'quiz' ? ganchosBanderas : ganchosMapa;
+            if (set[nombre]) return set[nombre].apply(null, arguments);
+            return undefined;
+          };
+        }
+        return {
+          alAcertar: segunModo('alAcertar'),
+          alFallar: segunModo('alFallar'),
+          alRevelar: segunModo('alRevelar'),
+          alResponder: segunModo('alResponder'),
+          textoFallo: segunModo('textoFallo'),
           textoRevelado: function (pais) {
-            return 'Era ' + pais.nombre + '. ¡Ahora ya sabés dónde queda!';
+            return pais.__ctx.modo === 'quiz'
+              ? 'Era ' + pais.nombre + '. ¡Mirá bien su bandera!'
+              : 'Era ' + pais.nombre + '. ¡Ahora ya sabés dónde queda!';
           }
-        }), ganchos));
+        };
       }
     }
   ];
 
+  // jugar() es igual para los tres: armar preguntas y arrancar el motor
+  JUEGOS.forEach(function (juego) {
+    juego.jugar = function (sel, ganchos) {
+      var items = juego.preguntas(sel);
+      pistaDada = false;
+      juego.montar(items[0]);       // deja el tablero listo antes de arrancar
+      Motor.jugar(Object.assign({
+        items: items,
+        render: function (item) { juego.montar(item); }
+      }, juego.ganchos(), ganchos));
+    };
+  });
+
   return {
     id: 'geografia',
     JUEGOS: JUEGOS,
-    /** Clave con la que se guardan los errores de esta materia. */
+    /** Clave con la que se guardan aciertos y errores de esta materia. */
     claveItem: function (pais) { return pais.id; },
-    /** Cómo se dibuja un error en la lista de repaso. */
+    /** Cómo se dibuja en la lista de repaso. */
     repaso: function (pais) {
       return {
         imagen: Util.bandera(pais.id),
@@ -327,6 +382,6 @@ window.Geografia = (function () {
       };
     },
     mapaActual: function () { return mapa; },
-    limpiar: function () { mapa = null; partida = null; }
+    limpiar: function () { mapa = null; zonaDelMapa = null; pistaDada = false; }
   };
 })();

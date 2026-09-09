@@ -26,7 +26,7 @@ la carpeta.
 
 Queda con su propio ícono, se abre a pantalla completa sin barra del navegador
 y, una vez instalada, **funciona sin internet**: la primera visita guarda los
-0,95 MB de la app en el teléfono.
+1 MB de la app en el teléfono.
 
 ## Publicar cambios
 
@@ -102,6 +102,31 @@ Las edades y los requisitos están declarados en cada juego (`edadMin` y
 `requiere`, en `js/juegos/*.js`) y en cada lección (`edadMin`, en
 `js/aprender/contenido.js`). Cambiarlos es cambiar un número.
 
+## Modo examen
+
+Aparte de los juegos hay un **examen**, que no es otro juego sino la misma
+máquina con otras reglas:
+
+- **un solo intento** por pregunta,
+- **no dice si estuvo bien** hasta que termina (tampoco se ve el puntaje ni
+  los corazones: verlos subir sería saber que acertaste),
+- al final da una **nota del 1 al 10**, el porcentaje y la lista de lo que
+  erró con la respuesta correcta.
+
+Lo arma el chico: elige **qué juegos entran** (puede mezclar geografía con
+matemática), de qué zona si entró algo de geografía, y cuántas preguntas.
+El nivel de las cuentas y del reloj sale de su edad, para que un chico de 6 no
+termine rindiendo cuentas de tres cifras.
+
+Que se puedan mezclar materias es lo que obligó a que cada juego sepa armar su
+tablero **pregunta por pregunta** (`montar(item)`), en vez de una sola vez al
+empezar. Por eso un examen puede pasar de una pregunta de mapa a una de
+tarjetas de números sin despeinarse. El mapa se reusa si la zona no cambió,
+para no redibujar 177 países en cada pregunta.
+
+En el modo parental los exámenes se listan con 📝 para distinguirlos de las
+partidas sueltas.
+
 ## Monedas y tienda
 
 Cada respuesta correcta da monedas, pero **rinde menos repetir lo que ya
@@ -159,6 +184,7 @@ js/
   mapa.js                  Motor del mapa: proyección, dibujo, zoom y clics
   juegos/geografia.js      Los tres juegos de geografía
   juegos/matematica.js     Los tres juegos de matemática
+  juegos/examen.js         Modo examen: mezcla juegos y pone la nota
   aprender/contenido.js    El texto y los dibujos de las lecciones
   aprender/leccion.js      Visor de lecciones (los pasos, de a uno)
   tienda/catalogo.js       Qué se puede comprar: temas, fondos y monigotes
@@ -179,6 +205,7 @@ navegador funciona:
 | `#/leccion/sumar-llevando` | Una lección |
 | `#/materia/geografia` | Los juegos de una materia |
 | `#/juego/geografia/paises` | Configurar la partida |
+| `#/examen` · `#/nota` | Armar un examen y su nota |
 | `#/perfil` · `#/tienda` · `#/parental` | Perfil, tienda y modo parental |
 
 ## Cómo se agrega un juego o una materia
