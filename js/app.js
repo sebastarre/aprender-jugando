@@ -24,24 +24,24 @@
   var MATERIAS = [
     {
       id: 'geografia', nombre: 'Geografía', icono: '🌎',
-      color: '#21b573', suave: '#e3f8ee',
+      color: '#16a34a', suave: '#dcfce7',
       texto: 'Países, capitales y banderas de todo el mundo.',
       modulo: Geografia
     },
     {
       id: 'matematica', nombre: 'Matemática', icono: '➗',
-      color: '#4c6ef5', suave: '#e8edff',
+      color: '#2563eb', suave: '#dbeafe',
       texto: 'Tablas, sumas, restas y la hora del reloj.',
       modulo: Matematica
     },
     {
       id: 'lengua', nombre: 'Lengua', icono: '📚',
-      color: '#f5a524', suave: '#fff3dc',
+      color: '#f59e0b', suave: '#fef3c7',
       texto: 'Ortografía, sinónimos y lectura.', modulo: null
     },
     {
       id: 'ciencias', nombre: 'Ciencias', icono: '🔬',
-      color: '#8b5cf6', suave: '#f1ebff',
+      color: '#8b5cf6', suave: '#ede9fe',
       texto: 'El cuerpo, los animales y el espacio.', modulo: null
     }
   ];
@@ -730,7 +730,7 @@
       b2.appendChild(Util.crear('h2', 'etiqueta-grupo', (numero++) + '. ¿De qué zona?'));
       var gz = Util.crear('div', 'grilla-continentes');
       Mapa.zonas().forEach(function (z) {
-        var b = botonOpcion(z.icono, z.nombre, z.cantidad + ' países', '#21b573', '#e3f8ee');
+        var b = botonOpcion(z.icono, z.nombre, z.cantidad + ' países', '#16a34a', '#dcfce7');
         if (selExamen.zona === z.id) b.setAttribute('aria-pressed', 'true');
         b.addEventListener('click', function () {
           selExamen.zona = z.id;
@@ -748,7 +748,7 @@
     b3.appendChild(Util.crear('h2', 'etiqueta-grupo', numero + '. ¿Cuántas preguntas?'));
     var fila = Util.crear('div', 'fila-opciones');
     Examen.CANTIDADES.forEach(function (n) {
-      var b = botonOpcion(String(n), n + ' preguntas', null, '#8b5cf6', '#f1ebff');
+      var b = botonOpcion(String(n), n + ' preguntas', null, '#7c3aed', '#ede9fe');
       if (selExamen.cantidad === n) b.setAttribute('aria-pressed', 'true');
       b.addEventListener('click', function () {
         selExamen.cantidad = n;

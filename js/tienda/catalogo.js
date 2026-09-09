@@ -15,8 +15,8 @@ window.Catalogo = (function () {
   'use strict';
 
   /* Las únicas variables que un tema puede cambiar. */
-  var VARIABLES = ['primario', 'primario-osc', 'violeta', 'papel', 'tarjeta',
-                   'borde', 'tinta', 'tinta-suave', 'agua'];
+  var VARIABLES = ['primario', 'primario-osc', 'sobre-primario', 'violeta', 'rosa',
+                   'rosa-osc', 'papel', 'tarjeta', 'borde', 'tinta', 'tinta-suave', 'agua'];
 
   var TEMAS = [
     {
@@ -28,49 +28,68 @@ window.Catalogo = (function () {
       id: 'selva', nombre: 'Selva', icono: '🌿', precio: 120,
       texto: 'Verdes de bosque.',
       colores: {
-        'primario': '#2f9e57', 'primario-osc': '#217a41', 'violeta': '#7f9e2f',
-        'papel': '#f1faf3', 'tarjeta': '#ffffff', 'borde': '#d3e9d8',
-        'tinta': '#1c3a26', 'tinta-suave': '#517d61', 'agua': '#cbe7dc'
+        'primario': '#16a34a', 'primario-osc': '#15803d', 'sobre-primario': '#ffffff',
+        'violeta': '#65a30d', 'rosa': '#f97316', 'rosa-osc': '#c2410c',
+        'papel': '#f0fdf4', 'tarjeta': '#ffffff', 'borde': '#bbf7d0',
+        'tinta': '#14532d', 'tinta-suave': '#4d7c5f', 'agua': '#a7dfc4'
       },
-      deco: 'radial-gradient(38rem 28rem at 8% -6%, #d8f0c0 0%, transparent 60%),' +
-            'radial-gradient(34rem 26rem at 98% 4%, #c9ecd8 0%, transparent 62%),' +
-            'radial-gradient(40rem 30rem at 50% 108%, #eaf7c8 0%, transparent 60%)'
+      deco: 'radial-gradient(38rem 28rem at 8% -6%, #d9f99d 0%, transparent 60%),' +
+            'radial-gradient(34rem 26rem at 98% 4%, #a7f3d0 0%, transparent 62%),' +
+            'radial-gradient(40rem 30rem at 50% 108%, #fef08a 0%, transparent 60%)'
     },
     {
       id: 'oceano', nombre: 'Océano', icono: '🌊', precio: 120,
       texto: 'Azules de agua honda.',
       colores: {
-        'primario': '#1b8fc4', 'primario-osc': '#126890', 'violeta': '#4a6bd6',
-        'papel': '#eef8fd', 'tarjeta': '#ffffff', 'borde': '#cde5f2',
-        'tinta': '#123549', 'tinta-suave': '#4a7891', 'agua': '#bde2f5'
+        'primario': '#0284c7', 'primario-osc': '#0369a1', 'sobre-primario': '#ffffff',
+        'violeta': '#6366f1', 'rosa': '#06b6d4', 'rosa-osc': '#0e7490',
+        'papel': '#f0f9ff', 'tarjeta': '#ffffff', 'borde': '#bae6fd',
+        'tinta': '#0c4a6e', 'tinta-suave': '#47708c', 'agua': '#a5dcf7'
       },
-      deco: 'radial-gradient(38rem 28rem at 8% -6%, #c9e9fb 0%, transparent 60%),' +
-            'radial-gradient(34rem 26rem at 98% 4%, #bfe0f7 0%, transparent 62%),' +
-            'radial-gradient(40rem 30rem at 50% 108%, #d3f2ee 0%, transparent 60%)'
+      deco: 'radial-gradient(38rem 28rem at 8% -6%, #bae6fd 0%, transparent 60%),' +
+            'radial-gradient(34rem 26rem at 98% 4%, #a5f3fc 0%, transparent 62%),' +
+            'radial-gradient(40rem 30rem at 50% 108%, #c7d2fe 0%, transparent 60%)'
     },
     {
       id: 'atardecer', nombre: 'Atardecer', icono: '🌅', precio: 150,
       texto: 'Naranjas de cielo de tarde.',
       colores: {
-        'primario': '#e2622c', 'primario-osc': '#b0481c', 'violeta': '#d64a86',
-        'papel': '#fff4ee', 'tarjeta': '#ffffff', 'borde': '#ffdbc8',
-        'tinta': '#4a2418', 'tinta-suave': '#8c5f4a', 'agua': '#f7dcc6'
+        'primario': '#f97316', 'primario-osc': '#ea580c',
+        // sobre naranja el texto va oscuro: en blanco no se leería
+        'sobre-primario': '#431407',
+        'violeta': '#e11d48', 'rosa': '#d946ef', 'rosa-osc': '#a21caf',
+        'papel': '#fff7ed', 'tarjeta': '#ffffff', 'borde': '#fed7aa',
+        'tinta': '#431407', 'tinta-suave': '#8a5a44', 'agua': '#bfdbfe'
       },
-      deco: 'radial-gradient(38rem 28rem at 8% -6%, #ffd9b0 0%, transparent 60%),' +
-            'radial-gradient(34rem 26rem at 98% 4%, #ffcfd6 0%, transparent 62%),' +
-            'radial-gradient(40rem 30rem at 50% 108%, #ffe9c2 0%, transparent 60%)'
+      deco: 'radial-gradient(38rem 28rem at 8% -6%, #fed7aa 0%, transparent 60%),' +
+            'radial-gradient(34rem 26rem at 98% 4%, #fecdd3 0%, transparent 62%),' +
+            'radial-gradient(40rem 30rem at 50% 108%, #fde68a 0%, transparent 60%)'
     },
     {
       id: 'chicle', nombre: 'Chicle', icono: '🍬', precio: 150,
       texto: 'Rosas de golosina.',
       colores: {
-        'primario': '#d6489e', 'primario-osc': '#a52f79', 'violeta': '#8b5cf6',
-        'papel': '#fff2fa', 'tarjeta': '#ffffff', 'borde': '#ffd3ec',
-        'tinta': '#4a1836', 'tinta-suave': '#8d4c72', 'agua': '#ffd8f0'
+        'primario': '#db2777', 'primario-osc': '#9d174d', 'sobre-primario': '#ffffff',
+        'violeta': '#8b5cf6', 'rosa': '#f59e0b', 'rosa-osc': '#b45309',
+        'papel': '#fdf2f8', 'tarjeta': '#ffffff', 'borde': '#fbcfe8',
+        'tinta': '#500724', 'tinta-suave': '#93516f', 'agua': '#bfdbfe'
       },
-      deco: 'radial-gradient(38rem 28rem at 8% -6%, #ffd4ec 0%, transparent 60%),' +
-            'radial-gradient(34rem 26rem at 98% 4%, #e2d4ff 0%, transparent 62%),' +
-            'radial-gradient(40rem 30rem at 50% 108%, #ffe0f0 0%, transparent 60%)'
+      deco: 'radial-gradient(38rem 28rem at 8% -6%, #fbcfe8 0%, transparent 60%),' +
+            'radial-gradient(34rem 26rem at 98% 4%, #ddd6fe 0%, transparent 62%),' +
+            'radial-gradient(40rem 30rem at 50% 108%, #fef08a 0%, transparent 60%)'
+    },
+    {
+      id: 'menta', nombre: 'Menta', icono: '🧊', precio: 180,
+      texto: 'Turquesa fresquito.',
+      colores: {
+        'primario': '#0d9488', 'primario-osc': '#0f766e', 'sobre-primario': '#ffffff',
+        'violeta': '#7c3aed', 'rosa': '#f43f5e', 'rosa-osc': '#be123c',
+        'papel': '#f0fdfa', 'tarjeta': '#ffffff', 'borde': '#99f6e4',
+        'tinta': '#134e4a', 'tinta-suave': '#4a7c76', 'agua': '#a5e8e0'
+      },
+      deco: 'radial-gradient(38rem 28rem at 8% -6%, #99f6e4 0%, transparent 60%),' +
+            'radial-gradient(34rem 26rem at 98% 4%, #bfdbfe 0%, transparent 62%),' +
+            'radial-gradient(40rem 30rem at 50% 108%, #ddd6fe 0%, transparent 60%)'
     }
   ];
 

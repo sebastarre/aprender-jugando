@@ -149,6 +149,22 @@ una entrada a `js/tienda/catalogo.js`. Lo único que un tema no puede tocar es
 `--exito` y `--error`: el verde de «acertaste» y el rojo de «erraste» son
 iguales en todos los temas.
 
+Si agregás un tema con un color primario claro (naranja, amarillo), acordate de
+ponerle también `sobre-primario` oscuro: el texto blanco sobre esos tonos no
+llega al contraste mínimo. El tema Atardecer es el ejemplo.
+
+## Los colores
+
+La paleta base es azul (#2563eb) + amarillo (#f59e0b) + rosa (#ec4899), sobre
+fondo azul muy claro. Sale de una paleta de referencia para apps de aprendizaje
+infantil, y está elegida para que el texto llegue a 4.5:1 de contraste en todos
+lados.
+
+Donde va texto blanco encima de un color fuerte se usan las variantes oscuras
+(`--exito-osc`, `--error-osc`, `--rosa-osc`): en el tono vivo el blanco queda
+por debajo del mínimo legible. Los tonos vivos se usan para rellenos —el país
+correcto en el mapa, el borde de una tarjeta— donde no llevan texto encima.
+
 ## Perfiles y modo parental
 
 El botón de la esquina superior derecha abre el perfil. Ahí se ve cuántas

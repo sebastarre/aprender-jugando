@@ -17,7 +17,7 @@
 window.Matematica = (function () {
   'use strict';
 
-  var COLOR = '#4c6ef5';
+  var COLOR = '#7c3aed';
 
   function entero(min, max) {
     return min + Math.floor(Math.random() * (max - min + 1));
@@ -127,7 +127,7 @@ window.Matematica = (function () {
     nombre: 'Tablas de multiplicar',
     icono: '✖️',
     color: COLOR,
-    suave: '#e8edff',
+    suave: '#ede9fe',
     texto: 'Practicá las tablas del 2 al 12, de a una o mezcladas.',
     edadMin: 7,
     requiere: { juego: 'matematica/cuentas', estrellas: 3 },
@@ -212,8 +212,8 @@ window.Matematica = (function () {
     id: 'cuentas',
     nombre: 'Sumas y restas',
     icono: '➕',
-    color: '#21b573',
-    suave: '#e3f8ee',
+    color: '#16a34a',
+    suave: '#dcfce7',
     texto: 'Cuentas de sumar y restar, en cuatro niveles.',
     edadMin: 5,
 
@@ -337,8 +337,8 @@ window.Matematica = (function () {
     id: 'reloj',
     nombre: 'La hora',
     icono: '🕒',
-    color: '#8b5cf6',
-    suave: '#f1ebff',
+    color: '#0891b2',
+    suave: '#cffafe',
     texto: 'Mirá el reloj de agujas y decí qué hora es.',
     edadMin: 6,
 

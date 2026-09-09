@@ -4,21 +4,27 @@
    ============================================================ */
 
 :root {
-  --tinta:        #1d2b4a;
-  --tinta-suave:  #5a6b8c;
-  --papel:        #f4f7ff;
+  /* Paleta base: azul de aprender + amarillo de jugar + rosa de premio.
+     Los colores de "acertaste" y "erraste" son aparte y no los pisa
+     ningún tema: tienen que significar siempre lo mismo. */
+  --tinta:        #0f172a;
+  --tinta-suave:  #475569;
+  --papel:        #eff6ff;
   --tarjeta:      #ffffff;
-  --borde:        #dfe6f7;
+  --borde:        #dbe7fe;
 
-  --primario:     #4c6ef5;
-  --primario-osc: #3550c9;
-  --exito:        #21b573;
-  --exito-osc:    #178a58;
-  --error:        #ef4a5e;
-  --error-osc:    #c02b3e;
-  --aviso:        #f5a524;
-  --violeta:      #8b5cf6;
-  --agua:         #cfe6f7;
+  --primario:       #2563eb;
+  --primario-osc:   #1d4ed8;
+  --sobre-primario: #ffffff;   /* el texto que va encima del primario */
+  --exito:        #16a34a;
+  --exito-osc:    #15803d;
+  --error:        #ef4444;
+  --error-osc:    #b91c1c;
+  --aviso:        #f59e0b;
+  --violeta:      #7c3aed;
+  --rosa:         #ec4899;
+  --rosa-osc:     #be185d;
+  --agua:         #b9dbff;
 
   --radio:   22px;
   --radio-s: 14px;
@@ -53,9 +59,9 @@ body {
   /* --deco lo pone js/tienda/temas.js cuando hay un tema o un fondo comprado;
      si no hay nada equipado, quedan estas manchas de siempre */
   background: var(--deco,
-    radial-gradient(38rem 28rem at 8% -6%,  #ffe7b0 0%, transparent 60%),
-    radial-gradient(34rem 26rem at 98% 4%,  #d7e4ff 0%, transparent 62%),
-    radial-gradient(40rem 30rem at 50% 108%, #d6f5e4 0%, transparent 60%));
+    radial-gradient(38rem 28rem at 8% -6%,   #fde7a9 0%, transparent 60%),
+    radial-gradient(34rem 26rem at 98% 4%,   #c7dbff 0%, transparent 62%),
+    radial-gradient(40rem 30rem at 50% 108%, #fbd0e4 0%, transparent 60%));
 }
 
 /* ---------------- Barra superior ---------------- */
@@ -184,7 +190,7 @@ body {
   position: absolute;
   top: 14px;
   right: -6px;
-  background: var(--violeta);
+  background: var(--rosa-osc);
   color: #fff;
   font-size: .78rem;
   font-weight: 700;
@@ -255,7 +261,7 @@ body {
   font: inherit;
   font-size: 1.35rem;
   font-weight: 700;
-  color: #fff;
+  color: var(--sobre-primario);
   background: var(--primario);
   border: none;
   border-radius: 999px;
@@ -387,22 +393,22 @@ body {
 #mapa svg.arrastrando { cursor: grabbing; }
 
 .pais {
-  fill: #e8eef0;
-  stroke: #9fb4bd;
+  fill: #e6e9ec;
+  stroke: #b3bfc6;
   stroke-width: 1;
   vector-effect: non-scaling-stroke;
   transition: fill .18s;
 }
-.pais.jugable { fill: #d9e8c9; stroke: #86a06a; cursor: pointer; }
-.pais.jugable:hover { fill: #c2dca8; }
+.pais.jugable { fill: #c9e8a0; stroke: #6fa043; cursor: pointer; }
+.pais.jugable:hover { fill: #b4dd83; }
 .punto {
-  fill: #d9e8c9;
-  stroke: #6f8a52;
+  fill: #c9e8a0;
+  stroke: #4d7a2a;
   stroke-width: 1.5;
   vector-effect: non-scaling-stroke;
   cursor: pointer;
 }
-.punto:hover { fill: #c2dca8; }
+.punto:hover { fill: #b4dd83; }
 
 .pais.correcto, .punto.correcto { fill: var(--exito); stroke: var(--exito-osc); }
 .pais.fallo,    .punto.fallo    { fill: var(--error); stroke: var(--error-osc); }
@@ -509,8 +515,8 @@ body {
   color: transparent;
   transition: background-color .16s ease, color .16s ease;
 }
-.aviso.bien  { background: var(--exito); color: #fff; }
-.aviso.mal   { background: var(--error); color: #fff; }
+.aviso.bien  { background: var(--exito-osc); color: #fff; }
+.aviso.mal   { background: var(--error-osc); color: #fff; }
 .aviso.dato  { background: var(--aviso); color: #3a2500; }
 .aviso.bien, .aviso.mal, .aviso.dato { animation: aparecer-aviso .2s ease both; }
 @keyframes aparecer-aviso {
@@ -1289,9 +1295,9 @@ body.sin-perfil .pie { display: none; }
   text-align: left;
   padding: 16px 20px;
   margin-bottom: 18px;
-  border: 3px solid var(--violeta);
+  border: 3px solid var(--rosa);
   border-radius: var(--radio);
-  background: linear-gradient(120deg, #f5f0ff 0%, var(--tarjeta) 70%);
+  background: linear-gradient(120deg, #fff0f7 0%, var(--tarjeta) 70%);
   box-shadow: var(--sombra-suave);
   transition: transform .14s, box-shadow .14s;
 }
@@ -1300,7 +1306,7 @@ body.sin-perfil .pie { display: none; }
 .examen-cuerpo { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .examen-cuerpo b { font-size: 1.2rem; }
 .examen-cuerpo span { color: var(--tinta-suave); font-size: .93rem; line-height: 1.35; }
-.examen-flecha { font-size: 1.4rem; color: var(--violeta); flex: none; }
+.examen-flecha { font-size: 1.4rem; color: var(--rosa); flex: none; }
 
 /* la selección múltiple se marca con un tilde, no sólo con el borde */
 .opcion-multiple[aria-pressed="true"] .opcion-icono::after {
