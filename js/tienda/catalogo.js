@@ -37,24 +37,29 @@ window.Catalogo = (function () {
      los siete pasaban 4.5:1 en todos los pares de texto y fondo. */
   var RANURAS = [
     {
+      /* Se llamaba «la barra de arriba» y pintaba la franja que estaba
+         en todas las pantallas. Esa franja se fue —era lenguaje de
+         página web, no de app— y el color pasó al cartel del inicio.
+         La clave interna sigue siendo 'barra' para no romperle la
+         compra a nadie que ya la tenga pagada. */
       id: 'barra',
-      nombre: 'La barra de arriba',
-      texto: 'La franja de color que está siempre arriba de todo.',
+      nombre: 'La portada',
+      texto: 'El cartel grande del inicio, con tu mascota y tu nombre.',
       colores: [
         { id: 'azul', nombre: 'Azul', precio: 0, muestra: '#1d4ed8',
-          vars: { 'barra': '#1d4ed8', 'sobre-barra': '#ffffff', 'marca-acento': '#fcd34d' } },
+          vars: { 'barra': '#1d4ed8', 'barra-fuerte': '#1e3a8a', 'sobre-barra': '#ffffff', 'marca-acento': '#fcd34d' } },
         { id: 'frutilla', nombre: 'Frutilla', precio: 0, muestra: '#9d174d',
-          vars: { 'barra': '#9d174d', 'sobre-barra': '#ffffff', 'marca-acento': '#fbcfe8' } },
+          vars: { 'barra': '#9d174d', 'barra-fuerte': '#6d132f', 'sobre-barra': '#ffffff', 'marca-acento': '#fbcfe8' } },
         { id: 'naranja', nombre: 'Naranja', precio: 0, muestra: '#9a3412',
-          vars: { 'barra': '#9a3412', 'sobre-barra': '#ffffff', 'marca-acento': '#fed7aa' } },
+          vars: { 'barra': '#9a3412', 'barra-fuerte': '#6b2410', 'sobre-barra': '#ffffff', 'marca-acento': '#fed7aa' } },
         { id: 'selva', nombre: 'Selva', precio: 50, muestra: '#166534',
-          vars: { 'barra': '#166534', 'sobre-barra': '#ffffff', 'marca-acento': '#fde047' } },
+          vars: { 'barra': '#166534', 'barra-fuerte': '#0f3d20', 'sobre-barra': '#ffffff', 'marca-acento': '#fde047' } },
         { id: 'oceano', nombre: 'Océano', precio: 50, muestra: '#075985',
-          vars: { 'barra': '#075985', 'sobre-barra': '#ffffff', 'marca-acento': '#7dd3fc' } },
+          vars: { 'barra': '#075985', 'barra-fuerte': '#053b58', 'sobre-barra': '#ffffff', 'marca-acento': '#7dd3fc' } },
         { id: 'uva', nombre: 'Uva', precio: 60, muestra: '#5b21b6',
-          vars: { 'barra': '#5b21b6', 'sobre-barra': '#ffffff', 'marca-acento': '#f5d0fe' } },
+          vars: { 'barra': '#5b21b6', 'barra-fuerte': '#3f1580', 'sobre-barra': '#ffffff', 'marca-acento': '#f5d0fe' } },
         { id: 'menta', nombre: 'Menta', precio: 60, muestra: '#115e59',
-          vars: { 'barra': '#115e59', 'sobre-barra': '#ffffff', 'marca-acento': '#fef08a' } }
+          vars: { 'barra': '#115e59', 'barra-fuerte': '#0b3f3c', 'sobre-barra': '#ffffff', 'marca-acento': '#fef08a' } }
       ]
     },
 

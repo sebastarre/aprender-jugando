@@ -9,7 +9,7 @@
 
 <!-- App instalable (PWA): ícono propio, pantalla completa y sin internet -->
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#4c6ef5">
+<meta name="theme-color" content="#f3f7ff">
 <link rel="apple-touch-icon" href="assets/icono-apple-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -22,40 +22,14 @@
 
 <div id="fondo-deco" aria-hidden="true"></div>
 
-<header class="barra">
-  <button class="btn-icono" id="btn-atras" hidden aria-label="Volver"><span data-ico="atras"></span></button>
-  <a class="marca" href="#/" aria-label="Ir al inicio">
-    <span class="marca-globo" data-ico="geografia" aria-hidden="true"></span>
-    <span class="marca-texto">Aprender<b>Jugando</b></span>
-  </a>
-  <div class="barra-derecha">
-    <a class="chip-monedas" id="chip-monedas" href="#/tienda"
-       title="Tus monedas · tocá para ir a la tienda"><span data-ico="moneda" aria-hidden="true"></span> <b>0</b></a>
-    <button class="btn-icono" id="btn-sonido" aria-label="Activar o silenciar sonido"><span data-ico="sonido"></span></button>
-    <a class="btn-icono btn-perfil" id="btn-perfil" href="#/perfil"
-       aria-label="Ver mi perfil">🦊</a>
-  </div>
-</header>
 
-<!-- Las dos mitades de la app -->
-<nav class="secciones" id="secciones" hidden aria-label="Secciones">
-  <a class="seccion" id="tab-aprender" href="#/aprender">
-    <span class="seccion-icono" data-ico="aprender" aria-hidden="true"></span>
-    <span class="seccion-texto">
-      <b>Aprender</b>
-      <small>Cursitos cortos</small>
-    </span>
-  </a>
-  <a class="seccion" id="tab-juegos" href="#/juegos">
-    <span class="seccion-icono" data-ico="jugar" aria-hidden="true"></span>
-    <span class="seccion-texto">
-      <b>Jugar</b>
-      <small>Practicá lo aprendido</small>
-    </span>
-  </a>
-</nav>
 
 <main id="app">
+
+  <!-- La flecha de volver. Va pegada arriba del contenido y se queda
+       ahí al scrollear; es lo único que sobrevive de la barra. -->
+  <button class="btn-atras" id="btn-atras" hidden aria-label="Volver"><span data-ico="atras"></span></button>
+
 
   <!-- ============ BIENVENIDA (primera vez) ============ -->
   <section class="pantalla pantalla-bienvenida" id="pantalla-bienvenida" hidden>
@@ -96,15 +70,25 @@
        personalización, la configuración) vivía escondido en un menú
        desplegable del ícono de arriba a la derecha. -->
   <section class="pantalla" id="pantalla-inicio" hidden>
-    <a class="portada" href="#/perfil">
-      <div class="portada-mascota" data-mascota="hola" aria-hidden="true"></div>
-      <div class="portada-datos">
-        <span class="portada-hola">¡Hola!</span>
-        <strong class="portada-nombre" id="inicio-nombre">Jugador</strong>
-        <span class="portada-cuentas" id="inicio-cuentas"></span>
+    <!-- El cartel de color del inicio. Es lo que pinta la ranura de la
+         tienda que antes pintaba la barra de arriba: ahora que la barra
+         no está, la paleta se luce acá. Son dos enlaces distintos, no
+         uno: el nombre lleva al perfil y las monedas a la tienda, que
+         es lo que uno espera al tocar un contador de monedas. -->
+    <div class="portada">
+      <a class="portada-quien" href="#/perfil">
+        <span class="portada-mascota" data-mascota="hola" aria-hidden="true"></span>
+        <span class="portada-datos">
+          <span class="portada-hola">¡Hola!</span>
+          <strong class="portada-nombre" id="inicio-nombre">Jugador</strong>
+        </span>
+      </a>
+      <div class="portada-cuentas">
+        <span class="portada-cuenta" id="portada-estrellas"></span>
+        <a class="portada-cuenta portada-monedas" href="#/tienda"
+           aria-label="Tus monedas · ir a la tienda" id="portada-monedas"></a>
       </div>
-      <span class="portada-flecha" data-ico="flecha" aria-hidden="true"></span>
-    </a>
+    </div>
 
     <nav class="menu-inicio" aria-label="Menú principal">
       <a class="boton-menu" id="menu-jugar" href="#/juegos">
@@ -238,6 +222,12 @@
       <div class="hud-der">
         <div class="marcador" title="Puntos"><span data-ico="trofeo"></span><b id="marcador-puntos">0</b></div>
         <div class="vidas" id="vidas" title="Intentos para esta pregunta"></div>
+        <!-- El silenciador vivía en la barra de arriba, visible en las
+             quince pantallas. El único momento en que hace falta a mano
+             es en medio de una partida (en el colectivo, en la sala de
+             espera); para el resto está el interruptor de Configuración. -->
+        <button class="btn-icono btn-sonido" id="btn-sonido"
+                aria-label="Activar o silenciar sonido"><span data-ico="sonido"></span></button>
       </div>
     </div>
 

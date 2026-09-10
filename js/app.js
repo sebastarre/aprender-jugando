@@ -1,6 +1,8 @@
 /* ============================================================
-   Armado de la página: las dos secciones (Aprender y Jugar),
-   las pantallas y la navegación.
+   Armado de la app: las pantallas y la navegación.
+
+   Todo cuelga del menú de inicio (#/): cinco destinos, y de cada uno se
+   vuelve con la flecha. No hay barra fija ni pestañas arriba.
 
    La app tiene dos mitades que se apoyan una en la otra:
      Aprender  cursitos cortos que explican algo (js/aprender/)
@@ -184,7 +186,6 @@
   var PANTALLAS = ['bienvenida', 'inicio', 'juegos', 'aprender', 'materia', 'lecciones', 'leccion',
                    'config', 'juego', 'fin', 'perfil', 'tienda', 'parental',
                    'examen', 'nota', 'configuracion', 'personalizacion'];
-  var CON_SECCIONES = ['juegos', 'aprender', 'materia', 'lecciones'];
 
   function mostrar(nombre) {
     PANTALLAS.forEach(function (p) { $('pantalla-' + p).hidden = (p !== nombre); });
@@ -192,15 +193,9 @@
        fondo de todo; la bienvenida tampoco, porque todavía no hay a
        dónde volver. */
     $('btn-atras').hidden = (nombre === 'inicio' || nombre === 'bienvenida');
-    $('secciones').hidden = CON_SECCIONES.indexOf(nombre) === -1;
     document.body.classList.toggle('jugando', nombre === 'juego');
     document.body.classList.toggle('sin-perfil', nombre === 'bienvenida');
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
-  function marcarSeccion(cual) {
-    $('tab-juegos').setAttribute('aria-current', cual === 'juegos' ? 'page' : 'false');
-    $('tab-aprender').setAttribute('aria-current', cual === 'aprender' ? 'page' : 'false');
   }
 
   function irA(hash) {
@@ -367,22 +362,19 @@
 
   /* ---------------------- inicio ---------------------- */
 
-  /** Un dato de la portada: un dibujito y un número. */
-  function cuentaDePortada(icono, texto) {
-    var caja = Util.crear('span', 'portada-cuenta');
+  /** Una de las dos pastillas de la portada: un dibujito y un número. */
+  function cuentaDePortada(caja, icono, cuanto) {
+    Util.vaciar(caja);
     caja.appendChild(Iconos.crear(icono));
-    caja.appendChild(Util.crear('span', null, texto));
-    return caja;
+    caja.appendChild(Util.crear('span', null, String(cuanto)));
   }
 
   function pintarInicio() {
     var yo = Almacen.activo();
     $('inicio-nombre').textContent = yo ? yo.nombre : 'Jugador';
 
-    var cuentas = $('inicio-cuentas');
-    Util.vaciar(cuentas);
-    cuentas.appendChild(cuentaDePortada('estrella', String(Almacen.estrellas())));
-    cuentas.appendChild(cuentaDePortada('moneda', String(Almacen.monedas())));
+    cuentaDePortada($('portada-estrellas'), 'estrella', Almacen.estrellas());
+    cuentaDePortada($('portada-monedas'), 'moneda', Almacen.monedas());
 
     /* La bajada de cada botón dice qué hay adentro, no qué es: "3
        materias" sirve más que "practicá lo que aprendiste", que es lo
@@ -1739,12 +1731,11 @@
     return d.getDate() + '/' + (d.getMonth() + 1) + ' ' + hora;
   }
 
-  /* ---------------------- barra superior ---------------------- */
+  /* Antes esto pintaba la barra de arriba (las monedas y el avatar).
+     Ahora esos datos viven en la portada del inicio, así que lo único
+     que hace falta es repintarla si está a la vista. */
   function pintarBarraSuperior() {
-    $('chip-monedas').querySelector('b').textContent = Almacen.monedas();
-    var yo = Almacen.activo();
-    $('btn-perfil').textContent = yo ? yo.avatar : '🙂';
-    $('btn-perfil').setAttribute('aria-label', yo ? 'Perfil de ' + yo.nombre : 'Perfil');
+    if (!$('pantalla-inicio').hidden) pintarInicio();
   }
 
   function pintarBotonSonido() {
@@ -1772,14 +1763,12 @@
 
     if (partes[0] === 'juegos') {
       cortarPartida();
-      marcarSeccion('juegos');
       pintarMateriasJuegos();
       return mostrar('juegos');
     }
 
     if (partes[0] === 'aprender') {
       cortarPartida();
-      marcarSeccion('aprender');
       pintarMateriasAprender();
       return mostrar('aprender');
     }
@@ -1788,7 +1777,6 @@
       var mat1 = materiaPorId(partes[1]);
       if (!mat1 || !leccionesVisibles(mat1.id).length) return irA('#/aprender');
       cortarPartida();
-      marcarSeccion('aprender');
       pintarLecciones(mat1);
       return mostrar('lecciones');
     }
@@ -1806,7 +1794,6 @@
       var m = materiaPorId(partes[1]);
       if (!m || !m.disponible) return irA('#/juegos');
       cortarPartida();
-      marcarSeccion('juegos');
       pintarJuegos(m);
       return mostrar('materia');
     }
@@ -1847,7 +1834,6 @@
 
     if (partes[0] === 'examen') {
       cortarPartida();
-      marcarSeccion('juegos');
       pintarExamen();
       return mostrar('examen');
     }
@@ -1922,16 +1908,6 @@
   /* ---------------------- eventos ---------------------- */
   function conectar() {
     $('btn-atras').addEventListener('click', volverAtras);
-    /* El avatar de la barra lleva derecho al perfil. Antes desplegaba un
-       menú con Perfil, Configuración y Personalización: tres de los
-       cinco lugares de la app escondidos atrás de un ícono de 46px que
-       no decía nada. Ahora los tres son botones grandes en el inicio, y
-       un desplegable duplicado sería una manera más de llegar y una
-       cosa más que un chico de siete tiene que descubrir. */
-    $('btn-perfil').addEventListener('click', function () {
-      Sonido.despertar(); Sonido.tocar('clic');
-    });
-
     $('btn-sonido').addEventListener('click', function () {
       Almacen.setSonido(!Almacen.sonidoActivo());
       pintarBotonSonido();

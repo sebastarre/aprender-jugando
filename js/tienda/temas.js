@@ -39,11 +39,16 @@ window.Temas = (function () {
     if (deco) raiz.style.setProperty('--deco', deco);
     else raiz.style.removeProperty('--deco');
 
-    // la barra del navegador en el celular acompaña a la de la app
+    /* La franja del sistema (el reloj, la batería) acompaña al papel,
+       no a la portada. Antes la app tenía una barra de color pegada
+       arriba de todo y lo natural era que siguieran siendo del mismo
+       color; ahora arriba de todo está el papel, así que la barra del
+       sistema tiene que desaparecer contra él en vez de dibujar una
+       franja de otro color en el borde de la pantalla. */
     var meta = document.querySelector('meta[name="theme-color"]');
     if (meta) {
-      var barra = puesto('barra');
-      meta.setAttribute('content', (barra && barra.vars.barra) || '#1d4ed8');
+      var fondo = puesto('fondo');
+      meta.setAttribute('content', (fondo && fondo.vars.papel) || '#f3f7ff');
     }
   }
 

@@ -199,9 +199,13 @@ que significar lo mismo siempre, se ponga lo que se ponga.
 Cada una de las cuatro ranuras pisa su propio grupo de variables, y por eso
 un solo color cambia varias cosas a la vez:
 
-- **La barra de arriba** — `--barra`, más `--sobre-barra` (el texto que va
-  encima) y `--marca-acento` (el color de «Jugando» en el logo). Es lo que más
-  se ve, porque está en todas las pantallas.
+- **La portada** — `--barra`, más `--barra-fuerte` (el escalón de abajo),
+  `--sobre-barra` (el texto que va encima) y `--marca-acento`. Es el cartel de
+  color del inicio, con la mascota, el nombre y las dos cuentas. Se sigue
+  llamando `--barra` porque antes pintaba la barra fija de arriba de todo, y la
+  clave con la que se guarda la compra es ésa: renombrarla le borraría la
+  compra a quien ya la tenga paga. Es el único bloque de color pleno que queda
+  en la app, así que es lo que muestra de un vistazo qué paleta está puesta.
 - **El fondo** — `--papel`, y con él `--tarjeta` y `--borde` (las tarjetas,
   apenas teñidas para que no queden como recortes blancos pegados encima),
   `--seleccion` (el relleno de lo elegido) y `--agua` (el mar del mapa).
@@ -308,9 +312,9 @@ que actualizar esa tabla. Después, los nombres y precios van en
 
 ## Los colores se compran de a uno
 
-Hay cuatro **ranuras** —la barra de arriba, el fondo, los botones y las
-letras— y cada una tiene su propia lista de siete colores. El chico arma la
-combinación que quiera: barra verde con fondo rosa, botones naranjas y
+Hay cuatro **ranuras** —la portada, el fondo, los botones y las letras— y
+cada una tiene su propia lista de siete colores. El chico arma la
+combinación que quiera: portada verde con fondo rosa, botones naranjas y
 letras azules, si se le canta. Tres colores de cada ranura son gratis y los
 otros cuatro se compran sueltos, entre 40 y 60 monedas.
 
@@ -340,7 +344,7 @@ tiene los cuatro colores de esa familia.
 ## La paleta de casa
 
 La paleta base es azul (#2563eb) + amarillo (#f59e0b) + rosa (#ec4899), con la
-barra de arriba en azul pleno (#1d4ed8) sobre fondo azul claro. Sale de una
+portada en azul pleno (#1d4ed8) sobre un fondo casi blanco. Sale de una
 paleta de referencia para apps de aprendizaje infantil, y está elegida para que
 el texto llegue a 4.5:1 de contraste en todos lados.
 
@@ -420,8 +424,12 @@ herramientas/              Scripts para regenerar los datos (no hacen falta para
 La navegación usa el `#` de la dirección, así que el botón «atrás» del
 navegador funciona:
 
+No hay barra fija ni pestañas arriba: todo cuelga del menú de `#/`, y de cada
+pantalla se vuelve con la flecha, que es lo único que quedó de la barra.
+
 | Dirección | Qué muestra |
 |---|---|
+| `#/` | El menú de inicio: la portada y los cuatro destinos |
 | `#/aprender` · `#/juegos` | Las dos secciones |
 | `#/lecciones/matematica` | Las lecciones de una materia |
 | `#/leccion/sumar-llevando` | Una lección |

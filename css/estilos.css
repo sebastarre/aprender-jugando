@@ -35,9 +35,12 @@
   --sombra-clay:  #c9d6ee;   /* el escalón de 4px, el que se hunde */
   --pista:        #b6c8e8;   /* rieles, interruptores apagados, botones */
 
-  /* La barra de arriba es de color pleno: es lo que hace que se note de
-     entrada qué paleta está puesta. Cada tema la pisa con su propio tono. */
+  /* El cartel de color del inicio (la «portada»). Es el único bloque de
+     color pleno que queda, así que es lo que muestra de un vistazo qué
+     paleta está puesta. Se sigue llamando --barra porque antes pintaba
+     la barra de arriba, y la clave de la compra en la tienda es ésa. */
   --barra:         #1d4ed8;
+  --barra-fuerte:  #1e3a8a;
   --sobre-barra:   #ffffff;
   --marca-acento:  #fcd34d;
 
@@ -152,66 +155,6 @@ body {
   background: var(--deco, none);
 }
 
-/* ---------------- Barra superior ---------------- */
-.barra {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px clamp(12px, 3vw, 28px);
-  position: sticky;
-  top: 0;
-  z-index: 30;
-  /* opaca a propósito: si fuera translúcida se vería el contenido pasando
-     por detrás al scrollear (el marcador y los corazones asomaban rotos) */
-  background: var(--barra);
-  color: var(--sobre-barra);
-  /* Las esquinas de abajo redondeadas la convierten de "marco del
-     navegador" en una pieza más de la app, del mismo palo que las
-     tarjetas. Antes cerraba con una línea recta 3px más oscura: un
-     canto duro atravesando la pantalla, lo primero que se veía al
-     abrir. Ahora cierra con una curva y una sombra difusa. */
-  border-radius: 0 0 26px 26px;
-  box-shadow: 0 4px 16px -4px rgba(15, 23, 42, .22);
-}
-
-.marca {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  text-decoration: none;
-  color: inherit;
-  font-size: 1.25rem;
-  font-weight: 700;
-  letter-spacing: .2px;
-}
-/* El globo de la marca ya no gira: un emoji girando pasaba por gracioso,
-   un ícono de trazo girando parece una rueda de "cargando". */
-.marca-globo { font-size: 1.7rem; display: inline-flex; }
-.marca-globo .ico { stroke-width: 2.1; }
-.marca-texto b { color: var(--marca-acento); }
-@keyframes girar { to { transform: rotate(360deg); } }
-
-.barra-derecha { margin-left: auto; display: flex; align-items: center; gap: 10px; }
-
-.btn-icono {
-  font: inherit;
-  font-size: 1.2rem;
-  line-height: 1;
-  width: 46px;
-  height: 46px;
-  border-radius: 50%;
-  border: 2px solid var(--borde);
-  background: var(--tarjeta);
-  color: var(--tinta);
-  cursor: pointer;
-  /* el avatar es un enlace al perfil, no un botón: sin subrayado */
-  text-decoration: none;
-  transition: transform .12s, background .12s;
-}
-.btn-icono:hover { background: var(--papel); transform: translateY(-2px); }
-.btn-icono:active { transform: translateY(0); }
-.btn-icono.apagado { opacity: .45; }
-
 /* ---------------- Estructura ---------------- */
 #app {
   flex: 1;          /* empuja el pie hasta abajo */
@@ -253,47 +196,71 @@ body {
    cinco lugares de la app no se veían hasta que tocabas un ícono de
    46px que no decía nada.
    ============================================================ */
+/* El cartel de color del inicio: la mascota, el nombre y las dos
+   cuentas. Va del color de la ranura «portada» de la tienda, que es la
+   que antes pintaba la barra de arriba. Con la barra afuera, éste es el
+   único bloque de color pleno de la app, así que la paleta elegida se
+   ve de una y en un solo lugar, en vez de en una franja que estaba en
+   las quince pantallas. */
 .portada {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 14px 16px;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  padding: 16px;
   margin-bottom: 22px;
-  border: 2px solid var(--borde);
   border-radius: var(--radio);
-  background: var(--tarjeta);
-  box-shadow: 0 4px 0 var(--sombra-clay);
+  background: var(--barra);
+  color: var(--sobre-barra);
+  box-shadow: 0 5px 0 var(--barra-fuerte), 0 14px 26px -10px rgba(15, 23, 42, .3);
+}
+
+.portada-quien {
+  flex: 1 1 200px;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
   color: inherit;
   text-decoration: none;
-  transition: transform .14s, box-shadow .14s, border-color .14s;
+  border-radius: var(--radio-s);
+  transition: transform .14s;
 }
-.portada:hover { transform: translateY(-2px); box-shadow: 0 6px 0 var(--sombra-clay); border-color: var(--primario); }
-.portada:active { transform: translateY(4px); box-shadow: 0 0 0 var(--sombra-clay); }
+.portada-quien:hover { transform: translateY(-2px); }
+.portada-quien:active { transform: translateY(1px); }
 
-.portada-mascota { width: 84px; flex: none; }
-.portada-mascota .mascota-img { display: block; height: 84px; width: auto; margin: 0 auto; }
+.portada-mascota { width: 78px; flex: none; }
+.portada-mascota .mascota-img { display: block; height: 78px; width: auto; margin: 0 auto; }
 
-.portada-datos { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
-.portada-hola { color: var(--tinta-suave); font-size: .9rem; line-height: 1.2; }
+.portada-datos { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.portada-hola { font-size: .92rem; line-height: 1.2; opacity: .85; }
 .portada-nombre {
-  font-size: 1.5rem;
+  font-size: 1.6rem;
   font-weight: 800;
   line-height: 1.15;
   overflow-wrap: anywhere;
 }
-.portada-cuentas {
-  display: flex;
+
+.portada-cuentas { display: flex; align-items: center; gap: 8px; flex: none; }
+.portada-cuenta {
+  display: inline-flex;
   align-items: center;
-  gap: 12px;
-  margin-top: 3px;
-  font-size: .92rem;
-  font-weight: 700;
-  color: var(--tinta-suave);
+  gap: 5px;
+  padding: 7px 13px;
+  border-radius: 999px;
+  /* una pastilla clarita sobre el color pleno: se lee sin depender de
+     un segundo color de la paleta */
+  background: rgba(255, 255, 255, .18);
+  color: inherit;
+  font-size: 1rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  text-decoration: none;
 }
-.portada-cuentas .ico { width: 17px; height: 17px; vertical-align: -.2em; }
-.portada-cuenta { display: inline-flex; align-items: center; gap: 4px; }
-.portada-flecha { flex: none; color: var(--tinta-suave); display: inline-flex; }
-.portada-flecha .ico { width: 22px; height: 22px; }
+.portada-cuenta .ico { width: 19px; height: 19px; }
+.portada-monedas { transition: transform .14s, background .14s; }
+.portada-monedas:hover { transform: translateY(-2px); background: rgba(255, 255, 255, .3); }
+.portada-monedas:active { transform: translateY(1px); }
 
 .menu-inicio { display: grid; gap: 14px; }
 
@@ -936,26 +903,16 @@ body.jugando .pie { display: none; }
 @media (max-width: 620px) {
   body { font-size: 16px; }
 
-  /* En el celular no entran el globo, el nombre y los tres botones de
-     la derecha en la misma fila. Antes se escondía el nombre y quedaba
-     el globo solo, flotando: parecía que algo no había cargado. Ahora
-     se esconde el globo y queda el nombre, que es lo que dice qué app
-     es; y cuando aparece la flecha de volver se esconde toda la marca,
-     porque con la flecha ya hay cómo salir de la pantalla. */
-  .marca-globo { display: none; }
-  #btn-atras:not([hidden]) ~ .marca { display: none; }
-
   .card-icono { font-size: 2.2rem; width: 56px; height: 56px; }
   .btn-gigante { width: 100%; }
   #mapa svg { max-height: 52vh; }
 
-  /* Las dos pestañas quedaban de distinta altura: "Practicá lo
-     aprendido" se partía en dos líneas y "Cursitos cortos" no, así que
-     una caja medía 20px más que la otra y se veían desalineadas. En una
-     pantalla chica la bajada no aporta nada (los títulos ya dicen todo)
-     y sin ella las dos miden igual. */
-  .seccion-texto small { display: none; }
-  .seccion { padding: 12px 14px; justify-content: center; }
+  /* En un celular no entran la mascota, el nombre y las dos cuentas en
+     la misma fila, así que las cuentas bajan a un renglón propio. Sin
+     esto arrancan pegadas al borde izquierdo, debajo de la mascota;
+     con la sangría del ancho de la mascota quedan alineadas con el
+     nombre, como si fueran parte de la misma columna. */
+  .portada-cuentas { margin-left: 92px; }
 
   /* En dos columnas cada opción mide 170px: con el dibujo a 1.7rem y
      16px de padding a cada lado quedaban 99px para el texto y
@@ -1001,13 +958,41 @@ body.jugando .pie { display: none; }
 .instalar[data-modo="ios"] .instalar-boton { display: none; }
 .instalar[data-modo="ios"] .instalar-ios { display: inline; }
 
-/* ---------------- Espacio seguro (notch) en modo app ---------------- */
-.barra { padding-top: calc(12px + env(safe-area-inset-top, 0px)); }
+/* ---------------- Espacio seguro (notch) en modo app ----------------
+   Sin la barra de arriba, el contenido arranca contra el borde de la
+   pantalla: en modo app el reloj y la batería del celular quedan
+   flotando encima. El inset de arriba lo empuja abajo del notch. */
 #app {
+  padding-top: calc(clamp(16px, 3vw, 34px) + env(safe-area-inset-top, 0px));
   padding-left: calc(clamp(12px, 3vw, 28px) + env(safe-area-inset-left, 0px));
   padding-right: calc(clamp(12px, 3vw, 28px) + env(safe-area-inset-right, 0px));
   padding-bottom: calc(40px + env(safe-area-inset-bottom, 0px));
 }
+
+/* ---------------- La flecha de volver ----------------
+   Lo único que sobrevivió de la barra. Va arriba del contenido y se
+   queda pegada al borde al scrollear, como el botón de atrás de
+   cualquier app; no es una franja que ocupa una fila entera. */
+.btn-atras {
+  position: sticky;
+  top: calc(10px + env(safe-area-inset-top, 0px));
+  z-index: 25;
+  width: 46px;
+  height: 46px;
+  margin-bottom: 10px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 2px solid var(--borde);
+  background: var(--tarjeta);
+  color: var(--tinta);
+  cursor: pointer;
+  box-shadow: 0 3px 0 var(--sombra-clay), 0 6px 14px -4px rgba(29, 43, 74, .2);
+  transition: transform .12s, box-shadow .12s;
+}
+.btn-atras .ico { width: 24px; height: 24px; stroke-width: 2.4; }
+.btn-atras:hover { transform: translateY(-2px); box-shadow: 0 5px 0 var(--sombra-clay), 0 9px 18px -4px rgba(29, 43, 74, .24); }
+.btn-atras:active { transform: translateY(3px); box-shadow: 0 0 0 var(--sombra-clay); }
 
 /* ---------------- Zona visual de la pregunta (bandera, reloj) ---------------- */
 .pregunta-visual { display: flex; align-items: center; justify-content: center; }
@@ -1175,59 +1160,8 @@ body.jugando .pie { display: none; }
 }
 
 /* ============================================================
-   Las dos secciones: Aprender y Jugar
-   ============================================================ */
-.secciones {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  max-width: 1100px;
-  margin: 18px auto 0;
-  padding: 0 clamp(12px, 3vw, 28px);
-}
-.seccion {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 13px 18px;
-  border-radius: var(--radio);
-  border: 2px solid var(--borde);
-  background: var(--tarjeta);
-  color: var(--tinta);
-  font-weight: 800;
-  text-decoration: none;
-  /* el mismo escalón de 4px que las fichas y los botones: en esta app
-     todo lo que se puede apretar está apoyado sobre un escaloncito */
-  box-shadow: 0 4px 0 var(--sombra-clay);
-  transition: transform .14s, border-color .14s, box-shadow .14s;
-}
-.seccion:hover { transform: translateY(-2px); box-shadow: 0 6px 0 var(--sombra-clay); }
-.seccion:active { transform: translateY(4px); box-shadow: 0 0 0 var(--sombra-clay); }
-.seccion-icono { font-size: 1.9rem; line-height: 1; flex: none; }
-.seccion-texto { display: flex; flex-direction: column; min-width: 0; }
-.seccion-texto b { font-size: 1.15rem; line-height: 1.2; }
-.seccion-texto small { color: var(--tinta-suave); font-size: .85rem; }
-
-/* La pestaña elegida tenía tres marcas a la vez: el borde de color, el
-   relleno, y un anillo interno de 2px. Tres formas de decir lo mismo,
-   y la de adentro dibujaba un segundo contorno pegado al primero. Queda
-   el relleno, que es la que se lee de un vistazo, y el borde del color
-   de la sección. */
-#tab-aprender[aria-current="page"] {
-  border-color: var(--violeta);
-  background: var(--seleccion);
-}
-#tab-juegos[aria-current="page"] {
-  border-color: var(--primario);
-  background: var(--seleccion);
-}
-#tab-aprender[aria-current="page"] .seccion-icono { color: var(--violeta); }
-#tab-juegos[aria-current="page"] .seccion-icono { color: var(--primario); }
-
-/* ============================================================
    Bienvenida
    ============================================================ */
-body.sin-perfil .barra-derecha,
 body.sin-perfil .pie { display: none; }
 
 .pantalla-bienvenida { display: flex; justify-content: center; }
@@ -1553,10 +1487,6 @@ body.sin-perfil .pie { display: none; }
 .perfil-chip-edad { font-size: .8rem; color: var(--tinta-suave); }
 
 @media (max-width: 620px) {
-  .seccion { padding: 11px 13px; gap: 9px; }
-  .seccion-icono { font-size: 1.5rem; }
-  .seccion-texto b { font-size: 1rem; }
-  .seccion-texto small { font-size: .76rem; }
   .punto-bola { width: 20px; height: 20px; }
   .puntitos, .puntitos-fila { gap: 7px; }
 }
@@ -1858,9 +1788,6 @@ body.rindiendo .vidas { display: none; }
    ============================================================ */
 .btn-icono   { display: grid; place-items: center; }
 .btn-icono .ico { width: 22px; height: 22px; }
-
-.seccion-icono { display: inline-flex; }
-.seccion-icono .ico { width: 30px; height: 30px; }
 
 .examen-icono { display: inline-flex; }
 .examen-icono .ico { width: 34px; height: 34px; stroke-width: 1.9; }
