@@ -42,26 +42,19 @@ window.Catalogo = (function () {
       texto: 'La franja de color que está siempre arriba de todo.',
       colores: [
         { id: 'azul', nombre: 'Azul', precio: 0, muestra: '#1d4ed8',
-          vars: { 'barra': '#1d4ed8', 'barra-borde': '#1e3a8a',
-                  'sobre-barra': '#ffffff', 'marca-acento': '#fcd34d' } },
+          vars: { 'barra': '#1d4ed8', 'sobre-barra': '#ffffff', 'marca-acento': '#fcd34d' } },
         { id: 'frutilla', nombre: 'Frutilla', precio: 0, muestra: '#9d174d',
-          vars: { 'barra': '#9d174d', 'barra-borde': '#6d132f',
-                  'sobre-barra': '#ffffff', 'marca-acento': '#fbcfe8' } },
+          vars: { 'barra': '#9d174d', 'sobre-barra': '#ffffff', 'marca-acento': '#fbcfe8' } },
         { id: 'naranja', nombre: 'Naranja', precio: 0, muestra: '#9a3412',
-          vars: { 'barra': '#9a3412', 'barra-borde': '#6b2410',
-                  'sobre-barra': '#ffffff', 'marca-acento': '#fed7aa' } },
+          vars: { 'barra': '#9a3412', 'sobre-barra': '#ffffff', 'marca-acento': '#fed7aa' } },
         { id: 'selva', nombre: 'Selva', precio: 50, muestra: '#166534',
-          vars: { 'barra': '#166534', 'barra-borde': '#0f3d20',
-                  'sobre-barra': '#ffffff', 'marca-acento': '#fde047' } },
+          vars: { 'barra': '#166534', 'sobre-barra': '#ffffff', 'marca-acento': '#fde047' } },
         { id: 'oceano', nombre: 'Océano', precio: 50, muestra: '#075985',
-          vars: { 'barra': '#075985', 'barra-borde': '#053b58',
-                  'sobre-barra': '#ffffff', 'marca-acento': '#7dd3fc' } },
+          vars: { 'barra': '#075985', 'sobre-barra': '#ffffff', 'marca-acento': '#7dd3fc' } },
         { id: 'uva', nombre: 'Uva', precio: 60, muestra: '#5b21b6',
-          vars: { 'barra': '#5b21b6', 'barra-borde': '#3f1580',
-                  'sobre-barra': '#ffffff', 'marca-acento': '#f5d0fe' } },
+          vars: { 'barra': '#5b21b6', 'sobre-barra': '#ffffff', 'marca-acento': '#f5d0fe' } },
         { id: 'menta', nombre: 'Menta', precio: 60, muestra: '#115e59',
-          vars: { 'barra': '#115e59', 'barra-borde': '#0b3f3c',
-                  'sobre-barra': '#ffffff', 'marca-acento': '#fef08a' } }
+          vars: { 'barra': '#115e59', 'sobre-barra': '#ffffff', 'marca-acento': '#fef08a' } }
       ]
     },
 
@@ -69,28 +62,54 @@ window.Catalogo = (function () {
       id: 'fondo',
       nombre: 'El fondo',
       texto: 'El color de atrás de todo, con sus tarjetas y sus bordes.',
+      /* Cada familia trae una escalerita de cinco tonos del mismo color,
+         del más claro al más oscuro, y cada uno tiene un trabajo:
+
+           tarjeta      lo que está adelante (casi blanco)
+           papel        el fondo de la pantalla
+           sombra-clay  el escaloncito de abajo de las tarjetas
+           borde        el filito de los recuadros: se insinúa, no se ve
+           pista        lo que sí tiene que verse: el riel de una barra
+                        de progreso, un interruptor apagado, un botón
+
+         Antes había un solo tono intermedio haciendo de borde, de
+         escalón y de riel a la vez. Como tenía que servir para el riel,
+         era fuerte; y como era fuerte, cada tarjeta terminaba con once
+         píxeles de color medio alrededor y la pantalla parecía un
+         montón de calcomanías de plástico apiladas. Separados, el
+         recuadro puede ser un susurro y el riel puede gritar. */
       colores: [
         { id: 'azul', nombre: 'Cielo', precio: 0, muestra: '#dfeafe',
-          vars: { 'papel': '#dfeafe', 'tarjeta': '#ffffff', 'borde': '#b9d3fb',
-                  'seleccion': '#cfe0fd', 'agua': '#a8cffa' } },
+          vars: { 'papel': '#e7eefc', 'tarjeta': '#ffffff', 'borde': '#dce6f9',
+                  'sombra-clay': '#d3dff5', 'pista': '#c4d5f2',
+                  'seleccion': '#d7e4fc', 'agua': '#a8cffa' } },
         { id: 'frutilla', nombre: 'Frutilla', precio: 0, muestra: '#ffe3f1',
-          vars: { 'papel': '#ffe3f1', 'tarjeta': '#fff8fc', 'borde': '#f9a8d4',
-                  'seleccion': '#fcd5e8', 'agua': '#ddd6fe' } },
+          vars: { 'papel': '#fdeaf3', 'tarjeta': '#fffafc', 'borde': '#f9dde9',
+                  'sombra-clay': '#f5d5e3', 'pista': '#f6c2d8',
+                  'seleccion': '#fbdcea', 'agua': '#ddd6fe' } },
         { id: 'naranja', nombre: 'Durazno', precio: 0, muestra: '#ffe6c9',
-          vars: { 'papel': '#ffe6c9', 'tarjeta': '#fffaf2', 'borde': '#fdba74',
-                  'seleccion': '#ffdcb0', 'agua': '#a8cffa' } },
+          vars: { 'papel': '#fdecd8', 'tarjeta': '#fffbf5', 'borde': '#fae0c4',
+                  'sombra-clay': '#f7ddbf', 'pista': '#f8c99a',
+                  'seleccion': '#fce3c6', 'agua': '#a8cffa' } },
         { id: 'selva', nombre: 'Selva', precio: 50, muestra: '#d7f5e1',
-          vars: { 'papel': '#d7f5e1', 'tarjeta': '#f7fffa', 'borde': '#86efac',
-                  'seleccion': '#c3eed3', 'agua': '#a7dfc4' } },
+          vars: { 'papel': '#e2f6e9', 'tarjeta': '#f9fffb', 'borde': '#d3edde',
+                  'sombra-clay': '#cdead9', 'pista': '#a9dcbe',
+                  'seleccion': '#d3f0e0', 'agua': '#a7dfc4' } },
         { id: 'oceano', nombre: 'Océano', precio: 50, muestra: '#d3ecfb',
-          vars: { 'papel': '#d3ecfb', 'tarjeta': '#f5fbff', 'borde': '#7dd3fc',
-                  'seleccion': '#c0e3f8', 'agua': '#8ecdf3' } },
+          vars: { 'papel': '#e0f0fb', 'tarjeta': '#f7fcff', 'borde': '#d2e7f6',
+                  'sombra-clay': '#cbe3f4', 'pista': '#a9d5ef',
+                  'seleccion': '#d1e8f8', 'agua': '#8ecdf3' } },
+        /* el relleno de lo elegido va un toque más claro que el resto de
+           la familia: con el violeta más oscuro, la bajada gris de una
+           opción elegida daba 4.36:1 y el mínimo son 4.5 */
         { id: 'uva', nombre: 'Uva', precio: 60, muestra: '#e9dcfd',
-          vars: { 'papel': '#e9dcfd', 'tarjeta': '#fbf7ff', 'borde': '#c4b5fd',
-                  'seleccion': '#ddc9fb', 'agua': '#bfdbfe' } },
+          vars: { 'papel': '#ece2fc', 'tarjeta': '#fcf9ff', 'borde': '#e0d6f6',
+                  'sombra-clay': '#dbcff4', 'pista': '#c9b8ef',
+                  'seleccion': '#e6dbfc', 'agua': '#bfdbfe' } },
         { id: 'menta', nombre: 'Menta', precio: 60, muestra: '#cdf3ec',
-          vars: { 'papel': '#cdf3ec', 'tarjeta': '#f4fffd', 'borde': '#5eead4',
-                  'seleccion': '#b9ece2', 'agua': '#a5e8e0' } }
+          vars: { 'papel': '#dcf4ef', 'tarjeta': '#f6fffd', 'borde': '#cfeae4',
+                  'sombra-clay': '#c9e7e0', 'pista': '#9fddd2',
+                  'seleccion': '#cfeee7', 'agua': '#a5e8e0' } }
       ]
     },
 

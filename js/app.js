@@ -87,10 +87,15 @@
       var tiene = Almacen.estrellasDeJuego(juego.requiere.juego);
       if (tiene < juego.requiere.estrellas) {
         var otro = porClave(juego.requiere.juego).juego;
+        /* Una sola frase, corta y con el número adelante. Antes eran dos
+           renglones ("Juntá 3 ⭐ en «Sumas y restas»" arriba y "Llevás 0
+           de 3" abajo) metidos en un recuadro punteado adentro de la
+           tarjeta: la tarjeta trabada medía el doble que las demás y era
+           la que más texto tenía, justo la que menos importa leer. */
         return {
           jugable: false, tipo: 'requisito',
-          motivo: 'Juntá ' + juego.requiere.estrellas + ' ⭐ en «' + (otro ? otro.nombre : '…') + '»',
-          progreso: tiene + ' de ' + juego.requiere.estrellas
+          motivo: tiene + ' de ' + juego.requiere.estrellas +
+                  ' en ' + (otro ? otro.nombre : '…')
         };
       }
     }
@@ -303,15 +308,18 @@
    * que se ve de cada una es su dibujo, que es lo que un chico
    * reconoce sin leer.
    *
-   * Lo que se le cuelgue después (el récord, el candado, los minutos de
-   * una lección) va en `b.cuerpo`, no en el botón.
+   * Lo que se le cuelgue después (el récord, los minutos de una lección)
+   * va en `b.cuerpo`, y lo que va encima del dibujo —el candado de un
+   * juego trabado— en `b.icono`. Ninguno de los dos en el botón.
    */
   function tarjeta(datos, alTocar) {
     var b = Util.crear('button', 'card');
     b.type = 'button';
     b.style.setProperty('--card-color', datos.color);
     b.style.setProperty('--card-suave', datos.suave);
-    b.appendChild(ponerIcono(Util.crear('span', 'card-icono'), datos.icono));
+    var icono = ponerIcono(Util.crear('span', 'card-icono'), datos.icono);
+    b.appendChild(icono);
+    b.icono = icono;
 
     var cuerpo = Util.crear('span', 'card-cuerpo');
     cuerpo.appendChild(Util.crear('span', 'card-titulo', datos.nombre));
@@ -386,13 +394,14 @@
       } else {
         b.classList.add('trabada');
         b.setAttribute('aria-disabled', 'true');
-        var candado = Util.crear('div', 'card-candado');
-        candado.appendChild(Util.crear('span', 'candado-icono', estado.tipo === 'edad' ? '🎂' : '🔒'));
-        var texto = Util.crear('span', 'candado-texto');
-        texto.appendChild(Util.crear('b', null, estado.motivo));
-        if (estado.progreso) texto.appendChild(Util.crear('span', null, 'Llevás ' + estado.progreso));
-        candado.appendChild(texto);
-        b.cuerpo.appendChild(candado);
+        /* El candado va encima del dibujo del juego, como en el ícono de
+           una app bloqueada: se entiende sin leer nada. */
+        b.icono.appendChild(Util.crear('span', 'card-cerrojo'))
+          .appendChild(Iconos.crear('candado'));
+        var traba = Util.crear('div', 'card-traba');
+        traba.appendChild(Iconos.crear(estado.tipo === 'edad' ? 'perfil' : 'estrella'));
+        traba.appendChild(Util.crear('span', null, ' ' + estado.motivo));
+        b.cuerpo.appendChild(traba);
       }
       cont.appendChild(b);
     });

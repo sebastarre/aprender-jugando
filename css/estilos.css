@@ -25,14 +25,21 @@
      ningún tema: tienen que significar siempre lo mismo. */
   --tinta:        #0f172a;
   --tinta-suave:  #475569;
-  --papel:        #dfeafe;
+  --papel:        #e7eefc;
   --tarjeta:      #ffffff;
-  --borde:        #b9d3fb;
+
+  /* Tres tonos distintos donde antes había uno solo. Ver la explicación
+     larga en js/tienda/catalogo.js, en la ranura del fondo: el resumen
+     es que el filito de un recuadro y el riel de una barra de progreso
+     no pueden ser el mismo color, porque uno tiene que desaparecer y el
+     otro tiene que verse. */
+  --borde:        #dce6f9;   /* el filito de los recuadros */
+  --sombra-clay:  #d3dff5;   /* el escaloncito de abajo de las tarjetas */
+  --pista:        #c4d5f2;   /* rieles, interruptores apagados, botones */
 
   /* La barra de arriba es de color pleno: es lo que hace que se note de
      entrada qué paleta está puesta. Cada tema la pisa con su propio tono. */
   --barra:         #1d4ed8;
-  --barra-borde:   #1e3a8a;
   --sobre-barra:   #ffffff;
   --marca-acento:  #fcd34d;
 
@@ -58,12 +65,18 @@
   /* Tres capas, que es lo que hace que una tarjeta parezca de plastilina
      y no un rectángulo: el escaloncito de abajo (el que se hunde al
      apretar), una sombra difusa que la despega del fondo, y una luz
-     interna arriba que simula el brillo de un objeto blando. */
+     interna arriba que simula el brillo de un objeto blando.
+
+     El escalón era de 7px y del color del borde. Sumado al recuadro de
+     4px daba once píxeles de color medio rodeando cada tarjeta: se veía
+     el contorno antes que el contenido. Ahora son 4px de un tono apenas
+     más oscuro que el papel, así que se lee como que la tarjeta está
+     apoyada y no como que está enmarcada. */
   --sombra:
-    0 7px 0 var(--sombra-color, var(--borde)),
-    0 12px 22px -6px rgba(29, 43, 74, .18),
-    inset 0 2px 0 rgba(255, 255, 255, .85);
-  --sombra-suave: 0 10px 30px rgba(29, 43, 74, .12);
+    0 4px 0 var(--sombra-color, var(--sombra-clay)),
+    0 10px 20px -8px rgba(29, 43, 74, .16),
+    inset 0 1px 0 rgba(255, 255, 255, .9);
+  --sombra-suave: 0 8px 24px -6px rgba(29, 43, 74, .12);
 
   /* Se pasa de largo y vuelve, como algo que rebota. Todo lo que
      aparece o se aprieta usa esta curva: es la que da la sensación de
@@ -109,6 +122,14 @@ body {
   line-height: 1.45;
   -webkit-text-size-adjust: 100%;
   overflow-x: hidden;
+  /* En columna y con el alto de la pantalla como mínimo, para que el
+     pie quede abajo de todo. En las pantallas cortas (el perfil recién
+     estrenado, una materia con tres juegos) el pie quedaba flotando en
+     el medio, con media pantalla vacía debajo: parecía que la página se
+     había cortado. */
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
 /* El fondo es liso: el color de --papel y nada más.
@@ -141,8 +162,13 @@ body {
      por detrás al scrollear (el marcador y los corazones asomaban rotos) */
   background: var(--barra);
   color: var(--sobre-barra);
-  border-bottom: 3px solid var(--barra-borde);
-  box-shadow: 0 6px 18px rgba(15, 23, 42, .18);
+  /* Las esquinas de abajo redondeadas la convierten de "marco del
+     navegador" en una pieza más de la app, del mismo palo que las
+     tarjetas. Antes cerraba con una línea recta 3px más oscura: un
+     canto duro atravesando la pantalla, lo primero que se veía al
+     abrir. Ahora cierra con una curva y una sombra difusa. */
+  border-radius: 0 0 26px 26px;
+  box-shadow: 0 4px 16px -4px rgba(15, 23, 42, .22);
 }
 
 .marca {
@@ -183,6 +209,8 @@ body {
 
 /* ---------------- Estructura ---------------- */
 #app {
+  flex: 1;          /* empuja el pie hasta abajo */
+  width: 100%;
   max-width: 1100px;
   margin: 0 auto;
   padding: clamp(16px, 3vw, 34px) clamp(12px, 3vw, 28px) 40px;
@@ -215,7 +243,7 @@ body {
 }
 
 .card {
-  --sombra-color: var(--borde);
+  --sombra-color: var(--sombra-clay);
   position: relative;
   /* En fila, no apilado: el ícono grande a la izquierda y el texto al
      lado. Antes iban uno abajo del otro y cada tarjeta medía 200px, así
@@ -228,7 +256,7 @@ body {
   font: inherit;
   color: inherit;
   padding: 16px 18px;
-  border: 4px solid var(--borde);
+  border: 2px solid var(--borde);
   border-radius: var(--radio);
   background: var(--tarjeta);
   box-shadow: var(--sombra);
@@ -236,24 +264,25 @@ body {
   transition: transform .18s var(--rebote), box-shadow .18s ease, border-color .18s;
 }
 .card:hover:not(:disabled) {
-  transform: translateY(-5px);
+  transform: translateY(-4px);
   box-shadow:
-    0 12px 0 var(--sombra-color),
-    0 20px 30px -8px rgba(29, 43, 74, .22),
-    inset 0 2px 0 rgba(255, 255, 255, .85);
+    0 8px 0 var(--sombra-color),
+    0 16px 26px -8px rgba(29, 43, 74, .2),
+    inset 0 1px 0 rgba(255, 255, 255, .9);
   border-color: var(--card-color, var(--primario));
 }
 /* al apretar se hunde hasta apoyarse: el escalón desaparece */
 .card:active:not(:disabled) {
-  transform: translateY(5px);
+  transform: translateY(4px);
   box-shadow:
-    0 1px 0 var(--sombra-color),
-    0 3px 8px -2px rgba(29, 43, 74, .2),
-    inset 0 2px 0 rgba(255, 255, 255, .85);
+    0 0 0 var(--sombra-color),
+    0 3px 8px -2px rgba(29, 43, 74, .18),
+    inset 0 1px 0 rgba(255, 255, 255, .9);
 }
 .card:disabled { cursor: not-allowed; opacity: .62; }
 
 .card-icono {
+  position: relative;   /* para el candado de los juegos trabados */
   font-size: 2.4rem;
   line-height: 1;
   width: 74px;
@@ -284,17 +313,25 @@ body {
    primero que se lea sea el nombre del juego. */
 .card-texto { color: var(--tinta-suave); font-size: .92rem; line-height: 1.3; }
 
+/* "PRONTO" en las materias que todavía no están. Era una cinta bordó
+   que salía 6px por fuera del borde derecho: además de parecer un
+   cartel de error, se veía como si la tarjeta estuviera rota. Ahora es
+   una pastilla adentro, del color del papel, que dice "acá no hay nada
+   todavía" sin gritar. */
 .card-cinta {
   position: absolute;
-  top: 14px;
-  right: -6px;
-  background: var(--rosa-osc);
-  color: #fff;
-  font-size: .78rem;
+  top: 12px;
+  right: 12px;
+  background: var(--pista);
+  /* del color del texto y no del gris suave: sobre --pista, que es el
+     tono más oscuro de la familia del fondo, el gris suave se quedaba
+     en 3.32:1 con la paleta uva puesta. En tinta el peor caso da 5.03 */
+  color: var(--tinta);
+  font-size: .74rem;
   font-weight: 700;
-  padding: 4px 12px;
-  border-radius: 6px 0 0 6px;
-  letter-spacing: .4px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  letter-spacing: .5px;
   text-transform: uppercase;
 }
 .card-record {
@@ -310,11 +347,15 @@ body {
 /* ---------------- Configuración de partida ---------------- */
 .bloque-config { margin-bottom: 26px; }
 
+/* Los títulos de sección estaban en VERSALITA GRIS ESPACIADA, que es
+   como se rotula un formulario o un panel de administración. Están
+   escritos como frases ("Cómo vas en cada materia") así que se leen
+   solos: alcanza con que sean un poco más grandes y del color del
+   texto. Uno menos de los tres gritos que tenía cada pantalla. */
 .etiqueta-grupo {
-  font-size: 1.05rem;
-  text-transform: uppercase;
-  letter-spacing: .8px;
-  color: var(--tinta-suave);
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--tinta);
   margin: 0 0 12px;
 }
 
@@ -328,20 +369,25 @@ body {
   font: inherit;
   color: inherit;
   cursor: pointer;
-  border: 3px solid var(--borde);
+  border: 3px solid var(--pista);
   background: var(--tarjeta);
   border-radius: var(--radio-s);
   padding: 14px 16px;
   display: flex;
   align-items: center;
   gap: 12px;
+  /* Un <button> centra el texto por herencia. Como el dibujo va a la
+     izquierda y el texto al lado, quedaba el dibujo pegado al borde
+     izquierdo y el nombre flotando en el medio, sin alinearse con
+     nada. Igual que en .card: el texto arranca donde termina el
+     dibujo. */
+  text-align: left;
   transition: transform .12s, border-color .12s, background .12s;
 }
 .opcion:hover { transform: translateY(-3px); border-color: var(--op-color, var(--primario)); }
 .opcion[aria-pressed="true"] {
   border-color: var(--op-color, var(--primario));
   background: var(--op-suave, var(--seleccion));
-  box-shadow: inset 0 0 0 2px var(--op-color, var(--primario));
 }
 .opcion-icono { font-size: 1.7rem; line-height: 1; flex: none; }
 /* Cuando el ícono es el número mismo (las tablas): grande y en el color de la
@@ -390,7 +436,7 @@ body {
   font-weight: 700;
   color: var(--tinta);
   background: var(--tarjeta);
-  border: 3px solid var(--borde);
+  border: 3px solid var(--pista);
   border-radius: 999px;
   padding: 12px 26px;
   cursor: pointer;
@@ -414,7 +460,7 @@ body {
 .progreso-barra {
   flex: 1;
   height: 14px;
-  background: var(--borde);
+  background: var(--pista);
   border-radius: 999px;
   overflow: hidden;
 }
@@ -459,7 +505,7 @@ body {
   gap: 18px;
   flex-wrap: wrap;
   background: var(--tarjeta);
-  border: 3px solid var(--borde);
+  border: 2px solid var(--borde);
   border-radius: var(--radio);
   padding: 16px 22px;
   box-shadow: var(--sombra-suave);
@@ -484,7 +530,7 @@ body {
   width: 100%;
   margin-inline: auto;          /* el ancho máximo lo pone js/mapa.js según la zona */
   background: var(--agua);
-  border: 3px solid var(--borde);
+  border: 2px solid var(--borde);
   border-radius: var(--radio);
   overflow: hidden;
   box-shadow: var(--sombra-suave);
@@ -553,7 +599,7 @@ body {
   font-family: var(--fuente);
   font-weight: 700;
   border-radius: 12px;
-  border: 2px solid var(--borde);
+  border: 2px solid var(--pista);
   background: rgba(255, 255, 255, .93);
   color: var(--tinta);
   cursor: pointer;
@@ -584,7 +630,7 @@ body {
   font-weight: 700;
   cursor: pointer;
   background: var(--tarjeta);
-  border: 3px solid var(--borde);
+  border: 3px solid var(--pista);
   border-radius: var(--radio-s);
   padding: 12px;
   display: flex;
@@ -638,7 +684,7 @@ body {
 /* ---------------- Pantalla final ---------------- */
 .tarjeta-fin {
   background: var(--tarjeta);
-  border: 3px solid var(--borde);
+  border: 2px solid var(--borde);
   border-radius: var(--radio);
   padding: clamp(20px, 4vw, 38px);
   box-shadow: var(--sombra-suave);
@@ -662,14 +708,26 @@ body {
   gap: 12px;
   margin: 22px 0;
 }
+/* Los recuadros de números eran del color del papel con un filito
+   alrededor: cuando el filito se aclaró, dejaron de verse. Ahora se
+   despegan por el relleno, y el relleno depende de dónde estén: en el
+   perfil están apoyados sobre el papel, así que van del color de las
+   tarjetas; en la pantalla de resultados están adentro de una tarjeta,
+   así que ahí es al revés. Blanco sobre blanco no se ve de ninguno de
+   los dos lados. */
 .stat {
-  background: var(--papel);
+  background: var(--tarjeta);
   border: 2px solid var(--borde);
   border-radius: var(--radio-s);
-  padding: 12px 6px;
+  padding: 14px 10px;
+  box-shadow: var(--sombra-suave);
 }
-.stat b { display: block; font-size: 1.8rem; line-height: 1.1; color: var(--primario); font-variant-numeric: tabular-nums; }
-.stat span { font-size: .85rem; color: var(--tinta-suave); }
+.tarjeta-fin .stat {
+  background: var(--papel);
+  box-shadow: none;
+}
+.stat b { display: block; font-size: 1.7rem; line-height: 1.1; color: var(--primario); font-variant-numeric: tabular-nums; }
+.stat span { font-size: .88rem; color: var(--tinta-suave); }
 
 .repaso { text-align: left; margin: 8px 0 24px; }
 .lista-repaso {
@@ -718,10 +776,27 @@ body.jugando .pie { display: none; }
 
 @media (max-width: 620px) {
   body { font-size: 16px; }
-  .marca-texto { display: none; }
+
+  /* En el celular no entran el globo, el nombre y los tres botones de
+     la derecha en la misma fila. Antes se escondía el nombre y quedaba
+     el globo solo, flotando: parecía que algo no había cargado. Ahora
+     se esconde el globo y queda el nombre, que es lo que dice qué app
+     es; y cuando aparece la flecha de volver se esconde toda la marca,
+     porque con la flecha ya hay cómo salir de la pantalla. */
+  .marca-globo { display: none; }
+  #btn-atras:not([hidden]) ~ .marca { display: none; }
+
   .card-icono { font-size: 2.2rem; width: 56px; height: 56px; }
   .btn-gigante { width: 100%; }
   #mapa svg { max-height: 52vh; }
+
+  /* Las dos pestañas quedaban de distinta altura: "Practicá lo
+     aprendido" se partía en dos líneas y "Cursitos cortos" no, así que
+     una caja medía 20px más que la otra y se veían desalineadas. En una
+     pantalla chica la bajada no aporta nada (los títulos ya dicen todo)
+     y sin ella las dos miden igual. */
+  .seccion-texto small { display: none; }
+  .seccion { padding: 12px 14px; justify-content: center; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -824,7 +899,7 @@ body.jugando .pie { display: none; }
   place-items: center;
   border-radius: 50%;
   background: var(--tarjeta);
-  border: 3px solid var(--borde);
+  border: 2px solid var(--borde);
 }
 .titulo-perfil { font-size: clamp(1.5rem, 4vw, 2.1rem); margin: 0; }
 .perfil-sub { text-align: left; margin: 0; }
@@ -846,7 +921,7 @@ body.jugando .pie { display: none; }
 
 .barra-progreso {
   height: 10px;
-  background: var(--borde);
+  background: var(--pista);
   border-radius: 999px;
   overflow: hidden;
   margin-top: 6px;
@@ -867,7 +942,7 @@ body.jugando .pie { display: none; }
   align-items: center;
   gap: 10px;
   background: var(--tarjeta);
-  border: 3px solid var(--borde);
+  border: 3px solid var(--pista);
   border-radius: var(--radio-s);
   padding: 10px 14px;
   transition: transform .12s, border-color .12s;
@@ -876,7 +951,6 @@ body.jugando .pie { display: none; }
 .perfil-chip[aria-pressed="true"] {
   border-color: var(--primario);
   background: var(--seleccion);
-  box-shadow: inset 0 0 0 2px var(--primario);
 }
 .perfil-chip-avatar { font-size: 1.6rem; line-height: 1; }
 .perfil-chip-nombre { font-weight: 700; overflow-wrap: break-word; min-width: 0; }
@@ -893,7 +967,7 @@ body.jugando .pie { display: none; }
   margin: 0 auto;
   text-align: center;
   background: var(--tarjeta);
-  border: 3px solid var(--borde);
+  border: 2px solid var(--borde);
   border-radius: var(--radio);
   padding: 26px 24px;
   box-shadow: var(--sombra-suave);
@@ -910,7 +984,7 @@ body.jugando .pie { display: none; }
   padding: 10px 12px;
   margin: 0 auto 14px;
   display: block;
-  border: 3px solid var(--borde);
+  border: 3px solid var(--pista);
   border-radius: var(--radio-s);
   background: var(--papel);
   color: var(--tinta);
@@ -952,7 +1026,7 @@ body.jugando .pie { display: none; }
   gap: 12px;
   padding: 13px 18px;
   border-radius: var(--radio);
-  border: 3px solid var(--borde);
+  border: 2px solid var(--borde);
   background: var(--tarjeta);
   color: var(--tinta);
   text-decoration: none;
@@ -964,16 +1038,21 @@ body.jugando .pie { display: none; }
 .seccion-texto b { font-size: 1.15rem; line-height: 1.2; }
 .seccion-texto small { color: var(--tinta-suave); font-size: .85rem; }
 
+/* La pestaña elegida tenía tres marcas a la vez: el borde de color, el
+   relleno, y un anillo interno de 2px. Tres formas de decir lo mismo,
+   y la de adentro dibujaba un segundo contorno pegado al primero. Queda
+   el relleno, que es la que se lee de un vistazo, y el borde del color
+   de la sección. */
 #tab-aprender[aria-current="page"] {
   border-color: var(--violeta);
   background: var(--seleccion);
-  box-shadow: inset 0 0 0 2px var(--violeta);
 }
 #tab-juegos[aria-current="page"] {
   border-color: var(--primario);
   background: var(--seleccion);
-  box-shadow: inset 0 0 0 2px var(--primario);
 }
+#tab-aprender[aria-current="page"] .seccion-icono { color: var(--violeta); }
+#tab-juegos[aria-current="page"] .seccion-icono { color: var(--primario); }
 
 /* ============================================================
    Bienvenida
@@ -986,7 +1065,7 @@ body.sin-perfil .pie { display: none; }
   width: 100%;
   max-width: 520px;
   background: var(--tarjeta);
-  border: 3px solid var(--borde);
+  border: 2px solid var(--borde);
   border-radius: var(--radio);
   padding: clamp(22px, 5vw, 38px);
   box-shadow: var(--sombra-suave);
@@ -1015,7 +1094,7 @@ body.sin-perfil .pie { display: none; }
   width: 100%;
   padding: 13px 16px;
   margin-bottom: 16px;
-  border: 3px solid var(--borde);
+  border: 3px solid var(--pista);
   border-radius: var(--radio-s);
   background: var(--papel);
   color: var(--tinta);
@@ -1037,7 +1116,7 @@ body.sin-perfil .pie { display: none; }
   align-items: center;
   gap: 2px;
   padding: 14px 6px;
-  border: 3px solid var(--borde);
+  border: 3px solid var(--pista);
   border-radius: var(--radio-s);
   background: var(--papel);
   transition: transform .12s, border-color .12s, background .12s;
@@ -1048,7 +1127,6 @@ body.sin-perfil .pie { display: none; }
 .boton-edad[aria-pressed="true"] {
   border-color: var(--primario);
   background: var(--seleccion);
-  box-shadow: inset 0 0 0 2px var(--primario);
 }
 
 .grilla-avatares {
@@ -1062,7 +1140,7 @@ body.sin-perfil .pie { display: none; }
   line-height: 1;
   aspect-ratio: 1;
   cursor: pointer;
-  border: 3px solid var(--borde);
+  border: 3px solid var(--pista);
   border-radius: 50%;
   background: var(--papel);
   transition: transform .12s, border-color .12s, background .12s;
@@ -1071,33 +1149,49 @@ body.sin-perfil .pie { display: none; }
 .boton-avatar[aria-pressed="true"] {
   border-color: var(--primario);
   background: var(--seleccion);
-  box-shadow: inset 0 0 0 3px var(--primario);
   transform: scale(1.06);
 }
 
 /* ============================================================
    Juegos trabados por edad o por requisito
    ============================================================ */
-.card.trabada { cursor: not-allowed; opacity: .78; background: #fbfcff; }
+.card.trabada { cursor: not-allowed; background: var(--tarjeta); }
 .card.trabada:hover { transform: none; box-shadow: var(--sombra); border-color: var(--borde); }
-.card.trabada .card-icono { filter: grayscale(1); opacity: .6; }
+/* Se apaga el dibujo del juego, no el recuadro entero: si se le baja la
+   opacidad a toda la tarjeta también se apagan el título y el candado,
+   que son justo lo que hay que poder leer. */
+.card.trabada .card-icono { background: var(--pista); }
+.card.trabada .card-icono > .ico { filter: grayscale(1); opacity: .5; }
+.card.trabada .card-titulo { color: var(--tinta-suave); }
 
-.card-candado {
+/* Un solo renglón, del mismo tamaño y en el mismo lugar que la bajada
+   de las tarjetas destrabadas, así la tarjeta trabada mide igual que
+   las de al lado. El candado, que es lo que hay que entender sin leer,
+   va sobre el dibujo. */
+.card-traba {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-top: 6px;
-  padding: 9px 12px;
-  border-radius: var(--radio-s);
-  background: #f1f4fb;
-  border: 2px dashed #c9d3ea;
-  width: 100%;
-  text-align: left;
+  gap: 5px;
+  margin-top: 2px;
+  font-size: .9rem;
+  font-weight: 700;
+  color: var(--tinta-suave);
 }
-.candado-icono { font-size: 1.3rem; line-height: 1; flex: none; }
-.candado-texto { display: flex; flex-direction: column; min-width: 0; }
-.candado-texto b { font-size: .92rem; overflow-wrap: break-word; }
-.candado-texto span { font-size: .82rem; color: var(--tinta-suave); }
+
+.card-cerrojo {
+  position: absolute;
+  right: -5px;
+  bottom: -5px;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--tarjeta);
+  color: var(--tinta-suave);
+  box-shadow: 0 2px 6px -1px rgba(29, 43, 74, .3);
+}
+.card-cerrojo .ico { width: 15px; height: 15px; stroke-width: 2.2; }
 
 .card-pie { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
 .card-minutos, .card-leida {
@@ -1169,7 +1263,7 @@ body.sin-perfil .pie { display: none; }
 
 .paso-tarjeta {
   background: var(--tarjeta);
-  border: 3px solid var(--borde);
+  border: 2px solid var(--borde);
   border-radius: var(--radio);
   padding: clamp(20px, 4vw, 32px);
   box-shadow: var(--sombra-suave);
@@ -1201,7 +1295,7 @@ body.sin-perfil .pie { display: none; }
   width: 100%;
   aspect-ratio: 16 / 9;
   border-radius: var(--radio-s);
-  border: 3px solid var(--borde);
+  border: 2px solid var(--borde);
 }
 .paso-nota { font-size: .85rem; color: var(--tinta-suave); margin: 6px 0 0; text-align: center; }
 
@@ -1326,9 +1420,13 @@ body.sin-perfil .pie { display: none; }
    ============================================================ */
 .tienda-nota { margin: -1em 0 1.8em; font-size: .92rem; }
 
+/* 150px de mínimo, no 190: con 190 en un celular entraba una sola
+   columna, así que cada disfraz ocupaba una pantalla y para ver los
+   siete había que scrollear siete veces. En dos columnas se ven cuatro
+   de una y se pueden comparar, que es lo que uno hace en una tienda. */
 .grilla-tienda {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 14px;
   margin-bottom: 28px;
 }
@@ -1349,7 +1447,7 @@ body.sin-perfil .pie { display: none; }
   gap: 6px;
   text-align: center;
   padding: 16px 14px 14px;
-  border: 3px solid var(--borde);
+  border: 2px solid var(--borde);
   border-radius: var(--radio);
   background: var(--tarjeta);
   transition: transform .14s, border-color .14s, box-shadow .14s;
@@ -1357,7 +1455,7 @@ body.sin-perfil .pie { display: none; }
 .card-tienda:hover { transform: translateY(-4px); box-shadow: var(--sombra-suave); }
 .card-tienda[aria-pressed="true"] {
   border-color: var(--primario);
-  box-shadow: inset 0 0 0 2px var(--primario);
+  background: var(--seleccion);
 }
 
 .tienda-nombre { font-size: 1.05rem; }
@@ -1390,7 +1488,7 @@ body.sin-perfil .pie { display: none; }
   width: 100%;
   height: 62px;
   border-radius: var(--radio-s);
-  border: 2px solid var(--borde);
+  border: 2px solid var(--pista);
   background: var(--papel);
   margin-bottom: 4px;
 }
@@ -1401,37 +1499,69 @@ body.sin-perfil .pie { display: none; }
 /* ============================================================
    Examen
    ============================================================ */
+/* El examen y el repaso son la misma tarjeta que las materias, con el
+   dibujo en su propio color. Antes eran otra cosa: recuadro rosa de
+   3px, un degradado rosa de fondo y una flecha suelta a la derecha.
+   Encima el degradado estaba escrito a mano en rosa (#fff0f7), así que
+   con la paleta menta puesta seguía saliendo rosa. Mismo molde que el
+   resto y el color se lo pone el dibujo, que es donde no molesta. */
 .tarjeta-examen {
+  --sombra-color: var(--sombra-clay);
+  --examen-color: var(--rosa-osc);
+  --examen-suave: #fce7f3;
   font: inherit;
   color: inherit;
   cursor: pointer;
   width: 100%;
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 16px;
   text-align: left;
-  padding: 16px 20px;
+  padding: 16px 18px;
   margin-bottom: 18px;
-  border: 3px solid var(--rosa);
+  border: 2px solid var(--borde);
   border-radius: var(--radio);
-  background: linear-gradient(120deg, #fff0f7 0%, var(--tarjeta) 70%);
-  box-shadow: var(--sombra-suave);
-  transition: transform .14s, box-shadow .14s;
+  background: var(--tarjeta);
+  box-shadow: var(--sombra);
+  transition: transform .18s var(--rebote), box-shadow .18s ease, border-color .18s;
 }
-.tarjeta-examen:hover { transform: translateY(-3px); }
+.tarjeta-examen:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    0 8px 0 var(--sombra-color),
+    0 16px 26px -8px rgba(29, 43, 74, .2),
+    inset 0 1px 0 rgba(255, 255, 255, .9);
+  border-color: var(--examen-color);
+}
+.tarjeta-examen:active {
+  transform: translateY(4px);
+  box-shadow:
+    0 0 0 var(--sombra-color),
+    0 3px 8px -2px rgba(29, 43, 74, .18),
+    inset 0 1px 0 rgba(255, 255, 255, .9);
+}
 
-/* El repaso usa la misma tarjeta que el examen pero en el color de "acertar":
-   son dos cosas distintas y no tienen que confundirse de un vistazo. */
-.tarjeta-repaso {
-  border-color: var(--exito);
-  background: linear-gradient(120deg, #e9f9ee 0%, var(--tarjeta) 70%);
+/* El repaso va en el color de "acertar": son dos cosas distintas y no
+   tienen que confundirse de un vistazo. */
+.tarjeta-repaso { --examen-color: var(--exito-osc); --examen-suave: #dcfce7; }
+
+.examen-icono {
+  width: 62px;
+  height: 62px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 20px;
+  background: var(--examen-suave);
+  color: var(--examen-color);
+  box-shadow: inset 0 -6px 8px -4px rgba(29, 43, 74, .16);
 }
-.tarjeta-repaso .examen-flecha { color: var(--exito-osc); }
-.examen-icono { font-size: 2.2rem; line-height: 1; flex: none; }
-.examen-cuerpo { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-.examen-cuerpo b { font-size: 1.2rem; }
-.examen-cuerpo span { color: var(--tinta-suave); font-size: .93rem; line-height: 1.35; }
-.examen-flecha { font-size: 1.4rem; color: var(--rosa); flex: none; }
+.examen-icono .ico { width: 34px; height: 34px; stroke-width: 1.9; }
+.examen-cuerpo { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.examen-cuerpo b { font-size: 1.2rem; line-height: 1.2; }
+.examen-cuerpo span { color: var(--tinta-suave); font-size: .9rem; line-height: 1.3; }
+.examen-flecha { color: var(--examen-color); flex: none; display: inline-flex; }
+.examen-flecha .ico { width: 22px; height: 22px; }
 
 /* la selección múltiple se marca con un tilde, no sólo con el borde */
 .opcion-multiple[aria-pressed="true"] .opcion-icono::after {
@@ -1462,7 +1592,7 @@ body.rindiendo .vidas { display: none; }
   display: grid;
   place-items: center;
   border-radius: 50%;
-  border: 5px solid var(--borde);
+  border: 3px solid var(--borde);
   background: var(--papel);
   animation: aparecer-estrella .45s ease both;
 }
@@ -1482,7 +1612,7 @@ body.rindiendo .vidas { display: none; }
   min-width: 210px;
   padding: 8px;
   background: var(--tarjeta);
-  border: 3px solid var(--borde);
+  border: 2px solid var(--borde);
   border-radius: var(--radio-s);
   box-shadow: 0 12px 30px rgba(29, 43, 74, .18);
   animation: caer-menu .16s ease both;
@@ -1528,8 +1658,8 @@ body.rindiendo .vidas { display: none; }
   height: 34px;
   padding: 3px;
   border-radius: 999px;
-  border: 2px solid var(--borde);
-  background: var(--borde);
+  border: 2px solid var(--pista);
+  background: var(--pista);
   cursor: pointer;
   transition: background .16s, border-color .16s;
 }
@@ -1547,7 +1677,7 @@ body.rindiendo .vidas { display: none; }
 
 .tarjeta-ajustes {
   background: var(--tarjeta);
-  border: 3px solid var(--borde);
+  border: 2px solid var(--borde);
   border-radius: var(--radio);
   padding: clamp(18px, 4vw, 26px);
   margin-bottom: 26px;
@@ -1722,7 +1852,10 @@ body.rindiendo .vidas { display: none; }
 .card-animal { align-items: center; text-align: center; }
 
 .bloque-ranura { margin-bottom: 26px; }
-.titulo-ranura { font-size: 1.1rem; margin: 0 0 2px; }
+/* Va adentro de una sección ("Colores" → "La barra de arriba"), así que
+   tiene que pesar menos que el título de la sección o los dos se leen
+   como el mismo nivel. */
+.titulo-ranura { font-size: 1.02rem; margin: 0 0 2px; color: var(--tinta-suave); }
 .nota-ranura { color: var(--tinta-suave); font-size: .92rem; margin: 0 0 12px; }
 
 .fila-colores { display: flex; flex-wrap: wrap; gap: 12px; }
@@ -1735,7 +1868,7 @@ body.rindiendo .vidas { display: none; }
   cursor: pointer;
   width: 84px;
   padding: 10px 6px 8px;
-  border: 3px solid var(--borde);
+  border: 3px solid var(--pista);
   border-radius: var(--radio-s);
   background: var(--tarjeta);
   display: flex;
@@ -1756,7 +1889,6 @@ body.rindiendo .vidas { display: none; }
 .pastilla-color[aria-pressed="true"] {
   border-color: var(--primario);
   background: var(--seleccion);
-  box-shadow: inset 0 0 0 2px var(--primario);
 }
 
 .muestra-color-grande {
@@ -1789,7 +1921,7 @@ body.rindiendo .vidas { display: none; }
 }
 .dialogo-caja {
   background: var(--tarjeta);
-  border: 4px solid var(--borde);
+  border: 2px solid var(--borde);
   border-radius: var(--radio);
   box-shadow: var(--sombra);
   padding: clamp(20px, 5vw, 28px);
