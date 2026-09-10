@@ -233,6 +233,14 @@ que un chico la quiera abrir y que un padre la vea seria.
 No se pide a Google a propósito: la app tiene que verse igual sin internet.
 Para actualizarla, `node herramientas/bajar-fuente.js`. Licencia OFL 1.1.
 
+**Las tarjetas van en fila**: el ícono grande a la izquierda y el texto al
+lado, con una línea corta debajo del título. Antes iba todo apilado —ícono,
+título, una oración entera, el récord— y cada tarjeta medía 200 píxeles: tres
+juegos llenaban la pantalla y las tres se veían iguales. Ahora miden 96 y lo
+primero que se ve de cada una es su dibujo, que es lo que un chico reconoce
+sin leer. Los textos son de tres o cuatro palabras: la explicación larga la
+sigue teniendo la pantalla de configurar la partida.
+
 **Los íconos son propios**, dibujados en `js/nucleo/iconos.js`: grilla de 24,
 trazo redondeado y grueso, dos tonos, y el color lo toman del texto de al lado.
 Antes eran emoji, y el problema del emoji no es que sea feo: lo dibuja el

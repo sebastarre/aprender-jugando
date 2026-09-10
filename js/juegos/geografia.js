@@ -246,7 +246,7 @@ window.Geografia = (function () {
       icono: 'paises',
       color: '#2563eb',
       suave: '#dbeafe',
-      texto: 'Te decimos un país y lo buscás en el mapa.',
+      texto: 'Buscalo en el mapa',
       edadMin: 6,
       opciones: function () { return [opcionesZona()]; },
       cantidades: cantidadesDeZona,
@@ -275,7 +275,7 @@ window.Geografia = (function () {
       icono: 'capitales',
       color: '#f59e0b',
       suave: '#fef3c7',
-      texto: 'Te mostramos una capital: marcá a qué país pertenece.',
+      texto: 'De qué país es cada capital',
       edadMin: 8,
       requiere: { juego: 'geografia/paises', estrellas: 3 },
       opciones: function () { return [opcionesZona()]; },
@@ -305,7 +305,7 @@ window.Geografia = (function () {
       icono: 'banderas',
       color: '#ec4899',
       suave: '#fce7f3',
-      texto: 'Reconocé las banderas del mundo, en el mapa o eligiendo.',
+      texto: 'Reconocé las banderas',
       edadMin: 7,
       opciones: function () {
         return [opcionesZona(), {

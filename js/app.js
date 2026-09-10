@@ -25,24 +25,24 @@
     {
       id: 'geografia', nombre: 'Geografía', icono: 'geografia',
       color: '#16a34a', suave: '#dcfce7',
-      texto: 'Países, capitales y banderas de todo el mundo.',
+      texto: 'Países, capitales y banderas',
       modulo: Geografia
     },
     {
       id: 'matematica', nombre: 'Matemática', icono: 'matematica',
       color: '#2563eb', suave: '#dbeafe',
-      texto: 'Tablas, sumas, restas y la hora del reloj.',
+      texto: 'Tablas, cuentas y la hora',
       modulo: Matematica
     },
     {
       id: 'lengua', nombre: 'Lengua', icono: 'lengua',
       color: '#f59e0b', suave: '#fef3c7',
-      texto: 'Ortografía, sinónimos y lectura.', modulo: null
+      texto: 'Ortografía y lectura', modulo: null
     },
     {
       id: 'ciencias', nombre: 'Ciencias', icono: 'ciencias',
       color: '#8b5cf6', suave: '#ede9fe',
-      texto: 'El cuerpo, los animales y el espacio.', modulo: null
+      texto: 'El cuerpo y los animales', modulo: null
     }
   ];
 
@@ -293,14 +293,32 @@
     caja.appendChild(Util.crear('span', null, texto));
   }
 
+  /**
+   * Una tarjeta de materia, juego o lección.
+   *
+   * El ícono va grande y a la izquierda, y el texto al lado. Antes era
+   * todo apilado —ícono, título, una oración entera, el récord— y cada
+   * tarjeta medía 200 píxeles: tres juegos ocupaban la pantalla entera
+   * y las tres se veían iguales. Así entran casi el doble y lo primero
+   * que se ve de cada una es su dibujo, que es lo que un chico
+   * reconoce sin leer.
+   *
+   * Lo que se le cuelgue después (el récord, el candado, los minutos de
+   * una lección) va en `b.cuerpo`, no en el botón.
+   */
   function tarjeta(datos, alTocar) {
     var b = Util.crear('button', 'card');
     b.type = 'button';
     b.style.setProperty('--card-color', datos.color);
     b.style.setProperty('--card-suave', datos.suave);
-    b.appendChild(ponerIcono(Util.crear('div', 'card-icono'), datos.icono));
-    b.appendChild(Util.crear('div', 'card-titulo', datos.nombre));
-    b.appendChild(Util.crear('div', 'card-texto', datos.texto));
+    b.appendChild(ponerIcono(Util.crear('span', 'card-icono'), datos.icono));
+
+    var cuerpo = Util.crear('span', 'card-cuerpo');
+    cuerpo.appendChild(Util.crear('span', 'card-titulo', datos.nombre));
+    if (datos.texto) cuerpo.appendChild(Util.crear('span', 'card-texto', datos.texto));
+    b.appendChild(cuerpo);
+    b.cuerpo = cuerpo;
+
     b.addEventListener('click', function () {
       Sonido.despertar(); Sonido.tocar('clic');
       alTocar();
@@ -326,7 +344,7 @@
       var b = tarjeta(m, function () { irA('#/materia/' + m.id); });
       b.disabled = !m.disponible;
       if (m.disponible) {
-        b.appendChild(Util.crear('div', 'card-texto', Util.plural(juegosVisibles(m).length, 'juego')));
+        b.cuerpo.appendChild(Util.crear('span', 'card-texto', Util.plural(juegosVisibles(m).length, 'juego')));
       } else {
         b.appendChild(Util.crear('span', 'card-cinta', 'Pronto'));
       }
@@ -341,7 +359,9 @@
     Util.vaciar(sub);
     sub.appendChild(document.createTextNode('Elegí un juego para practicar. '));
     if (leccionesVisibles(materia.id).length) {
-      var link = Util.crear('a', 'enlace-cruzado', '📚 Aprender ' + materia.nombre.toLowerCase());
+      var link = Util.crear('a', 'enlace-cruzado');
+      link.appendChild(Iconos.crear('aprender'));
+      link.appendChild(Util.crear('span', null, ' Aprender ' + materia.nombre.toLowerCase()));
       link.href = '#/lecciones/' + materia.id;
       sub.appendChild(link);
     }
@@ -361,7 +381,7 @@
           var r = Util.crear('div', 'card-record');
           r.appendChild(Iconos.crear('trofeo'));
           r.appendChild(Util.crear('span', null, ' Tu récord: ' + mejor));
-          b.appendChild(r);
+          b.cuerpo.appendChild(r);
         }
       } else {
         b.classList.add('trabada');
@@ -372,7 +392,7 @@
         texto.appendChild(Util.crear('b', null, estado.motivo));
         if (estado.progreso) texto.appendChild(Util.crear('span', null, 'Llevás ' + estado.progreso));
         candado.appendChild(texto);
-        b.appendChild(candado);
+        b.cuerpo.appendChild(candado);
       }
       cont.appendChild(b);
     });
@@ -389,7 +409,7 @@
       b.disabled = lista.length === 0;
       if (lista.length) {
         var leidas = lista.filter(function (l) { return Almacen.leccionVista(l.id); }).length;
-        b.appendChild(Util.crear('div', 'card-texto',
+        b.cuerpo.appendChild(Util.crear('span', 'card-texto',
           Util.plural(lista.length, 'lección', 'lecciones') +
           (leidas ? ' · ' + leidas + ' leída' + (leidas === 1 ? '' : 's') : '')));
       } else {
@@ -400,13 +420,15 @@
   }
 
   function pintarLecciones(materia) {
-    $('titulo-lecciones').textContent = '📚 ' + materia.nombre;
+    tituloConIcono($('titulo-lecciones'), 'aprender', materia.nombre);
 
     var sub = $('subtitulo-lecciones');
     Util.vaciar(sub);
     sub.appendChild(document.createTextNode('Leelas en el orden que quieras. '));
     if (materia.disponible) {
-      var link = Util.crear('a', 'enlace-cruzado', '🎮 Jugar a ' + materia.nombre.toLowerCase());
+      var link = Util.crear('a', 'enlace-cruzado');
+      link.appendChild(Iconos.crear('jugar'));
+      link.appendChild(Util.crear('span', null, ' Jugar a ' + materia.nombre.toLowerCase()));
       link.href = '#/materia/' + materia.id;
       sub.appendChild(link);
     }
@@ -423,7 +445,7 @@
       var pie = Util.crear('div', 'card-pie');
       pie.appendChild(Util.crear('span', 'card-minutos', '⏱️ ' + l.minutos + ' min'));
       if (vista) pie.appendChild(Util.crear('span', 'card-leida', '✅ Leída'));
-      b.appendChild(pie);
+      b.cuerpo.appendChild(pie);
       cont.appendChild(b);
     });
   }
@@ -758,8 +780,7 @@
     boton.hidden = !Repaso.hayParaRepasar();
     if (boton.hidden) return;
     $('repaso-detalle').textContent =
-      'Volvemos sobre las preguntas que te costaron. Tenés ' +
-      Util.plural(Repaso.cuantosPendientes(), 'cosa', 'cosas') + ' para repasar.';
+      'Tenés ' + Util.plural(Repaso.cuantosPendientes(), 'cosa', 'cosas') + ' para repasar';
   }
 
   function arrancarRepaso() {

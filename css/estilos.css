@@ -217,14 +217,17 @@ body {
 .card {
   --sombra-color: var(--borde);
   position: relative;
+  /* En fila, no apilado: el ícono grande a la izquierda y el texto al
+     lado. Antes iban uno abajo del otro y cada tarjeta medía 200px, así
+     que tres juegos llenaban la pantalla y las tres se veían iguales. */
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 6px;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
   text-align: left;
   font: inherit;
   color: inherit;
-  padding: 22px 20px 20px;
+  padding: 16px 18px;
   border: 4px solid var(--borde);
   border-radius: var(--radio);
   background: var(--tarjeta);
@@ -253,8 +256,9 @@ body {
 .card-icono {
   font-size: 2.4rem;
   line-height: 1;
-  width: 68px;
-  height: 68px;
+  width: 74px;
+  height: 74px;
+  flex: none;
   display: grid;
   place-items: center;
   border-radius: 22px;
@@ -262,11 +266,23 @@ body {
   color: var(--card-color, var(--primario));
   /* sombra interna difusa, no una línea: la plastilina no tiene cantos */
   box-shadow: inset 0 -6px 8px -4px rgba(29, 43, 74, .16);
-  margin-bottom: 6px;
+}
+
+/* Todo lo que no es el ícono: título, la línea de abajo, el récord, el
+   candado. Los que arman una tarjeta le cuelgan las cosas a b.cuerpo. */
+.card-cuerpo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
 }
 .card-icono .ico { width: 40px; height: 40px; stroke-width: 1.9; }
-.card-titulo { font-size: 1.3rem; font-weight: 700; }
-.card-texto { color: var(--tinta-suave); font-size: .97rem; line-height: 1.35; }
+.card-titulo { font-size: 1.28rem; font-weight: 700; line-height: 1.2; }
+/* La línea de abajo es secundaria: corta y más chica, para que lo
+   primero que se lea sea el nombre del juego. */
+.card-texto { color: var(--tinta-suave); font-size: .92rem; line-height: 1.3; }
 
 .card-cinta {
   position: absolute;
@@ -282,7 +298,7 @@ body {
   text-transform: uppercase;
 }
 .card-record {
-  margin-top: 8px;
+  margin-top: 4px;
   font-size: .87rem;
   font-weight: 700;
   color: #8a6300;
@@ -1070,7 +1086,7 @@ body.sin-perfil .pie { display: none; }
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-top: 10px;
+  margin-top: 6px;
   padding: 9px 12px;
   border-radius: var(--radio-s);
   background: #f1f4fb;
@@ -1083,7 +1099,7 @@ body.sin-perfil .pie { display: none; }
 .candado-texto b { font-size: .92rem; overflow-wrap: break-word; }
 .candado-texto span { font-size: .82rem; color: var(--tinta-suave); }
 
-.card-pie { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.card-pie { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
 .card-minutos, .card-leida {
   font-size: .84rem;
   font-weight: 700;
@@ -1095,15 +1111,21 @@ body.sin-perfil .pie { display: none; }
 }
 .card-leida { background: #e6f8ef; border-color: #b6e6cd; color: var(--exito-osc); }
 
+/* El atajo a la otra mitad de la app. Va discreto a propósito: en la
+   pantalla de elegir juego, lo que tiene que llamar la atención son los
+   juegos, no un enlace que te lleva a otro lado. */
 .enlace-cruzado {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   font-weight: 700;
-  color: var(--primario);
+  font-size: .93rem;
+  color: var(--tinta-suave);
   text-decoration: none;
-  border-bottom: 2px solid #c9d5fb;
   white-space: nowrap;
 }
-.enlace-cruzado:hover { border-bottom-color: var(--primario); }
+.enlace-cruzado .ico { width: 1.05em; height: 1.05em; }
+.enlace-cruzado:hover { color: var(--primario); }
 
 /* ============================================================
    Aviso de desbloqueo en los resultados
@@ -1791,3 +1813,9 @@ body.rindiendo .vidas { display: none; }
   flex-wrap: wrap;
 }
 .dialogo-botones .btn-gigante { font-size: 1.15rem; padding: 13px 30px; }
+
+/* Los íconos que van adentro de un botón secundario, al lado del texto */
+.btn-secundario > [data-ico] { display: inline-flex; vertical-align: -.18em; margin-right: .3em; }
+.btn-secundario .ico { width: 1.1em; height: 1.1em; }
+.ajuste-icono { display: inline-flex; }
+.ajuste-icono .ico { width: 26px; height: 26px; }
