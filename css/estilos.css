@@ -1745,3 +1745,49 @@ body.rindiendo .vidas { display: none; }
   box-shadow: inset 0 -8px 10px -5px rgba(15, 23, 42, .26);
   margin-bottom: 8px;
 }
+
+/* ============================================================
+   El cartel de confirmar
+
+   Reemplaza a window.confirm(), que además de verse como un cartel del
+   navegador en medio de una app para chicos, el propio navegador puede
+   silenciar: cuando lo hace, devuelve "no" sin mostrar nada y la compra
+   no pasa nunca.
+   ============================================================ */
+.dialogo {
+  border: none;
+  background: none;
+  padding: 0;
+  max-width: min(92vw, 420px);
+  color: var(--tinta);
+}
+.dialogo::backdrop {
+  background: rgba(15, 23, 42, .55);
+  backdrop-filter: blur(2px);
+}
+.dialogo-caja {
+  background: var(--tarjeta);
+  border: 4px solid var(--borde);
+  border-radius: var(--radio);
+  box-shadow: var(--sombra);
+  padding: clamp(20px, 5vw, 28px);
+  text-align: center;
+  animation: entra-dialogo .28s var(--rebote) both;
+}
+@keyframes entra-dialogo {
+  from { opacity: 0; transform: translateY(18px) scale(.9); }
+  to   { opacity: 1; transform: none; }
+}
+.dialogo-vista { height: 108px; margin-bottom: 10px; }
+.dialogo-vista .mascota-mini { height: 108px; }
+.dialogo-vista .muestra-color-grande { height: 72px; margin-top: 18px; }
+.dialogo-vista .avatar-muestra { font-size: 4rem; line-height: 108px; }
+.dialogo-titulo { font-size: 1.5rem; margin: 0 0 4px; }
+.dialogo-texto { color: var(--tinta-suave); margin: 0 0 20px; line-height: 1.4; }
+.dialogo-botones {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.dialogo-botones .btn-gigante { font-size: 1.15rem; padding: 13px 30px; }

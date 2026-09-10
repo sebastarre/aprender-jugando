@@ -1448,22 +1448,95 @@
     });
   }
 
+  /**
+   * El cartel de "¿seguro?", propio de la app.
+   *
+   * Antes esto era window.confirm(), y ahí estaba el bug de la tienda:
+   * los navegadores pueden silenciar los diálogos del sistema (Chrome
+   * ofrece un "no permitir más diálogos en esta página" y a partir de
+   * ahí confirm() devuelve false sin mostrar nada). Cuando le pasaba
+   * eso a alguien, tocar comprar no hacía absolutamente nada y no había
+   * manera de darse cuenta de por qué.
+   *
+   * `opciones` puede traer: titulo, texto, vista (HTML de la muestra),
+   * si (el texto del botón que acepta) y soloAceptar.
+   */
+  function preguntar(opciones, alAceptar) {
+    var caja = $('dialogo');
+    var vista = $('dialogo-vista');
+    var si = $('dialogo-si');
+    var no = $('dialogo-no');
+
+    Util.vaciar(vista);
+    vista.hidden = !opciones.vista;
+    if (opciones.vista) vista.innerHTML = opciones.vista;
+
+    $('dialogo-titulo').textContent = opciones.titulo || '';
+    $('dialogo-texto').textContent = opciones.texto || '';
+    si.textContent = opciones.si || 'Sí, comprar';
+    no.hidden = !!opciones.soloAceptar;
+
+    function cerrar() {
+      si.onclick = null;
+      no.onclick = null;
+      caja.close();
+    }
+    si.onclick = function () {
+      cerrar();
+      if (alAceptar) alAceptar();
+    };
+    no.onclick = cerrar;
+
+    caja.showModal();
+    // el foco arranca en el botón seguro: que un toque de más no compre
+    (opciones.soloAceptar ? si : no).focus();
+  }
+
   function manejarCompra(tipo, item, idCompra, tiene, esAvatar) {
-    if (!tiene) {
-      if (Almacen.monedas() < item.precio) {
-        Sonido.tocar('error');
-        window.alert('Te faltan ' + (item.precio - Almacen.monedas()) +
-                     ' monedas para eso. ¡Seguí jugando!');
-        return;
-      }
-      if (!window.confirm('¿Comprar ' + item.nombre + ' por ' + item.precio + ' monedas?')) return;
-      if (!Almacen.comprar(idCompra, item.precio)) return;
-      Sonido.tocar('record');
-    } else {
+    if (tiene) {
       Sonido.tocar('clic');
+      return ponerEnUso(tipo, item, esAvatar);
     }
 
-    // comprado o ya comprado: se pone en uso
+    var faltan = item.precio - Almacen.monedas();
+    if (faltan > 0) {
+      Sonido.tocar('error');
+      return preguntar({
+        titulo: 'Te faltan monedas',
+        texto: 'Para ' + item.nombre + ' te ' +
+               (faltan === 1 ? 'falta 1 moneda' : 'faltan ' + faltan + ' monedas') +
+               '. ¡Seguí jugando y las juntás!',
+        si: 'Bueno', soloAceptar: true
+      });
+    }
+
+    preguntar({
+      titulo: '¿Lo comprás?',
+      texto: item.nombre + ' cuesta ' + Util.plural(item.precio, 'moneda') +
+             '. Te quedarían ' + Util.plural(Almacen.monedas() - item.precio, 'moneda') + '.',
+      vista: vistaDeCompra(tipo, item)
+    }, function () {
+      if (!Almacen.comprar(idCompra, item.precio)) return;
+      Sonido.tocar('record');
+      ponerEnUso(tipo, item, esAvatar);
+    });
+  }
+
+  /** La muestra que se ve en el cartel: la mascota, el color o el monigote. */
+  function vistaDeCompra(tipo, item) {
+    if (tipo === 'disfraz') {
+      return '<span class="mascota-mini">' +
+             Mascota.vista(Almacen.equipado('mascota'), item.id) + '</span>';
+    }
+    if (tipo.indexOf('color:') === 0) {
+      return '<span class="muestra-color-grande" style="background:' +
+             Util.escapar(item.muestra) + '"></span>';
+    }
+    if (item.emoji) return '<span class="avatar-muestra">' + item.emoji + '</span>';
+    return '';
+  }
+
+  function ponerEnUso(tipo, item, esAvatar) {
     if (esAvatar) {
       var yo = Almacen.activo();
       if (yo) Almacen.actualizarPerfil(yo.id, { avatar: item.emoji });
@@ -1834,10 +1907,14 @@
       if (ev.key === 'Enter') intentarPin();
     });
     $('btn-olvide-pin').addEventListener('click', function () {
-      if (window.confirm('Para poder entrar hay que borrar el PIN actual y crear uno nuevo. ¿Seguimos?')) {
+      preguntar({
+        titulo: '¿Empezamos de nuevo?',
+        texto: 'Para poder entrar hay que borrar el PIN actual y crear uno nuevo.',
+        si: 'Sí, borrar el PIN'
+      }, function () {
         Almacen.setPin(null);
         pintarParental();
-      }
+      });
     });
     $('btn-cambiar-pin').addEventListener('click', function () {
       Almacen.setPin(null);
@@ -1845,11 +1922,16 @@
     });
     $('btn-borrar-progreso').addEventListener('click', function () {
       var yo = Almacen.activo();
-      if (!window.confirm('Se borra todo el progreso de ' + (yo ? yo.nombre : '') +
-                          '. Esto no se puede deshacer. ¿Borrar?')) return;
-      Almacen.borrarProgreso();
-      pintarBarraSuperior();
-      abrirParental();
+      preguntar({
+        titulo: '¿Borrar todo el progreso?',
+        texto: 'Se borra todo lo de ' + (yo ? yo.nombre : '') +
+               ': partidas, estrellas, monedas y lo comprado. Esto no se puede deshacer.',
+        si: 'Sí, borrar todo'
+      }, function () {
+        Almacen.borrarProgreso();
+        pintarBarraSuperior();
+        abrirParental();
+      });
     });
 
     document.querySelectorAll('[data-zoom]').forEach(function (b) {

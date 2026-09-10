@@ -424,6 +424,21 @@
 
 </main>
 
+<!-- Cartel para confirmar una compra. Es propio y no window.confirm()
+     porque el navegador puede silenciar los diálogos del sistema, y
+     cuando lo hace la compra no pasa nada y nadie se entera por qué. -->
+<dialog class="dialogo" id="dialogo">
+  <div class="dialogo-caja">
+    <div class="dialogo-vista" id="dialogo-vista" aria-hidden="true"></div>
+    <h2 class="dialogo-titulo" id="dialogo-titulo"></h2>
+    <p class="dialogo-texto" id="dialogo-texto"></p>
+    <div class="dialogo-botones">
+      <button class="btn-secundario" type="button" id="dialogo-no">No</button>
+      <button class="btn-gigante" type="button" id="dialogo-si">Sí, comprar</button>
+    </div>
+  </div>
+</dialog>
+
 <footer class="pie">
   Hecho para aprender jugando · Mapas de Natural Earth · Banderas de flagcdn.com
 </footer>

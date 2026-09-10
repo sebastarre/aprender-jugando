@@ -178,6 +178,14 @@ Hay un tope de **30 🪙 por partida**. Sin tope quedaba desparejo: geografía
 tiene 194 países (se agotan y decaen), pero las cuentas de nivel experto casi
 nunca se repiten y pagarían 5 siempre.
 
+Comprar abre un **cartel propio** de la app, no el del navegador. No es
+sólo cuestión de que se vea mejor: los navegadores pueden silenciar los
+diálogos del sistema (Chrome ofrece un «no permitir más diálogos en esta
+página») y a partir de ahí window.confirm() devuelve «no» sin mostrar nada.
+Cuando le pasaba eso a alguien, tocar comprar no hacía absolutamente nada y
+no había forma de darse cuenta de por qué. Lo mismo vale para borrar el
+progreso y para reponer el PIN en el modo parental.
+
 Con esas monedas se compran, en la **tienda** (el chip de arriba a la derecha,
 o el botón en Personalización): colores sueltos para cada parte de la app,
 disfraces para la mascota, fondos y monigotes extra para el perfil. **Todo es
