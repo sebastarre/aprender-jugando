@@ -1135,7 +1135,19 @@
   function menuAbierto() { return !$('menu-perfil').hidden; }
 
   /* ---------------------- configuración ---------------------- */
+  /* La versión sale del nombre de la caché del service worker, que es lo
+     que de verdad está corriendo en el teléfono. Sirve para contestar
+     "¿tengo lo último?" sin tener que abrir la consola. */
+  function pintarVersion() {
+    var caja = $('version-app');
+    if (!caja || !window.PWA) return;
+    PWA.version().then(function (v) {
+      caja.textContent = v ? 'Versión ' + v : 'Versión — (sin guardar para usar sin internet)';
+    });
+  }
+
   function pintarConfiguracion() {
+    pintarVersion();
     var yo = Almacen.activo();
     if (!yo) return irA('#/');
 
@@ -1899,6 +1911,14 @@
     $('btn-tienda').addEventListener('click', function () { Sonido.tocar('clic'); irA('#/tienda'); });
     $('btn-ir-config').addEventListener('click', function () { Sonido.tocar('clic'); irA('#/configuracion'); });
     $('btn-guardar-datos').addEventListener('click', guardarDatos);
+    $('btn-actualizar').addEventListener('click', function () {
+      Sonido.tocar('clic');
+      var caja = $('version-app');
+      caja.textContent = 'Buscando…';
+      if (window.PWA) PWA.buscarActualizacion();
+      // si había algo nuevo, la app se recarga sola; si no, vuelve la versión
+      setTimeout(pintarVersion, 2500);
+    });
     $('ajuste-sonido').addEventListener('click', function () {
       Almacen.setSonido(!Almacen.sonidoActivo());
       pintarInterruptorSonido();
