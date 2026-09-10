@@ -273,7 +273,7 @@ window.Geografia = (function () {
       id: 'capitales',
       nombre: 'Capitales',
       icono: 'capitales',
-      color: '#f59e0b',
+      color: '#c2740a',
       suave: '#fef3c7',
       texto: 'De qué país es cada capital',
       edadMin: 8,

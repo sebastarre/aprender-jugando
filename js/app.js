@@ -21,6 +21,24 @@
   var MARGEN_EDAD = 2;        // cuántos años más adelante se muestran (bloqueados)
 
   /* ---------------------- catálogo de materias ---------------------- */
+
+  /**
+   * Una materia o un juego, para una ficha, sin la oración de abajo.
+   *
+   * En la ficha de una materia que ya está, abajo del nombre va cuántos
+   * juegos (o cuántas lecciones) tiene, que es el dato que sirve para
+   * decidir. Si además va la descripción, quedan tres renglones de
+   * texto chico apretados abajo de un dibujo, y a esta edad la
+   * recomendación es al revés: cuanto menos texto, mejor. La
+   * descripción se queda sólo en las que dicen "Pronto", donde no hay
+   * ningún número que mostrar y sirve para saber qué va a venir.
+   */
+  function sinBajada(m) {
+    var copia = {};
+    Object.keys(m).forEach(function (k) { if (k !== 'texto') copia[k] = m[k]; });
+    return copia;
+  }
+
   var MATERIAS = [
     {
       id: 'geografia', nombre: 'Geografía', icono: 'geografia',
@@ -36,7 +54,7 @@
     },
     {
       id: 'lengua', nombre: 'Lengua', icono: 'lengua',
-      color: '#f59e0b', suave: '#fef3c7',
+      color: '#c2740a', suave: '#fef3c7',
       texto: 'Ortografía y lectura', modulo: null
     },
     {
@@ -317,6 +335,8 @@
     b.type = 'button';
     b.style.setProperty('--card-color', datos.color);
     b.style.setProperty('--card-suave', datos.suave);
+    /* el escalón de abajo del círculo: el mismo color, más oscuro */
+    b.style.setProperty('--card-borde', Util.oscurecer(datos.color));
     var icono = ponerIcono(Util.crear('span', 'card-icono'), datos.icono);
     b.appendChild(icono);
     b.icono = icono;
@@ -349,7 +369,8 @@
     var cont = $('grilla-materias');
     Util.vaciar(cont);
     MATERIAS.forEach(function (m) {
-      var b = tarjeta(m, function () { irA('#/materia/' + m.id); });
+      var b = tarjeta(m.disponible ? sinBajada(m) : m,
+                      function () { irA('#/materia/' + m.id); });
       b.disabled = !m.disponible;
       if (m.disponible) {
         b.cuerpo.appendChild(Util.crear('span', 'card-texto', Util.plural(juegosVisibles(m).length, 'juego')));
@@ -378,7 +399,11 @@
     Util.vaciar(cont);
     juegosVisibles(materia).forEach(function (j) {
       var estado = estadoDeJuego(materia, j);
-      var b = tarjeta(j, function () {
+      /* Al juego trabado se le saca la bajada: en su lugar va el
+         requisito, que es la única línea que importa mientras esté
+         cerrado. Con las dos, una ficha de 169px de ancho terminaba con
+         cinco renglones de texto abajo del dibujo. */
+      var b = tarjeta(estado.jugable ? j : sinBajada(j), function () {
         if (!estado.jugable) return;
         irA('#/juego/' + materia.id + '/' + j.id);
       });
@@ -400,7 +425,7 @@
           .appendChild(Iconos.crear('candado'));
         var traba = Util.crear('div', 'card-traba');
         traba.appendChild(Iconos.crear(estado.tipo === 'edad' ? 'perfil' : 'estrella'));
-        traba.appendChild(Util.crear('span', null, ' ' + estado.motivo));
+        traba.appendChild(Util.crear('span', 'traba-texto', estado.motivo));
         b.cuerpo.appendChild(traba);
       }
       cont.appendChild(b);
@@ -414,7 +439,8 @@
     Util.vaciar(cont);
     MATERIAS.forEach(function (m) {
       var lista = leccionesVisibles(m.id);
-      var b = tarjeta(m, function () { irA('#/lecciones/' + m.id); });
+      var b = tarjeta(lista.length ? sinBajada(m) : m,
+                      function () { irA('#/lecciones/' + m.id); });
       b.disabled = lista.length === 0;
       if (lista.length) {
         var leidas = lista.filter(function (l) { return Almacen.leccionVista(l.id); }).length;

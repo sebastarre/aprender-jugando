@@ -77,6 +77,29 @@ window.Util = (function () {
     });
   }
 
+  /**
+   * Un tono más oscuro del mismo color, para el escaloncito de abajo.
+   *
+   * Cada juego trae un color propio escrito a mano; el escalón tiene que
+   * ser ese mismo color pero más oscuro, no un gris. Calcularlo acá
+   * evita tener que escribir dos colores por juego y que se
+   * desincronicen cuando alguien cambia uno solo.
+   *
+   * `cuanto` es cuánto queda del original: .78 es un escalón que se ve
+   * sin ensuciar.
+   */
+  function oscurecer(hex, cuanto) {
+    var c = String(hex).replace('#', '');
+    if (c.length !== 6) return hex;
+    var f = cuanto == null ? 0.78 : cuanto;
+    var p = [0, 2, 4].map(function (i) {
+      return Math.round(parseInt(c.substr(i, 2), 16) * f);
+    });
+    return '#' + p.map(function (x) {
+      return Math.max(0, Math.min(255, x)).toString(16).padStart(2, '0');
+    }).join('');
+  }
+
   /** Ruta al archivo de bandera de un país (código ISO de 2 letras). */
   function bandera(id) {
     return 'assets/banderas/' + String(id).toLowerCase() + '.png';
@@ -95,7 +118,7 @@ window.Util = (function () {
   return {
     mezclar: mezclar, muestra: muestra, muestraPesada: muestraPesada,
     alAzar: alAzar, unaDe: unaDe,
-    limitar: limitar, $: $, crear: crear, vaciar: vaciar,
+    limitar: limitar, $: $, crear: crear, vaciar: vaciar, oscurecer: oscurecer,
     escapar: escapar, bandera: bandera, esperar: esperar, plural: plural
   };
 })();

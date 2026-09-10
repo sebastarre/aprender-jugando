@@ -25,17 +25,15 @@
      ningún tema: tienen que significar siempre lo mismo. */
   --tinta:        #0f172a;
   --tinta-suave:  #475569;
-  --papel:        #e7eefc;
+  --papel:        #f3f7ff;
   --tarjeta:      #ffffff;
 
-  /* Tres tonos distintos donde antes había uno solo. Ver la explicación
-     larga en js/tienda/catalogo.js, en la ranura del fondo: el resumen
-     es que el filito de un recuadro y el riel de una barra de progreso
-     no pueden ser el mismo color, porque uno tiene que desaparecer y el
-     otro tiene que verse. */
-  --borde:        #dce6f9;   /* el filito de los recuadros */
-  --sombra-clay:  #d3dff5;   /* el escaloncito de abajo de las tarjetas */
-  --pista:        #c4d5f2;   /* rieles, interruptores apagados, botones */
+  /* Ver la explicación larga en js/tienda/catalogo.js, en la ranura del
+     fondo: el papel va casi blanco y el color vive en los objetos de
+     adelante, no atrás. */
+  --borde:        #dde5f5;   /* el filo de 2px de una tarjeta */
+  --sombra-clay:  #c9d6ee;   /* el escalón de 4px, el que se hunde */
+  --pista:        #b6c8e8;   /* rieles, interruptores apagados, botones */
 
   /* La barra de arriba es de color pleno: es lo que hace que se note de
      entrada qué paleta está puesta. Cada tema la pisa con su propio tono. */
@@ -59,8 +57,13 @@
   --rosa-osc:     #be185d;
   --agua:         #a8cffa;
 
-  --radio:   26px;
-  --radio-s: 16px;
+  /* 20 y 14, no 26 y 16. Con 26px de radio en una tarjeta de 100px de
+     alto la curva se come el cuarto del ancho y todo queda con forma de
+     poroto: blando en vez de macizo. Las apps del rubro andan en 16-20
+     para tarjetas y 12-14 para lo chico; es un radio que se lee como
+     juguete de plástico duro y no como almohadón. */
+  --radio:   20px;
+  --radio-s: 14px;
 
   /* Tres capas, que es lo que hace que una tarjeta parezca de plastilina
      y no un rectángulo: el escaloncito de abajo (el que se hunde al
@@ -224,6 +227,7 @@ body {
 
 .titulo-grande {
   font-size: clamp(1.7rem, 4.6vw, 2.7rem);
+  font-weight: 800;
   margin: .2em 0 .1em;
   text-align: center;
   line-height: 1.15;
@@ -235,27 +239,42 @@ body {
   font-size: 1.05rem;
 }
 
-/* ---------------- Tarjetas de materias y juegos ---------------- */
+/* ============================================================
+   Tarjetas de materias y juegos
+
+   Dos columnas de fichas cuadradas, con el dibujo grande arriba y el
+   nombre abajo. No una lista de renglones anchos.
+
+   Venían siendo renglones: una fila por juego, ocupando todo el ancho,
+   con el dibujo a la izquierda y dos líneas de texto al lado. Es
+   exactamente la forma de una pantalla de Configuración, y hace que
+   elegir un juego se sienta como elegir un ajuste. Ninguna app de
+   chicos que ande bien presenta el contenido así: no hay renglones
+   anchos ni en Duolingo, ni en Khan Academy Kids, ni en Lingokids.
+
+   En dos columnas entran cuatro juegos de una sola mirada en vez de
+   tres, que es lo que recomiendan para esta edad (tres a cinco
+   opciones por pantalla), y el dibujo —lo único que un chico de cinco
+   reconoce sin leer— pasa a ser lo más grande de la ficha en vez de un
+   cuadradito al costado.
+   ============================================================ */
 .grilla-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-  gap: 18px;
+  grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
+  gap: 14px;
 }
 
 .card {
   --sombra-color: var(--sombra-clay);
   position: relative;
-  /* En fila, no apilado: el ícono grande a la izquierda y el texto al
-     lado. Antes iban uno abajo del otro y cada tarjeta medía 200px, así
-     que tres juegos llenaban la pantalla y las tres se veían iguales. */
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   align-items: center;
-  gap: 16px;
-  text-align: left;
+  gap: 10px;
+  text-align: center;
   font: inherit;
   color: inherit;
-  padding: 16px 18px;
+  padding: 18px 12px 16px;
   border: 2px solid var(--borde);
   border-radius: var(--radio);
   background: var(--tarjeta);
@@ -281,47 +300,62 @@ body {
 }
 .card:disabled { cursor: not-allowed; opacity: .62; }
 
+/* El dibujo: un círculo pleno del color del juego, con su propio
+   escalón un tono más oscuro. Es el objeto más saturado de la pantalla
+   y lo primero que se ve de cada ficha. Antes era un cuadradito pastel
+   de 74px al costado del texto; ahora es un círculo de 80px arriba de
+   todo, que es más o menos el tamaño que usan los nodos de Duolingo
+   (80×72). */
 .card-icono {
   position: relative;   /* para el candado de los juegos trabados */
   font-size: 2.4rem;
   line-height: 1;
-  width: 74px;
-  height: 74px;
+  width: 80px;
+  height: 80px;
   flex: none;
   display: grid;
   place-items: center;
-  border-radius: 22px;
-  background: var(--card-suave, var(--seleccion));
-  color: var(--card-color, var(--primario));
-  /* sombra interna difusa, no una línea: la plastilina no tiene cantos */
-  box-shadow: inset 0 -6px 8px -4px rgba(29, 43, 74, .16);
+  border-radius: 50%;
+  /* pleno y con el dibujo en blanco, no pastel con el dibujo de color.
+     Es el mismo recurso que usan los nodos de Duolingo, y es lo que
+     hace que la ficha tenga un objeto brillante en vez de una mancha
+     clarita. Todos los colores de juego dan 3:1 o más contra el blanco,
+     que es el mínimo para algo que es dibujo y no texto. */
+  background: var(--card-color, var(--primario));
+  color: #fff;
+  box-shadow: 0 4px 0 var(--card-borde, var(--sombra-clay));
+  transition: box-shadow .18s ease, transform .18s var(--rebote);
 }
+.card:active:not(:disabled) .card-icono { box-shadow: 0 0 0 var(--card-borde, var(--sombra-clay)); transform: translateY(4px); }
 
-/* Todo lo que no es el ícono: título, la línea de abajo, el récord, el
+/* Todo lo que no es el dibujo: título, la línea de abajo, el récord, el
    candado. Los que arman una tarjeta le cuelgan las cosas a b.cuerpo. */
 .card-cuerpo {
-  flex: 1;
+  width: 100%;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 3px;
+  align-items: center;
+  gap: 2px;
 }
-.card-icono .ico { width: 40px; height: 40px; stroke-width: 1.9; }
-.card-titulo { font-size: 1.28rem; font-weight: 700; line-height: 1.2; }
+.card-icono .ico { width: 44px; height: 44px; stroke-width: 1.9; }
+/* 800, no 700: es el peso al que corren los títulos y los botones de
+   las apps del rubro, y es lo que hace que un nombre se lea como el
+   cartel de un juego y no como el ítem de una lista. */
+.card-titulo { font-size: 1.05rem; font-weight: 800; line-height: 1.15; }
 /* La línea de abajo es secundaria: corta y más chica, para que lo
    primero que se lea sea el nombre del juego. */
-.card-texto { color: var(--tinta-suave); font-size: .92rem; line-height: 1.3; }
+.card-texto { color: var(--tinta-suave); font-size: .8rem; line-height: 1.25; }
 
-/* "PRONTO" en las materias que todavía no están. Era una cinta bordó
-   que salía 6px por fuera del borde derecho: además de parecer un
-   cartel de error, se veía como si la tarjeta estuviera rota. Ahora es
-   una pastilla adentro, del color del papel, que dice "acá no hay nada
-   todavía" sin gritar. */
+/* "PRONTO" en las materias que todavía no están. Fue una cinta bordó
+   que salía por fuera del borde derecho (parecía un cartel de error
+   sobre una tarjeta rota) y después una pastilla arriba a la derecha,
+   que en una ficha angosta se montaba encima del círculo. Ahora va
+   abajo de todo, centrada, en el renglón donde las otras fichas tienen
+   la bajada: es un dato de la ficha, no una alarma pegada arriba. */
 .card-cinta {
-  position: absolute;
-  top: 12px;
-  right: 12px;
+  align-self: center;
+  margin-top: 2px;
   background: var(--pista);
   /* del color del texto y no del gris suave: sobre --pista, que es el
      tono más oscuro de la familia del fondo, el gris suave se quedaba
@@ -354,15 +388,22 @@ body {
    texto. Uno menos de los tres gritos que tenía cada pantalla. */
 .etiqueta-grupo {
   font-size: 1.3rem;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--tinta);
   margin: 0 0 12px;
 }
 
+/* 158px de mínimo, no 175. Con 175 en un celular de 375px entraba una
+   sola columna por quince píxeles, así que elegir el nivel de un juego
+   eran cuatro renglones anchos —y elegir continente, ocho— con el resto
+   de la app ya en fichas de dos columnas. Con 158 entran dos: los ocho
+   continentes pasan de 730px de scroll a 400. Los nombres largos
+   ("América del Norte") se parten en dos líneas y la grilla empareja
+   las alturas de cada fila. */
 .grilla-continentes {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(158px, 1fr));
+  gap: 12px;
 }
 
 .opcion {
@@ -382,9 +423,11 @@ body {
      nada. Igual que en .card: el texto arranca donde termina el
      dibujo. */
   text-align: left;
-  transition: transform .12s, border-color .12s, background .12s;
+  box-shadow: 0 4px 0 var(--sombra-clay);
+  transition: transform .12s, box-shadow .12s, border-color .12s, background .12s;
 }
-.opcion:hover { transform: translateY(-3px); border-color: var(--op-color, var(--primario)); }
+.opcion:hover { transform: translateY(-2px); box-shadow: 0 6px 0 var(--sombra-clay); border-color: var(--op-color, var(--primario)); }
+.opcion:active { transform: translateY(4px); box-shadow: 0 0 0 var(--sombra-clay); }
 .opcion[aria-pressed="true"] {
   border-color: var(--op-color, var(--primario));
   background: var(--op-suave, var(--seleccion));
@@ -401,7 +444,7 @@ body {
   font-variant-numeric: tabular-nums;
 }
 .opcion-cuerpo { display: flex; flex-direction: column; min-width: 0; overflow-wrap: anywhere; }
-.opcion-nombre { font-weight: 700; }
+.opcion-nombre { font-weight: 800; }
 .opcion-detalle { font-size: .85rem; color: var(--tinta-suave); }
 
 .fila-opciones { display: flex; flex-wrap: wrap; gap: 12px; }
@@ -414,7 +457,7 @@ body {
 .btn-gigante {
   font: inherit;
   font-size: 1.35rem;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--sobre-primario);
   background: var(--primario);
   border: none;
@@ -433,16 +476,18 @@ body {
 
 .btn-secundario {
   font: inherit;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--tinta);
   background: var(--tarjeta);
   border: 3px solid var(--pista);
   border-radius: 999px;
   padding: 12px 26px;
   cursor: pointer;
-  transition: transform .12s, border-color .12s;
+  box-shadow: 0 4px 0 var(--sombra-clay);
+  transition: transform .12s, box-shadow .12s, border-color .12s;
 }
-.btn-secundario:hover { transform: translateY(-2px); border-color: var(--primario); }
+.btn-secundario:hover { transform: translateY(-2px); box-shadow: 0 6px 0 var(--sombra-clay); border-color: var(--primario); }
+.btn-secundario:active { transform: translateY(4px); box-shadow: 0 0 0 var(--sombra-clay); }
 
 /* ---------------- HUD del juego ---------------- */
 .pantalla-juego { display: flex; flex-direction: column; gap: 12px; }
@@ -797,6 +842,12 @@ body.jugando .pie { display: none; }
      y sin ella las dos miden igual. */
   .seccion-texto small { display: none; }
   .seccion { padding: 12px 14px; justify-content: center; }
+
+  /* En dos columnas cada opción mide 170px: con el dibujo a 1.7rem y
+     16px de padding a cada lado quedaban 99px para el texto y
+     "América del Norte" se partía en tres renglones. */
+  .opcion { padding: 12px 12px; gap: 9px; }
+  .opcion-icono { font-size: 1.45rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1029,10 +1080,15 @@ body.jugando .pie { display: none; }
   border: 2px solid var(--borde);
   background: var(--tarjeta);
   color: var(--tinta);
+  font-weight: 800;
   text-decoration: none;
+  /* el mismo escalón de 4px que las fichas y los botones: en esta app
+     todo lo que se puede apretar está apoyado sobre un escaloncito */
+  box-shadow: 0 4px 0 var(--sombra-clay);
   transition: transform .14s, border-color .14s, box-shadow .14s;
 }
-.seccion:hover { transform: translateY(-3px); box-shadow: var(--sombra-suave); }
+.seccion:hover { transform: translateY(-2px); box-shadow: 0 6px 0 var(--sombra-clay); }
+.seccion:active { transform: translateY(4px); box-shadow: 0 0 0 var(--sombra-clay); }
 .seccion-icono { font-size: 1.9rem; line-height: 1; flex: none; }
 .seccion-texto { display: flex; flex-direction: column; min-width: 0; }
 .seccion-texto b { font-size: 1.15rem; line-height: 1.2; }
@@ -1160,30 +1216,42 @@ body.sin-perfil .pie { display: none; }
 /* Se apaga el dibujo del juego, no el recuadro entero: si se le baja la
    opacidad a toda la tarjeta también se apagan el título y el candado,
    que son justo lo que hay que poder leer. */
-.card.trabada .card-icono { background: var(--pista); }
-.card.trabada .card-icono > .ico { filter: grayscale(1); opacity: .5; }
+.card.trabada .card-icono {
+  background: var(--pista);
+  color: var(--tinta-suave);
+  box-shadow: 0 4px 0 var(--sombra-clay);
+}
+.card.trabada .card-icono > .ico { opacity: .65; }
 .card.trabada .card-titulo { color: var(--tinta-suave); }
 
 /* Un solo renglón, del mismo tamaño y en el mismo lugar que la bajada
    de las tarjetas destrabadas, así la tarjeta trabada mide igual que
    las de al lado. El candado, que es lo que hay que entender sin leer,
    va sobre el dibujo. */
+/* La estrellita al lado del texto y no arriba: en una ficha angosta el
+   texto se parte en dos renglones, y con el ícono como un hijo más del
+   flex se quedaba solo en el primero. Va alineado arriba, pegado a la
+   primera línea. */
 .card-traba {
   display: flex;
-  align-items: center;
-  gap: 5px;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 4px;
   margin-top: 2px;
-  font-size: .9rem;
+  font-size: .78rem;
   font-weight: 700;
+  line-height: 1.25;
   color: var(--tinta-suave);
 }
+.card-traba .ico { width: 14px; height: 14px; flex: none; margin-top: .15em; }
+.traba-texto { min-width: 0; text-align: left; }
 
 .card-cerrojo {
   position: absolute;
-  right: -5px;
-  bottom: -5px;
-  width: 26px;
-  height: 26px;
+  right: -2px;
+  bottom: 2px;
+  width: 28px;
+  height: 28px;
   display: grid;
   place-items: center;
   border-radius: 50%;
@@ -1450,9 +1518,11 @@ body.sin-perfil .pie { display: none; }
   border: 2px solid var(--borde);
   border-radius: var(--radio);
   background: var(--tarjeta);
+  box-shadow: 0 4px 0 var(--sombra-clay);
   transition: transform .14s, border-color .14s, box-shadow .14s;
 }
-.card-tienda:hover { transform: translateY(-4px); box-shadow: var(--sombra-suave); }
+.card-tienda:hover { transform: translateY(-2px); box-shadow: 0 6px 0 var(--sombra-clay); }
+.card-tienda:active { transform: translateY(4px); box-shadow: 0 0 0 var(--sombra-clay); }
 .card-tienda[aria-pressed="true"] {
   border-color: var(--primario);
   background: var(--seleccion);
@@ -1507,8 +1577,8 @@ body.sin-perfil .pie { display: none; }
    resto y el color se lo pone el dibujo, que es donde no molesta. */
 .tarjeta-examen {
   --sombra-color: var(--sombra-clay);
-  --examen-color: var(--rosa-osc);
-  --examen-suave: #fce7f3;
+  --examen-color: #be185d;
+  --examen-fuerte: #9d174d;
   font: inherit;
   color: inherit;
   cursor: pointer;
@@ -1543,22 +1613,27 @@ body.sin-perfil .pie { display: none; }
 
 /* El repaso va en el color de "acertar": son dos cosas distintas y no
    tienen que confundirse de un vistazo. */
-.tarjeta-repaso { --examen-color: var(--exito-osc); --examen-suave: #dcfce7; }
+.tarjeta-repaso { --examen-color: #15803d; --examen-fuerte: #14532d; }
 
+/* Mismo círculo pleno con escalón que las fichas de juego: si el examen
+   se queda con un cuadradito pastel arriba de una grilla de círculos
+   plenos, es lo único de la pantalla que habla otro idioma. */
 .examen-icono {
   width: 62px;
   height: 62px;
   flex: none;
   display: grid;
   place-items: center;
-  border-radius: 20px;
-  background: var(--examen-suave);
-  color: var(--examen-color);
-  box-shadow: inset 0 -6px 8px -4px rgba(29, 43, 74, .16);
+  border-radius: 50%;
+  background: var(--examen-color);
+  color: #fff;
+  box-shadow: 0 4px 0 var(--examen-fuerte);
+  transition: box-shadow .18s ease, transform .18s var(--rebote);
 }
+.tarjeta-examen:active .examen-icono { box-shadow: 0 0 0 var(--examen-fuerte); transform: translateY(4px); }
 .examen-icono .ico { width: 34px; height: 34px; stroke-width: 1.9; }
 .examen-cuerpo { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-.examen-cuerpo b { font-size: 1.2rem; line-height: 1.2; }
+.examen-cuerpo b { font-size: 1.2rem; font-weight: 800; line-height: 1.2; }
 .examen-cuerpo span { color: var(--tinta-suave); font-size: .9rem; line-height: 1.3; }
 .examen-flecha { color: var(--examen-color); flex: none; display: inline-flex; }
 .examen-flecha .ico { width: 22px; height: 22px; }

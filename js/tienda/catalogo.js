@@ -62,54 +62,60 @@ window.Catalogo = (function () {
       id: 'fondo',
       nombre: 'El fondo',
       texto: 'El color de atrás de todo, con sus tarjetas y sus bordes.',
-      /* Cada familia trae una escalerita de cinco tonos del mismo color,
-         del más claro al más oscuro, y cada uno tiene un trabajo:
+      /* Cada familia trae una escalerita de cinco tonos, del más claro
+         al más oscuro, y cada uno tiene un trabajo:
 
-           tarjeta      lo que está adelante (casi blanco)
-           papel        el fondo de la pantalla
-           sombra-clay  el escaloncito de abajo de las tarjetas
-           borde        el filito de los recuadros: se insinúa, no se ve
-           pista        lo que sí tiene que verse: el riel de una barra
-                        de progreso, un interruptor apagado, un botón
+           tarjeta      lo que está adelante: blanco, siempre
+           papel        el fondo de la pantalla: casi blanco
+           borde        el filo de 2px que le da el canto a una tarjeta
+           sombra-clay  el escalón de 4px de abajo, el que se hunde
+           pista        rieles de barras, interruptores apagados, botones
 
-         Antes había un solo tono intermedio haciendo de borde, de
-         escalón y de riel a la vez. Como tenía que servir para el riel,
-         era fuerte; y como era fuerte, cada tarjeta terminaba con once
-         píxeles de color medio alrededor y la pantalla parecía un
-         montón de calcomanías de plástico apiladas. Separados, el
-         recuadro puede ser un susurro y el riel puede gritar. */
+         El fondo es casi blanco a propósito. Antes era un color pleno
+         —un celeste bien celeste— con las tarjetas blancas encima, y
+         eso es al revés de como lo hacen las apps de chicos que
+         funcionan: Duolingo tiene el fondo blanco (#ffffff) y mete
+         TODO el color en los objetos de adelante. Con el color atrás,
+         cada tarjeta es una mancha pálida flotando en una pileta de
+         color y la pantalla entera se ve deslavada, por más saturado
+         que esté el fondo.
+
+         Que el papel sea casi blanco no borra la paleta: la paleta se
+         ve en la barra, en los botones, en los dibujos de cada juego y
+         en el escalón de cada tarjeta. Se nota más, no menos, porque
+         ahora tiene contra qué recortarse. */
       colores: [
         { id: 'azul', nombre: 'Cielo', precio: 0, muestra: '#dfeafe',
-          vars: { 'papel': '#e7eefc', 'tarjeta': '#ffffff', 'borde': '#dce6f9',
-                  'sombra-clay': '#d3dff5', 'pista': '#c4d5f2',
-                  'seleccion': '#d7e4fc', 'agua': '#a8cffa' } },
+          vars: { 'papel': '#f3f7ff', 'tarjeta': '#ffffff', 'borde': '#dde5f5',
+                  'sombra-clay': '#c9d6ee', 'pista': '#b6c8e8',
+                  'seleccion': '#dbe8ff', 'agua': '#a8cffa' } },
         { id: 'frutilla', nombre: 'Frutilla', precio: 0, muestra: '#ffe3f1',
-          vars: { 'papel': '#fdeaf3', 'tarjeta': '#fffafc', 'borde': '#f9dde9',
-                  'sombra-clay': '#f5d5e3', 'pista': '#f6c2d8',
-                  'seleccion': '#fbdcea', 'agua': '#ddd6fe' } },
+          vars: { 'papel': '#fff5fa', 'tarjeta': '#ffffff', 'borde': '#f8dde9',
+                  'sombra-clay': '#f2c6db', 'pista': '#eeb0cd',
+                  'seleccion': '#ffdfee', 'agua': '#ddd6fe' } },
         { id: 'naranja', nombre: 'Durazno', precio: 0, muestra: '#ffe6c9',
-          vars: { 'papel': '#fdecd8', 'tarjeta': '#fffbf5', 'borde': '#fae0c4',
-                  'sombra-clay': '#f7ddbf', 'pista': '#f8c99a',
-                  'seleccion': '#fce3c6', 'agua': '#a8cffa' } },
+          vars: { 'papel': '#fff8ef', 'tarjeta': '#ffffff', 'borde': '#fae3ca',
+                  'sombra-clay': '#f5cfa6', 'pista': '#f0bb85',
+                  'seleccion': '#ffe8cd', 'agua': '#a8cffa' } },
         { id: 'selva', nombre: 'Selva', precio: 50, muestra: '#d7f5e1',
-          vars: { 'papel': '#e2f6e9', 'tarjeta': '#f9fffb', 'borde': '#d3edde',
-                  'sombra-clay': '#cdead9', 'pista': '#a9dcbe',
-                  'seleccion': '#d3f0e0', 'agua': '#a7dfc4' } },
+          vars: { 'papel': '#f2fbf5', 'tarjeta': '#ffffff', 'borde': '#d6ecdd',
+                  'sombra-clay': '#b8dfc6', 'pista': '#9bd0af',
+                  'seleccion': '#d8f3e2', 'agua': '#a7dfc4' } },
         { id: 'oceano', nombre: 'Océano', precio: 50, muestra: '#d3ecfb',
-          vars: { 'papel': '#e0f0fb', 'tarjeta': '#f7fcff', 'borde': '#d2e7f6',
-                  'sombra-clay': '#cbe3f4', 'pista': '#a9d5ef',
-                  'seleccion': '#d1e8f8', 'agua': '#8ecdf3' } },
-        /* el relleno de lo elegido va un toque más claro que el resto de
-           la familia: con el violeta más oscuro, la bajada gris de una
-           opción elegida daba 4.36:1 y el mínimo son 4.5 */
+          vars: { 'papel': '#f1f9ff', 'tarjeta': '#ffffff', 'borde': '#d5e9f7',
+                  'sombra-clay': '#b7d9f0', 'pista': '#98c8e8',
+                  'seleccion': '#d7ecfb', 'agua': '#8ecdf3' } },
+        /* la pista va un toque más clara que el resto de la familia: es
+           el fondo de la pastilla "PRONTO", y con las letras selva
+           encima daba 4.37:1, apenas abajo del mínimo de 4.5 */
         { id: 'uva', nombre: 'Uva', precio: 60, muestra: '#e9dcfd',
-          vars: { 'papel': '#ece2fc', 'tarjeta': '#fcf9ff', 'borde': '#e0d6f6',
-                  'sombra-clay': '#dbcff4', 'pista': '#c9b8ef',
-                  'seleccion': '#e6dbfc', 'agua': '#bfdbfe' } },
+          vars: { 'papel': '#f8f4ff', 'tarjeta': '#ffffff', 'borde': '#e5dcf8',
+                  'sombra-clay': '#d2c2f1', 'pista': '#c3aeea',
+                  'seleccion': '#eae0fd', 'agua': '#bfdbfe' } },
         { id: 'menta', nombre: 'Menta', precio: 60, muestra: '#cdf3ec',
-          vars: { 'papel': '#dcf4ef', 'tarjeta': '#f6fffd', 'borde': '#cfeae4',
-                  'sombra-clay': '#c9e7e0', 'pista': '#9fddd2',
-                  'seleccion': '#cfeee7', 'agua': '#a5e8e0' } }
+          vars: { 'papel': '#f0fbf9', 'tarjeta': '#ffffff', 'borde': '#d2ebe6',
+                  'sombra-clay': '#b2ddd5', 'pista': '#93cfc4',
+                  'seleccion': '#d5f0eb', 'agua': '#a5e8e0' } }
       ]
     },
 
