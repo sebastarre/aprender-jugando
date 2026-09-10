@@ -32,22 +32,8 @@
     <a class="chip-monedas" id="chip-monedas" href="#/tienda"
        title="Tus monedas · tocá para ir a la tienda"><span data-ico="moneda" aria-hidden="true"></span> <b>0</b></a>
     <button class="btn-icono" id="btn-sonido" aria-label="Activar o silenciar sonido"><span data-ico="sonido"></span></button>
-    <div class="envase-perfil">
-      <button class="btn-icono btn-perfil" id="btn-perfil"
-              aria-label="Abrir mi menú" aria-haspopup="menu" aria-expanded="false">🦊</button>
-      <!-- Menú del perfil. Acá se van a ir sumando más opciones. -->
-      <div class="menu-perfil" id="menu-perfil" role="menu" hidden>
-        <a class="item-menu" href="#/perfil" role="menuitem">
-          <span class="item-icono" data-ico="perfil" aria-hidden="true"></span> Ver mi perfil
-        </a>
-        <a class="item-menu" href="#/configuracion" role="menuitem">
-          <span class="item-icono" data-ico="configuracion" aria-hidden="true"></span> Configuración
-        </a>
-        <a class="item-menu" href="#/personalizacion" role="menuitem">
-          <span class="item-icono" data-ico="personalizacion" aria-hidden="true"></span> Personalización
-        </a>
-      </div>
-    </div>
+    <a class="btn-icono btn-perfil" id="btn-perfil" href="#/perfil"
+       aria-label="Ver mi perfil">🦊</a>
   </div>
 </header>
 
@@ -102,10 +88,54 @@
     </div>
   </section>
 
-  <!-- ============ JUGAR: materias ============ -->
-  <section class="pantalla" id="pantalla-juegos" hidden>
-    <h1 class="titulo-grande">¿A qué querés jugar?</h1>
-    <p class="subtitulo" id="saludo-juegos">Elegí una materia y practicá jugando.</p>
+  <!-- ============ INICIO: el menú principal ============
+       La primera pantalla es un menú, como la portada de un juego: la
+       mascota y el nombre arriba, y abajo una pila de botones grandes,
+       uno por lugar al que se puede ir. Antes se entraba directamente a
+       la lista de materias para jugar, y todo lo demás (el perfil, la
+       personalización, la configuración) vivía escondido en un menú
+       desplegable del ícono de arriba a la derecha. -->
+  <section class="pantalla" id="pantalla-inicio" hidden>
+    <a class="portada" href="#/perfil">
+      <div class="portada-mascota" data-mascota="hola" aria-hidden="true"></div>
+      <div class="portada-datos">
+        <span class="portada-hola">¡Hola!</span>
+        <strong class="portada-nombre" id="inicio-nombre">Jugador</strong>
+        <span class="portada-cuentas" id="inicio-cuentas"></span>
+      </div>
+      <span class="portada-flecha" data-ico="flecha" aria-hidden="true"></span>
+    </a>
+
+    <nav class="menu-inicio" aria-label="Menú principal">
+      <a class="boton-menu" id="menu-jugar" href="#/juegos">
+        <span class="boton-menu-icono" data-ico="jugar" aria-hidden="true"></span>
+        <span class="boton-menu-texto">
+          <b>Jugar</b>
+          <small id="menu-jugar-detalle">Practicá lo que aprendiste</small>
+        </span>
+      </a>
+      <a class="boton-menu" id="menu-aprender" href="#/aprender">
+        <span class="boton-menu-icono" data-ico="aprender" aria-hidden="true"></span>
+        <span class="boton-menu-texto">
+          <b>Aprender</b>
+          <small id="menu-aprender-detalle">Cursitos cortos con dibujos</small>
+        </span>
+      </a>
+      <a class="boton-menu" id="menu-personalizacion" href="#/personalizacion">
+        <span class="boton-menu-icono" data-ico="personalizacion" aria-hidden="true"></span>
+        <span class="boton-menu-texto">
+          <b>Personalizar</b>
+          <small>Tu mascota y los colores</small>
+        </span>
+      </a>
+      <a class="boton-menu" id="menu-configuracion" href="#/configuracion">
+        <span class="boton-menu-icono" data-ico="configuracion" aria-hidden="true"></span>
+        <span class="boton-menu-texto">
+          <b>Configuración</b>
+          <small>Sonido, tus datos y quién juega</small>
+        </span>
+      </a>
+    </nav>
 
     <div class="instalar" id="instalar" hidden>
       <span class="instalar-icono" data-ico="instalar" aria-hidden="true"></span>
@@ -116,6 +146,14 @@
       </div>
       <button class="btn-secundario instalar-boton" type="button" id="btn-instalar">Instalar</button>
     </div>
+  </section>
+
+  <!-- ============ JUGAR: materias ============ -->
+  <section class="pantalla" id="pantalla-juegos" hidden>
+    <h1 class="titulo-grande">¿A qué querés jugar?</h1>
+    <p class="subtitulo" id="saludo-juegos">Elegí una materia y practicá jugando.</p>
+
+
 
     <!-- Aparece sólo cuando hay errores juntados como para armar una ronda. -->
     <button class="tarjeta-examen tarjeta-repaso" id="btn-repaso" type="button" hidden>

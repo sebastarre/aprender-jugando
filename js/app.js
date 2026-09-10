@@ -181,14 +181,17 @@
   var grupos = [];
   var ultimoResultado = null;
   var bienvenida = { nombre: '', edad: null, avatar: null, editando: null };
-  var PANTALLAS = ['bienvenida', 'juegos', 'aprender', 'materia', 'lecciones', 'leccion',
+  var PANTALLAS = ['bienvenida', 'inicio', 'juegos', 'aprender', 'materia', 'lecciones', 'leccion',
                    'config', 'juego', 'fin', 'perfil', 'tienda', 'parental',
                    'examen', 'nota', 'configuracion', 'personalizacion'];
   var CON_SECCIONES = ['juegos', 'aprender', 'materia', 'lecciones'];
 
   function mostrar(nombre) {
     PANTALLAS.forEach(function (p) { $('pantalla-' + p).hidden = (p !== nombre); });
-    $('btn-atras').hidden = (nombre === 'juegos' || nombre === 'aprender' || nombre === 'bienvenida');
+    /* La única pantalla sin flecha de volver es el inicio, porque es el
+       fondo de todo; la bienvenida tampoco, porque todavía no hay a
+       dónde volver. */
+    $('btn-atras').hidden = (nombre === 'inicio' || nombre === 'bienvenida');
     $('secciones').hidden = CON_SECCIONES.indexOf(nombre) === -1;
     document.body.classList.toggle('jugando', nombre === 'juego');
     document.body.classList.toggle('sin-perfil', nombre === 'bienvenida');
@@ -292,7 +295,10 @@
     }
     Sonido.tocar('record');
     pintarBarraSuperior();
-    irA('#/aprender');
+    /* Al inicio, no a Aprender: lo primero que ve alguien que recién se
+       hizo el perfil tiene que ser el menú con todo lo que hay, no una
+       de las cinco pantallas ya metido adentro. */
+    irA('#/');
   }
 
   /* ---------------------- tarjetas ---------------------- */
@@ -357,6 +363,42 @@
   function saludo() {
     var yo = Almacen.activo();
     return yo ? '¡Hola, ' + yo.nombre + '! ' : '';
+  }
+
+  /* ---------------------- inicio ---------------------- */
+
+  /** Un dato de la portada: un dibujito y un número. */
+  function cuentaDePortada(icono, texto) {
+    var caja = Util.crear('span', 'portada-cuenta');
+    caja.appendChild(Iconos.crear(icono));
+    caja.appendChild(Util.crear('span', null, texto));
+    return caja;
+  }
+
+  function pintarInicio() {
+    var yo = Almacen.activo();
+    $('inicio-nombre').textContent = yo ? yo.nombre : 'Jugador';
+
+    var cuentas = $('inicio-cuentas');
+    Util.vaciar(cuentas);
+    cuentas.appendChild(cuentaDePortada('estrella', String(Almacen.estrellas())));
+    cuentas.appendChild(cuentaDePortada('moneda', String(Almacen.monedas())));
+
+    /* La bajada de cada botón dice qué hay adentro, no qué es: "3
+       materias" sirve más que "practicá lo que aprendiste", que es lo
+       mismo que ya dice el título. */
+    var conJuegos = MATERIAS.filter(function (m) { return m.disponible; }).length;
+    $('menu-jugar-detalle').textContent =
+      Util.plural(conJuegos, 'materia') + ' para practicar';
+
+    var conLecciones = MATERIAS.filter(function (m) {
+      return leccionesVisibles(m.id).length;
+    }).length;
+    $('menu-aprender-detalle').textContent = conLecciones
+      ? Util.plural(conLecciones, 'materia') + ' con cursitos'
+      : 'Explicaciones cortas, con dibujos';
+
+    Mascota.refrescar();
   }
 
   /* ---------------------- sección Jugar ---------------------- */
@@ -1161,14 +1203,6 @@
 
   }
 
-  /* ---------------------- menú del perfil ---------------------- */
-  function abrirMenu(abierto) {
-    $('menu-perfil').hidden = !abierto;
-    $('btn-perfil').setAttribute('aria-expanded', abierto ? 'true' : 'false');
-  }
-
-  function menuAbierto() { return !$('menu-perfil').hidden; }
-
   /* ---------------------- configuración ---------------------- */
   /* La versión sale del nombre de la caché del service worker, que es lo
      que de verdad está corriendo en el teléfono. Sirve para contestar
@@ -1736,6 +1770,13 @@
       return mostrar('bienvenida');
     }
 
+    if (partes[0] === 'juegos') {
+      cortarPartida();
+      marcarSeccion('juegos');
+      pintarMateriasJuegos();
+      return mostrar('juegos');
+    }
+
     if (partes[0] === 'aprender') {
       cortarPartida();
       marcarSeccion('aprender');
@@ -1847,9 +1888,8 @@
     }
 
     cortarPartida();
-    marcarSeccion('juegos');
-    pintarMateriasJuegos();
-    mostrar('juegos');
+    pintarInicio();
+    mostrar('inicio');
   }
 
   function volverAtras() {
@@ -1872,23 +1912,24 @@
     }
     if (partes[0] === 'parental') return irA('#/configuracion');
     if (partes[0] === 'tienda') return irA('#/personalizacion');
-    if (partes[0] === 'configuracion' || partes[0] === 'personalizacion') return irA('#/perfil');
-    irA('#/juegos');
+    /* La configuración y la personalización se abren desde el menú de
+       inicio, así que la flecha vuelve ahí. Antes colgaban del perfil,
+       que era el único lugar desde donde se llegaba. */
+    if (partes[0] === 'configuracion' || partes[0] === 'personalizacion') return irA('#/');
+    irA('#/');
   }
 
   /* ---------------------- eventos ---------------------- */
   function conectar() {
     $('btn-atras').addEventListener('click', volverAtras);
-    $('btn-perfil').addEventListener('click', function (ev) {
-      ev.stopPropagation();
+    /* El avatar de la barra lleva derecho al perfil. Antes desplegaba un
+       menú con Perfil, Configuración y Personalización: tres de los
+       cinco lugares de la app escondidos atrás de un ícono de 46px que
+       no decía nada. Ahora los tres son botones grandes en el inicio, y
+       un desplegable duplicado sería una manera más de llegar y una
+       cosa más que un chico de siete tiene que descubrir. */
+    $('btn-perfil').addEventListener('click', function () {
       Sonido.despertar(); Sonido.tocar('clic');
-      abrirMenu(!menuAbierto());
-    });
-    // el menú se cierra al elegir algo, al tocar afuera o con Escape
-    $('menu-perfil').addEventListener('click', function () { abrirMenu(false); });
-    document.addEventListener('click', function () { if (menuAbierto()) abrirMenu(false); });
-    document.addEventListener('keydown', function (ev) {
-      if (ev.key === 'Escape' && menuAbierto()) { abrirMenu(false); $('btn-perfil').focus(); }
     });
 
     $('btn-sonido').addEventListener('click', function () {
@@ -1931,7 +1972,9 @@
       Sonido.tocar('clic');
       irA('#/juego/' + sel.materia + '/' + sel.juego);
     });
-    $('btn-al-inicio').addEventListener('click', function () { Sonido.tocar('clic'); irA('#/juegos'); });
+    /* dicen «Menú principal» y llevaban a la lista de materias; ahora
+       hay un menú principal de verdad */
+    $('btn-al-inicio').addEventListener('click', function () { Sonido.tocar('clic'); irA('#/'); });
 
     /* perfil */
     $('btn-nuevo-perfil').addEventListener('click', function () {
@@ -1974,7 +2017,7 @@
       irA('#/rindiendo');
     });
     $('btn-otro-examen').addEventListener('click', function () { Sonido.tocar('clic'); irA('#/examen'); });
-    $('btn-nota-inicio').addEventListener('click', function () { Sonido.tocar('clic'); irA('#/juegos'); });
+    $('btn-nota-inicio').addEventListener('click', function () { Sonido.tocar('clic'); irA('#/'); });
     $('btn-parental').addEventListener('click', function () { Sonido.tocar('clic'); irA('#/parental'); });
 
     /* modo parental */

@@ -204,6 +204,8 @@ body {
   background: var(--tarjeta);
   color: var(--tinta);
   cursor: pointer;
+  /* el avatar es un enlace al perfil, no un botón: sin subrayado */
+  text-decoration: none;
   transition: transform .12s, background .12s;
 }
 .btn-icono:hover { background: var(--papel); transform: translateY(-2px); }
@@ -237,6 +239,118 @@ body {
   color: var(--tinta-suave);
   margin: 0 0 1.6em;
   font-size: 1.05rem;
+}
+
+/* ============================================================
+   Inicio: la portada y el menú principal
+
+   Cinco cosas grandes y nada más. La portada arriba (quién sos) y
+   cuatro botones anchos abajo, uno por lugar al que se puede ir.
+
+   Antes la app abría directamente en la lista de materias para jugar y
+   el resto —perfil, personalización, configuración— estaba adentro de
+   un menú desplegable colgado del avatar de la barra. Tres de los
+   cinco lugares de la app no se veían hasta que tocabas un ícono de
+   46px que no decía nada.
+   ============================================================ */
+.portada {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  margin-bottom: 22px;
+  border: 2px solid var(--borde);
+  border-radius: var(--radio);
+  background: var(--tarjeta);
+  box-shadow: 0 4px 0 var(--sombra-clay);
+  color: inherit;
+  text-decoration: none;
+  transition: transform .14s, box-shadow .14s, border-color .14s;
+}
+.portada:hover { transform: translateY(-2px); box-shadow: 0 6px 0 var(--sombra-clay); border-color: var(--primario); }
+.portada:active { transform: translateY(4px); box-shadow: 0 0 0 var(--sombra-clay); }
+
+.portada-mascota { width: 84px; flex: none; }
+.portada-mascota .mascota-img { display: block; height: 84px; width: auto; margin: 0 auto; }
+
+.portada-datos { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.portada-hola { color: var(--tinta-suave); font-size: .9rem; line-height: 1.2; }
+.portada-nombre {
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+.portada-cuentas {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 3px;
+  font-size: .92rem;
+  font-weight: 700;
+  color: var(--tinta-suave);
+}
+.portada-cuentas .ico { width: 17px; height: 17px; vertical-align: -.2em; }
+.portada-cuenta { display: inline-flex; align-items: center; gap: 4px; }
+.portada-flecha { flex: none; color: var(--tinta-suave); display: inline-flex; }
+.portada-flecha .ico { width: 22px; height: 22px; }
+
+.menu-inicio { display: grid; gap: 14px; }
+
+/* Cada botón trae su propio color, con el dibujo pleno y el escalón un
+   tono más oscuro, igual que las fichas de juego. */
+.boton-menu {
+  --menu-color: var(--primario);
+  --menu-fuerte: var(--primario-osc);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 18px;
+  border: 2px solid var(--borde);
+  border-radius: var(--radio);
+  background: var(--tarjeta);
+  box-shadow: 0 4px 0 var(--sombra-clay);
+  color: inherit;
+  text-decoration: none;
+  transition: transform .14s, box-shadow .14s, border-color .14s;
+}
+.boton-menu:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 var(--sombra-clay);
+  border-color: var(--menu-color);
+}
+.boton-menu:active { transform: translateY(4px); box-shadow: 0 0 0 var(--sombra-clay); }
+
+.boton-menu-icono {
+  width: 62px;
+  height: 62px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--menu-color);
+  color: #fff;
+  box-shadow: 0 4px 0 var(--menu-fuerte);
+  transition: box-shadow .14s, transform .14s;
+}
+.boton-menu:active .boton-menu-icono { box-shadow: 0 0 0 var(--menu-fuerte); transform: translateY(4px); }
+.boton-menu-icono .ico { width: 34px; height: 34px; stroke-width: 1.9; }
+
+.boton-menu-texto { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.boton-menu-texto b { font-size: 1.35rem; font-weight: 800; line-height: 1.15; }
+.boton-menu-texto small { color: var(--tinta-suave); font-size: .88rem; line-height: 1.25; }
+
+/* Los colores de cada destino: jugar y aprender son los dos de la app
+   (el azul de practicar y el violeta de leer); personalizar y
+   configuración van en tonos propios para que se distingan de un
+   vistazo sin leer el cartel. */
+#menu-jugar          { --menu-color: #2563eb; --menu-fuerte: #1d4ed8; }
+#menu-aprender       { --menu-color: #7c3aed; --menu-fuerte: #5b21b6; }
+#menu-personalizacion{ --menu-color: #be185d; --menu-fuerte: #9d174d; }
+#menu-configuracion  { --menu-color: #0f766e; --menu-fuerte: #115e59; }
+
+@media (min-width: 620px) {
+  .menu-inicio { grid-template-columns: 1fr 1fr; }
 }
 
 /* ============================================================
@@ -1675,44 +1789,6 @@ body.rindiendo .vidas { display: none; }
 .nota-grande.desaprobado { border-color: var(--error); color: var(--error-osc); background: #fdeaec; }
 
 /* ============================================================
-   Menú del perfil
-   ============================================================ */
-.envase-perfil { position: relative; }
-
-.menu-perfil {
-  position: absolute;
-  top: calc(100% + 10px);
-  right: 0;
-  z-index: 40;
-  min-width: 210px;
-  padding: 8px;
-  background: var(--tarjeta);
-  border: 2px solid var(--borde);
-  border-radius: var(--radio-s);
-  box-shadow: 0 12px 30px rgba(29, 43, 74, .18);
-  animation: caer-menu .16s ease both;
-}
-@keyframes caer-menu {
-  from { opacity: 0; transform: translateY(-6px); }
-  to   { opacity: 1; transform: none; }
-}
-
-.item-menu {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 11px 13px;
-  border-radius: 10px;
-  color: var(--tinta);
-  text-decoration: none;
-  font-weight: 700;
-  white-space: nowrap;
-  transition: background .12s;
-}
-.item-menu:hover { background: var(--papel); }
-.item-icono { font-size: 1.2rem; line-height: 1; }
-
-/* ============================================================
    Configuración
    ============================================================ */
 .fila-ajuste {
@@ -1782,9 +1858,6 @@ body.rindiendo .vidas { display: none; }
    ============================================================ */
 .btn-icono   { display: grid; place-items: center; }
 .btn-icono .ico { width: 22px; height: 22px; }
-
-.item-icono  { display: inline-flex; }
-.item-icono .ico { width: 21px; height: 21px; }
 
 .seccion-icono { display: inline-flex; }
 .seccion-icono .ico { width: 30px; height: 30px; }
