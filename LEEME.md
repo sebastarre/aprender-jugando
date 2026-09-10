@@ -197,6 +197,11 @@ un solo color cambia varias cosas a la vez:
 - **El fondo** — `--papel`, y con él `--tarjeta` y `--borde` (las tarjetas,
   apenas teñidas para que no queden como recortes blancos pegados encima),
   `--seleccion` (el relleno de lo elegido) y `--agua` (el mar del mapa).
+  Es un color **liso**: no hay degradados. Antes había tres manchas de color
+  dibujadas encima del papel, y además de ensuciar la pantalla hacían que el
+  contraste real dependiera de dónde cayera el texto — el gris sobre el papel
+  da 6.26:1, pero sobre el centro de la mancha azul daba 4.17 y sobre la rosa
+  4.30, las dos por debajo del mínimo. Liso, lo medido es lo que se ve.
 - **Los botones** — `--primario` y `--sobre-primario`, más los acentos
   `--violeta` y `--rosa`.
 - **Las letras** — `--tinta` y `--tinta-suave`.

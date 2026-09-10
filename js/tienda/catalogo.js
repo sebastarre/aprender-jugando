@@ -72,46 +72,25 @@ window.Catalogo = (function () {
       colores: [
         { id: 'azul', nombre: 'Cielo', precio: 0, muestra: '#dfeafe',
           vars: { 'papel': '#dfeafe', 'tarjeta': '#ffffff', 'borde': '#b9d3fb',
-                  'seleccion': '#cfe0fd', 'agua': '#a8cffa' },
-          deco: 'radial-gradient(38rem 28rem at 8% -6%, #ffd97a 0%, transparent 58%),' +
-                'radial-gradient(34rem 26rem at 98% 4%, #9dc2fb 0%, transparent 60%),' +
-                'radial-gradient(40rem 30rem at 50% 108%, #f7aed0 0%, transparent 58%)' },
+                  'seleccion': '#cfe0fd', 'agua': '#a8cffa' } },
         { id: 'frutilla', nombre: 'Frutilla', precio: 0, muestra: '#ffe3f1',
           vars: { 'papel': '#ffe3f1', 'tarjeta': '#fff8fc', 'borde': '#f9a8d4',
-                  'seleccion': '#fcd5e8', 'agua': '#ddd6fe' },
-          deco: 'radial-gradient(38rem 28rem at 8% -6%, #f9a8d4 0%, transparent 58%),' +
-                'radial-gradient(34rem 26rem at 98% 4%, #c4b5fd 0%, transparent 60%),' +
-                'radial-gradient(40rem 30rem at 50% 108%, #fcd34d 0%, transparent 58%)' },
+                  'seleccion': '#fcd5e8', 'agua': '#ddd6fe' } },
         { id: 'naranja', nombre: 'Durazno', precio: 0, muestra: '#ffe6c9',
           vars: { 'papel': '#ffe6c9', 'tarjeta': '#fffaf2', 'borde': '#fdba74',
-                  'seleccion': '#ffdcb0', 'agua': '#a8cffa' },
-          deco: 'radial-gradient(38rem 28rem at 8% -6%, #fdba74 0%, transparent 58%),' +
-                'radial-gradient(34rem 26rem at 98% 4%, #93c5fd 0%, transparent 60%),' +
-                'radial-gradient(40rem 30rem at 50% 108%, #fde047 0%, transparent 58%)' },
+                  'seleccion': '#ffdcb0', 'agua': '#a8cffa' } },
         { id: 'selva', nombre: 'Selva', precio: 50, muestra: '#d7f5e1',
           vars: { 'papel': '#d7f5e1', 'tarjeta': '#f7fffa', 'borde': '#86efac',
-                  'seleccion': '#c3eed3', 'agua': '#a7dfc4' },
-          deco: 'radial-gradient(38rem 28rem at 8% -6%, #bef264 0%, transparent 58%),' +
-                'radial-gradient(34rem 26rem at 98% 4%, #6ee7b7 0%, transparent 60%),' +
-                'radial-gradient(40rem 30rem at 50% 108%, #fde047 0%, transparent 58%)' },
+                  'seleccion': '#c3eed3', 'agua': '#a7dfc4' } },
         { id: 'oceano', nombre: 'Océano', precio: 50, muestra: '#d3ecfb',
           vars: { 'papel': '#d3ecfb', 'tarjeta': '#f5fbff', 'borde': '#7dd3fc',
-                  'seleccion': '#c0e3f8', 'agua': '#8ecdf3' },
-          deco: 'radial-gradient(38rem 28rem at 8% -6%, #7dd3fc 0%, transparent 58%),' +
-                'radial-gradient(34rem 26rem at 98% 4%, #67e8f9 0%, transparent 60%),' +
-                'radial-gradient(40rem 30rem at 50% 108%, #a5b4fc 0%, transparent 58%)' },
+                  'seleccion': '#c0e3f8', 'agua': '#8ecdf3' } },
         { id: 'uva', nombre: 'Uva', precio: 60, muestra: '#e9dcfd',
           vars: { 'papel': '#e9dcfd', 'tarjeta': '#fbf7ff', 'borde': '#c4b5fd',
-                  'seleccion': '#ddc9fb', 'agua': '#bfdbfe' },
-          deco: 'radial-gradient(38rem 28rem at 8% -6%, #d8b4fe 0%, transparent 58%),' +
-                'radial-gradient(34rem 26rem at 98% 4%, #a5b4fc 0%, transparent 60%),' +
-                'radial-gradient(40rem 30rem at 50% 108%, #f9a8d4 0%, transparent 58%)' },
+                  'seleccion': '#ddc9fb', 'agua': '#bfdbfe' } },
         { id: 'menta', nombre: 'Menta', precio: 60, muestra: '#cdf3ec',
           vars: { 'papel': '#cdf3ec', 'tarjeta': '#f4fffd', 'borde': '#5eead4',
-                  'seleccion': '#b9ece2', 'agua': '#a5e8e0' },
-          deco: 'radial-gradient(38rem 28rem at 8% -6%, #5eead4 0%, transparent 58%),' +
-                'radial-gradient(34rem 26rem at 98% 4%, #93c5fd 0%, transparent 60%),' +
-                'radial-gradient(40rem 30rem at 50% 108%, #c4b5fd 0%, transparent 58%)' }
+                  'seleccion': '#b9ece2', 'agua': '#a5e8e0' } }
       ]
     },
 
@@ -191,8 +170,8 @@ window.Catalogo = (function () {
   /* Los fondos decorados: sólo cambian el dibujo de atrás. Si hay uno
      equipado, le gana al que trae el color del fondo. */
   var FONDOS = [
-    { id: 'del-tema', nombre: 'El del color', icono: '🖼️', precio: 0,
-      texto: 'El que viene con el color del fondo.', deco: null },
+    { id: 'del-tema', nombre: 'Liso', icono: '🖼️', precio: 0,
+      texto: 'Sin dibujos: el color del fondo y nada más.', deco: null },
     { id: 'burbujas', nombre: 'Burbujas', icono: '🫧', precio: 100,
       texto: 'Pompas flotando.',
       deco: 'radial-gradient(9rem 9rem at 12% 18%, rgba(120,180,255,.30) 0%, transparent 70%),' +

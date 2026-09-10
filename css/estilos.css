@@ -111,17 +111,21 @@ body {
   overflow-x: hidden;
 }
 
-/* Manchas de color de fondo, puramente decorativas */
+/* El fondo es liso: el color de --papel y nada más.
+   Antes había tres manchas de color en degradado. Además de ensuciar la
+   pantalla, se dibujaban ENCIMA del papel, así que el contraste real del
+   texto cambiaba según en qué parte de la pantalla cayera: medía bien
+   contra --papel y peor contra el centro de una mancha. Liso, lo medido
+   es lo que se ve.
+
+   Esta capa sigue existiendo para los fondos que se compran en la tienda
+   (burbujas, nubes, estrellitas): ésos son un dibujo que el chico eligió
+   y paga aparte. Sin nada comprado queda transparente. */
 #fondo-deco {
   position: fixed;
   inset: 0;
   z-index: -1;
-  /* --deco lo pone js/tienda/temas.js cuando hay un tema o un fondo comprado;
-     si no hay nada equipado, quedan estas manchas de siempre */
-  background: var(--deco,
-    radial-gradient(38rem 28rem at 8% -6%,   #ffd97a 0%, transparent 58%),
-    radial-gradient(34rem 26rem at 98% 4%,   #9dc2fb 0%, transparent 60%),
-    radial-gradient(40rem 30rem at 50% 108%, #f7aed0 0%, transparent 58%));
+  background: var(--deco, none);
 }
 
 /* ---------------- Barra superior ---------------- */
