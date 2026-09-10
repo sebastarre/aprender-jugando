@@ -3,166 +3,229 @@
 
    Es puro cosmético a propósito. Nada de lo que está acá hace falta
    para aprender ni para jugar: no se compran pistas, ni intentos, ni
-   juegos. Sólo cómo se ve la app.
+   juegos. Sólo cómo se ve la app y cómo se viste la mascota.
 
-   Los temas pisan variables de CSS (las que ya usa css/estilos.css),
-   así que agregar uno nuevo es agregar una entrada más a esta lista.
-   Los que NO se pisan nunca son --exito y --error: el verde de
-   "acertaste" y el rojo de "erraste" tienen que seguir siendo los
-   mismos en todos los temas.
+   ------------------------------------------------------------
+   Los colores se compran de a uno, por elemento
+   ------------------------------------------------------------
+
+   Hay cuatro RANURAS (la barra, el fondo, los botones, las letras) y
+   cada una tiene su propia lista de colores. El chico arma la
+   combinación que quiera: barra verde con fondo rosa y letras violetas,
+   si se le canta.
+
+   La gracia está en que **no puede armar algo ilegible**. No hay una
+   lista única de colores para todo: la ranura del fondo sólo ofrece
+   tonos claros, la de las letras sólo tonos oscuros, y la de los
+   botones sólo colores que aguantan texto encima (cada uno se trae su
+   propio `sobre-primario`). Cualquier combinación de las cuatro listas
+   pasa el contraste mínimo, así que no hace falta deshabilitar
+   opciones ni mostrarle carteles de error a un chico de siete años.
+
+   Cada color pisa varias variables de CSS de una vez, porque cambiar
+   "el fondo" en realidad es cambiar el papel, las tarjetas, los bordes
+   y el relleno de lo elegido, todo junto y combinado.
+
+   Lo que NUNCA se pisa es --exito y --error: el verde de "acertaste" y
+   el rojo de "erraste" tienen que significar lo mismo siempre.
    ============================================================ */
 window.Catalogo = (function () {
   'use strict';
 
-  /* Las únicas variables que un tema puede cambiar. */
-  var VARIABLES = ['primario', 'primario-osc', 'sobre-primario', 'violeta', 'rosa',
-                   'rosa-osc', 'papel', 'tarjeta', 'borde', 'tinta', 'tinta-suave', 'agua',
-                   'barra', 'barra-borde', 'sobre-barra', 'marca-acento', 'seleccion'];
+  /* Las familias vienen de las paletas que la app tenía antes. Se
+     conservan los mismos tonos porque estaban medidos uno por uno:
+     los siete pasaban 4.5:1 en todos los pares de texto y fondo. */
+  var RANURAS = [
+    {
+      id: 'barra',
+      nombre: 'La barra de arriba',
+      texto: 'La franja de color que está siempre arriba de todo.',
+      colores: [
+        { id: 'azul', nombre: 'Azul', precio: 0, muestra: '#1d4ed8',
+          vars: { 'barra': '#1d4ed8', 'barra-borde': '#1e3a8a',
+                  'sobre-barra': '#ffffff', 'marca-acento': '#fcd34d' } },
+        { id: 'frutilla', nombre: 'Frutilla', precio: 0, muestra: '#9d174d',
+          vars: { 'barra': '#9d174d', 'barra-borde': '#6d132f',
+                  'sobre-barra': '#ffffff', 'marca-acento': '#fbcfe8' } },
+        { id: 'naranja', nombre: 'Naranja', precio: 0, muestra: '#9a3412',
+          vars: { 'barra': '#9a3412', 'barra-borde': '#6b2410',
+                  'sobre-barra': '#ffffff', 'marca-acento': '#fed7aa' } },
+        { id: 'selva', nombre: 'Selva', precio: 50, muestra: '#166534',
+          vars: { 'barra': '#166534', 'barra-borde': '#0f3d20',
+                  'sobre-barra': '#ffffff', 'marca-acento': '#fde047' } },
+        { id: 'oceano', nombre: 'Océano', precio: 50, muestra: '#075985',
+          vars: { 'barra': '#075985', 'barra-borde': '#053b58',
+                  'sobre-barra': '#ffffff', 'marca-acento': '#7dd3fc' } },
+        { id: 'uva', nombre: 'Uva', precio: 60, muestra: '#5b21b6',
+          vars: { 'barra': '#5b21b6', 'barra-borde': '#3f1580',
+                  'sobre-barra': '#ffffff', 'marca-acento': '#f5d0fe' } },
+        { id: 'menta', nombre: 'Menta', precio: 60, muestra: '#115e59',
+          vars: { 'barra': '#115e59', 'barra-borde': '#0b3f3c',
+                  'sobre-barra': '#ffffff', 'marca-acento': '#fef08a' } }
+      ]
+    },
 
-  /* Las tres primeras son gratis: son las paletas base que se eligen desde
-     Personalización. Las de abajo se compran en la tienda. */
-  var TEMAS = [
     {
-      id: 'clasico', nombre: 'Aula', icono: '🎨', precio: 0,
-      texto: 'La que viene con la app: azul, amarillo y rosa.',
-      colores: null                       // sin pisar nada: los del CSS
+      id: 'fondo',
+      nombre: 'El fondo',
+      texto: 'El color de atrás de todo, con sus tarjetas y sus bordes.',
+      colores: [
+        { id: 'azul', nombre: 'Cielo', precio: 0, muestra: '#dfeafe',
+          vars: { 'papel': '#dfeafe', 'tarjeta': '#ffffff', 'borde': '#b9d3fb',
+                  'seleccion': '#cfe0fd', 'agua': '#a8cffa' },
+          deco: 'radial-gradient(38rem 28rem at 8% -6%, #ffd97a 0%, transparent 58%),' +
+                'radial-gradient(34rem 26rem at 98% 4%, #9dc2fb 0%, transparent 60%),' +
+                'radial-gradient(40rem 30rem at 50% 108%, #f7aed0 0%, transparent 58%)' },
+        { id: 'frutilla', nombre: 'Frutilla', precio: 0, muestra: '#ffe3f1',
+          vars: { 'papel': '#ffe3f1', 'tarjeta': '#fff8fc', 'borde': '#f9a8d4',
+                  'seleccion': '#fcd5e8', 'agua': '#ddd6fe' },
+          deco: 'radial-gradient(38rem 28rem at 8% -6%, #f9a8d4 0%, transparent 58%),' +
+                'radial-gradient(34rem 26rem at 98% 4%, #c4b5fd 0%, transparent 60%),' +
+                'radial-gradient(40rem 30rem at 50% 108%, #fcd34d 0%, transparent 58%)' },
+        { id: 'naranja', nombre: 'Durazno', precio: 0, muestra: '#ffe6c9',
+          vars: { 'papel': '#ffe6c9', 'tarjeta': '#fffaf2', 'borde': '#fdba74',
+                  'seleccion': '#ffdcb0', 'agua': '#a8cffa' },
+          deco: 'radial-gradient(38rem 28rem at 8% -6%, #fdba74 0%, transparent 58%),' +
+                'radial-gradient(34rem 26rem at 98% 4%, #93c5fd 0%, transparent 60%),' +
+                'radial-gradient(40rem 30rem at 50% 108%, #fde047 0%, transparent 58%)' },
+        { id: 'selva', nombre: 'Selva', precio: 50, muestra: '#d7f5e1',
+          vars: { 'papel': '#d7f5e1', 'tarjeta': '#f7fffa', 'borde': '#86efac',
+                  'seleccion': '#c3eed3', 'agua': '#a7dfc4' },
+          deco: 'radial-gradient(38rem 28rem at 8% -6%, #bef264 0%, transparent 58%),' +
+                'radial-gradient(34rem 26rem at 98% 4%, #6ee7b7 0%, transparent 60%),' +
+                'radial-gradient(40rem 30rem at 50% 108%, #fde047 0%, transparent 58%)' },
+        { id: 'oceano', nombre: 'Océano', precio: 50, muestra: '#d3ecfb',
+          vars: { 'papel': '#d3ecfb', 'tarjeta': '#f5fbff', 'borde': '#7dd3fc',
+                  'seleccion': '#c0e3f8', 'agua': '#8ecdf3' },
+          deco: 'radial-gradient(38rem 28rem at 8% -6%, #7dd3fc 0%, transparent 58%),' +
+                'radial-gradient(34rem 26rem at 98% 4%, #67e8f9 0%, transparent 60%),' +
+                'radial-gradient(40rem 30rem at 50% 108%, #a5b4fc 0%, transparent 58%)' },
+        { id: 'uva', nombre: 'Uva', precio: 60, muestra: '#e9dcfd',
+          vars: { 'papel': '#e9dcfd', 'tarjeta': '#fbf7ff', 'borde': '#c4b5fd',
+                  'seleccion': '#ddc9fb', 'agua': '#bfdbfe' },
+          deco: 'radial-gradient(38rem 28rem at 8% -6%, #d8b4fe 0%, transparent 58%),' +
+                'radial-gradient(34rem 26rem at 98% 4%, #a5b4fc 0%, transparent 60%),' +
+                'radial-gradient(40rem 30rem at 50% 108%, #f9a8d4 0%, transparent 58%)' },
+        { id: 'menta', nombre: 'Menta', precio: 60, muestra: '#cdf3ec',
+          vars: { 'papel': '#cdf3ec', 'tarjeta': '#f4fffd', 'borde': '#5eead4',
+                  'seleccion': '#b9ece2', 'agua': '#a5e8e0' },
+          deco: 'radial-gradient(38rem 28rem at 8% -6%, #5eead4 0%, transparent 58%),' +
+                'radial-gradient(34rem 26rem at 98% 4%, #93c5fd 0%, transparent 60%),' +
+                'radial-gradient(40rem 30rem at 50% 108%, #c4b5fd 0%, transparent 58%)' }
+      ]
     },
+
     {
-      id: 'recreo', nombre: 'Recreo', icono: '🍭', precio: 0,
-      texto: 'Rosa y violeta de golosina.',
-      colores: {
-        'primario': '#db2777', 'primario-osc': '#9d174d', 'sobre-primario': '#ffffff',
-        'barra': '#9d174d', 'barra-borde': '#6d132f', 'sobre-barra': '#ffffff',
-        'marca-acento': '#fbcfe8', 'seleccion': '#fcd5e8',
-        'violeta': '#8b5cf6', 'rosa': '#f59e0b', 'rosa-osc': '#b45309',
-        'papel': '#ffe3f1', 'tarjeta': '#fff8fc', 'borde': '#f9a8d4',
-        'tinta': '#4a0725', 'tinta-suave': '#8a3d61', 'agua': '#ddd6fe'
-      },
-      deco: 'radial-gradient(38rem 28rem at 8% -6%, #f9a8d4 0%, transparent 58%),' +
-            'radial-gradient(34rem 26rem at 98% 4%, #c4b5fd 0%, transparent 60%),' +
-            'radial-gradient(40rem 30rem at 50% 108%, #fcd34d 0%, transparent 58%)'
+      id: 'botones',
+      nombre: 'Los botones',
+      texto: 'El color de los botones grandes y de lo que está elegido.',
+      colores: [
+        { id: 'azul', nombre: 'Azul', precio: 0, muestra: '#2563eb',
+          vars: { 'primario': '#2563eb', 'primario-osc': '#1d4ed8', 'sobre-primario': '#ffffff',
+                  'violeta': '#7c3aed', 'rosa': '#ec4899', 'rosa-osc': '#be185d' } },
+        { id: 'frutilla', nombre: 'Frutilla', precio: 0, muestra: '#db2777',
+          vars: { 'primario': '#db2777', 'primario-osc': '#9d174d', 'sobre-primario': '#ffffff',
+                  'violeta': '#8b5cf6', 'rosa': '#f59e0b', 'rosa-osc': '#b45309' } },
+        /* el naranja lleva texto oscuro encima: en blanco daría 2.80:1 */
+        { id: 'naranja', nombre: 'Naranja', precio: 0, muestra: '#ea580c',
+          vars: { 'primario': '#ea580c', 'primario-osc': '#c2410c', 'sobre-primario': '#3a1105',
+                  'violeta': '#2563eb', 'rosa': '#f59e0b', 'rosa-osc': '#b45309' } },
+        { id: 'selva', nombre: 'Selva', precio: 50, muestra: '#15803d',
+          vars: { 'primario': '#15803d', 'primario-osc': '#14532d', 'sobre-primario': '#ffffff',
+                  'violeta': '#65a30d', 'rosa': '#f97316', 'rosa-osc': '#c2410c' } },
+        { id: 'oceano', nombre: 'Océano', precio: 50, muestra: '#0369a1',
+          vars: { 'primario': '#0369a1', 'primario-osc': '#075985', 'sobre-primario': '#ffffff',
+                  'violeta': '#6366f1', 'rosa': '#06b6d4', 'rosa-osc': '#0e7490' } },
+        { id: 'uva', nombre: 'Uva', precio: 60, muestra: '#7c3aed',
+          vars: { 'primario': '#7c3aed', 'primario-osc': '#6d28d9', 'sobre-primario': '#ffffff',
+                  'violeta': '#a855f7', 'rosa': '#ec4899', 'rosa-osc': '#be185d' } },
+        { id: 'menta', nombre: 'Menta', precio: 60, muestra: '#0f766e',
+          vars: { 'primario': '#0f766e', 'primario-osc': '#115e59', 'sobre-primario': '#ffffff',
+                  'violeta': '#7c3aed', 'rosa': '#f43f5e', 'rosa-osc': '#be123c' } }
+      ]
     },
+
     {
-      id: 'mandarina', nombre: 'Mandarina', icono: '🍊', precio: 0,
-      texto: 'Naranja y azul, bien cálida.',
-      colores: {
-        'primario': '#ea580c', 'primario-osc': '#c2410c',
-        // sobre naranja el texto va oscuro: en blanco no se leería
-        'sobre-primario': '#3a1105',
-        'barra': '#9a3412', 'barra-borde': '#6b2410', 'sobre-barra': '#ffffff',
-        'marca-acento': '#fed7aa', 'seleccion': '#ffdcb0',
-        'violeta': '#2563eb', 'rosa': '#f59e0b', 'rosa-osc': '#b45309',
-        'papel': '#ffe6c9', 'tarjeta': '#fffaf2', 'borde': '#fdba74',
-        'tinta': '#431407', 'tinta-suave': '#7c4a2c', 'agua': '#a8cffa'
-      },
-      deco: 'radial-gradient(38rem 28rem at 8% -6%, #fdba74 0%, transparent 58%),' +
-            'radial-gradient(34rem 26rem at 98% 4%, #93c5fd 0%, transparent 60%),' +
-            'radial-gradient(40rem 30rem at 50% 108%, #fde047 0%, transparent 58%)'
-    },
-    {
-      id: 'selva', nombre: 'Selva', icono: '🌿', precio: 120,
-      texto: 'Verdes de bosque.',
-      colores: {
-        'primario': '#15803d', 'primario-osc': '#14532d', 'sobre-primario': '#ffffff',
-        'barra': '#166534', 'barra-borde': '#0f3d20', 'sobre-barra': '#ffffff',
-        'marca-acento': '#fde047', 'seleccion': '#c3eed3',
-        'violeta': '#65a30d', 'rosa': '#f97316', 'rosa-osc': '#c2410c',
-        'papel': '#d7f5e1', 'tarjeta': '#f7fffa', 'borde': '#86efac',
-        'tinta': '#14532d', 'tinta-suave': '#3f6b50', 'agua': '#a7dfc4'
-      },
-      deco: 'radial-gradient(38rem 28rem at 8% -6%, #bef264 0%, transparent 58%),' +
-            'radial-gradient(34rem 26rem at 98% 4%, #6ee7b7 0%, transparent 60%),' +
-            'radial-gradient(40rem 30rem at 50% 108%, #fde047 0%, transparent 58%)'
-    },
-    {
-      id: 'oceano', nombre: 'Océano', icono: '🌊', precio: 120,
-      texto: 'Azules de agua honda.',
-      colores: {
-        'primario': '#0369a1', 'primario-osc': '#075985', 'sobre-primario': '#ffffff',
-        'barra': '#075985', 'barra-borde': '#053b58', 'sobre-barra': '#ffffff',
-        'marca-acento': '#7dd3fc', 'seleccion': '#c0e3f8',
-        'violeta': '#6366f1', 'rosa': '#06b6d4', 'rosa-osc': '#0e7490',
-        'papel': '#d3ecfb', 'tarjeta': '#f5fbff', 'borde': '#7dd3fc',
-        'tinta': '#0c4a6e', 'tinta-suave': '#3d6c88', 'agua': '#8ecdf3'
-      },
-      deco: 'radial-gradient(38rem 28rem at 8% -6%, #7dd3fc 0%, transparent 58%),' +
-            'radial-gradient(34rem 26rem at 98% 4%, #67e8f9 0%, transparent 60%),' +
-            'radial-gradient(40rem 30rem at 50% 108%, #a5b4fc 0%, transparent 58%)'
-    },
-    {
-      id: 'uva', nombre: 'Uva', icono: '🍇', precio: 150,
-      texto: 'Violetas profundos.',
-      colores: {
-        'primario': '#7c3aed', 'primario-osc': '#6d28d9', 'sobre-primario': '#ffffff',
-        'barra': '#5b21b6', 'barra-borde': '#3f1580', 'sobre-barra': '#ffffff',
-        'marca-acento': '#f5d0fe', 'seleccion': '#ddc9fb',
-        'violeta': '#a855f7', 'rosa': '#ec4899', 'rosa-osc': '#be185d',
-        'papel': '#e9dcfd', 'tarjeta': '#fbf7ff', 'borde': '#c4b5fd',
-        'tinta': '#3b0764', 'tinta-suave': '#6b4e93', 'agua': '#bfdbfe'
-      },
-      deco: 'radial-gradient(38rem 28rem at 8% -6%, #d8b4fe 0%, transparent 58%),' +
-            'radial-gradient(34rem 26rem at 98% 4%, #a5b4fc 0%, transparent 60%),' +
-            'radial-gradient(40rem 30rem at 50% 108%, #f9a8d4 0%, transparent 58%)'
-    },
-    {
-      id: 'menta', nombre: 'Menta', icono: '🧊', precio: 180,
-      texto: 'Turquesa fresquito.',
-      colores: {
-        'primario': '#0f766e', 'primario-osc': '#115e59', 'sobre-primario': '#ffffff',
-        'barra': '#115e59', 'barra-borde': '#0b3f3c', 'sobre-barra': '#ffffff',
-        'marca-acento': '#fef08a', 'seleccion': '#b9ece2',
-        'violeta': '#7c3aed', 'rosa': '#f43f5e', 'rosa-osc': '#be123c',
-        'papel': '#cdf3ec', 'tarjeta': '#f4fffd', 'borde': '#5eead4',
-        'tinta': '#134e4a', 'tinta-suave': '#3d6f6a', 'agua': '#a5e8e0'
-      },
-      deco: 'radial-gradient(38rem 28rem at 8% -6%, #5eead4 0%, transparent 58%),' +
-            'radial-gradient(34rem 26rem at 98% 4%, #93c5fd 0%, transparent 60%),' +
-            'radial-gradient(40rem 30rem at 50% 108%, #c4b5fd 0%, transparent 58%)'
+      id: 'letras',
+      nombre: 'Las letras',
+      texto: 'El color del texto. Todos son oscuros, para que se lea.',
+      colores: [
+        { id: 'azul', nombre: 'Tinta', precio: 0, muestra: '#0f172a',
+          vars: { 'tinta': '#0f172a', 'tinta-suave': '#475569' } },
+        { id: 'frutilla', nombre: 'Frutilla', precio: 0, muestra: '#4a0725',
+          vars: { 'tinta': '#4a0725', 'tinta-suave': '#8a3d61' } },
+        { id: 'naranja', nombre: 'Chocolate', precio: 0, muestra: '#431407',
+          vars: { 'tinta': '#431407', 'tinta-suave': '#7c4a2c' } },
+        { id: 'selva', nombre: 'Selva', precio: 40, muestra: '#14532d',
+          vars: { 'tinta': '#14532d', 'tinta-suave': '#3f6b50' } },
+        { id: 'oceano', nombre: 'Océano', precio: 40, muestra: '#0c4a6e',
+          vars: { 'tinta': '#0c4a6e', 'tinta-suave': '#3b6883' } },
+        { id: 'uva', nombre: 'Uva', precio: 50, muestra: '#3b0764',
+          vars: { 'tinta': '#3b0764', 'tinta-suave': '#6b4e93' } },
+        { id: 'menta', nombre: 'Menta', precio: 50, muestra: '#134e4a',
+          vars: { 'tinta': '#134e4a', 'tinta-suave': '#3b6b66' } }
+      ]
     }
   ];
 
-  /* Los fondos sólo cambian el dibujo de atrás; si hay uno equipado,
-     le gana al que trae el tema. */
+  /* Las combinaciones armadas de antes. No se compran: son un atajo
+     para el que no tiene ganas de elegir cuatro colores, y sólo pueden
+     usar colores que el chico ya tenga. */
+  var COMBOS = [
+    { id: 'aula', nombre: 'Aula', color: 'azul' },
+    { id: 'recreo', nombre: 'Recreo', color: 'frutilla' },
+    { id: 'mandarina', nombre: 'Mandarina', color: 'naranja' }
+  ];
+
+  /** Todas las variables que puede pisar un color, para limpiarlas. */
+  var VARIABLES = (function () {
+    var vistas = {};
+    RANURAS.forEach(function (r) {
+      r.colores.forEach(function (c) {
+        Object.keys(c.vars).forEach(function (v) { vistas[v] = true; });
+      });
+    });
+    return Object.keys(vistas);
+  })();
+
+  /* Los fondos decorados: sólo cambian el dibujo de atrás. Si hay uno
+     equipado, le gana al que trae el color del fondo. */
   var FONDOS = [
-    {
-      id: 'del-tema', nombre: 'El del tema', icono: '🖼️', precio: 0,
-      texto: 'El que trae cada tema.',
-      deco: null
-    },
-    {
-      id: 'burbujas', nombre: 'Burbujas', icono: '🫧', precio: 100,
+    { id: 'del-tema', nombre: 'El del color', icono: '🖼️', precio: 0,
+      texto: 'El que viene con el color del fondo.', deco: null },
+    { id: 'burbujas', nombre: 'Burbujas', icono: '🫧', precio: 100,
       texto: 'Pompas flotando.',
       deco: 'radial-gradient(9rem 9rem at 12% 18%, rgba(120,180,255,.30) 0%, transparent 70%),' +
             'radial-gradient(6rem 6rem at 78% 12%, rgba(150,220,255,.32) 0%, transparent 70%),' +
             'radial-gradient(12rem 12rem at 88% 62%, rgba(120,200,255,.24) 0%, transparent 70%),' +
             'radial-gradient(7rem 7rem at 26% 74%, rgba(170,210,255,.30) 0%, transparent 70%),' +
-            'radial-gradient(5rem 5rem at 55% 40%, rgba(140,200,255,.26) 0%, transparent 70%)'
-    },
-    {
-      id: 'estrellitas', nombre: 'Estrellitas', icono: '✨', precio: 100,
+            'radial-gradient(5rem 5rem at 55% 40%, rgba(140,200,255,.26) 0%, transparent 70%)' },
+    { id: 'estrellitas', nombre: 'Estrellitas', icono: '✨', precio: 100,
       texto: 'Un cielo con brillos.',
       deco: 'radial-gradient(circle, rgba(255,205,90,.55) 1.6px, transparent 2px) 0 0 / 46px 46px,' +
             'radial-gradient(circle, rgba(140,170,255,.45) 1.2px, transparent 2px) 23px 23px / 46px 46px,' +
-            'radial-gradient(30rem 24rem at 50% 0%, #e8eeff 0%, transparent 65%)'
-    },
-    {
-      id: 'nubes', nombre: 'Nubes', icono: '☁️', precio: 100,
+            'radial-gradient(30rem 24rem at 50% 0%, #e8eeff 0%, transparent 65%)' },
+    { id: 'nubes', nombre: 'Nubes', icono: '☁️', precio: 100,
       texto: 'Un día despejado.',
       deco: 'radial-gradient(14rem 6rem at 18% 22%, rgba(255,255,255,.95) 0%, transparent 70%),' +
             'radial-gradient(10rem 5rem at 70% 14%, rgba(255,255,255,.9) 0%, transparent 70%),' +
             'radial-gradient(16rem 7rem at 84% 66%, rgba(255,255,255,.85) 0%, transparent 70%),' +
-            'linear-gradient(180deg, #cfe6ff 0%, #eef6ff 55%, #ffffff 100%)'
-    },
-    {
-      id: 'arcoiris', nombre: 'Arcoíris', icono: '🌈', precio: 130,
+            'linear-gradient(180deg, #cfe6ff 0%, #eef6ff 55%, #ffffff 100%)' },
+    { id: 'arcoiris', nombre: 'Arcoíris', icono: '🌈', precio: 130,
       texto: 'Todos los colores juntos.',
       deco: 'radial-gradient(30rem 22rem at 10% 0%, rgba(255,180,180,.5) 0%, transparent 62%),' +
             'radial-gradient(30rem 22rem at 42% -4%, rgba(255,225,160,.5) 0%, transparent 62%),' +
             'radial-gradient(30rem 22rem at 74% 0%, rgba(180,235,190,.5) 0%, transparent 62%),' +
             'radial-gradient(32rem 24rem at 96% 8%, rgba(180,200,255,.5) 0%, transparent 62%),' +
-            'radial-gradient(34rem 26rem at 50% 108%, rgba(225,190,255,.45) 0%, transparent 60%)'
-    }
+            'radial-gradient(34rem 26rem at 50% 108%, rgba(225,190,255,.45) 0%, transparent 60%)' }
   ];
+
+  /* Los disfraces de la mascota. La lista y los dibujos viven en
+     js/nucleo/mascota.js; acá sólo se les pone precio. */
+  var DISFRACES = Object.keys(Mascota.DISFRACES).map(function (id) {
+    var d = Mascota.DISFRACES[id];
+    return { id: id, nombre: d.nombre, precio: d.precio, disfraz: id };
+  });
 
   /* Monigotes que se suman a los 12 gratis del perfil. */
   var AVATARES = [
@@ -173,13 +236,8 @@ window.Catalogo = (function () {
     { emoji: '🤖', precio: 80 }, { emoji: '👽', precio: 80 },
     { emoji: '🧙', precio: 90 }, { emoji: '🦸', precio: 90 }
   ].map(function (a) {
-    return {
-      id: 'avatar:' + a.emoji,
-      nombre: a.emoji,
-      icono: a.emoji,
-      precio: a.precio,
-      emoji: a.emoji
-    };
+    return { id: 'avatar:' + a.emoji, nombre: a.emoji, icono: a.emoji,
+             precio: a.precio, emoji: a.emoji };
   });
 
   function buscar(lista, id) {
@@ -187,21 +245,50 @@ window.Catalogo = (function () {
     return null;
   }
 
+  function ranura(id) { return buscar(RANURAS, id); }
+
+  /** Un color concreto de una ranura. Si no existe, el primero (gratis). */
+  function color(ranuraId, colorId) {
+    var r = ranura(ranuraId);
+    if (!r) return null;
+    return buscar(r.colores, colorId) || r.colores[0];
+  }
+
+  /** La clave con la que se guarda una compra de color. */
+  function claveColor(ranuraId, colorId) { return ranuraId + ':' + colorId; }
+
   return {
+    RANURAS: RANURAS,
+    COMBOS: COMBOS,
     VARIABLES: VARIABLES,
-    TEMAS: TEMAS,
     FONDOS: FONDOS,
+    DISFRACES: DISFRACES,
     AVATARES: AVATARES,
-    tema: function (id) { return buscar(TEMAS, id) || TEMAS[0]; },
-    /** Las paletas base, que no hay que comprar. */
-    temasGratis: function () { return TEMAS.filter(function (t) { return !t.precio; }); },
-    temasDeTienda: function () { return TEMAS.filter(function (t) { return t.precio > 0; }); },
+    ranura: ranura,
+    color: color,
+    claveColor: claveColor,
+    coloresGratis: function (ranuraId) {
+      var r = ranura(ranuraId);
+      return r ? r.colores.filter(function (c) { return !c.precio; }) : [];
+    },
+    coloresDeTienda: function (ranuraId) {
+      var r = ranura(ranuraId);
+      return r ? r.colores.filter(function (c) { return c.precio > 0; }) : [];
+    },
+    disfraz: function (id) { return buscar(DISFRACES, id); },
+    disfracesGratis: function () { return DISFRACES.filter(function (d) { return !d.precio; }); },
+    disfracesDeTienda: function () { return DISFRACES.filter(function (d) { return d.precio > 0; }); },
     fondo: function (id) { return buscar(FONDOS, id); },
     avatar: function (id) { return buscar(AVATARES, id); },
-    /** Precio de cualquier cosa comprable, por su id de compra. */
+    /** Precio de cualquier cosa comprable, por su tipo e id. */
     precio: function (tipo, id) {
-      var item = tipo === 'tema' ? buscar(TEMAS, id)
-               : tipo === 'fondo' ? buscar(FONDOS, id)
+      if (tipo === 'color') {
+        var partes = String(id).split(':');
+        var c = color(partes[0], partes[1]);
+        return c ? c.precio : 0;
+      }
+      var item = tipo === 'fondo' ? buscar(FONDOS, id)
+               : tipo === 'disfraz' ? buscar(DISFRACES, id)
                : buscar(AVATARES, id);
       return item ? item.precio : 0;
     }

@@ -179,33 +179,36 @@ tiene 194 países (se agotan y decaen), pero las cuentas de nivel experto casi
 nunca se repiten y pagarían 5 siempre.
 
 Con esas monedas se compran, en la **tienda** (el chip de arriba a la derecha,
-o el botón en Personalización): temas de color que cambian toda la app, fondos
-y monigotes extra para el perfil. **Todo es cosmético a propósito**: no se
-compran pistas, ni intentos, ni juegos.
+o el botón en Personalización): colores sueltos para cada parte de la app,
+disfraces para la mascota, fondos y monigotes extra para el perfil. **Todo es
+cosmético a propósito**: no se compran pistas, ni intentos, ni juegos.
 
-Los temas funcionan pisando variables de CSS, así que agregar uno es agregar
-una entrada a `js/tienda/catalogo.js`. Lo único que un tema no puede tocar es
-`--exito` y `--error`: el verde de «acertaste» y el rojo de «erraste» son
-iguales en todos los temas.
+Los colores funcionan pisando variables de CSS, así que agregar uno es agregar
+una entrada a `js/tienda/catalogo.js`. Lo único que un color no puede tocar es
+`--exito` y `--error`: el verde de «acertaste» y el rojo de «erraste» tienen
+que significar lo mismo siempre, se ponga lo que se ponga.
 
-Un tema pisa cuatro cosas grandes, y son las que hacen que se note el cambio:
+Cada una de las cuatro ranuras pisa su propio grupo de variables, y por eso
+un solo color cambia varias cosas a la vez:
 
-- `--barra` — la barra de arriba, que va de color pleno. Es lo que más se ve,
-  porque está en todas las pantallas. `--sobre-barra` es el texto que va encima
-  y `--marca-acento`, el color de «Jugando» en el logo.
-- `--papel` — el fondo de la app. No es casi blanco: cada tema lo tiñe fuerte.
-- `--tarjeta` y `--borde` — las tarjetas, apenas teñidas para que no queden
-  como recortes blancos pegados encima.
-- `--seleccion` — el relleno de lo que está elegido (una edad, un avatar, una
-  pestaña). Si esto no se pisa, el azul de la paleta de casa se cuela en todas.
+- **La barra de arriba** — `--barra`, más `--sobre-barra` (el texto que va
+  encima) y `--marca-acento` (el color de «Jugando» en el logo). Es lo que más
+  se ve, porque está en todas las pantallas.
+- **El fondo** — `--papel`, y con él `--tarjeta` y `--borde` (las tarjetas,
+  apenas teñidas para que no queden como recortes blancos pegados encima),
+  `--seleccion` (el relleno de lo elegido) y `--agua` (el mar del mapa).
+- **Los botones** — `--primario` y `--sobre-primario`, más los acentos
+  `--violeta` y `--rosa`.
+- **Las letras** — `--tinta` y `--tinta-suave`.
 
-Los colores de cada materia (Geografía azul, Matemática violeta) **no** son del
-tema: son fijos a propósito, para que una materia se reconozca por su color
-tenga la paleta que tenga.
+Los colores de cada materia (Geografía azul, Matemática violeta) **no** salen
+de acá: son fijos a propósito, para que una materia se reconozca por su color
+tenga los colores que tenga la app.
 
-Si agregás un tema con un color primario claro (naranja, amarillo), acordate de
-ponerle también `sobre-primario` oscuro: el texto blanco sobre esos tonos no
-llega al contraste mínimo. El tema Mandarina es el ejemplo.
+Si agregás un color de botón claro (naranja, amarillo), acordate de ponerle
+también `sobre-primario` oscuro: el texto blanco sobre esos tonos no llega al
+contraste mínimo. El naranja es el ejemplo, con 4.67:1 en marrón oscuro contra
+2.80:1 que daría en blanco.
 
 ## Cómo se ve
 
@@ -235,18 +238,57 @@ difusa que despega la tarjeta del fondo, y una luz interna arriba. Al apretar
 se hunde hasta apoyarse. Todo lo que se mueve usa la misma curva de rebote
 (`--rebote`), que es la que da sensación de juguete en vez de formulario.
 
-## Pipo, la mascota
+## La mascota
 
-El zorrito de `js/nucleo/mascota.js`. Aparece en la bienvenida y al terminar
+Un **gato o un perro**, lo elige el chico en Personalización y no se
+compra: es de quién es la mascota. Aparece en la bienvenida y al terminar
 una partida, y cambia de cara según cómo le fue: festeja con dos o tres
 estrellas, saluda con una, y pone cara de «ups» con ninguna. Es la primera
 lectura del resultado, antes de mirar los números.
 
-Tiene colores propios y fijos, a propósito: **no sigue la paleta** que el chico
-elija. Un zorro que a veces es verde y a veces violeta deja de ser un personaje
-y pasa a ser una decoración más.
+Encima se le pone un **disfraz de otro animal**. Vienen tres gratis
+(conejo, león y rana) y hay cinco más en la tienda (dinosaurio, panda,
+tiburón, abeja y unicornio). Los dibujos y los precios están en
+`js/nucleo/mascota.js`; agregar uno es agregar una entrada con lo que va
+atrás de la cabeza y lo que va adelante.
 
-## Los colores
+El animal tiene colores propios y fijos, a propósito: **no sigue la
+paleta** que el chico arme. Un gato que a veces es verde y a veces violeta
+deja de ser un personaje y pasa a ser una decoración más. Los disfraces sí
+traen sus colores, que para eso son disfraces.
+
+## Los colores se compran de a uno
+
+Hay cuatro **ranuras** —la barra de arriba, el fondo, los botones y las
+letras— y cada una tiene su propia lista de siete colores. El chico arma la
+combinación que quiera: barra verde con fondo rosa, botones naranjas y
+letras azules, si se le canta. Tres colores de cada ranura son gratis y los
+otros cuatro se compran sueltos, entre 40 y 60 monedas.
+
+Antes se compraban paletas enteras. Al que ya tenía una comprada se le
+convirtió en los cuatro colores sueltos que la formaban, así que nadie
+perdió lo que había pagado (la migración está en `pasarAColoresSueltos`,
+en `js/nucleo/almacen.js`).
+
+**Lo importante: no se puede armar algo ilegible.** No hay una lista única
+de colores para todo. La ranura del fondo sólo ofrece tonos claros, la de
+las letras sólo tonos oscuros, y la de los botones sólo colores que aguantan
+texto encima (cada uno se trae su propio `sobre-primario`). Están medidos
+los 217 pares que se pueden formar y todos pasan 4.5:1; el más ajustado da
+4.54. Por eso no hace falta deshabilitar opciones ni mostrarle carteles de
+error a un chico de siete años.
+
+Si se agrega un color nuevo hay que volver a correr esa medición, porque un
+tono que anda bien con seis fondos puede no andar con el séptimo. Así
+aparecieron dos que fallaban: el gris de Océano y el de Menta sobre el fondo
+Uva daban 4.36 y 4.38, combinaciones que con paletas enteras no existían.
+
+Arriba de todo quedan las **combinaciones armadas** (Aula, Recreo,
+Mandarina), que ponen los cuatro colores de un saque. No se compran: son un
+atajo para el que no tiene ganas de elegir de a uno, y sólo aparecen si ya
+tiene los cuatro colores de esa familia.
+
+## La paleta de casa
 
 La paleta base es azul (#2563eb) + amarillo (#f59e0b) + rosa (#ec4899), con la
 barra de arriba en azul pleno (#1d4ed8) sobre fondo azul claro. Sale de una
@@ -318,8 +360,8 @@ js/
   juegos/repaso.js         Modo repaso: rearma las preguntas que se fallaron
   aprender/contenido.js    El texto y los dibujos de las lecciones
   aprender/leccion.js      Visor de lecciones (los pasos, de a uno)
-  tienda/catalogo.js       Las paletas (gratis y de la tienda), fondos y monigotes
-  tienda/temas.js          Aplica el tema y el fondo equipados
+  tienda/catalogo.js       Los colores de cada ranura, disfraces, fondos y monigotes
+  tienda/temas.js          Junta los colores puestos y los escribe en el CSS
   app.js                   Las dos secciones, las pantallas y la navegación
 assets/banderas/           Una imagen por país (ar.png, br.png, ...)
 herramientas/              Scripts para regenerar los datos (no hacen falta para jugar)

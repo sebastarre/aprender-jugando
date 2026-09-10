@@ -42,7 +42,7 @@ window.Almacen = (function () {
      bienvenida, que pregunta el nombre y la edad. */
   function crearBase() {
     return {
-      version: 3,
+      version: 4,
       perfiles: [],
       activo: null,
       datos: {},
@@ -50,12 +50,54 @@ window.Almacen = (function () {
     };
   }
 
+  /* Las paletas viejas se compraban enteras; ahora los colores se
+     compran de a uno, por elemento. Cada paleta tenía exactamente un
+     color por ranura, así que la que ya estaba comprada se convierte en
+     los cuatro colores sueltos que la formaban. Nadie pierde nada de lo
+     que había pagado, y el que tenía una paleta puesta la sigue viendo
+     igual. */
+  var RANURAS_VIEJAS = ['barra', 'fondo', 'botones', 'letras'];
+  var PALETAS_VIEJAS = {
+    clasico: 'azul', recreo: 'frutilla', mandarina: 'naranja',
+    selva: 'selva', oceano: 'oceano', uva: 'uva', menta: 'menta'
+  };
+
+  function pasarAColoresSueltos(base) {
+    if (base.version >= 4) return base;
+
+    Object.keys(base.datos || {}).forEach(function (id) {
+      var d = base.datos[id];
+      if (!d) return;
+      d.comprado = d.comprado || {};
+      d.equipado = d.equipado || {};
+
+      Object.keys(d.comprado).forEach(function (clave) {
+        if (clave.indexOf('tema:') !== 0) return;
+        var familia = PALETAS_VIEJAS[clave.slice(5)];
+        if (!familia) return;
+        RANURAS_VIEJAS.forEach(function (r) {
+          d.comprado['color:' + r + ':' + familia] = true;
+        });
+        delete d.comprado[clave];
+      });
+
+      var puesta = PALETAS_VIEJAS[d.equipado.tema];
+      if (puesta) {
+        RANURAS_VIEJAS.forEach(function (r) { d.equipado['color:' + r] = puesta; });
+      }
+      delete d.equipado.tema;
+    });
+
+    base.version = 4;
+    return base;
+  }
+
   function cargar() {
     try {
       var crudo = localStorage.getItem(CLAVE);
       if (crudo) {
         var leido = JSON.parse(crudo);
-        if (leido && leido.perfiles && leido.perfiles.length) return leido;
+        if (leido && leido.perfiles && leido.perfiles.length) return pasarAColoresSueltos(leido);
       }
       // primera vez con la versión nueva: se traen los datos de la anterior
       var viejo = localStorage.getItem(CLAVE_VIEJA);
@@ -79,6 +121,10 @@ window.Almacen = (function () {
   }
 
   datos = cargar();
+  /* La conversión de paletas a colores sueltos se escribe en el acto: si
+     no, se rehace en cada arranque y el chico ve la app cambiar de color
+     cada vez que la abre. */
+  guardar();
 
   function guardar() {
     try { localStorage.setItem(CLAVE, JSON.stringify(datos)); } catch (error) { /* sin persistencia */ }

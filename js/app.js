@@ -1185,60 +1185,171 @@
 
   /* ---------------------- personalización ---------------------- */
   function pintarPersonalizacion() {
-    pintarPaletas($('paletas-gratis'), Catalogo.temasGratis(), false);
+    pintarEleccionAnimal();
+    pintarDisfraces();
+    pintarCombos();
+    pintarRanurasDeColor();
 
-    var compradas = Catalogo.temasDeTienda().filter(function (t) {
-      return Almacen.tieneComprado('tema:' + t.id);
+    var faltan = 0, total = 0;
+    Catalogo.RANURAS.forEach(function (r) {
+      Catalogo.coloresDeTienda(r.id).forEach(function (c) {
+        total++;
+        if (!Almacen.tieneComprado('color:' + Catalogo.claveColor(r.id, c.id))) faltan++;
+      });
     });
-    pintarPaletas($('paletas-compradas'), compradas, true);
-
-    var faltan = Catalogo.temasDeTienda().length - compradas.length;
-    $('nota-tienda').textContent = compradas.length
-      ? (faltan ? 'Hay ' + Util.plural(faltan, 'paleta') + ' más en la tienda.' : 'Ya las tenés todas.')
-      : 'Todavía no compraste ninguna. Hay ' +
-        Util.plural(Catalogo.temasDeTienda().length, 'paleta') + ' en la tienda.';
+    $('nota-tienda').textContent = faltan
+      ? 'Hay ' + Util.plural(faltan, 'color') + ' más para comprar en la tienda.'
+      : 'Ya tenés los ' + total + ' colores. No queda ninguno por comprar.';
   }
 
-  function pintarPaletas(caja, temas, deTienda) {
+  /** Gato o perro. No se compra: es de quién es la mascota. */
+  function pintarEleccionAnimal() {
+    var caja = $('eleccion-animal');
     Util.vaciar(caja);
-    if (!temas.length) {
-      caja.appendChild(Util.crear('p', 'vacio', 'Nada por acá todavía.'));
-      return;
-    }
-    temas.forEach(function (tema) {
-      var puesta = Almacen.equipado('tema') === tema.id ||
-                   (!Almacen.equipado('tema') && tema.id === 'clasico');
+    var puesto = Almacen.equipado('mascota') || 'gato';
+
+    Object.keys(Mascota.BASES).forEach(function (id) {
+      var b = Util.crear('button', 'card-tienda card-animal');
+      b.type = 'button';
+      b.setAttribute('aria-pressed', puesto === id ? 'true' : 'false');
+
+      var mini = Util.crear('span', 'mascota mascota-mini');
+      mini.innerHTML = Mascota.vista(id, 'ninguno', 'hola');
+      b.appendChild(mini);
+      b.appendChild(Util.crear('b', 'tienda-nombre', Mascota.BASES[id].nombre));
+
+      b.addEventListener('click', function () {
+        Sonido.despertar(); Sonido.tocar('clic');
+        Almacen.equipar('mascota', id);
+        Mascota.refrescar();
+        pintarPersonalizacion();
+      });
+      caja.appendChild(b);
+    });
+  }
+
+  function pintarDisfraces() {
+    var caja = $('disfraces');
+    Util.vaciar(caja);
+    var animal = Almacen.equipado('mascota') || 'gato';
+    var puesto = Almacen.equipado('disfraz') || 'ninguno';
+    var mios = 0;
+
+    Catalogo.DISFRACES.forEach(function (d) {
+      var tiene = !d.precio || Almacen.tieneComprado('disfraz:' + d.id);
+      if (!tiene) return;                       // los que faltan están en la tienda
+      mios++;
+
+      var b = Util.crear('button', 'card-tienda card-animal');
+      b.type = 'button';
+      b.setAttribute('aria-pressed', puesto === d.id ? 'true' : 'false');
+
+      var mini = Util.crear('span', 'mascota mascota-mini');
+      mini.innerHTML = Mascota.vista(animal, d.id, 'hola');
+      b.appendChild(mini);
+      b.appendChild(Util.crear('b', 'tienda-nombre', d.nombre));
+
+      b.addEventListener('click', function () {
+        Sonido.despertar(); Sonido.tocar('clic');
+        Almacen.equipar('disfraz', d.id);
+        Mascota.refrescar();
+        pintarPersonalizacion();
+      });
+      caja.appendChild(b);
+    });
+
+    var faltan = Catalogo.disfracesDeTienda().length - (mios - Catalogo.disfracesGratis().length);
+    $('nota-disfraces').textContent = faltan > 0
+      ? 'Hay ' + Util.plural(faltan, 'disfraz', 'disfraces') + ' más en la tienda.'
+      : 'Ya los tenés todos.';
+  }
+
+  /**
+   * Las combinaciones armadas: ponen los cuatro colores de una familia
+   * de un saque. Es un atajo, no algo que se compre — y sólo aparece si
+   * el chico tiene los cuatro colores de esa familia.
+   */
+  function pintarCombos() {
+    var caja = $('combos');
+    Util.vaciar(caja);
+
+    Catalogo.COMBOS.forEach(function (combo) {
+      var completo = Catalogo.RANURAS.every(function (r) {
+        var c = Catalogo.color(r.id, combo.color);
+        return c && (!c.precio || Almacen.tieneComprado('color:' + Catalogo.claveColor(r.id, c.id)));
+      });
+      if (!completo) return;
+
+      var puesto = Catalogo.RANURAS.every(function (r) {
+        return (Almacen.equipado('color:' + r.id) || 'azul') === combo.color;
+      });
 
       var b = Util.crear('button', 'card-tienda');
       b.type = 'button';
-      b.setAttribute('aria-pressed', puesta ? 'true' : 'false');
+      b.setAttribute('aria-pressed', puesto ? 'true' : 'false');
 
-      // vista previa: la barra primero, que es lo que más se nota al cambiar
-      var c = tema.colores ||
-              { barra: '#1d4ed8', primario: '#2563eb', rosa: '#ec4899', papel: '#dfeafe' };
       var muestra = Util.crear('span', 'muestra-tema');
-      [c.barra, c.primario, c.rosa, c.papel].forEach(function (color) {
+      Catalogo.RANURAS.forEach(function (r) {
         var punto = Util.crear('span', 'muestra-punto');
-        punto.style.background = color;
+        punto.style.background = Catalogo.color(r.id, combo.color).muestra;
         muestra.appendChild(punto);
       });
       b.appendChild(muestra);
-
-      b.appendChild(Util.crear('b', 'tienda-nombre', tema.icono + ' ' + tema.nombre));
-      b.appendChild(Util.crear('span', 'tienda-texto', tema.texto));
+      b.appendChild(Util.crear('b', 'tienda-nombre', combo.nombre));
 
       var pie = Util.crear('span', 'tienda-pie');
-      if (puesta) pie.appendChild(Util.crear('span', 'etiqueta-puesta', 'En uso'));
-      else pie.appendChild(Util.crear('span', 'etiqueta-tuya', deTienda ? 'Tuya' : 'Gratis'));
+      if (puesto) pie.appendChild(Util.crear('span', 'etiqueta-puesta', 'En uso'));
       b.appendChild(pie);
 
       b.addEventListener('click', function () {
         Sonido.despertar(); Sonido.tocar('clic');
-        Almacen.equipar('tema', tema.id);
+        Catalogo.RANURAS.forEach(function (r) {
+          Almacen.equipar('color:' + r.id, combo.color);
+        });
         Temas.aplicar();
         pintarPersonalizacion();
       });
       caja.appendChild(b);
+    });
+  }
+
+  /** Una fila de colores por cada cosa que se puede pintar. */
+  function pintarRanurasDeColor() {
+    var caja = $('ranuras-color');
+    Util.vaciar(caja);
+
+    Catalogo.RANURAS.forEach(function (r) {
+      var bloque = Util.crear('div', 'bloque-ranura');
+      bloque.appendChild(Util.crear('h3', 'titulo-ranura', r.nombre));
+      bloque.appendChild(Util.crear('p', 'nota-ranura', r.texto));
+
+      var fila = Util.crear('div', 'fila-colores');
+      var puesto = Almacen.equipado('color:' + r.id) || 'azul';
+
+      r.colores.forEach(function (c) {
+        var tiene = !c.precio || Almacen.tieneComprado('color:' + Catalogo.claveColor(r.id, c.id));
+        if (!tiene) return;                     // los que faltan están en la tienda
+
+        var b = Util.crear('button', 'pastilla-color');
+        b.type = 'button';
+        b.setAttribute('aria-pressed', puesto === c.id ? 'true' : 'false');
+        b.setAttribute('aria-label', c.nombre + ' para ' + r.nombre);
+        b.title = c.nombre;
+        b.style.setProperty('--muestra', c.muestra);
+        b.appendChild(Util.crear('span', 'pastilla-tinta'));
+        b.appendChild(Util.crear('span', 'pastilla-nombre', c.nombre));
+
+        b.addEventListener('click', function () {
+          Sonido.despertar(); Sonido.tocar('clic');
+          Almacen.equipar('color:' + r.id, c.id);
+          Temas.aplicar();
+          pintarPersonalizacion();
+        });
+        fila.appendChild(b);
+      });
+
+      bloque.appendChild(fila);
+      caja.appendChild(bloque);
     });
   }
 
@@ -1247,17 +1358,40 @@
     $('tienda-saldo').textContent = 'Tenés ' + Util.plural(Almacen.monedas(), 'moneda') +
       ' para gastar. Se ganan jugando.';
 
-    pintarSeccionTienda($('tienda-temas'), 'tema', Catalogo.TEMAS, function (item) {
-      // vista previa: tres círculos con los colores del tema
-      var c = item.colores || { primario: '#4c6ef5', violeta: '#8b5cf6', agua: '#cfe6f7' };
-      var muestra = Util.crear('span', 'muestra-tema');
-      [c.primario, c.violeta, c.agua].forEach(function (color) {
-        var punto = Util.crear('span', 'muestra-punto');
-        punto.style.background = color;
-        muestra.appendChild(punto);
+    var animal = Almacen.equipado('mascota') || 'gato';
+    pintarSeccionTienda($('tienda-disfraces'), 'disfraz',
+      Catalogo.disfracesDeTienda(), function (item) {
+        var mini = Util.crear('span', 'mascota mascota-mini');
+        mini.innerHTML = Mascota.vista(animal, item.id, 'hola');
+        return mini;
       });
-      return muestra;
+
+    /* Los colores se venden agrupados por lo que pintan, no todos
+       juntos: comprar "verde" sin saber si es para el fondo o para las
+       letras no querría decir nada. */
+    var caja = $('tienda-colores');
+    Util.vaciar(caja);
+    Catalogo.RANURAS.forEach(function (r) {
+      var pendientes = Catalogo.coloresDeTienda(r.id).filter(function (c) {
+        return !Almacen.tieneComprado('color:' + Catalogo.claveColor(r.id, c.id));
+      });
+      if (!pendientes.length) return;
+
+      var bloque = Util.crear('div', 'bloque-ranura');
+      bloque.appendChild(Util.crear('h3', 'titulo-ranura', r.nombre));
+      var grilla = Util.crear('div', 'grilla-tienda');
+      bloque.appendChild(grilla);
+      caja.appendChild(bloque);
+
+      pintarSeccionTienda(grilla, 'color:' + r.id, pendientes, function (item) {
+        var muestra = Util.crear('span', 'muestra-color-grande');
+        muestra.style.background = item.muestra;
+        return muestra;
+      });
     });
+    if (!caja.children.length) {
+      caja.appendChild(Util.crear('p', 'vacio', 'Ya tenés todos los colores.'));
+    }
 
     pintarSeccionTienda($('tienda-fondos'), 'fondo', Catalogo.FONDOS, function (item) {
       var muestra = Util.crear('span', 'muestra-fondo');
@@ -1334,6 +1468,7 @@
     } else {
       Almacen.equipar(tipo, item.id);
       Temas.aplicar();
+      if (tipo === 'disfraz') Mascota.refrescar();
     }
     pintarBarraSuperior();
     pintarTienda();
