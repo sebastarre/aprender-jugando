@@ -23,24 +23,24 @@
   /* ---------------------- catálogo de materias ---------------------- */
   var MATERIAS = [
     {
-      id: 'geografia', nombre: 'Geografía', icono: '🌎',
+      id: 'geografia', nombre: 'Geografía', icono: 'geografia',
       color: '#16a34a', suave: '#dcfce7',
       texto: 'Países, capitales y banderas de todo el mundo.',
       modulo: Geografia
     },
     {
-      id: 'matematica', nombre: 'Matemática', icono: '➗',
+      id: 'matematica', nombre: 'Matemática', icono: 'matematica',
       color: '#2563eb', suave: '#dbeafe',
       texto: 'Tablas, sumas, restas y la hora del reloj.',
       modulo: Matematica
     },
     {
-      id: 'lengua', nombre: 'Lengua', icono: '📚',
+      id: 'lengua', nombre: 'Lengua', icono: 'lengua',
       color: '#f59e0b', suave: '#fef3c7',
       texto: 'Ortografía, sinónimos y lectura.', modulo: null
     },
     {
-      id: 'ciencias', nombre: 'Ciencias', icono: '🔬',
+      id: 'ciencias', nombre: 'Ciencias', icono: 'ciencias',
       color: '#8b5cf6', suave: '#ede9fe',
       texto: 'El cuerpo, los animales y el espacio.', modulo: null
     }
@@ -273,12 +273,32 @@
   }
 
   /* ---------------------- tarjetas ---------------------- */
+  /**
+   * Mete un ícono en una caja. Si el nombre es uno de los que dibujamos
+   * (js/nucleo/iconos.js) entra el SVG; si no, se escribe tal cual, que
+   * es lo que pasa con los avatares y los emoji de las lecciones: ahí el
+   * emoji es contenido, no interfaz, y está bien que lo dibuje el celular.
+   */
+  function ponerIcono(caja, nombre) {
+    if (Iconos.existe(nombre)) caja.appendChild(Iconos.crear(nombre));
+    else caja.textContent = nombre;
+    return caja;
+  }
+
+  /** Un título de pantalla con su ícono adelante. */
+  function tituloConIcono(caja, nombre, texto) {
+    Util.vaciar(caja);
+    if (Iconos.existe(nombre)) caja.appendChild(Iconos.crear(nombre, 'ico-titulo'));
+    else if (nombre) caja.appendChild(Util.crear('span', null, nombre + ' '));
+    caja.appendChild(Util.crear('span', null, texto));
+  }
+
   function tarjeta(datos, alTocar) {
     var b = Util.crear('button', 'card');
     b.type = 'button';
     b.style.setProperty('--card-color', datos.color);
     b.style.setProperty('--card-suave', datos.suave);
-    b.appendChild(Util.crear('div', 'card-icono', datos.icono));
+    b.appendChild(ponerIcono(Util.crear('div', 'card-icono'), datos.icono));
     b.appendChild(Util.crear('div', 'card-titulo', datos.nombre));
     b.appendChild(Util.crear('div', 'card-texto', datos.texto));
     b.addEventListener('click', function () {
@@ -315,7 +335,7 @@
   }
 
   function pintarJuegos(materia) {
-    $('titulo-materia').textContent = materia.icono + ' ' + materia.nombre;
+    tituloConIcono($('titulo-materia'), materia.icono, materia.nombre);
 
     var sub = $('subtitulo-materia');
     Util.vaciar(sub);
@@ -337,7 +357,12 @@
 
       if (estado.jugable) {
         var mejor = Almacen.mejorDeJuego(materia.id + '/' + j.id);
-        if (mejor > 0) b.appendChild(Util.crear('div', 'card-record', '🏆 Tu récord: ' + mejor));
+        if (mejor > 0) {
+          var r = Util.crear('div', 'card-record');
+          r.appendChild(Iconos.crear('trofeo'));
+          r.appendChild(Util.crear('span', null, ' Tu récord: ' + mejor));
+          b.appendChild(r);
+        }
       } else {
         b.classList.add('trabada');
         b.setAttribute('aria-disabled', 'true');
@@ -405,7 +430,7 @@
 
   /* ---------------------- configurar la partida ---------------------- */
   function pintarConfig(materia, juego) {
-    $('titulo-config').textContent = juego.icono + ' ' + juego.nombre;
+    tituloConIcono($('titulo-config'), juego.icono, juego.nombre);
     $('subtitulo-config').textContent = juego.texto;
 
     sel.materia = materia.id;
@@ -497,7 +522,8 @@
     b.type = 'button';
     b.setAttribute('aria-pressed', 'false');
     if (color) { b.style.setProperty('--op-color', color); b.style.setProperty('--op-suave', suave); }
-    b.appendChild(Util.crear('span', 'opcion-icono' + (iconoNumero ? ' numero' : ''), icono));
+    b.appendChild(ponerIcono(
+      Util.crear('span', 'opcion-icono' + (iconoNumero ? ' numero' : '')), icono));
     var cuerpo = Util.crear('span', 'opcion-cuerpo');
     cuerpo.appendChild(Util.crear('span', 'opcion-nombre', nombre));
     if (detalle) cuerpo.appendChild(Util.crear('span', 'opcion-detalle', detalle));
@@ -584,9 +610,17 @@
     pintarPremio($('premio-monedas'), premio);
     pintarBarraSuperior();
 
+    // Pipo cambia de cara según cómo le fue: no es sólo decoración, es
+    // la primera lectura del resultado antes de mirar los números.
+    Mascota.gesto($('mascota-fin'), estrellas >= 2 ? 'festejo' : estrellas === 1 ? 'hola' : 'ups');
+
     var cont = $('estrellas-fin');
     Util.vaciar(cont);
-    for (var i = 0; i < 3; i++) cont.appendChild(Util.crear('span', i < estrellas ? '' : 'apagada', '⭐'));
+    for (var i = 0; i < 3; i++) {
+      var e = Util.crear('span', i < estrellas ? '' : 'apagada');
+      e.appendChild(Iconos.crear('estrella'));
+      cont.appendChild(e);
+    }
 
     $('titulo-fin').textContent = esRecord && r.puntos > 0 ? '¡Récord nuevo! 🏅' : tituloSegun(estrellas);
     $('subtitulo-fin').textContent = comentario(r, estrellas);
@@ -607,7 +641,9 @@
     caja.hidden = premio.total === 0;
     if (!premio.total) return;
 
-    caja.appendChild(Util.crear('b', 'premio-cifra', '+' + premio.total + ' 🪙'));
+    var cifra = Util.crear('b', 'premio-cifra', '+' + premio.total + ' ');
+    cifra.appendChild(Iconos.crear('moneda'));
+    caja.appendChild(cifra);
     var partes = [];
     if (premio.nuevos) partes.push(Util.plural(premio.nuevos, 'nuevo'));
     if (premio.repasados) partes.push(Util.plural(premio.repasados, 'repasado'));
@@ -791,9 +827,17 @@
     pintarPremio($('premio-monedas'), premio);
     pintarBarraSuperior();
 
+    // Pipo cambia de cara según cómo le fue: no es sólo decoración, es
+    // la primera lectura del resultado antes de mirar los números.
+    Mascota.gesto($('mascota-fin'), estrellas >= 2 ? 'festejo' : estrellas === 1 ? 'hola' : 'ups');
+
     var cont = $('estrellas-fin');
     Util.vaciar(cont);
-    for (var i = 0; i < 3; i++) cont.appendChild(Util.crear('span', i < estrellas ? '' : 'apagada', '⭐'));
+    for (var i = 0; i < 3; i++) {
+      var e = Util.crear('span', i < estrellas ? '' : 'apagada');
+      e.appendChild(Iconos.crear('estrella'));
+      cont.appendChild(e);
+    }
 
     $('titulo-fin').textContent = r.aciertos === r.total ? '¡Te las sacaste todas! 🔁' : 'Repaso terminado';
     $('subtitulo-fin').textContent = r.aciertos
@@ -1022,7 +1066,7 @@
     var stats = $('perfil-stats');
     Util.vaciar(stats);
     [
-      ['⭐ ' + est.estrellas, 'estrellas'],
+      [String(est.estrellas), 'estrellas'],
       [est.precision + '%', 'precisión'],
       [est.aciertos + '/' + est.preguntas, 'aciertos'],
       [String(Almacen.cuantasLecciones()), 'lecciones leídas']
@@ -1043,7 +1087,7 @@
       var d = est.porMateria[m.id];
       var pct = d.total ? Math.round(d.aciertos / d.total * 100) : 0;
       var fila = Util.crear('div', 'fila-materia');
-      fila.appendChild(Util.crear('span', 'fila-icono', m.icono));
+      fila.appendChild(ponerIcono(Util.crear('span', 'fila-icono'), m.icono));
       var cuerpo = Util.crear('div', 'fila-cuerpo');
       cuerpo.appendChild(Util.crear('div', 'fila-nombre', m.nombre));
       var barra = Util.crear('div', 'barra-progreso');
@@ -1254,7 +1298,8 @@
       if (puesto) pie.appendChild(Util.crear('span', 'etiqueta-puesta', 'En uso'));
       else if (tiene) pie.appendChild(Util.crear('span', 'etiqueta-tuya', 'Tuyo'));
       else {
-        var precio = Util.crear('span', 'etiqueta-precio', item.precio + ' 🪙');
+        var precio = Util.crear('span', 'etiqueta-precio', item.precio + ' ');
+        precio.appendChild(Iconos.crear('moneda'));
         if (Almacen.monedas() < item.precio) precio.classList.add('no-alcanza');
         pie.appendChild(precio);
       }
@@ -1364,7 +1409,7 @@
       var icono = p.tipo === 'examen' ? '📝'
                 : p.tipo === 'repaso' ? '🔁'
                 : (materia ? materia.icono : '•');
-      fila.appendChild(Util.crear('span', 'fila-icono', icono));
+      fila.appendChild(ponerIcono(Util.crear('span', 'fila-icono'), icono));
       var cuerpo = Util.crear('div', 'fila-cuerpo');
       cuerpo.appendChild(Util.crear('div', 'fila-nombre', p.detalle || p.juego));
       cuerpo.appendChild(Util.crear('div', 'ir-dato', fechaCorta(p.fecha)));

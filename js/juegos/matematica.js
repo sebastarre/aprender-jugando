@@ -161,7 +161,7 @@ window.Matematica = (function () {
   var TABLAS = {
     id: 'tablas',
     nombre: 'Tablas de multiplicar',
-    icono: '✖️',
+    icono: 'tablas',
     color: COLOR,
     suave: '#ede9fe',
     texto: 'Practicá las tablas del 2 al 12, de a una o mezcladas.',
@@ -171,7 +171,7 @@ window.Matematica = (function () {
     opciones: function () {
       // el ícono de cada tabla es su propio número: doce veces la misma
       // crucecita y un "2 × 1 … 2 × 10" abajo eran ruido, no información
-      var items = [{ id: 'mezcla', nombre: 'Mezcladas', icono: '🎲' }];
+      var items = [{ id: 'mezcla', nombre: 'Mezcladas', icono: 'dado' }];
       for (var t = 2; t <= 12; t++) {
         items.push({ id: String(t), nombre: 'Tabla del ' + t, icono: String(t), iconoNumero: true });
       }
@@ -218,10 +218,10 @@ window.Matematica = (function () {
      2. Sumas y restas
      ============================================================ */
   var NIVELES = [
-    { id: 'facil', nombre: 'Fácil', icono: '🐣', detalle: 'Hasta 10, sin llevarse nada', max: 10, acarreo: false },
-    { id: 'medio', nombre: 'Medio', icono: '🐤', detalle: 'Hasta 20', max: 20, acarreo: true },
-    { id: 'dificil', nombre: 'Difícil', icono: '🦅', detalle: 'Hasta 100', max: 100, acarreo: true },
-    { id: 'experto', nombre: 'Experto', icono: '🚀', detalle: 'Hasta 999', max: 999, acarreo: true }
+    { id: 'facil', nombre: 'Fácil', icono: 'nivel-1', detalle: 'Hasta 10, sin llevarse nada', max: 10, acarreo: false },
+    { id: 'medio', nombre: 'Medio', icono: 'nivel-2', detalle: 'Hasta 20', max: 20, acarreo: true },
+    { id: 'dificil', nombre: 'Difícil', icono: 'nivel-3', detalle: 'Hasta 100', max: 100, acarreo: true },
+    { id: 'experto', nombre: 'Experto', icono: 'nivel-4', detalle: 'Hasta 999', max: 999, acarreo: true }
   ];
 
   function nivelPorId(id) {
@@ -250,7 +250,7 @@ window.Matematica = (function () {
   var CUENTAS = {
     id: 'cuentas',
     nombre: 'Sumas y restas',
-    icono: '➕',
+    icono: 'cuentas',
     color: '#16a34a',
     suave: '#dcfce7',
     texto: 'Cuentas de sumar y restar, en cuatro niveles.',
@@ -262,9 +262,9 @@ window.Matematica = (function () {
         {
           id: 'operacion', titulo: 'Elegí las cuentas', tipo: 'fila', porDefecto: 'ambas',
           items: [
-            { id: 'ambas', nombre: 'Mezcladas', icono: '🎲', detalle: 'Sumas y restas' },
-            { id: 'suma', nombre: 'Sumar', icono: '➕', detalle: 'Solo sumas' },
-            { id: 'resta', nombre: 'Restar', icono: '➖', detalle: 'Solo restas' }
+            { id: 'ambas', nombre: 'Mezcladas', icono: 'dado', detalle: 'Sumas y restas' },
+            { id: 'suma', nombre: 'Sumar', icono: 'mas', detalle: 'Solo sumas' },
+            { id: 'resta', nombre: 'Restar', icono: 'menos', detalle: 'Solo restas' }
           ]
         }
       ];
@@ -315,10 +315,10 @@ window.Matematica = (function () {
      3. El reloj
      ============================================================ */
   var PASOS = [
-    { id: 'punto', nombre: 'En punto', icono: '🕐', detalle: 'Las 3, las 8…', paso: 60 },
-    { id: 'media', nombre: 'Y media', icono: '🕜', detalle: 'También 3:30', paso: 30 },
-    { id: 'cuarto', nombre: 'Y cuarto', icono: '🕝', detalle: 'También 3:15 y 3:45', paso: 15 },
-    { id: 'cinco', nombre: 'De 5 en 5', icono: '⏱️', detalle: 'Cualquier múltiplo de 5', paso: 5 }
+    { id: 'punto', nombre: 'En punto', icono: 'reloj-punto', detalle: 'Las 3, las 8…', paso: 60 },
+    { id: 'media', nombre: 'Y media', icono: 'reloj-media', detalle: 'También 3:30', paso: 30 },
+    { id: 'cuarto', nombre: 'Y cuarto', icono: 'reloj-cuarto', detalle: 'También 3:15 y 3:45', paso: 15 },
+    { id: 'cinco', nombre: 'De 5 en 5', icono: 'reloj-cinco', detalle: 'Cualquier múltiplo de 5', paso: 5 }
   ];
 
   function pasoPorId(id) {
@@ -375,7 +375,7 @@ window.Matematica = (function () {
   var RELOJ = {
     id: 'reloj',
     nombre: 'La hora',
-    icono: '🕒',
+    icono: 'reloj',
     color: '#0891b2',
     suave: '#cffafe',
     texto: 'Mirá el reloj de agujas y decí qué hora es.',

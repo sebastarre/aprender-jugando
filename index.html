@@ -23,28 +23,28 @@
 <div id="fondo-deco" aria-hidden="true"></div>
 
 <header class="barra">
-  <button class="btn-icono" id="btn-atras" hidden aria-label="Volver">←</button>
+  <button class="btn-icono" id="btn-atras" hidden aria-label="Volver"><span data-ico="atras"></span></button>
   <a class="marca" href="#/" aria-label="Ir al inicio">
-    <span class="marca-globo">🌎</span>
+    <span class="marca-globo" data-ico="geografia" aria-hidden="true"></span>
     <span class="marca-texto">Aprender<b>Jugando</b></span>
   </a>
   <div class="barra-derecha">
     <a class="chip-monedas" id="chip-monedas" href="#/tienda"
-       title="Tus monedas · tocá para ir a la tienda">🪙 <b>0</b></a>
-    <button class="btn-icono" id="btn-sonido" aria-label="Activar o silenciar sonido">🔊</button>
+       title="Tus monedas · tocá para ir a la tienda"><span data-ico="moneda" aria-hidden="true"></span> <b>0</b></a>
+    <button class="btn-icono" id="btn-sonido" aria-label="Activar o silenciar sonido"><span data-ico="sonido"></span></button>
     <div class="envase-perfil">
       <button class="btn-icono btn-perfil" id="btn-perfil"
               aria-label="Abrir mi menú" aria-haspopup="menu" aria-expanded="false">🦊</button>
       <!-- Menú del perfil. Acá se van a ir sumando más opciones. -->
       <div class="menu-perfil" id="menu-perfil" role="menu" hidden>
         <a class="item-menu" href="#/perfil" role="menuitem">
-          <span class="item-icono" aria-hidden="true">👤</span> Ver mi perfil
+          <span class="item-icono" data-ico="perfil" aria-hidden="true"></span> Ver mi perfil
         </a>
         <a class="item-menu" href="#/configuracion" role="menuitem">
-          <span class="item-icono" aria-hidden="true">⚙️</span> Configuración
+          <span class="item-icono" data-ico="configuracion" aria-hidden="true"></span> Configuración
         </a>
         <a class="item-menu" href="#/personalizacion" role="menuitem">
-          <span class="item-icono" aria-hidden="true">🎨</span> Personalización
+          <span class="item-icono" data-ico="personalizacion" aria-hidden="true"></span> Personalización
         </a>
       </div>
     </div>
@@ -54,14 +54,14 @@
 <!-- Las dos mitades de la app -->
 <nav class="secciones" id="secciones" hidden aria-label="Secciones">
   <a class="seccion" id="tab-aprender" href="#/aprender">
-    <span class="seccion-icono" aria-hidden="true">📚</span>
+    <span class="seccion-icono" data-ico="aprender" aria-hidden="true"></span>
     <span class="seccion-texto">
       <b>Aprender</b>
       <small>Cursitos cortos</small>
     </span>
   </a>
   <a class="seccion" id="tab-juegos" href="#/juegos">
-    <span class="seccion-icono" aria-hidden="true">🎮</span>
+    <span class="seccion-icono" data-ico="jugar" aria-hidden="true"></span>
     <span class="seccion-texto">
       <b>Jugar</b>
       <small>Practicá lo aprendido</small>
@@ -75,7 +75,7 @@
   <section class="pantalla pantalla-bienvenida" id="pantalla-bienvenida" hidden>
     <div class="tarjeta-bienvenida">
       <div class="paso-bienvenida" id="bien-paso-nombre">
-        <div class="bien-globo">👋</div>
+        <div class="bien-globo" data-mascota="hola"></div>
         <h1 class="titulo-grande">¡Hola!</h1>
         <p class="subtitulo">Antes de empezar, contanos quién sos.</p>
         <label class="etiqueta-campo" for="campo-nombre">¿Cómo te llamás?</label>
@@ -86,14 +86,14 @@
       </div>
 
       <div class="paso-bienvenida" id="bien-paso-edad" hidden>
-        <div class="bien-globo">🎂</div>
+        <div class="bien-globo" data-mascota="piensa"></div>
         <h1 class="titulo-grande">¿Cuántos años tenés?</h1>
         <p class="subtitulo">Con esto elegimos los juegos justos para vos.</p>
         <div class="grilla-edades" id="grilla-edades"></div>
       </div>
 
       <div class="paso-bienvenida" id="bien-paso-avatar" hidden>
-        <div class="bien-globo">✨</div>
+        <div class="bien-globo" data-mascota="festejo"></div>
         <h1 class="titulo-grande">Elegí tu monigote</h1>
         <p class="subtitulo">Va a ser tu carita en la app.</p>
         <div class="grilla-avatares" id="grilla-avatares"></div>
@@ -108,7 +108,7 @@
     <p class="subtitulo" id="saludo-juegos">Elegí una materia y practicá jugando.</p>
 
     <div class="instalar" id="instalar" hidden>
-      <span class="instalar-icono" aria-hidden="true">📲</span>
+      <span class="instalar-icono" data-ico="instalar" aria-hidden="true"></span>
       <div class="instalar-cuerpo">
         <b>Tenelo como app en el celular</b>
         <span class="instalar-boton">Se instala con su propio ícono y después funciona sin internet.</span>
@@ -119,22 +119,22 @@
 
     <!-- Aparece sólo cuando hay errores juntados como para armar una ronda. -->
     <button class="tarjeta-examen tarjeta-repaso" id="btn-repaso" type="button" hidden>
-      <span class="examen-icono" aria-hidden="true">🔁</span>
+      <span class="examen-icono" data-ico="repaso" aria-hidden="true"></span>
       <span class="examen-cuerpo">
         <b>Repasar lo que fallaste</b>
         <span id="repaso-detalle">Volvemos sobre las preguntas que te costaron.</span>
       </span>
-      <span class="examen-flecha" aria-hidden="true">→</span>
+      <span class="examen-flecha" data-ico="flecha" aria-hidden="true"></span>
     </button>
 
     <button class="tarjeta-examen" id="btn-examen" type="button" hidden>
-      <span class="examen-icono" aria-hidden="true">📝</span>
+      <span class="examen-icono" data-ico="examen" aria-hidden="true"></span>
       <span class="examen-cuerpo">
         <b>Rendir un examen</b>
         <span>Un intento por pregunta, sin ayudas, y la nota al final.
           Podés mezclar materias.</span>
       </span>
-      <span class="examen-flecha" aria-hidden="true">→</span>
+      <span class="examen-flecha" data-ico="flecha" aria-hidden="true"></span>
     </button>
 
     <div class="grilla-cards" id="grilla-materias"></div>
@@ -199,7 +199,7 @@
         </div>
       </div>
       <div class="hud-der">
-        <div class="marcador" title="Puntos"><span>🏆</span><b id="marcador-puntos">0</b></div>
+        <div class="marcador" title="Puntos"><span data-ico="trofeo"></span><b id="marcador-puntos">0</b></div>
         <div class="vidas" id="vidas" title="Intentos para esta pregunta"></div>
       </div>
     </div>
@@ -230,6 +230,7 @@
   <!-- ============ RESULTADOS ============ -->
   <section class="pantalla" id="pantalla-fin" hidden>
     <div class="tarjeta-fin">
+      <div class="mascota-fin" id="mascota-fin"></div>
       <div class="estrellas-fin" id="estrellas-fin"></div>
       <h1 class="titulo-fin" id="titulo-fin"></h1>
       <p class="subtitulo" id="subtitulo-fin"></p>
@@ -269,14 +270,14 @@
     <div class="lista-materias" id="perfil-materias"></div>
 
     <div class="acciones-perfil">
-      <button class="btn-secundario" id="btn-tienda">🪙 Tienda</button>
+      <button class="btn-secundario" id="btn-tienda"><span data-ico="tienda" aria-hidden="true"></span> Tienda</button>
       <button class="btn-secundario" id="btn-ir-config">⚙️ Configuración</button>
     </div>
   </section>
 
   <!-- ============ ARMAR EL EXAMEN ============ -->
   <section class="pantalla" id="pantalla-examen" hidden>
-    <h1 class="titulo-grande">📝 Examen</h1>
+    <h1 class="titulo-grande"><span data-ico="examen" class="ico-titulo-caja" aria-hidden="true"></span>Examen</h1>
     <p class="subtitulo">Un solo intento por pregunta y no te decimos nada
       hasta el final. Ahí va la nota.</p>
     <div id="bloques-examen"></div>
@@ -307,7 +308,7 @@
 
   <!-- ============ CONFIGURACIÓN ============ -->
   <section class="pantalla" id="pantalla-configuracion" hidden>
-    <h1 class="titulo-grande">⚙️ Configuración</h1>
+    <h1 class="titulo-grande"><span data-ico="configuracion" class="ico-titulo-caja" aria-hidden="true"></span>Configuración</h1>
     <p class="subtitulo">Los ajustes generales de la app.</p>
 
     <h2 class="etiqueta-grupo">Sonido</h2>
@@ -350,7 +351,7 @@
 
   <!-- ============ PERSONALIZACIÓN ============ -->
   <section class="pantalla" id="pantalla-personalizacion" hidden>
-    <h1 class="titulo-grande">🎨 Personalización</h1>
+    <h1 class="titulo-grande"><span data-ico="personalizacion" class="ico-titulo-caja" aria-hidden="true"></span>Personalización</h1>
     <p class="subtitulo">Elegí cómo se ve la app. Se cambia al toque.</p>
 
     <h2 class="etiqueta-grupo">Paletas de colores</h2>
@@ -363,7 +364,7 @@
 
   <!-- ============ TIENDA ============ -->
   <section class="pantalla" id="pantalla-tienda" hidden>
-    <h1 class="titulo-grande">🪙 Tienda</h1>
+    <h1 class="titulo-grande"><span data-ico="tienda" class="ico-titulo-caja" aria-hidden="true"></span>Tienda</h1>
     <p class="subtitulo" id="tienda-saldo"></p>
     <p class="vacio tienda-nota">Todo lo de acá es para que la app se vea como
       vos quieras. Nada te ayuda a ganar: eso se gana jugando.</p>
@@ -380,7 +381,7 @@
 
   <!-- ============ MODO PARENTAL ============ -->
   <section class="pantalla" id="pantalla-parental" hidden>
-    <h1 class="titulo-grande">🔒 Modo parental</h1>
+    <h1 class="titulo-grande"><span data-ico="candado" class="ico-titulo-caja" aria-hidden="true"></span>Modo parental</h1>
 
     <div class="tarjeta-pin" id="caja-pin">
       <p class="subtitulo" id="texto-pin">Ingresá el PIN para ver el detalle.</p>
@@ -416,6 +417,8 @@
 <script src="js/datos/paises.js"></script>
 <script src="js/datos/geografia.js"></script>
 <script src="js/nucleo/util.js"></script>
+<script src="js/nucleo/iconos.js"></script>
+<script src="js/nucleo/mascota.js"></script>
 <script src="js/nucleo/almacen.js"></script>
 <script src="js/nucleo/sonido.js"></script>
 <script src="js/nucleo/opciones.js"></script>

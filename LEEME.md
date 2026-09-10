@@ -207,6 +207,45 @@ Si agregás un tema con un color primario claro (naranja, amarillo), acordate de
 ponerle también `sobre-primario` oscuro: el texto blanco sobre esos tonos no
 llega al contraste mínimo. El tema Mandarina es el ejemplo.
 
+## Cómo se ve
+
+Tres decisiones sostienen el aspecto de la app. Las tres apuntan a lo mismo:
+que un chico la quiera abrir y que un padre la vea seria.
+
+**La tipografía es Baloo 2**, redonda y gordita, y está **embebida** en
+`assets/fuentes/` (32 KB, una sola fuente variable que cubre de 400 a 800).
+No se pide a Google a propósito: la app tiene que verse igual sin internet.
+Para actualizarla, `node herramientas/bajar-fuente.js`. Licencia OFL 1.1.
+
+**Los íconos son propios**, dibujados en `js/nucleo/iconos.js`: grilla de 24,
+trazo redondeado y grueso, dos tonos, y el color lo toman del texto de al lado.
+Antes eran emoji, y el problema del emoji no es que sea feo: lo dibuja el
+sistema operativo, así que el mismo 🌎 sale distinto en Android, en iPhone y en
+Windows, no se le puede cambiar el color ni el grosor, y la app termina
+viéndose distinta en cada teléfono.
+
+Siguen siendo emoji los que son **contenido y no interfaz**: los avatares que
+elige el chico y los de la tienda. Ahí son personajes, no botones, y que los
+dibuje el celular está bien.
+
+**El volumen es de plastilina** (lo que en diseño llaman *claymorphism*, y que
+es el estilo que corresponde a una app educativa infantil): bordes gruesos,
+esquinas de 26px y tres capas de sombra — el escaloncito de abajo, una sombra
+difusa que despega la tarjeta del fondo, y una luz interna arriba. Al apretar
+se hunde hasta apoyarse. Todo lo que se mueve usa la misma curva de rebote
+(`--rebote`), que es la que da sensación de juguete en vez de formulario.
+
+## Pipo, la mascota
+
+El zorrito de `js/nucleo/mascota.js`. Aparece en la bienvenida y al terminar
+una partida, y cambia de cara según cómo le fue: festeja con dos o tres
+estrellas, saluda con una, y pone cara de «ups» con ninguna. Es la primera
+lectura del resultado, antes de mirar los números.
+
+Tiene colores propios y fijos, a propósito: **no sigue la paleta** que el chico
+elija. Un zorro que a veces es verde y a veces violeta deja de ser un personaje
+y pasa a ser una decoración más.
+
 ## Los colores
 
 La paleta base es azul (#2563eb) + amarillo (#f59e0b) + rosa (#ec4899), con la
@@ -264,6 +303,8 @@ js/
   datos/paises.js          194 países: nombre, capital, continente, coordenadas
   datos/geografia.js       Contornos de los países para dibujar el mapa
   nucleo/util.js           Utilidades chicas (mezclar, crear elementos, etc.)
+  nucleo/iconos.js         Los íconos de la app, dibujados en SVG
+  nucleo/mascota.js        Pipo, el zorrito, y sus gestos
   nucleo/almacen.js        Perfiles, récords, historial y errores en localStorage
   nucleo/sonido.js         Sonidos generados con Web Audio (sin archivos)
   nucleo/opciones.js       La botonera de respuestas (tarjetas para elegir)
@@ -364,7 +405,14 @@ Para rehacer los íconos de la app (usa Chrome o Edge en segundo plano):
 node herramientas/generar-iconos.js
 ```
 
-Después de cualquiera de los tres, correr `node herramientas/generar-sw.js`.
+Para volver a bajar la tipografía (sólo hace falta si sale una versión nueva
+de Baloo 2, o si se quiere sumar otro alfabeto):
+
+```bash
+node herramientas/bajar-fuente.js
+```
+
+Después de cualquiera de los cuatro, correr `node herramientas/generar-sw.js`.
 
 ## Créditos
 

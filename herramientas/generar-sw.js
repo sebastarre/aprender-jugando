@@ -17,7 +17,9 @@ const RAIZ = path.join(__dirname, '..');
    .claude, textos sueltos) queda afuera: no hace falta en el celular. */
 const SUELTOS = ['index.html', 'manifest.json', 'css/estilos.css'];
 const CARPETAS = ['js', 'assets'];
-const EXTENSIONES = ['.js', '.css', '.png', '.json', '.html'];
+/* .woff2 es la tipografía: si no se guarda, la app instalada abre sin
+   internet con la fuente del sistema y se ve distinta en cada celular. */
+const EXTENSIONES = ['.js', '.css', '.png', '.json', '.html', '.svg', '.woff2'];
 
 function recorrer(dir) {
   const salida = [];

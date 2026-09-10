@@ -3,6 +3,22 @@
    Paleta clara, botones grandes y textos legibles para chicos.
    ============================================================ */
 
+/* Baloo 2, la tipografía redonda de toda la app. Va embebida en el
+   proyecto (assets/fuentes/) y no pedida a Google, porque la app tiene
+   que verse igual sin internet. Es variable: un archivo de 32 KB cubre
+   de 400 a 800, así que no hay que bajar un peso por cada grosor.
+   Licencia OFL 1.1, ver assets/fuentes/LICENCIA.txt */
+@font-face {
+  font-family: 'Baloo 2';
+  src: url('../assets/fuentes/baloo2.woff2') format('woff2-variations'),
+       url('../assets/fuentes/baloo2.woff2') format('woff2');
+  font-weight: 400 800;
+  font-style: normal;
+  /* swap: primero se ve el texto con la fuente del sistema y después
+     cambia, en vez de quedar en blanco mientras carga */
+  font-display: swap;
+}
+
 :root {
   /* Paleta base: azul de aprender + amarillo de jugar + rosa de premio.
      Los colores de "acertaste" y "erraste" son aparte y no los pisa
@@ -36,12 +52,46 @@
   --rosa-osc:     #be185d;
   --agua:         #a8cffa;
 
-  --radio:   22px;
-  --radio-s: 14px;
-  --sombra:  0 6px 0 var(--sombra-color, var(--borde));
-  --sombra-suave: 0 10px 30px rgba(29, 43, 74, .10);
+  --radio:   26px;
+  --radio-s: 16px;
+
+  /* Tres capas, que es lo que hace que una tarjeta parezca de plastilina
+     y no un rectángulo: el escaloncito de abajo (el que se hunde al
+     apretar), una sombra difusa que la despega del fondo, y una luz
+     interna arriba que simula el brillo de un objeto blando. */
+  --sombra:
+    0 7px 0 var(--sombra-color, var(--borde)),
+    0 12px 22px -6px rgba(29, 43, 74, .18),
+    inset 0 2px 0 rgba(255, 255, 255, .85);
+  --sombra-suave: 0 10px 30px rgba(29, 43, 74, .12);
+
+  /* Se pasa de largo y vuelve, como algo que rebota. Todo lo que
+     aparece o se aprieta usa esta curva: es la que da la sensación de
+     juguete en vez de formulario. */
+  --rebote: cubic-bezier(.34, 1.56, .64, 1);
+
+  --ico-relleno: currentColor;
+
   --fuente: "Baloo 2", "Trebuchet MS", "Segoe UI", system-ui, -apple-system, sans-serif;
 }
+
+/* ---------------- Íconos ----------------
+   Dibujados en js/nucleo/iconos.js. Toman el color del texto de al
+   lado, así que un ícono dentro de un botón primario sale blanco y el
+   mismo dentro de una tarjeta sale del color de la materia. */
+.ico {
+  width: 1.1em;
+  height: 1.1em;
+  flex: none;
+  vertical-align: -.18em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.ico-blando { fill: var(--ico-relleno); opacity: .2; stroke: none; }
+.ico-trazo  { fill: none; }
 
 * { box-sizing: border-box; }
 
@@ -101,7 +151,10 @@ body {
   font-weight: 700;
   letter-spacing: .2px;
 }
-.marca-globo { font-size: 1.6rem; animation: girar 14s linear infinite; }
+/* El globo de la marca ya no gira: un emoji girando pasaba por gracioso,
+   un ícono de trazo girando parece una rueda de "cargando". */
+.marca-globo { font-size: 1.7rem; display: inline-flex; }
+.marca-globo .ico { stroke-width: 2.1; }
 .marca-texto b { color: var(--marca-acento); }
 @keyframes girar { to { transform: rotate(360deg); } }
 
@@ -168,32 +221,45 @@ body {
   font: inherit;
   color: inherit;
   padding: 22px 20px 20px;
-  border: 3px solid var(--borde);
+  border: 4px solid var(--borde);
   border-radius: var(--radio);
   background: var(--tarjeta);
   box-shadow: var(--sombra);
   cursor: pointer;
-  transition: transform .14s, box-shadow .14s, border-color .14s;
+  transition: transform .18s var(--rebote), box-shadow .18s ease, border-color .18s;
 }
 .card:hover:not(:disabled) {
-  transform: translateY(-4px);
-  box-shadow: 0 10px 0 var(--sombra-color);
+  transform: translateY(-5px);
+  box-shadow:
+    0 12px 0 var(--sombra-color),
+    0 20px 30px -8px rgba(29, 43, 74, .22),
+    inset 0 2px 0 rgba(255, 255, 255, .85);
   border-color: var(--card-color, var(--primario));
 }
-.card:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 3px 0 var(--sombra-color); }
+/* al apretar se hunde hasta apoyarse: el escalón desaparece */
+.card:active:not(:disabled) {
+  transform: translateY(5px);
+  box-shadow:
+    0 1px 0 var(--sombra-color),
+    0 3px 8px -2px rgba(29, 43, 74, .2),
+    inset 0 2px 0 rgba(255, 255, 255, .85);
+}
 .card:disabled { cursor: not-allowed; opacity: .62; }
 
 .card-icono {
-  font-size: 2.6rem;
+  font-size: 2.4rem;
   line-height: 1;
-  width: 66px;
-  height: 66px;
+  width: 68px;
+  height: 68px;
   display: grid;
   place-items: center;
-  border-radius: 20px;
+  border-radius: 22px;
   background: var(--card-suave, var(--seleccion));
+  color: var(--card-color, var(--primario));
+  box-shadow: inset 0 -3px 0 rgba(29, 43, 74, .07);
   margin-bottom: 6px;
 }
+.card-icono .ico { width: 40px; height: 40px; stroke-width: 1.9; }
 .card-titulo { font-size: 1.3rem; font-weight: 700; }
 .card-texto { color: var(--tinta-suave); font-size: .97rem; line-height: 1.35; }
 
@@ -289,9 +355,12 @@ body {
   padding: 16px 46px;
   cursor: pointer;
   box-shadow: 0 6px 0 var(--primario-osc);
-  transition: transform .12s, box-shadow .12s, background .12s;
+  transition: transform .16s var(--rebote), box-shadow .16s ease, background .12s;
 }
-.btn-gigante:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 9px 0 var(--primario-osc); }
+.btn-gigante:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 9px 0 var(--primario-osc), 0 14px 22px -8px rgba(29,43,74,.35);
+}
 .btn-gigante:active:not(:disabled) { transform: translateY(4px); box-shadow: 0 2px 0 var(--primario-osc); }
 .btn-gigante:disabled { background: #b9c3e0; box-shadow: 0 6px 0 #97a3c6; cursor: not-allowed; }
 
@@ -1475,3 +1544,120 @@ body.rindiendo .vidas { display: none; }
    ============================================================ */
 #paletas-gratis .muestra-punto,
 #paletas-compradas .muestra-punto { width: 26px; height: 26px; }
+
+/* ============================================================
+   Tamaños de ícono según dónde estén
+   ============================================================ */
+.btn-icono   { display: grid; place-items: center; }
+.btn-icono .ico { width: 22px; height: 22px; }
+
+.item-icono  { display: inline-flex; }
+.item-icono .ico { width: 21px; height: 21px; }
+
+.seccion-icono { display: inline-flex; }
+.seccion-icono .ico { width: 30px; height: 30px; }
+
+.examen-icono { display: inline-flex; }
+.examen-icono .ico { width: 34px; height: 34px; stroke-width: 1.9; }
+.examen-flecha { display: inline-flex; }
+.examen-flecha .ico { width: 22px; height: 22px; }
+
+.fila-icono { display: inline-flex; }
+.fila-icono .ico { width: 22px; height: 22px; }
+
+.opcion-icono { display: inline-flex; }
+.opcion-icono .ico { width: 28px; height: 28px; }
+/* el número de las tablas no es un svg: le sacamos el flex del contenedor */
+.opcion-icono.numero { display: block; }
+
+/* El ícono que acompaña a un título de pantalla */
+.ico-titulo {
+  width: 1em;
+  height: 1em;
+  vertical-align: -.12em;
+  margin-right: .28em;
+  stroke-width: 1.9;
+}
+
+.marcador span { display: inline-flex; }
+.marcador .ico { width: 20px; height: 20px; }
+
+/* Ícono al lado del título de una pantalla */
+.ico-titulo-caja { display: inline-flex; vertical-align: -.1em; margin-right: .3em; }
+.ico-titulo-caja .ico { width: .95em; height: .95em; stroke-width: 1.9; }
+
+.vidas span { display: inline-flex; }
+.vidas .ico { width: 26px; height: 26px; }
+/* el corazón va relleno: un contorno vacío no se lee como una vida */
+.vidas .ico-blando { opacity: 1; }
+.vidas .ico { color: var(--error); }
+.vidas span.gastada .ico { color: var(--tinta-suave); }
+
+.estrellas-fin span { display: inline-flex; }
+.estrellas-fin .ico { width: 54px; height: 54px; color: var(--aviso); stroke-width: 1.8; }
+.estrellas-fin .ico-blando { opacity: 1; }
+
+.chip-monedas .ico, .premio-cifra .ico, .etiqueta-precio .ico { width: 1.05em; height: 1.05em; }
+.card-record .ico { width: 1em; height: 1em; margin-right: .15em; }
+.instalar-icono { display: inline-flex; }
+.instalar-icono .ico { width: 30px; height: 30px; }
+
+/* ============================================================
+   Pipo, la mascota
+   ============================================================ */
+.mascota { display: inline-block; line-height: 0; }
+.mascota-svg { width: 100%; height: auto; display: block; overflow: visible; }
+
+/* En la bienvenida es grande: es lo primero que ve el chico. */
+.bien-globo {
+  width: clamp(110px, 30vw, 150px);
+  margin: 0 auto 6px;
+  animation: saludar 2.6s ease-in-out infinite;
+  transform-origin: 50% 90%;
+}
+@keyframes saludar {
+  0%, 62%, 100% { transform: rotate(0) translateY(0); }
+  70%           { transform: rotate(-6deg) translateY(-5px); }
+  85%           { transform: rotate(5deg) translateY(-2px); }
+}
+
+/* Al terminar una partida entra rebotando desde abajo. */
+.mascota-fin {
+  width: clamp(96px, 26vw, 128px);
+  margin: 0 auto 2px;
+  animation: mascota-entra .55s var(--rebote) both;
+}
+@keyframes mascota-entra {
+  from { transform: translateY(26px) scale(.6); opacity: 0; }
+  to   { transform: none; opacity: 1; }
+}
+
+/* ============================================================
+   Entrada escalonada de las grillas
+
+   Las tarjetas no aparecen todas de golpe: entran una atrás de otra,
+   con la curva de rebote. Es lo que hace que la pantalla se sienta
+   armada y no volcada. Va sólo si el sistema no pidió menos movimiento.
+   ============================================================ */
+@media (prefers-reduced-motion: no-preference) {
+  .grilla-cards > *,
+  .grilla-continentes > *,
+  .grilla-edades > *,
+  .grilla-avatares > * {
+    animation: entra-tarjeta .42s var(--rebote) both;
+  }
+  .grilla-cards > *:nth-child(1),  .grilla-continentes > *:nth-child(1)  { animation-delay: .02s; }
+  .grilla-cards > *:nth-child(2),  .grilla-continentes > *:nth-child(2)  { animation-delay: .07s; }
+  .grilla-cards > *:nth-child(3),  .grilla-continentes > *:nth-child(3)  { animation-delay: .12s; }
+  .grilla-cards > *:nth-child(4),  .grilla-continentes > *:nth-child(4)  { animation-delay: .17s; }
+  .grilla-cards > *:nth-child(5),  .grilla-continentes > *:nth-child(5)  { animation-delay: .22s; }
+  .grilla-cards > *:nth-child(6),  .grilla-continentes > *:nth-child(6)  { animation-delay: .27s; }
+  .grilla-cards > *:nth-child(n+7), .grilla-continentes > *:nth-child(n+7) { animation-delay: .3s; }
+
+  /* los avatares y las edades son muchos y chiquitos: entran más rápido */
+  .grilla-edades > *, .grilla-avatares > * { animation-duration: .3s; animation-delay: .04s; }
+}
+@keyframes entra-tarjeta {
+  from { opacity: 0; transform: translateY(14px) scale(.94); }
+  to   { opacity: 1; transform: none; }
+}

@@ -98,7 +98,9 @@ window.Motor = (function () {
     Util.vaciar(vidas);
     if (e.intentos <= 1) return;      // con un solo intento no hay nada que mostrar
     for (var i = 0; i < e.intentos; i++) {
-      vidas.appendChild(Util.crear('span', i < e.intento ? 'gastada' : '', '❤️'));
+      var v = Util.crear('span', i < e.intento ? 'gastada' : '');
+      v.appendChild(Iconos.crear('corazon'));
+      vidas.appendChild(v);
     }
   }
 

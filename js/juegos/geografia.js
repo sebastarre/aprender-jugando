@@ -243,7 +243,7 @@ window.Geografia = (function () {
     {
       id: 'paises',
       nombre: 'Encontrá el país',
-      icono: '🗺️',
+      icono: 'paises',
       color: '#2563eb',
       suave: '#dbeafe',
       texto: 'Te decimos un país y lo buscás en el mapa.',
@@ -272,7 +272,7 @@ window.Geografia = (function () {
     {
       id: 'capitales',
       nombre: 'Capitales',
-      icono: '🏛️',
+      icono: 'capitales',
       color: '#f59e0b',
       suave: '#fef3c7',
       texto: 'Te mostramos una capital: marcá a qué país pertenece.',
@@ -302,7 +302,7 @@ window.Geografia = (function () {
     {
       id: 'banderas',
       nombre: 'Banderas',
-      icono: '🚩',
+      icono: 'banderas',
       color: '#ec4899',
       suave: '#fce7f3',
       texto: 'Reconocé las banderas del mundo, en el mapa o eligiendo.',
@@ -314,7 +314,7 @@ window.Geografia = (function () {
           tipo: 'fila',
           porDefecto: 'mapa',
           items: [
-            { id: 'mapa', nombre: 'En el mapa', icono: '🗺️', detalle: 'Buscá el país de la bandera' },
+            { id: 'mapa', nombre: 'En el mapa', icono: 'paises', detalle: 'Buscá el país de la bandera' },
             { id: 'quiz', nombre: 'Elegir bandera', icono: '🎯', detalle: 'Cuatro banderas, una correcta' }
           ]
         }];
