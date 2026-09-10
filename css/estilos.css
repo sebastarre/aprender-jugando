@@ -260,7 +260,8 @@ body {
   border-radius: 22px;
   background: var(--card-suave, var(--seleccion));
   color: var(--card-color, var(--primario));
-  box-shadow: inset 0 -3px 0 rgba(29, 43, 74, .07);
+  /* sombra interna difusa, no una línea: la plastilina no tiene cantos */
+  box-shadow: inset 0 -6px 8px -4px rgba(29, 43, 74, .16);
   margin-bottom: 6px;
 }
 .card-icono .ico { width: 40px; height: 40px; stroke-width: 1.9; }
@@ -1224,7 +1225,7 @@ body.sin-perfil .pie { display: none; }
   height: 26px;
   border-radius: 50%;
   background: var(--primario);
-  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, .14);
+  box-shadow: inset 0 -6px 7px -3px rgba(0, 0, 0, .22);
 }
 
 .tarjetitas { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
@@ -1710,7 +1711,7 @@ body.rindiendo .vidas { display: none; }
   height: 46px;
   border-radius: 50%;
   background: var(--muestra);
-  box-shadow: inset 0 -4px 0 rgba(15, 23, 42, .16), 0 2px 6px rgba(15, 23, 42, .18);
+  box-shadow: inset 0 -8px 10px -5px rgba(15, 23, 42, .3), 0 2px 6px rgba(15, 23, 42, .18);
 }
 .pastilla-nombre { font-size: .82rem; font-weight: 700; line-height: 1.15; }
 .pastilla-color:hover { transform: translateY(-3px); border-color: var(--primario); }
@@ -1725,6 +1726,6 @@ body.rindiendo .vidas { display: none; }
   width: 100%;
   height: 46px;
   border-radius: 12px;
-  box-shadow: inset 0 -4px 0 rgba(15, 23, 42, .14);
+  box-shadow: inset 0 -8px 10px -5px rgba(15, 23, 42, .26);
   margin-bottom: 8px;
 }
