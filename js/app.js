@@ -610,9 +610,10 @@
     pintarPremio($('premio-monedas'), premio);
     pintarBarraSuperior();
 
-    // Pipo cambia de cara según cómo le fue: no es sólo decoración, es
-    // la primera lectura del resultado antes de mirar los números.
-    Mascota.gesto($('mascota-fin'), estrellas >= 2 ? 'festejo' : estrellas === 1 ? 'hola' : 'ups');
+    // La mascota, con el disfraz que el chico tenga puesto. Ya no cambia
+    // de cara según el resultado: las ilustraciones son fijas, así que
+    // eso lo cuentan las estrellas y el texto de abajo.
+    Mascota.gesto($('mascota-fin'));
 
     var cont = $('estrellas-fin');
     Util.vaciar(cont);
@@ -827,9 +828,10 @@
     pintarPremio($('premio-monedas'), premio);
     pintarBarraSuperior();
 
-    // Pipo cambia de cara según cómo le fue: no es sólo decoración, es
-    // la primera lectura del resultado antes de mirar los números.
-    Mascota.gesto($('mascota-fin'), estrellas >= 2 ? 'festejo' : estrellas === 1 ? 'hola' : 'ups');
+    // La mascota, con el disfraz que el chico tenga puesto. Ya no cambia
+    // de cara según el resultado: las ilustraciones son fijas, así que
+    // eso lo cuentan las estrellas y el texto de abajo.
+    Mascota.gesto($('mascota-fin'));
 
     var cont = $('estrellas-fin');
     Util.vaciar(cont);
@@ -1213,8 +1215,8 @@
       b.type = 'button';
       b.setAttribute('aria-pressed', puesto === id ? 'true' : 'false');
 
-      var mini = Util.crear('span', 'mascota mascota-mini');
-      mini.innerHTML = Mascota.vista(id, 'ninguno', 'hola');
+      var mini = Util.crear('span', 'mascota-mini');
+      mini.innerHTML = Mascota.vista(id, Almacen.equipado('disfraz'));
       b.appendChild(mini);
       b.appendChild(Util.crear('b', 'tienda-nombre', Mascota.BASES[id].nombre));
 
@@ -1244,8 +1246,8 @@
       b.type = 'button';
       b.setAttribute('aria-pressed', puesto === d.id ? 'true' : 'false');
 
-      var mini = Util.crear('span', 'mascota mascota-mini');
-      mini.innerHTML = Mascota.vista(animal, d.id, 'hola');
+      var mini = Util.crear('span', 'mascota-mini');
+      mini.innerHTML = Mascota.vista(animal, d.id);
       b.appendChild(mini);
       b.appendChild(Util.crear('b', 'tienda-nombre', d.nombre));
 
@@ -1361,8 +1363,8 @@
     var animal = Almacen.equipado('mascota') || 'gato';
     pintarSeccionTienda($('tienda-disfraces'), 'disfraz',
       Catalogo.disfracesDeTienda(), function (item) {
-        var mini = Util.crear('span', 'mascota mascota-mini');
-        mini.innerHTML = Mascota.vista(animal, item.id, 'hola');
+        var mini = Util.crear('span', 'mascota-mini');
+        mini.innerHTML = Mascota.vista(animal, item.id);
         return mini;
       });
 

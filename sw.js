@@ -2,7 +2,7 @@
    Guarda toda la app en el celular para que funcione sin internet. */
 'use strict';
 
-const VERSION = 'aprender-jugando-0dfd5a7d85';
+const VERSION = 'aprender-jugando-0f58c20271';
 const ARCHIVOS = [
   "./assets/banderas/ad.png",
   "./assets/banderas/ae.png",
@@ -203,6 +203,20 @@ const ARCHIVOS = [
   "./assets/icono-512.png",
   "./assets/icono-apple-180.png",
   "./assets/icono-maskable-512.png",
+  "./assets/mascotas/gato-abeja.webp",
+  "./assets/mascotas/gato-dino.webp",
+  "./assets/mascotas/gato-dragon.webp",
+  "./assets/mascotas/gato-leon.webp",
+  "./assets/mascotas/gato-pinguino.webp",
+  "./assets/mascotas/gato-tiburon.webp",
+  "./assets/mascotas/gato-zorro.webp",
+  "./assets/mascotas/perro-abeja.webp",
+  "./assets/mascotas/perro-dino.webp",
+  "./assets/mascotas/perro-dragon.webp",
+  "./assets/mascotas/perro-leon.webp",
+  "./assets/mascotas/perro-pinguino.webp",
+  "./assets/mascotas/perro-tiburon.webp",
+  "./assets/mascotas/perro-zorro.webp",
   "./css/estilos.css",
   "./index.html",
   "./js/app.js",

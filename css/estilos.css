@@ -1610,26 +1610,35 @@ body.rindiendo .vidas { display: none; }
 /* ============================================================
    Pipo, la mascota
    ============================================================ */
-.mascota { display: inline-block; line-height: 0; }
-.mascota-svg { width: 100%; height: auto; display: block; overflow: visible; }
+.mascota { display: block; line-height: 0; }
+.mascota-img, .mascota-mini .mascota-img {
+  display: block;
+  width: auto;
+  height: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  object-fit: contain;
+  -webkit-user-drag: none;
+  user-select: none;
+}
 
 /* En la bienvenida es grande: es lo primero que ve el chico. */
 .bien-globo {
-  width: clamp(110px, 30vw, 150px);
+  height: clamp(140px, 34vw, 190px);
   margin: 0 auto 6px;
-  animation: saludar 2.6s ease-in-out infinite;
-  transform-origin: 50% 90%;
+  animation: saludar 3.4s ease-in-out infinite;
+  transform-origin: 50% 95%;
 }
 @keyframes saludar {
-  0%, 62%, 100% { transform: rotate(0) translateY(0); }
-  70%           { transform: rotate(-6deg) translateY(-5px); }
-  85%           { transform: rotate(5deg) translateY(-2px); }
+  0%, 66%, 100% { transform: rotate(0) translateY(0); }
+  74%           { transform: rotate(-3.5deg) translateY(-4px); }
+  88%           { transform: rotate(3deg) translateY(-2px); }
 }
 
 /* Al terminar una partida entra rebotando desde abajo. */
 .mascota-fin {
-  width: clamp(96px, 26vw, 128px);
-  margin: 0 auto 2px;
+  height: clamp(120px, 30vw, 160px);
+  margin: 0 auto 4px;
   animation: mascota-entra .55s var(--rebote) both;
 }
 @keyframes mascota-entra {
@@ -1670,17 +1679,24 @@ body.rindiendo .vidas { display: none; }
 /* ============================================================
    Personalización: mascota y colores sueltos
    ============================================================ */
+/* La mascota grande arriba y las dos opciones abajo: al costado, en un
+   celular, la vista previa quedaba de miniatura y no se distinguía de las
+   tarjetas que hay que elegir. */
 .bloque-mascota {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 18px;
-  flex-wrap: wrap;
+  gap: 16px;
   margin-bottom: 26px;
 }
-.mascota-preview { width: clamp(96px, 24vw, 130px); flex: none; }
-.bloque-mascota .grilla-tienda { flex: 1; min-width: 200px; }
+.bloque-mascota .grilla-tienda {
+  width: 100%;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.mascota-preview { height: clamp(150px, 38vw, 200px); flex: none; }
 
-.mascota-mini { display: block; width: 62px; margin: 0 auto 4px; }
+/* Las vistas previas de la tienda: cuerpo entero, alto fijo. */
+.mascota-mini { display: block; height: 92px; margin: 0 auto 6px; }
 .card-animal { align-items: center; text-align: center; }
 
 .bloque-ranura { margin-bottom: 26px; }

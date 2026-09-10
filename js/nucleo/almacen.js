@@ -42,7 +42,7 @@ window.Almacen = (function () {
      bienvenida, que pregunta el nombre y la edad. */
   function crearBase() {
     return {
-      version: 4,
+      version: 5,
       perfiles: [],
       activo: null,
       datos: {},
@@ -92,12 +92,51 @@ window.Almacen = (function () {
     return base;
   }
 
+  /* Los disfraces de la mascota eran ocho dibujados a mano y pasaron a
+     ser siete ilustrados. Tres sobrevivieron con el mismo nombre; a los
+     otros se les asigna el más parecido, así el que había pagado uno se
+     queda con algo equivalente en vez de perderlo. */
+  var DISFRACES_VIEJOS = {
+    ninguno: 'leon',        // ahora la mascota siempre lleva algo puesto
+    conejo: 'zorro',        // los dos son el de orejas de mamífero
+    rana: 'dino',           // los dos verdes
+    panda: 'pinguino',      // los dos blanco y negro
+    unicornio: 'dragon',    // los dos el fantástico con cuernos
+    leon: 'leon', dino: 'dino', tiburon: 'tiburon', abeja: 'abeja'
+  };
+
+  function pasarADisfracesIlustrados(base) {
+    if (base.version >= 5) return base;
+
+    Object.keys(base.datos || {}).forEach(function (id) {
+      var d = base.datos[id];
+      if (!d) return;
+      d.comprado = d.comprado || {};
+      d.equipado = d.equipado || {};
+
+      Object.keys(d.comprado).forEach(function (clave) {
+        if (clave.indexOf('disfraz:') !== 0) return;
+        var nuevo = DISFRACES_VIEJOS[clave.slice(8)];
+        delete d.comprado[clave];
+        if (nuevo) d.comprado['disfraz:' + nuevo] = true;
+      });
+
+      var puesto = DISFRACES_VIEJOS[d.equipado.disfraz];
+      if (d.equipado.disfraz) d.equipado.disfraz = puesto || 'leon';
+    });
+
+    base.version = 5;
+    return base;
+  }
+
   function cargar() {
     try {
       var crudo = localStorage.getItem(CLAVE);
       if (crudo) {
         var leido = JSON.parse(crudo);
-        if (leido && leido.perfiles && leido.perfiles.length) return pasarAColoresSueltos(leido);
+        if (leido && leido.perfiles && leido.perfiles.length) {
+          return pasarADisfracesIlustrados(pasarAColoresSueltos(leido));
+        }
       }
       // primera vez con la versión nueva: se traen los datos de la anterior
       var viejo = localStorage.getItem(CLAVE_VIEJA);
