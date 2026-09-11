@@ -51,18 +51,18 @@
     {
       id: 'matematica', nombre: 'Matemática', icono: 'matematica',
       color: '#2563eb', suave: '#dbeafe',
-      texto: 'Tablas, cuentas y la hora',
+      texto: 'Contar, cuentas, la hora y más',
       modulo: Matematica
     },
     {
       id: 'lengua', nombre: 'Lengua', icono: 'lengua',
       color: '#c2740a', suave: '#fef3c7',
-      texto: 'Ortografía y lectura', modulo: null
+      texto: 'Letras, palabras y ortografía', modulo: Lengua
     },
     {
       id: 'ciencias', nombre: 'Ciencias', icono: 'ciencias',
       color: '#8b5cf6', suave: '#ede9fe',
-      texto: 'El cuerpo y los animales', modulo: null
+      texto: 'Animales, cuerpo, plantas y espacio', modulo: Ciencias
     }
   ];
 
@@ -1741,7 +1741,9 @@
   function pintarBotonSonido() {
     var b = $('btn-sonido');
     var activo = Almacen.sonidoActivo();
-    b.textContent = activo ? '🔊' : '🔇';
+    // el parlante dibujado, no el emoji: cada teléfono dibuja 🔇 a su manera
+    Util.vaciar(b);
+    b.appendChild(Iconos.crear(activo ? 'sonido' : 'sonido-no'));
     b.classList.toggle('apagado', !activo);
     b.setAttribute('aria-label', activo ? 'Silenciar sonido' : 'Activar sonido');
   }

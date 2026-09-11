@@ -582,6 +582,29 @@ body {
 .hud-izq { flex: 1 1 220px; }
 .hud-der { display: flex; align-items: center; gap: 14px; }
 
+/* El silenciador de la partida. Tenía su estilo junto con la barra de
+   arriba, y cuando la barra se fue se llevó el estilo puesto: el botón
+   quedó como un rectangulito gris sin forma. Ahora es redondo y está
+   apoyado sobre el escalón, como todo lo que se aprieta. */
+.btn-icono {
+  font: inherit;
+  width: 42px;
+  height: 42px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 2px solid var(--borde);
+  background: var(--tarjeta);
+  color: var(--tinta);
+  cursor: pointer;
+  box-shadow: 0 3px 0 var(--sombra-clay);
+  transition: transform .12s, box-shadow .12s, opacity .12s;
+}
+.btn-icono:hover { transform: translateY(-2px); box-shadow: 0 5px 0 var(--sombra-clay); }
+.btn-icono:active { transform: translateY(3px); box-shadow: 0 0 0 var(--sombra-clay); }
+.btn-icono.apagado { color: var(--tinta-suave); }
+
 .progreso-envase { display: flex; align-items: center; gap: 10px; }
 .progreso-barra {
   flex: 1;
@@ -1014,6 +1037,136 @@ body.jugando .pie { display: none; }
 
 /* con dos o tres respuestas no hace falta estirarlas a lo ancho */
 .zona-opciones[data-columnas="4"] { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+
+/* ---------------- Lo que se muestra en la pregunta ----------------
+   Cada juego pinta su dibujo en #pregunta-visual; éstas son las formas
+   que usan los juegos de Matemática, Lengua y Ciencias. */
+.visual-emoji { font-size: clamp(3.6rem, 13vw, 5rem); line-height: 1; }
+.visual-con-palabra { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.visual-palabra {
+  font-size: clamp(1.9rem, 7vw, 2.6rem);
+  font-weight: 800;
+  letter-spacing: .06em;
+  line-height: 1.1;
+}
+/* el lugar de la letra que falta: una rayita del color de los botones */
+.hueco {
+  display: inline-block;
+  min-width: .8em;
+  margin: 0 .05em;
+  border-bottom: 4px solid var(--primario);
+  color: var(--primario);
+  text-align: center;
+}
+
+/* De a cinco por fila, como un ábaco: 7 se ve como «cinco y dos». */
+.contar {
+  display: grid;
+  grid-template-columns: repeat(5, auto);
+  justify-content: center;
+  gap: 6px 10px;
+  font-size: clamp(1.8rem, 7vw, 2.4rem);
+  line-height: 1;
+}
+
+.serie { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.serie span {
+  min-width: 2.2em;
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 2px solid var(--borde);
+  background: var(--papel);
+  font-size: clamp(1.3rem, 5vw, 1.8rem);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.serie .serie-falta { border: 2px dashed var(--primario); background: var(--seleccion); color: var(--primario); }
+
+.numero-grande {
+  font-size: clamp(2.6rem, 11vw, 3.6rem);
+  font-weight: 800;
+  letter-spacing: .12em;
+  font-variant-numeric: tabular-nums;
+}
+.numero-grande b {
+  color: var(--primario);
+  text-decoration: underline;
+  text-decoration-thickness: 4px;
+  text-underline-offset: 6px;
+}
+
+.figura { width: clamp(110px, 32vw, 150px); height: auto; display: block; }
+.figura-ancha { width: clamp(180px, 56vw, 260px); }
+
+/* Los problemas son un cuento de dos o tres renglones: con la letra de
+   una consigna corta («¿Cuánto es 7 + 5?») ocupaban media pantalla. */
+.consigna-larga {
+  display: block;
+  font-size: clamp(1.05rem, 2.8vw, 1.3rem);
+  line-height: 1.4;
+  text-align: left;
+}
+
+/* ---------------- Formas de las respuestas ----------------
+   'texto' (un número grande) es la de siempre. Las otras son para lo que
+   no entra en un número: una palabra, un dibujo, una frase, una fracción. */
+.btn-opcion.palabra { justify-content: center; min-height: clamp(60px, 10vw, 76px); padding: 10px 12px; }
+.btn-opcion.palabra .opcion-valor {
+  font-size: clamp(1.15rem, 4.4vw, 1.5rem);
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.btn-opcion.emoji { justify-content: center; min-height: clamp(76px, 20vw, 100px); }
+.btn-opcion.emoji .opcion-valor { font-size: clamp(2.4rem, 10vw, 3.2rem); }
+
+/* Una frase entera no entra en media pantalla: cada una va en su
+   renglón, a todo el ancho, y alineada a la izquierda como se lee. */
+.btn-opcion.frase {
+  grid-column: 1 / -1;
+  align-items: flex-start;
+  text-align: left;
+  padding: 13px 16px;
+}
+.btn-opcion.frase .opcion-valor {
+  font-size: clamp(1rem, 3.6vw, 1.15rem);
+  line-height: 1.3;
+  font-variant-numeric: normal;
+}
+
+.btn-opcion.fraccion { justify-content: center; min-height: clamp(76px, 18vw, 96px); }
+/* Como se escribe a mano: un número arriba del otro, con la rayita.
+   No se llama .fraccion porque ésa es la clase del botón, y la regla de
+   la rayita («el primer hijo») le pegaba al número entero. */
+.fraccion-escrita {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: clamp(1.4rem, 5vw, 1.8rem);
+  font-weight: 800;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+.fraccion-escrita span:first-child { border-bottom: 3px solid currentColor; padding: 0 .3em 2px; }
+.fraccion-escrita span:last-child { padding-top: 2px; }
+
+/* En las lecciones: una palabra cortada en sílabas, o una lista en fila
+   (los planetas en orden). El pedacito resaltado es la sílaba fuerte. */
+.trozos { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.trozos span {
+  padding: 8px 14px;
+  border-radius: 12px;
+  border: 2px solid var(--borde);
+  background: var(--tarjeta);
+  font-size: clamp(1.2rem, 4.5vw, 1.6rem);
+  font-weight: 800;
+}
+.trozos .trozo-fuerte { border-color: var(--primario); background: var(--seleccion); color: var(--primario); }
+
+/* el nombre de una categoría con una línea que dice qué es:
+   «Verbo — es una acción», «Mamífero — de bebé toma leche» */
+.opcion-con-pista { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.opcion-pista { font-size: .8rem; font-weight: 600; line-height: 1.2; color: var(--tinta-suave); }
 
 /* ---------------- Repaso: ítems sin imagen ---------------- */
 .item-simbolo {

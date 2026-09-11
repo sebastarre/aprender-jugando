@@ -59,6 +59,17 @@ window.Lecciones = (function () {
     return html;
   }
 
+  /**
+   * Una palabra cortada en pedacitos (ma · ri · po · sa), o cualquier
+   * lista en fila. `fuerte` es el lugar del pedacito que va resaltado:
+   * la sílaba que suena más fuerte, en la lección de la tilde.
+   */
+  function trozos(partes, fuerte) {
+    return '<div class="trozos">' + partes.map(function (p, i) {
+      return '<span' + (i === fuerte ? ' class="trozo-fuerte"' : '') + '>' + p + '</span>';
+    }).join('') + '</div>';
+  }
+
   /** Rosa de los vientos. */
   function brujula() {
     return '<svg class="dibujo-svg" viewBox="0 0 200 200" role="img" aria-label="Los cuatro puntos cardinales">' +
@@ -307,6 +318,185 @@ window.Lecciones = (function () {
         {
           titulo: 'Los países chiquitos casi no se ven',
           texto: 'Algunos países son tan chiquitos que en un mapa del mundo quedan más chicos que un puntito: Malta, Nauru, el Vaticano. Por eso en el juego los dibujamos como <b>un punto</b> para que los puedas tocar.'
+        }
+      ]
+    },
+
+    /* ============ LENGUA ============ */
+    {
+      id: 'que-es-una-silaba',
+      materia: 'lengua',
+      titulo: 'Qué es una sílaba',
+      icono: 'silabas',
+      edadMin: 7,
+      minutos: 2,
+      resumen: 'Cómo se corta una palabra en pedacitos.',
+      juego: 'lengua/silabas',
+      pasos: [
+        {
+          titulo: 'Las palabras tienen pedacitos',
+          texto: 'Si decís una palabra despacio, vas a notar que sale en <b>golpes de voz</b>. Cada golpe es una <b>sílaba</b>.',
+          visual: function () { return trozos(['ma', 'ri', 'po', 'sa']); }
+        },
+        {
+          titulo: 'Contalas aplaudiendo',
+          texto: '«Ma-ri-po-sa» son <b>cuatro</b> aplausos: tiene cuatro sílabas. «Sol» es un solo aplauso: tiene una. «Ca-sa» tiene dos.',
+          visual: function () { return trozos(['ca', 'sa']); },
+          truco: 'Decí la palabra despacio y aplaudí con cada golpe: cada aplauso es una sílaba.'
+        },
+        {
+          titulo: 'Siempre hay una vocal',
+          texto: 'Toda sílaba tiene por lo menos una vocal. A veces van dos juntas en el mismo golpe, como en «es-<b>cue</b>-la»: la <b>ue</b> se dice de una sola vez.',
+          visual: function () { return trozos(['es', 'cue', 'la']); }
+        }
+      ]
+    },
+
+    {
+      id: 'clases-de-palabras',
+      materia: 'lengua',
+      titulo: 'Sustantivos, adjetivos y verbos',
+      icono: 'clases',
+      edadMin: 9,
+      minutos: 3,
+      resumen: 'Para qué sirve cada clase de palabra.',
+      juego: 'lengua/clases',
+      pasos: [
+        {
+          titulo: 'Los sustantivos nombran',
+          texto: 'Un <b>sustantivo</b> es el nombre de algo: una persona, un animal, una cosa, un lugar o una idea. <b>Perro</b>, <b>mesa</b>, <b>ciudad</b>, <b>amistad</b>.'
+        },
+        {
+          titulo: 'Los adjetivos dicen cómo es',
+          texto: 'Un <b>adjetivo</b> acompaña al sustantivo y cuenta cómo es: el perro <b>valiente</b>, la mesa <b>redonda</b>, una ciudad <b>enorme</b>.'
+        },
+        {
+          titulo: 'Los verbos son acciones',
+          texto: 'Un <b>verbo</b> dice lo que alguien hace: el perro <b>corre</b>, <b>come</b>, <b>duerme</b>. Cuando no dice quién lo hace, termina en -ar, -er o -ir: <b>saltar</b>, <b>correr</b>, <b>escribir</b>.',
+          truco: 'Para encontrar el verbo, preguntá «¿qué hace?». El perro… corre.'
+        },
+        {
+          titulo: 'Los adverbios dicen cómo, cuándo o dónde',
+          texto: 'Un <b>adverbio</b> cuenta cómo, cuándo o dónde pasa algo: el perro corre <b>rápidamente</b>, llegó <b>ayer</b>, vive <b>aquí</b>. Muchos terminan en <b>-mente</b>.'
+        }
+      ]
+    },
+
+    {
+      id: 'donde-va-la-tilde',
+      materia: 'lengua',
+      titulo: 'Dónde va la tilde',
+      icono: 'tildes',
+      edadMin: 10,
+      minutos: 4,
+      resumen: 'Agudas, graves y esdrújulas.',
+      juego: 'lengua/tildes',
+      pasos: [
+        {
+          titulo: 'Hay una sílaba que suena más fuerte',
+          texto: 'En cada palabra hay una sílaba que se dice con más fuerza. Decí «ca-<b>mión</b>», «<b>ár</b>-bol», «<b>mú</b>-si-ca» y fijate cuál suena más.',
+          visual: function () { return trozos(['ca', 'mión'], 1); }
+        },
+        {
+          titulo: 'Agudas: la fuerte es la última',
+          texto: 'Si la sílaba fuerte es <b>la última</b>, la palabra es <b>aguda</b>. Llevan tilde cuando terminan en <b>n</b>, <b>s</b> o <b>vocal</b>: camión, compás, sofá. <b>Reloj</b> no lleva, porque termina en j.',
+          visual: function () { return trozos(['ca', 'mión'], 1); }
+        },
+        {
+          titulo: 'Graves: la fuerte es la anteúltima',
+          texto: 'Si es <b>la anteúltima</b>, la palabra es <b>grave</b>. Llevan tilde cuando <b>no</b> terminan en n, s o vocal: árbol, lápiz, fácil. <b>Examen</b> no lleva, porque termina en n.',
+          visual: function () { return trozos(['ár', 'bol'], 0); },
+          truco: 'Las agudas y las graves hacen lo contrario: lo que a una le pide tilde, a la otra se la saca.'
+        },
+        {
+          titulo: 'Esdrújulas: siempre llevan',
+          texto: 'Si la fuerte es <b>la antepenúltima</b>, la palabra es <b>esdrújula</b>, y ésas llevan tilde <b>siempre</b>, sin excepción: música, pájaro, teléfono.',
+          visual: function () { return trozos(['mú', 'si', 'ca'], 0); }
+        }
+      ]
+    },
+
+    /* ============ CIENCIAS ============ */
+    {
+      id: 'clases-de-animales',
+      materia: 'ciencias',
+      titulo: 'Mamíferos, aves, peces y más',
+      icono: 'animales',
+      edadMin: 8,
+      minutos: 3,
+      resumen: 'Cómo se agrupan los animales.',
+      juego: 'ciencias/animales',
+      pasos: [
+        {
+          titulo: 'Los mamíferos toman leche',
+          texto: 'Los <b>mamíferos</b> de bebés toman la leche de su mamá, y casi todos tienen pelo. El perro, el elefante… y también <b>el delfín y la ballena</b>, aunque vivan en el mar.',
+          truco: 'El delfín nada como un pez, pero respira aire y toma leche: es un mamífero.'
+        },
+        {
+          titulo: 'Las aves tienen plumas',
+          texto: 'Las <b>aves</b> tienen plumas, pico y nacen de un huevo. El <b>pingüino</b> es un ave aunque no vuele: tiene plumas.'
+        },
+        {
+          titulo: 'Los peces respiran bajo el agua',
+          texto: 'Los <b>peces</b> respiran con <b>branquias</b>, que sacan el aire del agua, y nadan con aletas. El <b>tiburón</b> es un pez.'
+        },
+        {
+          titulo: 'Reptiles, anfibios e insectos',
+          texto: 'Los <b>reptiles</b> tienen escamas, como la tortuga y la víbora. Los <b>anfibios</b>, como la rana, nacen en el agua y de grandes viven también en la tierra. Los <b>insectos</b> tienen seis patas: la abeja, la hormiga. La araña tiene ocho, así que no es un insecto.'
+        }
+      ]
+    },
+
+    {
+      id: 'los-estados-del-agua',
+      materia: 'ciencias',
+      titulo: 'Sólido, líquido y gaseoso',
+      icono: 'materia',
+      edadMin: 8,
+      minutos: 3,
+      resumen: 'El hielo, el agua y el vapor son lo mismo.',
+      juego: 'ciencias/materia',
+      pasos: [
+        {
+          titulo: 'Tres maneras de estar',
+          texto: 'El agua puede ser <b>sólida</b> (el hielo), <b>líquida</b> (la de la canilla) o <b>gaseosa</b> (el vapor de la pava). Es siempre la misma agua: lo que cambia es la temperatura.',
+          visual: function () { return trozos(['🧊 sólido', '💧 líquido', '♨️ gaseoso']); }
+        },
+        {
+          titulo: 'Cómo es cada una',
+          texto: 'Un <b>sólido</b> tiene su propia forma. Un <b>líquido</b> toma la forma del vaso donde lo pongas. Un <b>gas</b> se escapa y ocupa todo el lugar que encuentra.',
+          truco: 'Sólido tiene forma, líquido toma la forma del vaso, gas se escapa.'
+        },
+        {
+          titulo: 'Los cambios tienen nombre',
+          texto: 'Cuando el hielo se derrite es la <b>fusión</b>. Cuando el agua se congela, la <b>solidificación</b>: pasa a los <b>0 °C</b>. Cuando se hace vapor, la <b>evaporación</b>; hierve a los <b>100 °C</b>.'
+        }
+      ]
+    },
+
+    {
+      id: 'el-sistema-solar',
+      materia: 'ciencias',
+      titulo: 'El sistema solar',
+      icono: 'espacio',
+      edadMin: 10,
+      minutos: 3,
+      resumen: 'El Sol, los ocho planetas y la Luna.',
+      juego: 'ciencias/espacio',
+      pasos: [
+        {
+          titulo: 'El Sol es una estrella',
+          texto: 'El <b>Sol</b> no es un planeta: es una <b>estrella</b>, como las que se ven de noche, sólo que está mucho más cerca. Alrededor de él giran ocho planetas.'
+        },
+        {
+          titulo: 'Los ocho planetas, en orden',
+          texto: 'Del más cercano al más lejano: <b>Mercurio, Venus, Tierra, Marte, Júpiter, Saturno, Urano y Neptuno</b>. Plutón era el noveno, pero hoy se lo llama <b>planeta enano</b>.',
+          visual: function () { return trozos(['Mercurio', 'Venus', 'Tierra', 'Marte', 'Júpiter', 'Saturno', 'Urano', 'Neptuno']); },
+          truco: 'Mi Vieja Tía Marta Jamás Supo Usar Neptuno: la primera letra de cada palabra es un planeta.'
+        },
+        {
+          titulo: 'Los días y los años',
+          texto: 'La Tierra da <b>una vuelta sobre sí misma</b> cada día: eso hace el día y la noche. Y da <b>una vuelta alrededor del Sol</b> cada año. La <b>Luna</b> es un satélite: gira alrededor de la Tierra.'
         }
       ]
     }

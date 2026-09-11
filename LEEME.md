@@ -6,9 +6,12 @@ App para chicos con dos mitades que se apoyan una en la otra:
 - **Jugar** — juegos para practicar eso mismo.
 
 Cada lección termina ofreciendo el juego donde usar lo que se acaba de leer, y
-cada juego tiene su lección al lado. Hoy hay **Geografía** (países, capitales y
-banderas sobre un mapa interactivo) y **Matemática** (tablas, cuentas y la
-hora), y está preparada para ir sumando materias.
+cada juego tiene su lección al lado. Hay cuatro materias con 35 juegos entre
+todas: **Geografía** (países, capitales y banderas sobre un mapa interactivo),
+**Matemática** (12 juegos, de contar a fracciones), **Lengua** (10, de la
+primera letra a las tildes) y **Ciencias** (10, de los ruidos de los animales
+al sistema solar). Cada juego dice desde qué edad tiene sentido, y hay juegos
+para cada edad de 4 a 12 años.
 
 ## Cómo usarla
 
@@ -64,16 +67,69 @@ y Caribe), Europa, África, Asia y Oceanía.
 
 **Matemática**
 
-| Juego | Consigna | Opciones de partida |
-|---|---|---|
-| Tablas de multiplicar | «¿Cuánto es 7 × 8?» | Una tabla del 2 al 12, o mezcladas |
-| Sumas y restas | «¿Cuánto es 34 − 17?» | Cuatro niveles; sumas, restas o mezcladas |
-| La hora | Dibuja un reloj de agujas | En punto, y media, y cuarto, o de 5 en 5 |
+| Edad | Juego | Consigna | Opciones de partida |
+|---|---|---|---|
+| 4 | Contar | Dibujitos de a cinco por fila: «¿Cuántos hay?» | Hasta 5, hasta 10, hasta 20 |
+| 4 | Figuras | Dibuja una figura: «¿Qué figura es?» | Las cuatro básicas, o también óvalo, rombo, pentágono y hexágono |
+| 5 | Mayor y menor | «¿Cuál es el número más grande?» | Hasta 10, hasta 100, o las mismas tres cifras en otro orden |
+| 5 | Sumas y restas | «¿Cuánto es 34 − 17?» | Cuatro niveles; sumas, restas o mezcladas |
+| 6 | Qué número sigue | «2, 4, 6, 8, ?» | De a 1 y 2; de a 3, 5 y 10; saltos raros y dobles |
+| 6 | La hora | Dibuja un reloj de agujas | En punto, y media, y cuarto, o de 5 en 5 |
+| 7 | Tablas de multiplicar | «¿Cuánto es 7 × 8?» | Una tabla del 2 al 12, o mezcladas |
+| 7 | Dobles y mitades | «¿Cuál es la mitad de 14?» | Números chicos o grandes; dobles, mitades o mezclado |
+| 7 | Cuánto vale | «En 356, ¿cuánto vale el 5?» | Tres o cuatro cifras |
+| 8 | Divisiones | «¿Cuánto es 56 ÷ 7?» | Dividir por 2 a 10, o mezcladas |
+| 8 | Problemas | Un cuento corto con una cuenta adentro | Sumar y restar, o las cuatro cuentas |
+| 9 | Fracciones | Dibuja una torta o una barra: «¿Qué parte está pintada?» | Hasta cuartos, o hasta octavos |
 
 Las preguntas de matemática se generan en cada partida, así que nunca sale dos
-veces la misma ronda. Las tres respuestas incorrectas no son al azar: son los
+veces la misma ronda. Las respuestas incorrectas no son al azar: son los
 errores típicos (correrse una fila de la tabla, cambiar la suma por la resta,
-leer la aguja equivocada), para que acertar signifique algo.
+leer la aguja equivocada, dar vuelta una fracción, sumar en vez de multiplicar
+en una serie de dobles), para que acertar signifique algo. En los problemas,
+las malas son lo que da cada *otra* cuenta con los mismos números: el error de
+un problema casi nunca es de cálculo, es elegir mal la cuenta.
+
+**Lengua**
+
+| Edad | Juego | Consigna |
+|---|---|---|
+| 4 | La primera letra | Un dibujo: «¿Con qué letra empieza?» |
+| 5 | La vocal que falta | Un dibujo y «c ? sa» |
+| 6 | Rimas | «¿Qué palabra rima con gato?» |
+| 6 | Contrarios | «¿Cuál es lo contrario de grande?» |
+| 7 | Sílabas | «¿Cuántas sílabas tiene mariposa?» |
+| 7 | Plurales | «¿Cuál es el plural de lápiz?» |
+| 8 | Ortografía | Cuatro maneras de escribir una palabra: «¿Cuál está bien?» |
+| 8 | Sinónimos | «¿Qué palabra significa lo mismo que contento?» |
+| 10 | Tildes | «¿Cuál está bien escrita?» camión, camion, cámion… |
+| 10 | Clases de palabras | «¿Qué clase de palabra es correr?» |
+
+**Ciencias**
+
+| Edad | Juego | Consigna |
+|---|---|---|
+| 4 | ¿Quién hace…? | «¿Quién hace “¡Muuu!”?» y cuatro animales |
+| 4 | Mi cuerpo | «¿Con qué olemos?» y cuatro partes del cuerpo |
+| 5 | ¿Dónde vive? | Un animal: en el mar, la selva, la granja, el polo o el desierto |
+| 6 | ¿Está vivo? | «¿Cuál es un ser vivo?» (el robot se mueve y no lo es) |
+| 7 | Las plantas | Raíz, tallo, hojas, flor y fruto |
+| 7 | ¿Qué come? | Herbívoro, carnívoro u omnívoro |
+| 8 | Clases de animales | Mamífero, ave, pez, reptil, anfibio o insecto |
+| 8 | El agua y la materia | Sólido, líquido y gaseoso |
+| 9 | El cuerpo por dentro | El corazón, los pulmones, los huesos |
+| 10 | El sistema solar | Los planetas, el Sol y la Luna |
+
+Los de Lengua y Ciencias son listas escritas a mano, y cada una está revisada
+para que ninguna respuesta mala sea también correcta: ninguna «mala» rima,
+ningún «mal escrito» es una palabra que existe (por eso no está «vaso»: *baso*
+y *bazo* existen), ninguna variante de tilde es otra palabra (por eso no está
+«dibujo»: *dibujó* existe), y si la respuesta es «en el polo» para el
+pingüino, «en el mar» no sale como mala, porque también vive en el mar.
+
+Varias preguntas tienen trampa a propósito, que son las que más enseñan: el
+delfín es mamífero y el tiburón es pez, el pingüino es un ave aunque no vuele,
+Venus es más caliente que Mercurio aunque esté más lejos del Sol.
 
 En los dos casos se elige también cuántas preguntas tiene la partida.
 
@@ -405,10 +461,14 @@ js/
   nucleo/opciones.js       La botonera de respuestas (tarjetas para elegir)
   nucleo/motor.js          El motor de partidas, común a todas las materias
   nucleo/mezcla.js         Partidas con preguntas de varias materias mezcladas
+  nucleo/tablero.js        Lo común a los juegos de tarjetas: la botonera, el
+                           sorteo, y banco() para armar un juego de una lista
   nucleo/pwa.js            Registra el service worker y el cartel de "Instalar"
   mapa.js                  Motor del mapa: proyección, dibujo, zoom y clics
   juegos/geografia.js      Los tres juegos de geografía
-  juegos/matematica.js     Los tres juegos de matemática
+  juegos/matematica.js     Los doce juegos de matemática
+  juegos/lengua.js         Los diez juegos de lengua
+  juegos/ciencias.js       Los diez juegos de ciencias
   juegos/examen.js         Modo examen: mezcla juegos y pone la nota
   juegos/repaso.js         Modo repaso: rearma las preguntas que se fallaron
   aprender/contenido.js    El texto y los dibujos de las lecciones
@@ -455,7 +515,33 @@ define **qué se pregunta** y **cómo se responde**:
 }
 ```
 
-`js/juegos/matematica.js` es el ejemplo más corto para copiar.
+`js/juegos/matematica.js` tiene los ejemplos de juegos que generan sus
+preguntas.
+
+**Si las preguntas son una lista escrita a mano** (casi todo Lengua y
+Ciencias), no hace falta escribir nada de eso: `Tablero.banco()` arma el juego
+entero a partir de la lista.
+
+```js
+Tablero.banco({
+  id: 'rimas', nombre: 'Rimas', icono: 'rimas', color: '#7c3aed', suave: '#ede9fe',
+  texto: 'Palabras que suenan igual', edadMin: 6,
+  items: [
+    { id: 'gato', palabra: 'gato', r: 'pato', m: ['perro', 'luna', 'mesa'] },
+    // r es la correcta; m son las malas (si no están, se usan las
+    // correctas de las otras preguntas, o `categorias`)
+  ],
+  consigna: function (it) { return '¿Qué palabra rima con <b>' + it.palabra + '</b>?'; },
+  forma: 'palabra'      // 'texto' (grande), 'palabra', 'frase' o 'emoji'
+});
+```
+
+Y `Tablero.materia('lengua', JUEGOS)` arma el módulo de la materia con todo lo
+que esperan el examen y el repaso. Las claves de las preguntas quedan como
+`'rimas:gato'`: dicen solas de qué juego son, así el repaso sabe con qué
+tablero rearmar cada una.
+
+Cada juego tiene que tener `edadMin`: desde qué edad se muestra.
 
 **Para agregar una lección** (sección Aprender), copiá una de
 `js/aprender/contenido.js` y sumala a `LECCIONES`:
@@ -476,14 +562,11 @@ define **qué se pregunta** y **cómo se responde**:
 
 **Para una materia nueva:**
 
-1. Creá `js/juegos/<materia>.js` con una lista `JUEGOS` como la de arriba, más
-   `claveItem(item)` (con qué nombre se guardan sus errores), `repaso(item)`
-   (cómo se muestra en la lista de repaso) y `limpiar()`.
+1. Creá `js/juegos/<materia>.js` con su lista de juegos y devolvé
+   `Tablero.materia('<materia>', JUEGOS)` (mirá `js/juegos/ciencias.js`).
 2. Sumá su `<script>` en `index.html` antes de `js/app.js`.
 3. Agregala en `MATERIAS`, dentro de `js/app.js`, con su `modulo`.
-
-Lengua y Ciencias ya figuran ahí con el cartel «Pronto»: alcanza con darles un
-módulo para que se activen solas.
+4. Dibujale un ícono a cada juego en `js/nucleo/iconos.js`.
 
 ## Regenerar los datos (opcional)
 

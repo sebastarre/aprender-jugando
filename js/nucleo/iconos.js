@@ -260,6 +260,142 @@ window.Iconos = (function () {
       b: ['<path d="M3.6 6.6 9 4.5l6 2.1 5.4-2.1v13L15 19.5l-6-2.1-5.4 2.1Z"/>'],
       t: ['<path d="M3.6 6.6 9 4.5l6 2.1 5.4-2.1v13L15 19.5l-6-2.1-5.4 2.1Z"/>',
           '<path d="M9 4.5v13M15 6.6v12.9"/>']
+    },
+
+    /* ---- juegos de matemática nuevos ---- */
+    contar: {
+      b: ['<rect x="3" y="5" width="18" height="14" rx="4"/>'],
+      t: ['<rect x="3" y="5" width="18" height="14" rx="4"/>',
+          '<circle cx="8" cy="10" r="1.5" fill="currentColor" stroke="none"/>',
+          '<circle cx="12" cy="10" r="1.5" fill="currentColor" stroke="none"/>',
+          '<circle cx="16" cy="10" r="1.5" fill="currentColor" stroke="none"/>',
+          '<circle cx="10" cy="14.5" r="1.5" fill="currentColor" stroke="none"/>',
+          '<circle cx="14" cy="14.5" r="1.5" fill="currentColor" stroke="none"/>']
+    },
+    figuras: {
+      b: ['<circle cx="7.5" cy="7.5" r="4"/>', '<path d="M12 13.5 17 21H7Z"/>'],
+      t: ['<circle cx="7.5" cy="7.5" r="4"/>',
+          '<rect x="13" y="3.5" width="8" height="8" rx="1.2"/>',
+          '<path d="M12 13.5 17 21H7Z"/>']
+    },
+    comparar: {
+      b: [], t: ['<path d="M7 5.5 17 12 7 18.5" stroke-width="2.8"/>']
+    },
+    serie: {
+      b: [], t: ['<path d="M4 19v-3M8.5 19v-6.5M13 19V9" stroke-width="3"/>',
+                 '<path d="M16 7.5h5m-2.2-2.2L21 7.5l-2.2 2.2"/>']
+    },
+    dobles: {
+      b: [], t: ['<text x="12" y="16.6" text-anchor="middle" font-size="12" font-weight="800" fill="currentColor" stroke="none">×2</text>']
+    },
+    posicion: {
+      b: ['<rect x="2.5" y="7" width="19" height="10" rx="2.5"/>'],
+      t: ['<rect x="2.5" y="7" width="19" height="10" rx="2.5"/>', '<path d="M8.8 7v10M15.2 7v10"/>']
+    },
+    division: {
+      b: [], t: ['<path d="M5 12h14" stroke-width="2.8"/>',
+                 '<circle cx="12" cy="6.3" r="1.9" fill="currentColor" stroke="none"/>',
+                 '<circle cx="12" cy="17.7" r="1.9" fill="currentColor" stroke="none"/>']
+    },
+    problemas: {
+      b: ['<path d="M5 4h14a2.5 2.5 0 0 1 2.5 2.5v8A2.5 2.5 0 0 1 19 17h-7l-4 3.5V17H5a2.5 2.5 0 0 1-2.5-2.5v-8A2.5 2.5 0 0 1 5 4Z"/>'],
+      t: ['<path d="M5 4h14a2.5 2.5 0 0 1 2.5 2.5v8A2.5 2.5 0 0 1 19 17h-7l-4 3.5V17H5a2.5 2.5 0 0 1-2.5-2.5v-8A2.5 2.5 0 0 1 5 4Z"/>',
+          '<text x="12" y="14.4" text-anchor="middle" font-size="10" font-weight="800" fill="currentColor" stroke="none">?</text>']
+    },
+    fracciones: {
+      b: [], t: ['<path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none" opacity=".55"/>',
+                 '<circle cx="12" cy="12" r="8.5"/>', '<path d="M12 3.5v17"/>']
+    },
+
+    /* ---- juegos de lengua ---- */
+    letras: {
+      b: [], t: ['<text x="12" y="16.8" text-anchor="middle" font-size="12.5" font-weight="800" fill="currentColor" stroke="none">Aa</text>']
+    },
+    vocales: {
+      b: [], t: ['<text x="12" y="15.8" text-anchor="middle" font-size="9.5" font-weight="800" fill="currentColor" stroke="none">aei</text>',
+                 '<path d="M5 19.5h14"/>']
+    },
+    rimas: {
+      b: ['<circle cx="6.5" cy="17.5" r="2.5"/>', '<circle cx="16.5" cy="15.5" r="2.5"/>'],
+      t: ['<path d="M9 17.5V5.5l10-2v12"/>',
+          '<circle cx="6.5" cy="17.5" r="2.5"/>', '<circle cx="16.5" cy="15.5" r="2.5"/>']
+    },
+    contrarios: {
+      b: [], t: ['<path d="M8 19V5M4.5 8.5 8 5l3.5 3.5"/>', '<path d="M16 5v14m-3.5-3.5L16 19l3.5-3.5"/>']
+    },
+    silabas: {
+      b: ['<rect x="2.5" y="8.5" width="5" height="7" rx="2"/>', '<rect x="9.5" y="8.5" width="5" height="7" rx="2"/>',
+          '<rect x="16.5" y="8.5" width="5" height="7" rx="2"/>'],
+      t: ['<rect x="2.5" y="8.5" width="5" height="7" rx="2"/>', '<rect x="9.5" y="8.5" width="5" height="7" rx="2"/>',
+          '<rect x="16.5" y="8.5" width="5" height="7" rx="2"/>']
+    },
+    plurales: {
+      b: ['<rect x="13" y="4" width="7" height="7" rx="1.6"/>', '<rect x="13" y="13" width="7" height="7" rx="1.6"/>'],
+      t: ['<rect x="4" y="13" width="7" height="7" rx="1.6"/>',
+          '<rect x="13" y="4" width="7" height="7" rx="1.6"/>', '<rect x="13" y="13" width="7" height="7" rx="1.6"/>']
+    },
+    ortografia: {
+      b: ['<path d="M4 20l1-4.5L15.5 5a2.1 2.1 0 0 1 3 3L8 18.5Z"/>'],
+      t: ['<path d="M4 20l1-4.5L15.5 5a2.1 2.1 0 0 1 3 3L8 18.5Z"/>', '<path d="m13.5 7 3 3"/>']
+    },
+    sinonimos: {
+      b: [], t: ['<path d="M5 9h14M5 15h14" stroke-width="2.8"/>']
+    },
+    tildes: {
+      b: [], t: ['<text x="12" y="18" text-anchor="middle" font-size="17" font-weight="800" fill="currentColor" stroke="none">á</text>']
+    },
+    clases: {
+      b: ['<path d="M3.5 12.5V5A1.5 1.5 0 0 1 5 3.5h7.5l8 8a1.5 1.5 0 0 1 0 2.1l-6.4 6.4a1.5 1.5 0 0 1-2.1 0Z"/>'],
+      t: ['<path d="M3.5 12.5V5A1.5 1.5 0 0 1 5 3.5h7.5l8 8a1.5 1.5 0 0 1 0 2.1l-6.4 6.4a1.5 1.5 0 0 1-2.1 0Z"/>',
+          '<circle cx="8" cy="8" r="1.6"/>']
+    },
+
+    /* ---- juegos de ciencias ---- */
+    sonidos: {
+      b: ['<ellipse cx="12" cy="15.5" rx="4.6" ry="3.9"/>'],
+      t: ['<ellipse cx="12" cy="15.5" rx="4.6" ry="3.9"/>',
+          '<circle cx="5.8" cy="9.8" r="1.9" fill="currentColor" stroke="none"/>',
+          '<circle cx="9.8" cy="6.2" r="1.9" fill="currentColor" stroke="none"/>',
+          '<circle cx="14.2" cy="6.2" r="1.9" fill="currentColor" stroke="none"/>',
+          '<circle cx="18.2" cy="9.8" r="1.9" fill="currentColor" stroke="none"/>']
+    },
+    cuerpo: {
+      b: ['<circle cx="12" cy="5.5" r="2.6"/>'],
+      t: ['<circle cx="12" cy="5.5" r="2.6"/>', '<path d="M12 9v6.5M6.5 11.5h11M8.5 21l3.5-5.5 3.5 5.5"/>']
+    },
+    habitat: {
+      b: ['<path d="M12 3 6 11h3l-3.5 5h13L15 11h3Z"/>'],
+      t: ['<path d="M12 3 6 11h3l-3.5 5h13L15 11h3Z"/>', '<path d="M12 16v5"/>']
+    },
+    vivos: {
+      b: ['<path d="M12 13c0-4-3-6.5-7-6.5 0 4 3 6.5 7 6.5Z"/>', '<path d="M12 10.5c0-3.5 2.5-5.5 6.5-5.5 0 3.5-2.5 5.5-6.5 5.5Z"/>'],
+      t: ['<path d="M12 21v-10.5"/>', '<path d="M12 13c0-4-3-6.5-7-6.5 0 4 3 6.5 7 6.5Z"/>',
+          '<path d="M12 10.5c0-3.5 2.5-5.5 6.5-5.5 0 3.5-2.5 5.5-6.5 5.5Z"/>', '<path d="M7.5 21h9"/>']
+    },
+    plantas: {
+      b: ['<circle cx="12" cy="5.4" r="2.6"/>', '<circle cx="15.6" cy="9" r="2.6"/>', '<circle cx="8.4" cy="9" r="2.6"/>'],
+      t: ['<circle cx="12" cy="5.4" r="2.6"/>', '<circle cx="15.6" cy="9" r="2.6"/>',
+          '<circle cx="8.4" cy="9" r="2.6"/>', '<circle cx="12" cy="9" r="1.5" fill="currentColor" stroke="none"/>',
+          '<path d="M12 11.5V21"/>', '<path d="M12 17.5c-2.6 0-4.3-1.6-4.3-3.8 2.6 0 4.3 1.6 4.3 3.8Z"/>']
+    },
+    alimentacion: {
+      b: ['<path d="M12 7c-1.5-1.3-4.6-1.6-6.3.4-2 2.4-1.2 7 .8 9.8 1.4 2 3 3 4.2 2.3.8-.5 1.8-.5 2.6 0 1.2.7 2.8-.3 4.2-2.3 2-2.8 2.8-7.4.8-9.8C16.6 5.4 13.5 5.7 12 7Z"/>'],
+      t: ['<path d="M12 7c-1.5-1.3-4.6-1.6-6.3.4-2 2.4-1.2 7 .8 9.8 1.4 2 3 3 4.2 2.3.8-.5 1.8-.5 2.6 0 1.2.7 2.8-.3 4.2-2.3 2-2.8 2.8-7.4.8-9.8C16.6 5.4 13.5 5.7 12 7Z"/>',
+          '<path d="M12 7c0-2 .8-3.3 2.5-4"/>']
+    },
+    animales: {
+      b: ['<path d="M3 12c3-4.5 8-6 12.5-3.5L20 5.5v13l-4.5-3C11 18 6 16.5 3 12Z"/>'],
+      t: ['<path d="M3 12c3-4.5 8-6 12.5-3.5L20 5.5v13l-4.5-3C11 18 6 16.5 3 12Z"/>',
+          '<circle cx="8.2" cy="11" r="1.1" fill="currentColor" stroke="none"/>']
+    },
+    materia: {
+      b: ['<path d="M12 3.5s-6 6.6-6 11a6 6 0 0 0 12 0c0-4.4-6-11-6-11Z"/>'],
+      t: ['<path d="M12 3.5s-6 6.6-6 11a6 6 0 0 0 12 0c0-4.4-6-11-6-11Z"/>', '<path d="M9 15a3 3 0 0 0 3 3"/>']
+    },
+    espacio: {
+      b: ['<circle cx="12" cy="12" r="5.5"/>'],
+      t: ['<circle cx="12" cy="12" r="5.5"/>',
+          '<path d="M4.6 15c-2 1.8-2.6 3.3-1.6 3.9 1.8 1.1 7-1.3 11.6-5.4 4.6-4.1 7-8.3 5.3-9.4-1-.6-2.6-.1-4.6 1.3"/>']
     }
   };
 
