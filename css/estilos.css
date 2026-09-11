@@ -1705,22 +1705,30 @@ body.en-bienvenida #fondo-bienvenida { display: block; }
   to   { opacity: 1; transform: none; }
 }
 
-/* En qué paso va: tres puntitos, y el de ahora estirado. */
+/* En qué paso va: tres puntitos, y el de ahora más grande.
+
+   El de ahora se agranda con transform y no cambiando de ancho, que
+   era lo primero que se me ocurrió: el ancho obliga al navegador a
+   recalcular la fila en cada cuadro de la animación, y el transform lo
+   resuelve sin volver a acomodar nada. Con tres puntitos la diferencia
+   no se siente, pero es la misma regla que sigue toda la app y no vale
+   la pena tener una excepción escondida acá. */
 .bien-pasos {
   display: flex;
   justify-content: center;
-  gap: 7px;
+  align-items: center;
+  gap: 8px;
   margin-bottom: 16px;
 }
 .bien-pasos span {
-  width: 9px;
-  height: 9px;
-  border-radius: 99px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
   background: var(--pista);
-  transition: width .32s var(--rebote), background .32s;
+  transition: transform .32s var(--rebote), background .32s;
 }
 .bien-pasos .hecho { background: var(--primario); }
-.bien-pasos .ahora { width: 28px; background: var(--primario); }
+.bien-pasos .ahora { transform: scale(1.5); background: var(--primario); }
 
 /* Cada paso entra corrido desde la derecha: se lee como que la tarjeta
    pasa de página, y no como que le cambiaron el contenido de golpe. */
