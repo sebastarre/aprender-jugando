@@ -435,9 +435,58 @@
     caja.appendChild(Util.crear('span', null, String(cuanto)));
   }
 
+  /**
+   * La fila de «¿Quién juega?»: una carita por chico y un botón para sumar
+   * otro. Tocar otra carita cambia de jugador ahí mismo; cada uno tiene
+   * sus puntos, sus niveles y sus colores.
+   */
+  function pintarJugadores() {
+    var caja = $('inicio-jugadores');
+    Util.vaciar(caja);
+    var yo = Almacen.activo();
+
+    Almacen.perfiles().forEach(function (p) {
+      var esYo = yo && p.id === yo.id;
+      var b = Util.crear('button', 'jugador');
+      b.type = 'button';
+      b.setAttribute('aria-pressed', esYo ? 'true' : 'false');
+      b.setAttribute('aria-label', esYo ? p.nombre + ', está jugando' : 'Cambiar a ' + p.nombre);
+      b.appendChild(Util.crear('span', 'jugador-cara', p.avatar));
+      b.appendChild(Util.crear('span', 'jugador-nombre', p.nombre));
+      b.addEventListener('click', function () {
+        if (esYo) return;
+        Sonido.tocar('clic');
+        Almacen.usar(p.id);
+        Temas.aplicar();          // cada jugador tiene su propia paleta
+        pintarInicio();
+      });
+      caja.appendChild(b);
+    });
+
+    var nuevo = Util.crear('a', 'jugador jugador-nuevo');
+    nuevo.href = '#/nuevo-jugador';
+    var mas = Util.crear('span', 'jugador-cara');
+    mas.appendChild(Iconos.crear('mas'));
+    nuevo.appendChild(mas);
+    nuevo.appendChild(Util.crear('span', 'jugador-nombre', 'Nuevo'));
+    nuevo.setAttribute('aria-label', 'Agregar un chico nuevo');
+    caja.appendChild(nuevo);
+  }
+
+  /** El alta de un chico nuevo: la misma bienvenida, pero empezando de cero. */
+  function empezarJugadorNuevo() {
+    bienvenida = { nombre: '', edad: null, avatar: null, editando: null };
+    $('campo-nombre').value = '';
+    $('error-nombre').hidden = true;
+    pasoBienvenida('nombre');
+    pintarEdades();
+    pintarAvatares();
+  }
+
   function pintarInicio() {
     var yo = Almacen.activo();
     $('inicio-nombre').textContent = yo ? yo.nombre : 'Jugador';
+    pintarJugadores();
 
     cuentaDePortada($('portada-estrellas'), 'estrella', Almacen.estrellas());
     cuentaDePortada($('portada-monedas'), 'moneda', Almacen.monedas());
@@ -1900,6 +1949,17 @@
       return mostrar('bienvenida');
     }
 
+    /* Sumar otro chico. Es la misma bienvenida que la primera vez, pero
+       con la flecha de volver: si fue sin querer, tiene que poder
+       arrepentirse. La primera vez no la tiene porque no hay a dónde. */
+    if (partes[0] === 'nuevo-jugador') {
+      cortarPartida();
+      empezarJugadorNuevo();
+      mostrar('bienvenida');
+      $('btn-atras').hidden = false;
+      return;
+    }
+
     if (partes[0] === 'juegos') {
       cortarPartida();
       pintarMateriasJuegos();
@@ -2094,12 +2154,7 @@
     /* perfil */
     $('btn-nuevo-perfil').addEventListener('click', function () {
       Sonido.tocar('clic');
-      bienvenida = { nombre: '', edad: null, avatar: null, editando: null };
-      $('campo-nombre').value = '';
-      pasoBienvenida('nombre');
-      pintarEdades();
-      pintarAvatares();
-      mostrar('bienvenida');
+      irA('#/nuevo-jugador');
     });
     $('btn-tienda').addEventListener('click', function () { Sonido.tocar('clic'); irA('#/tienda'); });
     $('btn-ir-config').addEventListener('click', function () { Sonido.tocar('clic'); irA('#/configuracion'); });
