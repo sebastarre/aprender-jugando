@@ -1590,20 +1590,146 @@ body.jugando .pie { display: none; }
 
 /* ============================================================
    Bienvenida
-   ============================================================ */
-body.sin-perfil .pie { display: none; }
 
-.pantalla-bienvenida { display: flex; justify-content: center; }
+   Es la puerta de entrada: la primera pantalla de la app, y la que se
+   vuelve a ver cada vez que se suma un hermano. Era una tarjeta blanca
+   sobre papel casi blanco, con media pantalla vacía abajo: se leía como
+   un formulario de trámite. Ahora la pantalla entera se pinta del color
+   de la portada, con burbujas subiendo despacio, y la tarjeta queda
+   apoyada en el medio.
+   ============================================================ */
+body.en-bienvenida .pie { display: none; }
+
+/* El fondo de color. Se prende sólo en esta pantalla. */
+#fondo-bienvenida {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  background: linear-gradient(165deg, var(--barra) 0%, var(--barra-fuerte) 100%);
+}
+body.en-bienvenida #fondo-bienvenida { display: block; }
+
+/* Un resplandor atrás de la tarjeta, para que el centro no quede plano */
+#fondo-bienvenida::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(58% 42% at 50% 40%, rgba(255, 255, 255, .17), transparent 72%);
+}
+
+/* Las burbujas suben desde abajo del todo hasta arriba del todo, así
+   que nunca se ve una aparecer ni apagarse en el medio de la pantalla.
+   Cada una tarda lo suyo y empieza con un retraso negativo, o sea a
+   mitad de camino: al abrir la pantalla ya están repartidas en vez de
+   salir todas juntas del borde de abajo.
+
+   Se mueven sólo con transform, que es lo que hace que diez burbujas no
+   le cuesten nada al teléfono: el navegador las corre sin volver a
+   dibujar la pantalla. */
+#fondo-bienvenida span {
+  position: absolute;
+  left: var(--x);
+  bottom: -24vh;
+  width: var(--s);
+  height: var(--s);
+  border-radius: 50%;
+  background: var(--sobre-barra);
+  opacity: .09;
+  animation: burbuja var(--t) linear var(--d) infinite;
+}
+#fondo-bienvenida .aro {
+  background: none;
+  border: 3px solid var(--sobre-barra);
+  opacity: .13;
+}
+@keyframes burbuja {
+  from { transform: translate3d(0, 0, 0) scale(.8); }
+  to   { transform: translate3d(18px, -135vh, 0) scale(1.12); }
+}
+
+/* El nombre de la app arriba de la tarjeta, con el mismo globo que la
+   cortina de arranque: abrir la app y darse de alta son el mismo rato,
+   y tienen que parecer la misma pantalla. */
+.bien-marca {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  margin: 2px 0 16px;
+  color: var(--sobre-barra);
+  font-weight: 800;
+  font-size: 1.15rem;
+}
+.bien-marca-globo {
+  width: 30px;
+  height: 30px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .18);
+}
+.bien-marca-globo svg { width: 20px; height: 20px; }
+
+.pantalla-bienvenida {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  /* Centrada a lo alto. Con la tarjeta pegada arriba quedaba media
+     pantalla de color vacío abajo, que es justo lo que se veía seco. */
+  min-height: calc(100vh - 120px);
+  /* svh es el alto de la ventana con la barra del navegador puesta.
+     Con 100vh a secas, en el celular la tarjeta se centra contra una
+     ventana más alta que la que se ve y queda un poco escondida abajo.
+     La línea de arriba queda de respaldo para el que no entienda svh. */
+  min-height: calc(100svh - 120px);
+}
 .tarjeta-bienvenida {
   width: 100%;
   max-width: 520px;
   background: var(--tarjeta);
   border: 2px solid var(--borde);
-  border-radius: var(--radio);
+  border-radius: 24px;
   padding: clamp(22px, 5vw, 38px);
-  box-shadow: var(--sombra-suave);
+  /* El escalón de siempre, más una sombra larga: apoyada sobre el
+     color, no pegada encima. */
+  box-shadow: 0 6px 0 var(--sombra-clay), 0 26px 50px -18px rgba(15, 23, 42, .55);
   text-align: center;
+  animation: bien-entra .5s var(--rebote) both;
 }
+@keyframes bien-entra {
+  from { opacity: 0; transform: translateY(24px) scale(.96); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* En qué paso va: tres puntitos, y el de ahora estirado. */
+.bien-pasos {
+  display: flex;
+  justify-content: center;
+  gap: 7px;
+  margin-bottom: 16px;
+}
+.bien-pasos span {
+  width: 9px;
+  height: 9px;
+  border-radius: 99px;
+  background: var(--pista);
+  transition: width .32s var(--rebote), background .32s;
+}
+.bien-pasos .hecho { background: var(--primario); }
+.bien-pasos .ahora { width: 28px; background: var(--primario); }
+
+/* Cada paso entra corrido desde la derecha: se lee como que la tarjeta
+   pasa de página, y no como que le cambiaron el contenido de golpe. */
+.paso-bienvenida { animation: paso-entra .42s var(--rebote) both; }
+@keyframes paso-entra {
+  from { opacity: 0; transform: translateX(28px); }
+  to   { opacity: 1; transform: none; }
+}
+
 .bien-globo {
   font-size: 3.2rem;
   line-height: 1;
@@ -1631,8 +1757,15 @@ body.sin-perfil .pie { display: none; }
   border-radius: var(--radio-s);
   background: var(--papel);
   color: var(--tinta);
+  transition: border-color .14s, box-shadow .14s;
 }
-.campo-texto:focus { outline: none; border-color: var(--primario); }
+/* El anillo de foco es el aviso de "acá estás escribiendo". Antes el
+   borde cambiaba de color tres píxeles y nada más. */
+.campo-texto:focus {
+  outline: none;
+  border-color: var(--primario);
+  box-shadow: 0 0 0 4px var(--seleccion);
+}
 .error-campo { color: var(--error-osc); font-weight: 700; margin: -8px 0 12px; }
 
 .grilla-edades {
@@ -1640,6 +1773,9 @@ body.sin-perfil .pie { display: none; }
   grid-template-columns: repeat(auto-fit, minmax(78px, 1fr));
   gap: 10px;
 }
+/* Las edades y los monigotes son botones de apretar como los demás de
+   la app: escaloncito abajo, y se hunden al tocarlos. Antes eran
+   recuadros planos, lo único plano que quedaba en la app. */
 .boton-edad {
   font: inherit;
   color: inherit;
@@ -1652,14 +1788,17 @@ body.sin-perfil .pie { display: none; }
   border: 3px solid var(--pista);
   border-radius: var(--radio-s);
   background: var(--papel);
-  transition: transform .12s, border-color .12s, background .12s;
+  box-shadow: 0 4px 0 var(--sombra-clay);
+  transition: transform .12s, border-color .12s, background .12s, box-shadow .12s;
 }
 .boton-edad b { font-size: 1.7rem; line-height: 1; }
 .boton-edad span { font-size: .8rem; color: var(--tinta-suave); }
-.boton-edad:hover { transform: translateY(-3px); border-color: var(--primario); }
+.boton-edad:hover { transform: translateY(-3px); border-color: var(--primario); box-shadow: 0 7px 0 var(--sombra-clay); }
+.boton-edad:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--sombra-clay); }
 .boton-edad[aria-pressed="true"] {
   border-color: var(--primario);
   background: var(--seleccion);
+  box-shadow: 0 4px 0 var(--primario);
 }
 
 .grilla-avatares {
@@ -1676,12 +1815,15 @@ body.sin-perfil .pie { display: none; }
   border: 3px solid var(--pista);
   border-radius: 50%;
   background: var(--papel);
-  transition: transform .12s, border-color .12s, background .12s;
+  box-shadow: 0 4px 0 var(--sombra-clay);
+  transition: transform .12s, border-color .12s, background .12s, box-shadow .12s;
 }
-.boton-avatar:hover { transform: scale(1.08); border-color: var(--primario); }
+.boton-avatar:hover { transform: translateY(-3px) scale(1.06); border-color: var(--primario); }
+.boton-avatar:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--sombra-clay); }
 .boton-avatar[aria-pressed="true"] {
   border-color: var(--primario);
   background: var(--seleccion);
+  box-shadow: 0 4px 0 var(--primario);
   transform: scale(1.06);
 }
 

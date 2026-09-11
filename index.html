@@ -50,6 +50,25 @@
 
 <div id="fondo-deco" aria-hidden="true"></div>
 
+<!-- El fondo de la bienvenida: color pleno y burbujas subiendo despacio.
+     Vive acá afuera y no adentro de la pantalla porque tiene que tapar
+     el viewport entero, y adentro de una pantalla que se anima con un
+     transform, un position:fixed deja de medirse contra la ventana.
+     Sólo se ve con la clase «en-bienvenida» puesta en el body. -->
+<div id="fondo-bienvenida" aria-hidden="true">
+  <span style="--x:6%;--s:120px;--t:26s;--d:-4s"></span>
+  <span class="aro" style="--x:22%;--s:54px;--t:19s;--d:-11s"></span>
+  <span style="--x:38%;--s:180px;--t:33s;--d:-19s"></span>
+  <span class="aro" style="--x:52%;--s:72px;--t:22s;--d:-2s"></span>
+  <span style="--x:68%;--s:140px;--t:29s;--d:-14s"></span>
+  <span style="--x:80%;--s:46px;--t:17s;--d:-7s"></span>
+  <span class="aro" style="--x:90%;--s:96px;--t:24s;--d:-21s"></span>
+  <span style="--x:14%;--s:38px;--t:15s;--d:-9s"></span>
+  <span style="--x:60%;--s:30px;--t:13s;--d:-16s"></span>
+  <span class="aro" style="--x:34%;--s:64px;--t:21s;--d:-24s"></span>
+</div>
+
+
 
 
 <main id="app">
@@ -61,7 +80,23 @@
 
   <!-- ============ BIENVENIDA (primera vez) ============ -->
   <section class="pantalla pantalla-bienvenida" id="pantalla-bienvenida" hidden>
+    <p class="bien-marca">
+      <span class="bien-marca-globo" aria-hidden="true">
+        <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3"
+             stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="24" cy="24" r="18"/>
+          <path d="M24 6c4.6 5 6.9 11 6.9 18S28.6 37 24 42c-4.6-5-6.9-11-6.9-18S19.4 11 24 6Z"/>
+          <path d="M7.2 18h33.6M7.2 30h33.6"/>
+        </svg>
+      </span>
+      Aprender Jugando
+    </p>
     <div class="tarjeta-bienvenida">
+      <!-- En qué paso va. El dibujo es decorativo; lo que se lee es la
+           etiqueta, que el JavaScript va cambiando. -->
+      <div class="bien-pasos" id="bien-pasos" role="img" aria-label="Paso 1 de 3">
+        <span></span><span></span><span></span>
+      </div>
       <div class="paso-bienvenida" id="bien-paso-nombre">
         <div class="bien-globo" data-mascota="hola"></div>
         <h1 class="titulo-grande">¡Hola!</h1>

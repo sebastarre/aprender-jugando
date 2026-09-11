@@ -260,7 +260,7 @@
        dónde volver. */
     $('btn-atras').hidden = (nombre === 'inicio' || nombre === 'bienvenida');
     document.body.classList.toggle('jugando', nombre === 'juego');
-    document.body.classList.toggle('sin-perfil', nombre === 'bienvenida');
+    document.body.classList.toggle('en-bienvenida', nombre === 'bienvenida');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -290,11 +290,26 @@
     pintarAvatares();
   }
 
+  var PASOS_BIENVENIDA = ['nombre', 'edad', 'avatar'];
+
   function pasoBienvenida(cual) {
-    ['nombre', 'edad', 'avatar'].forEach(function (p) {
+    PASOS_BIENVENIDA.forEach(function (p) {
       $('bien-paso-' + p).hidden = (p !== cual);
     });
+    pintarPasos(cual);
     if (cual === 'nombre') setTimeout(function () { $('campo-nombre').focus(); }, 120);
+  }
+
+  /* Los tres puntitos de arriba de la tarjeta. Saber cuánto falta es
+     la mitad de la paciencia: sin esto, el que llena el nombre no tiene
+     idea de si le quedan dos preguntas o veinte. */
+  function pintarPasos(cual) {
+    var voy = PASOS_BIENVENIDA.indexOf(cual);
+    var caja = $('bien-pasos');
+    caja.setAttribute('aria-label', 'Paso ' + (voy + 1) + ' de ' + PASOS_BIENVENIDA.length);
+    caja.querySelectorAll('span').forEach(function (p, i) {
+      p.className = i < voy ? 'hecho' : (i === voy ? 'ahora' : '');
+    });
   }
 
   function pintarEdades() {
