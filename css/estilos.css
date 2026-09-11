@@ -185,6 +185,163 @@ body {
 }
 
 /* ============================================================
+   La cortina de arranque
+
+   Abrir la app era seco: papel en blanco y, de golpe, todo puesto.
+   Ahora lo primero es el nombre armándose letra por letra sobre el
+   color de la portada, y recién después el inicio, que entra en
+   cascada por abajo. Poco más de un segundo en total.
+
+   El dibujo está escrito en el index.html, no lo arma el JavaScript:
+   así la animación empieza con la primera pintada y tapa justo el rato
+   en que la app está cargando. El cuándo se va está en
+   js/nucleo/arranque.js.
+   ============================================================ */
+.arranque {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(157deg, var(--barra) 0%, var(--barra-fuerte) 100%);
+  color: var(--sobre-barra);
+
+  /* La red de seguridad: si el JavaScript nunca corre —un archivo que
+     no bajó, un error arriba de todo— la cortina se levanta igual a los
+     6 segundos. Vale más una cortina que se va tarde que una app que
+     se queda tapada para siempre. */
+  animation: arranque-seguro .3s linear 6s both;
+}
+@keyframes arranque-seguro {
+  to { opacity: 0; visibility: hidden; }
+}
+
+/* Al irse sube apenas y se agranda, como si se corriera de encima y
+   dejara ver la app que ya estaba abajo. */
+.arranque.arranque-sale {
+  pointer-events: none;
+  animation: arranque-se-va .45s ease-in both;
+}
+@keyframes arranque-se-va {
+  from { opacity: 1; transform: none; }
+  to   { opacity: 0; transform: translateY(-16px) scale(1.07); }
+}
+
+.arranque-caja {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 24px;
+}
+
+/* El globo, en un círculo blanco: el mismo ícono que tiene la app
+   instalada en el celular, para que lo que se toca y lo que aparece
+   sean la misma cosa. */
+.arranque-insignia {
+  width: clamp(94px, 25vw, 122px);
+  height: clamp(94px, 25vw, 122px);
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--sobre-barra);
+  color: var(--barra);
+  box-shadow: 0 12px 28px -10px rgba(15, 23, 42, .55);
+  animation: arranque-insignia .58s var(--rebote) both;
+}
+.arranque-globo { width: 64%; height: 64%; }
+@keyframes arranque-insignia {
+  from { opacity: 0; transform: scale(.28) rotate(-20deg); }
+  to   { opacity: 1; transform: none; }
+}
+
+.arranque-nombre {
+  margin: 0;
+  text-align: center;
+  font-weight: 800;
+  font-size: clamp(2.1rem, 9vw, 3.1rem);
+  line-height: 1.04;
+}
+.arranque-palabra { display: block; }
+.arranque-palabra-2 { color: var(--marca-acento); }
+
+/* Cada letra sube y se endereza, una atrás de la otra. 35 milésimas de
+   diferencia: menos no se nota, más y la palabra tarda en leerse. */
+.arranque-palabra i {
+  display: inline-block;
+  font-style: normal;
+  animation: arranque-letra .44s var(--rebote) both;
+  animation-delay: calc(.24s + var(--l) * .035s);
+}
+@keyframes arranque-letra {
+  from { opacity: 0; transform: translateY(28px) rotate(-7deg); }
+  to   { opacity: 1; transform: none; }
+}
+
+.arranque-puntos {
+  display: flex;
+  gap: 9px;
+  animation: arranque-letra .4s ease both;
+  animation-delay: .8s;
+}
+.arranque-puntos i {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--sobre-barra);
+  animation: arranque-punto .9s ease-in-out .8s infinite;
+}
+.arranque-puntos i:nth-child(2) { animation-delay: .92s; }
+.arranque-puntos i:nth-child(3) { animation-delay: 1.04s; }
+@keyframes arranque-punto {
+  0%, 100% { transform: translateY(0);    opacity: .45; }
+  40%      { transform: translateY(-7px); opacity: 1; }
+}
+
+/* ---- Y atrás de la cortina, el inicio entrando ----
+
+   El inicio ya está dibujado abajo de la cortina desde el primer
+   momento, así que si se animara solo la animación terminaría tapada y
+   el chico vería la pantalla ya puesta. Por eso espera a la clase que
+   pone arranque.js al levantar la cortina.
+
+   Queda puesta para siempre, así que la cascada también se ve cada vez
+   que se vuelve al inicio desde adentro de la app. Es a propósito: es
+   la misma entrada escalonada que ya tienen las grillas. */
+@media (prefers-reduced-motion: no-preference) {
+  /* la pantalla entera ya no entra: entran sus partes, una por una */
+  body.arrancado #pantalla-inicio { animation: none; }
+
+  body.arrancado #pantalla-inicio .portada,
+  body.arrancado #pantalla-inicio .menu-inicio > *,
+  body.arrancado #pantalla-inicio .quien-juega,
+  body.arrancado #pantalla-inicio .instalar {
+    animation: asomar .5s var(--rebote) both;
+  }
+  body.arrancado #pantalla-inicio .portada               { animation-delay: .02s; }
+  body.arrancado #pantalla-inicio .menu-inicio > *:nth-child(1) { animation-delay: .10s; }
+  body.arrancado #pantalla-inicio .menu-inicio > *:nth-child(2) { animation-delay: .16s; }
+  body.arrancado #pantalla-inicio .menu-inicio > *:nth-child(3) { animation-delay: .22s; }
+  body.arrancado #pantalla-inicio .menu-inicio > *:nth-child(4) { animation-delay: .28s; }
+  body.arrancado #pantalla-inicio .quien-juega           { animation-delay: .34s; }
+  body.arrancado #pantalla-inicio .instalar              { animation-delay: .40s; }
+
+  /* La mascota de la portada respira. Es un movimiento de cinco
+     píxeles cada cuatro segundos y medio: no llama la atención, pero
+     hace que la pantalla quieta no parezca una foto. */
+  .portada-mascota { animation: flotar 4.6s ease-in-out infinite; }
+}
+@keyframes asomar {
+  from { opacity: 0; transform: translateY(18px) scale(.97); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes flotar {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-5px); }
+}
+
+/* ============================================================
    Inicio: la portada y el menú principal
 
    Cinco cosas grandes y nada más. La portada arriba (quién sos) y

@@ -2273,4 +2273,5 @@
   pintarBotonSonido();
   conectar();
   enrutar();
+  Arranque.empezar();   // levanta la cortina del nombre y larga el inicio
 })();

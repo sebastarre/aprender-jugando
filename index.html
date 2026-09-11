@@ -20,6 +20,34 @@
 </head>
 <body>
 
+
+<!-- ============ La cortina de arranque ============
+     El nombre de la app armándose, antes del inicio. Está escrita acá
+     a mano y no la dibuja el JavaScript porque tiene que aparecer con
+     la primera pintada, sin esperar a que carguen los archivos: si no,
+     el rato entre el ícono y la app sigue siendo un papel en blanco.
+     Se va sola a los 6 segundos aunque el JavaScript nunca corra (ver
+     el CSS): una cortina trabada dejaría la app inservible.
+     Va toda aria-hidden: para un lector de pantalla el nombre ya está
+     en el <title>, y leer letra por letra no le sirve a nadie. -->
+<div class="arranque" id="arranque" aria-hidden="true">
+  <div class="arranque-caja">
+    <span class="arranque-insignia">
+      <svg class="arranque-globo" viewBox="0 0 48 48" fill="none" stroke="currentColor"
+           stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="24" cy="24" r="18"/>
+        <path d="M24 6c4.6 5 6.9 11 6.9 18S28.6 37 24 42c-4.6-5-6.9-11-6.9-18S19.4 11 24 6Z"/>
+        <path d="M7.2 18h33.6M7.2 30h33.6"/>
+      </svg>
+    </span>
+    <p class="arranque-nombre">
+      <span class="arranque-palabra"><i style="--l:0">A</i><i style="--l:1">p</i><i style="--l:2">r</i><i style="--l:3">e</i><i style="--l:4">n</i><i style="--l:5">d</i><i style="--l:6">e</i><i style="--l:7">r</i></span>
+      <span class="arranque-palabra arranque-palabra-2"><i style="--l:8">J</i><i style="--l:9">u</i><i style="--l:10">g</i><i style="--l:11">a</i><i style="--l:12">n</i><i style="--l:13">d</i><i style="--l:14">o</i></span>
+    </p>
+    <span class="arranque-puntos"><i></i><i></i><i></i></span>
+  </div>
+</div>
+
 <div id="fondo-deco" aria-hidden="true"></div>
 
 
@@ -500,6 +528,7 @@
 <script src="js/nucleo/mezcla.js"></script>
 <script src="js/nucleo/tablero.js"></script>
 <script src="js/nucleo/pwa.js"></script>
+<script src="js/nucleo/arranque.js"></script>
 <script src="js/mapa.js"></script>
 <script src="js/juegos/geografia.js"></script>
 <script src="js/juegos/matematica.js"></script>

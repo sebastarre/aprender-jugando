@@ -497,6 +497,7 @@ js/
   nucleo/tablero.js        Lo común a los juegos de tarjetas: la botonera, el
                            sorteo, y banco() para armar un juego de una lista
   nucleo/pwa.js            Registra el service worker y el cartel de "Instalar"
+  nucleo/arranque.js       La cortina del nombre al abrir la app
   mapa.js                  Motor del mapa: proyección, dibujo, zoom y clics
   juegos/geografia.js      Los tres juegos de geografía
   juegos/matematica.js     Los doce juegos de matemática
