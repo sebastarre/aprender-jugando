@@ -444,10 +444,15 @@
   /* ---------------------- inicio ---------------------- */
 
   /** Una de las dos pastillas de la portada: un dibujito y un número. */
-  function cuentaDePortada(caja, icono, cuanto) {
+  /* Las dos cuentas del cartel del inicio. Las monedas llevan a la
+     tienda y las estrellas no llevan a ningún lado, así que las monedas
+     terminan en una flechita: son dos cosas distintas y antes se veían
+     iguales. */
+  function cuentaDePortada(caja, icono, cuanto, conFlecha) {
     Util.vaciar(caja);
     caja.appendChild(Iconos.crear(icono));
     caja.appendChild(Util.crear('span', null, String(cuanto)));
+    if (conFlecha) caja.appendChild(Iconos.crear('derecha', 'portada-flechita'));
   }
 
   /**
@@ -534,7 +539,7 @@
     pintarJugadores();
 
     cuentaDePortada($('portada-estrellas'), 'estrella', Almacen.estrellas());
-    cuentaDePortada($('portada-monedas'), 'moneda', Almacen.monedas());
+    cuentaDePortada($('portada-monedas'), 'moneda', Almacen.monedas(), true);
 
     /* La bajada de cada botón dice qué hay adentro, no qué es: "3
        materias" sirve más que "practicá lo que aprendiste", que es lo

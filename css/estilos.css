@@ -360,37 +360,105 @@ body {
    ve de una y en un solo lugar, en vez de en una franja que estaba en
    las quince pantallas. */
 .portada {
+  position: relative;
+  overflow: hidden;
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 10px 14px;
-  padding: 16px;
+  padding: 14px;
   margin-bottom: 22px;
   border-radius: var(--radio);
-  background: var(--barra);
+  /* Era un rectángulo de color liso y se leía como un fondo, no como
+     una cosa. Ahora el color baja hacia el tono fuerte y tiene una
+     línea de luz arriba: el mismo relieve que un botón.
+
+     Oscurecer hacia abajo en vez de aclarar no es capricho. Todo lo que
+     va escrito acá arriba es blanco, así que cada punto de claridad que
+     se le suma al fondo le come contraste al texto. El degradado llega
+     al tono fuerte recién pasado el borde, así que el escalón de abajo
+     se sigue viendo. */
+  background: linear-gradient(170deg, var(--barra) 0%, var(--barra) 42%, var(--barra-fuerte) 132%);
   color: var(--sobre-barra);
-  box-shadow: 0 5px 0 var(--barra-fuerte), 0 14px 26px -10px rgba(15, 23, 42, .3);
+  box-shadow:
+    0 5px 0 var(--barra-fuerte),
+    0 14px 26px -10px rgba(15, 23, 42, .3),
+    inset 0 1.5px 0 rgba(255, 255, 255, .22);
 }
 
+/* Dos círculos de adorno, cortados por el borde del cartel. Van bien
+   claritos y lejos de donde cae el texto: son textura, no decoración
+   que compita. */
+.portada::before,
+.portada::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.portada::before {
+  width: 168px;
+  height: 168px;
+  right: -56px;
+  bottom: -94px;
+  background: rgba(255, 255, 255, .06);
+}
+.portada::after {
+  width: 72px;
+  height: 72px;
+  right: 78px;
+  top: -42px;
+  border: 10px solid rgba(255, 255, 255, .06);
+}
+.portada > * { position: relative; z-index: 1; }
+
+/* Quién sos. Es un enlace al perfil, y antes no lo parecía: texto suelto
+   sobre el color, sin nada que dijera que se toca. Ahora es una ficha
+   con su propio relleno, su filo y su escaloncito, y termina en una
+   flechita. Se hunde al apretarla, como todo lo que se aprieta acá. */
 .portada-quien {
-  flex: 1 1 200px;
+  flex: 1 1 220px;
   min-width: 0;
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
+  padding: 8px 10px;
   color: inherit;
   text-decoration: none;
-  border-radius: var(--radio-s);
-  transition: transform .14s;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, .1);
+  border: 1.5px solid rgba(255, 255, 255, .3);
+  box-shadow: 0 3px 0 rgba(0, 0, 0, .18);
+  transition: transform .14s, background .14s, box-shadow .14s;
 }
-.portada-quien:hover { transform: translateY(-2px); }
-.portada-quien:active { transform: translateY(1px); }
+.portada-quien:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, .16);
+  box-shadow: 0 5px 0 rgba(0, 0, 0, .18);
+}
+.portada-quien:active {
+  transform: translateY(3px);
+  box-shadow: 0 0 0 rgba(0, 0, 0, .18);
+}
 
-.portada-mascota { width: 78px; flex: none; }
-.portada-mascota .mascota-img { display: block; height: 78px; width: auto; margin: 0 auto; }
+/* La mascota va en su medallón, como las caritas de «¿Quién juega?»:
+   es la misma idea (esta es la cara del que está jugando). */
+.portada-mascota {
+  width: 74px;
+  height: 74px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .16);
+}
+.portada-mascota .mascota-img { display: block; height: 66px; width: auto; }
 
-.portada-datos { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
-.portada-hola { font-size: .92rem; line-height: 1.2; opacity: .85; }
+.portada-datos { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 1px; }
+/* Sin opacidad: el saludo ya es más chico y más liviano que el nombre,
+   no necesita además estar desteñido, y desteñido sobre la ficha clara
+   se quedaba en 4,25:1. */
+.portada-hola { font-size: .92rem; line-height: 1.2; }
 .portada-nombre {
   font-size: 1.6rem;
   font-weight: 800;
@@ -398,14 +466,13 @@ body {
   overflow-wrap: anywhere;
 }
 .portada-linea { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px; }
-/* la edad, en una pastillita como las de las cuentas: se lee sin
-   depender de un segundo color de la paleta */
+/* La edad, en una pastillita hundida. Va oscura y no clara porque está
+   apoyada sobre la ficha, que ya aclara el fondo: una pastilla clara
+   arriba de otra clara dejaba el número en 4,29:1. */
 .portada-edad {
   padding: 1px 9px;
   border-radius: 999px;
-  /* menos relleno que las pastillas de las cuentas y un borde fino: es
-     letra más chica, y con el mismo relleno quedaba en 4.61:1 con el azul */
-  background: rgba(255, 255, 255, .1);
+  background: rgba(0, 0, 0, .18);
   border: 1.5px solid rgba(255, 255, 255, .45);
   font-size: .9rem;
   font-weight: 800;
@@ -413,16 +480,35 @@ body {
   white-space: nowrap;
 }
 
+/* La flechita de «entrá». Se corre un poco cuando el mouse pasa por
+   arriba, que es la manera más corta de decir «para allá vas». */
+.portada-entrar {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  margin-left: 2px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .16);
+  transition: transform .14s, background .14s;
+}
+.portada-entrar .ico { width: 17px; height: 17px; stroke-width: 2.6; }
+.portada-quien:hover .portada-entrar {
+  transform: translateX(3px);
+  background: rgba(255, 255, 255, .26);
+}
+
 .portada-cuentas { display: flex; align-items: center; gap: 8px; flex: none; }
 .portada-cuenta {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  padding: 7px 13px;
+  /* 44 píxeles de alto: es lo que mide un dedo. Con 37 el botón de las
+     monedas se erraba, y errarle a un botón es la manera más rápida de
+     que un chico crea que la app no anda. */
+  padding: 11px 15px;
   border-radius: 999px;
-  /* una pastilla clarita sobre el color pleno: se lee sin depender de
-     un segundo color de la paleta */
-  background: rgba(255, 255, 255, .18);
   color: inherit;
   font-size: 1rem;
   font-weight: 800;
@@ -430,9 +516,28 @@ body {
   text-decoration: none;
 }
 .portada-cuenta .ico { width: 19px; height: 19px; }
-.portada-monedas { transition: transform .14s, background .14s; }
-.portada-monedas:hover { transform: translateY(-2px); background: rgba(255, 255, 255, .3); }
-.portada-monedas:active { transform: translateY(1px); }
+
+/* Las estrellas son un dato: no llevan a ningún lado. Van hundidas en
+   el cartel, como grabadas, para que nadie las toque esperando algo. */
+.portada-estrellas {
+  background: rgba(0, 0, 0, .2);
+  box-shadow: inset 0 2px 3px rgba(0, 0, 0, .2);
+}
+
+/* Las monedas sí llevan a la tienda, así que son un botón de verdad:
+   del color de premio de la paleta, con escalón abajo y flechita. Antes
+   era una pastilla igual a la de las estrellas y nada decía que una se
+   tocaba y la otra no. */
+.portada-monedas {
+  padding-right: 9px;
+  background: var(--marca-acento);
+  color: var(--barra-fuerte);
+  box-shadow: 0 3px 0 rgba(0, 0, 0, .22);
+  transition: transform .14s, box-shadow .14s;
+}
+.portada-monedas:hover { transform: translateY(-2px); box-shadow: 0 5px 0 rgba(0, 0, 0, .22); }
+.portada-monedas:active { transform: translateY(3px); box-shadow: 0 0 0 rgba(0, 0, 0, .22); }
+.portada-flechita { width: 15px; height: 15px; opacity: .8; }
 
 .menu-inicio { display: grid; gap: 14px; }
 
@@ -1211,7 +1316,7 @@ body.jugando .pie { display: none; }
      esto arrancan pegadas al borde izquierdo, debajo de la mascota;
      con la sangría del ancho de la mascota quedan alineadas con el
      nombre, como si fueran parte de la misma columna. */
-  .portada-cuentas { margin-left: 92px; }
+  .portada-cuentas { margin-left: 98px; }
 
   /* En dos columnas cada opción mide 170px: con el dibujo a 1.7rem y
      16px de padding a cada lado quedaban 99px para el texto y

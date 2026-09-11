@@ -153,6 +153,13 @@ window.Iconos = (function () {
       b: [],
       t: ['<path d="M15 4.5 7.5 12l7.5 7.5"/>']
     },
+    /* La cabeza de flecha sola, para «esto lleva a algún lado»: la de
+       cuerpo entero pesa demasiado al lado de un nombre. */
+    derecha: {
+      b: [],
+      t: ['<path d="m9 4.5 7.5 7.5L9 19.5"/>']
+    },
+
     flecha: {
       b: [],
       t: ['<path d="M4.5 12h15"/>', '<path d="m13.5 6 6 6-6 6"/>']
