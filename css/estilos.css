@@ -240,6 +240,21 @@ body {
   line-height: 1.15;
   overflow-wrap: anywhere;
 }
+.portada-linea { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px; }
+/* la edad, en una pastillita como las de las cuentas: se lee sin
+   depender de un segundo color de la paleta */
+.portada-edad {
+  padding: 1px 9px;
+  border-radius: 999px;
+  /* menos relleno que las pastillas de las cuentas y un borde fino: es
+     letra más chica, y con el mismo relleno quedaba en 4.61:1 con el azul */
+  background: rgba(255, 255, 255, .1);
+  border: 1.5px solid rgba(255, 255, 255, .45);
+  font-size: .9rem;
+  font-weight: 800;
+  line-height: 1.5;
+  white-space: nowrap;
+}
 
 .portada-cuentas { display: flex; align-items: center; gap: 8px; flex: none; }
 .portada-cuenta {
@@ -320,75 +335,109 @@ body {
   .menu-inicio { grid-template-columns: 1fr 1fr; }
 }
 
-/* ¿Quién juega? Una carita redonda por chico, en fila, y la de «Nuevo»
-   al final. Si son muchos hermanos, la fila se desliza de costado en
-   vez de empujar el menú hacia abajo. */
-.quien-juega { margin-top: 26px; }
+/* ¿Quién juega? Un recuadro con una fichita por chico: su carita sobre
+   un círculo de color (siempre el mismo para el mismo chico), el nombre
+   y la edad. La del que está jugando va en blanco, con el borde del color
+   de los botones y una tilde; las otras, apagaditas, esperando. Si son
+   muchos hermanos la fila se desliza de costado. */
+.quien-juega {
+  margin-top: 26px;
+  padding: 16px 16px 8px;
+  border: 2px solid var(--borde);
+  border-radius: var(--radio);
+  background: var(--tarjeta);
+  box-shadow: 0 4px 0 var(--sombra-clay);
+}
+.quien-juega .etiqueta-grupo { margin: 0 0 12px; font-size: 1.15rem; }
 .fila-jugadores {
   display: flex;
-  gap: 14px;
+  gap: 10px;
   overflow-x: auto;
-  padding: 4px 2px 10px;
+  padding: 2px 2px 12px;
   scrollbar-width: none;
 }
 .fila-jugadores::-webkit-scrollbar { display: none; }
 
 .jugador {
+  position: relative;
   flex: none;
-  width: 76px;
+  width: 94px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  padding: 0;
-  border: 0;
-  background: none;
+  gap: 2px;
+  padding: 12px 6px 10px;
+  border: 2px solid var(--borde);
+  border-radius: var(--radio-s);
+  background: var(--papel);
+  box-shadow: 0 3px 0 var(--sombra-clay);
   font: inherit;
   color: inherit;
   text-decoration: none;
   cursor: pointer;
+  transition: transform .14s, box-shadow .14s, border-color .14s, background .14s;
 }
+.jugador:hover { transform: translateY(-2px); box-shadow: 0 5px 0 var(--sombra-clay); }
+.jugador:active { transform: translateY(3px); box-shadow: 0 0 0 var(--sombra-clay); }
+
 .jugador-cara {
-  width: 64px;
-  height: 64px;
+  position: relative;
+  width: 58px;
+  height: 58px;
+  margin-bottom: 6px;
   display: grid;
   place-items: center;
   border-radius: 50%;
-  border: 3px solid var(--borde);
-  background: var(--tarjeta);
-  font-size: 2rem;
+  border: 3px solid #fff;
+  font-size: 1.9rem;
   line-height: 1;
-  box-shadow: 0 4px 0 var(--sombra-clay);
-  transition: transform .14s, box-shadow .14s, border-color .14s;
+  box-shadow: 0 2px 6px -2px rgba(29, 43, 74, .3);
 }
-.jugador:hover .jugador-cara { transform: translateY(-2px); box-shadow: 0 6px 0 var(--sombra-clay); }
-.jugador:active .jugador-cara { transform: translateY(4px); box-shadow: 0 0 0 var(--sombra-clay); }
 .jugador-nombre {
   max-width: 100%;
-  font-size: .85rem;
-  font-weight: 700;
+  font-size: .92rem;
+  font-weight: 800;
   line-height: 1.15;
-  text-align: center;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-/* el que está jugando: el aro del color de los botones */
-.jugador[aria-pressed="true"] .jugador-cara { border-color: var(--primario); background: var(--seleccion); }
-.jugador[aria-pressed="true"] { cursor: default; }
-/* el nombre en negrita y del color del texto, no del de los botones:
-   con los botones naranjas, un nombre naranja chiquito no se lee */
-.jugador[aria-pressed="true"] .jugador-nombre { font-weight: 800; }
+.jugador-edad { font-size: .78rem; font-weight: 600; line-height: 1.2; color: var(--tinta-suave); }
 
+/* el que está jugando */
+.jugador[aria-pressed="true"] {
+  cursor: default;
+  background: var(--tarjeta);
+  border-color: var(--primario);
+  box-shadow: 0 3px 0 var(--primario-osc);
+}
+.jugador[aria-pressed="true"]:hover,
+.jugador[aria-pressed="true"]:active { transform: none; box-shadow: 0 3px 0 var(--primario-osc); }
+.jugador-marca {
+  position: absolute;
+  right: -5px;
+  bottom: -3px;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  background: var(--primario);
+  color: var(--sobre-primario);
+}
+.jugador-marca .ico { width: 13px; height: 13px; }
+
+/* el de sumar otro chico */
+.jugador-nuevo { border-style: dashed; border-color: var(--pista); box-shadow: none; }
+.jugador-nuevo:hover { box-shadow: none; border-color: var(--primario); }
 .jugador-nuevo .jugador-cara {
-  border-style: dashed;
-  border-color: var(--pista);
+  border: 3px dashed var(--pista);
+  background: var(--tarjeta);
   color: var(--tinta-suave);
-  background: var(--papel);
   box-shadow: none;
 }
-.jugador-nuevo .jugador-cara .ico { width: 28px; height: 28px; stroke-width: 2.6; }
-.jugador-nuevo .jugador-nombre { color: var(--tinta-suave); }
+.jugador-nuevo .jugador-cara .ico { width: 26px; height: 26px; stroke-width: 2.6; }
 
 /* ============================================================
    Tarjetas de materias y juegos

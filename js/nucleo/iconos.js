@@ -195,6 +195,11 @@ window.Iconos = (function () {
       b: [],
       t: ['<path d="M12 5.5v13M5.5 12h13"/>']
     },
+    // la marca de «éste está elegido», en la carita del chico que juega
+    tilde: {
+      b: [],
+      t: ['<path d="m5.5 12.5 4.2 4.2 8.8-9.2" stroke-width="3"/>']
+    },
     menos: {
       b: [],
       t: ['<path d="M5.5 12h13"/>']

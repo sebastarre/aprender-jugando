@@ -440,6 +440,17 @@
    * otro. Tocar otra carita cambia de jugador ahí mismo; cada uno tiene
    * sus puntos, sus niveles y sus colores.
    */
+  /* El color de la carita de cada chico. Sale de su id y no del orden en
+     la lista, así cada uno tiene siempre el mismo aunque se agreguen o se
+     borren hermanos: el color termina siendo «el de Mora». */
+  var COLORES_DE_CARA = ['#ffedd5', '#fce7f3', '#dcfce7', '#dbeafe', '#ede9fe', '#cffafe', '#fef3c7', '#ffe4e6'];
+
+  function colorDeCara(id) {
+    var suma = 0;
+    for (var i = 0; i < id.length; i++) suma = (suma * 31 + id.charCodeAt(i)) % 997;
+    return COLORES_DE_CARA[suma % COLORES_DE_CARA.length];
+  }
+
   function pintarJugadores() {
     var caja = $('inicio-jugadores');
     Util.vaciar(caja);
@@ -450,9 +461,15 @@
       var b = Util.crear('button', 'jugador');
       b.type = 'button';
       b.setAttribute('aria-pressed', esYo ? 'true' : 'false');
-      b.setAttribute('aria-label', esYo ? p.nombre + ', está jugando' : 'Cambiar a ' + p.nombre);
-      b.appendChild(Util.crear('span', 'jugador-cara', p.avatar));
+      var edad = p.edad ? p.edad + ' años' : '';
+      b.setAttribute('aria-label', p.nombre + (edad ? ', ' + edad : '') +
+                                   (esYo ? ', está jugando' : '. Tocá para jugar con este perfil'));
+      var cara = Util.crear('span', 'jugador-cara', p.avatar);
+      cara.style.background = colorDeCara(p.id);
+      if (esYo) cara.appendChild(Util.crear('span', 'jugador-marca')).appendChild(Iconos.crear('tilde'));
+      b.appendChild(cara);
       b.appendChild(Util.crear('span', 'jugador-nombre', p.nombre));
+      if (edad) b.appendChild(Util.crear('span', 'jugador-edad', edad));
       b.addEventListener('click', function () {
         if (esYo) return;
         Sonido.tocar('clic');
@@ -469,6 +486,7 @@
     mas.appendChild(Iconos.crear('mas'));
     nuevo.appendChild(mas);
     nuevo.appendChild(Util.crear('span', 'jugador-nombre', 'Nuevo'));
+    nuevo.appendChild(Util.crear('span', 'jugador-edad', 'Sumar otro'));
     nuevo.setAttribute('aria-label', 'Agregar un chico nuevo');
     caja.appendChild(nuevo);
   }
@@ -483,9 +501,21 @@
     pintarAvatares();
   }
 
+  /** «¡Buen día!», «¡Buenas tardes!» o «¡Buenas noches!», según la hora. */
+  function saludoDeLaHora() {
+    var h = new Date().getHours();
+    if (h >= 5 && h < 13) return '¡Buen día!';
+    if (h >= 13 && h < 20) return '¡Buenas tardes!';
+    return '¡Buenas noches!';
+  }
+
   function pintarInicio() {
     var yo = Almacen.activo();
+    $('inicio-saludo').textContent = saludoDeLaHora();
     $('inicio-nombre').textContent = yo ? yo.nombre : 'Jugador';
+    var edad = $('inicio-edad');
+    edad.hidden = !(yo && yo.edad);
+    edad.textContent = yo && yo.edad ? yo.edad + ' años' : '';
     pintarJugadores();
 
     cuentaDePortada($('portada-estrellas'), 'estrella', Almacen.estrellas());
