@@ -153,6 +153,20 @@ window.Iconos = (function () {
       b: [],
       t: ['<path d="M15 4.5 7.5 12l7.5 7.5"/>']
     },
+    /* La silueta que va cuando el chico todavía no puso su foto. */
+    silueta: {
+      b: [],
+      t: ['<circle cx="12" cy="8.6" r="3.9"/>',
+          '<path d="M4.6 20.4a7.4 7.4 0 0 1 14.8 0"/>']
+    },
+
+    /* La camarita del rincón, que dice que la foto se cambia acá. */
+    camara: {
+      b: [],
+      t: ['<path d="M3.4 8.8h3.3l1.5-2.4h7.6l1.5 2.4h3.3v10.4H3.4z"/>',
+          '<circle cx="12" cy="13.8" r="3.3"/>']
+    },
+
     /* La cabeza de flecha sola, para «esto lleva a algún lado»: la de
        cuerpo entero pesa demasiado al lado de un nombre. */
     derecha: {

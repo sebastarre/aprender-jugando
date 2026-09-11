@@ -167,8 +167,16 @@ window.Almacen = (function () {
      cada vez que la abre. */
   guardar();
 
+  /* Devuelve si pudo guardar. Casi nadie mira la respuesta, pero la foto
+     del jugador sí: es lo único que puede no entrar en localStorage, y
+     guardar en silencio una foto que no se guardó es peor que avisar. */
   function guardar() {
-    try { localStorage.setItem(CLAVE, JSON.stringify(datos)); } catch (error) { /* sin persistencia */ }
+    try {
+      localStorage.setItem(CLAVE, JSON.stringify(datos));
+      return true;
+    } catch (error) {
+      return false;                                 // sin persistencia, o lleno
+    }
   }
 
   /* Datos del perfil activo. Si todavía no hay ninguno (primera vez) devuelve
@@ -231,6 +239,39 @@ window.Almacen = (function () {
       if (cambios.edad) p.edad = cambios.edad;
     });
     guardar();
+  }
+
+  /* ---------------------- la foto del jugador ----------------------
+
+     Va en la ficha del perfil y no en sus datos de juego porque la
+     pantalla de inicio muestra la carita de cada hermano sin abrir los
+     datos de ninguno. Es un texto (data URL) de unos 15 KB; la prepara
+     js/nucleo/foto.js y nunca sale del aparato. */
+  function foto(id) {
+    var p = id ? perfilPorId(id) : activo();
+    return (p && p.foto) || null;
+  }
+
+  function perfilPorId(id) {
+    for (var i = 0; i < datos.perfiles.length; i++) {
+      if (datos.perfiles[i].id === id) return datos.perfiles[i];
+    }
+    return null;
+  }
+
+  /** Pone o saca la foto del jugador activo. Devuelve si se pudo guardar. */
+  function guardarFoto(dataUrl) {
+    var p = activo();
+    if (!p) return false;
+    var antes = p.foto || null;
+    if (dataUrl) p.foto = dataUrl;
+    else delete p.foto;
+    if (guardar()) return true;
+    /* No entró: se deja el perfil como estaba, si no queda una foto
+       puesta en la pantalla que al recargar no va a estar. */
+    if (antes) p.foto = antes; else delete p.foto;
+    guardar();
+    return false;
   }
 
   function borrarPerfil(id) {
@@ -543,6 +584,7 @@ window.Almacen = (function () {
     AVATARES: AVATARES,
     perfiles: perfiles, activo: activo, usar: usar, crearPerfil: crearPerfil,
     actualizarPerfil: actualizarPerfil, borrarPerfil: borrarPerfil,
+    foto: foto, guardarFoto: guardarFoto,
     necesitaBienvenida: necesitaBienvenida, edad: edad,
     record: record, anotar: anotar, estrellas: estrellas, sumarEstrellas: sumarEstrellas,
     mejorDeJuego: mejorDeJuego,

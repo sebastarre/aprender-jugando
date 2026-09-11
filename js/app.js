@@ -484,8 +484,14 @@
       var edad = p.edad ? p.edad + ' años' : '';
       b.setAttribute('aria-label', p.nombre + (edad ? ', ' + edad : '') +
                                    (esYo ? ', está jugando' : '. Tocá para jugar con este perfil'));
-      var cara = Util.crear('span', 'jugador-cara', p.avatar);
+      var cara = Util.crear('span', 'jugador-cara', p.foto ? '' : p.avatar);
       cara.style.background = colorDeCara(p.id);
+      if (p.foto) {
+        var suFoto = Util.crear('img', 'jugador-foto');
+        suFoto.src = p.foto;
+        suFoto.alt = '';
+        cara.appendChild(suFoto);
+      }
       if (esYo) cara.appendChild(Util.crear('span', 'jugador-marca')).appendChild(Iconos.crear('tilde'));
       b.appendChild(cara);
       b.appendChild(Util.crear('span', 'jugador-nombre', p.nombre));
@@ -537,6 +543,7 @@
     edad.hidden = !(yo && yo.edad);
     edad.textContent = yo && yo.edad ? yo.edad + ' años' : '';
     pintarJugadores();
+    pintarFotoDePortada();
 
     cuentaDePortada($('portada-estrellas'), 'estrella', Almacen.estrellas());
     cuentaDePortada($('portada-monedas'), 'moneda', Almacen.monedas(), true);
@@ -556,6 +563,57 @@
       : 'Explicaciones cortas, con dibujos';
 
     Mascota.refrescar();
+  }
+
+  /* ---------------------- la foto del jugador ----------------------
+
+     La carita del cartel del inicio es la foto que el chico eligió de
+     la galería. Mientras no haya ninguna va una silueta: una silueta
+     vacía se lee como «acá va tu cara» mejor que cualquier dibujo, que
+     parecería que ya está puesto lo que tiene que estar.
+
+     La foto no sale del aparato. Ver js/nucleo/foto.js. */
+  function pintarFotoDePortada() {
+    var foto = Almacen.foto();
+    var img = $('portada-foto-img');
+    img.hidden = !foto;
+    if (foto) img.src = foto; else img.removeAttribute('src');
+    $('portada-silueta').hidden = !!foto;
+    $('btn-foto').setAttribute('aria-label', foto ? 'Cambiar tu foto' : 'Poner una foto tuya');
+  }
+
+  /* A quién hay que repintar cuando vuelva la foto: el inicio y el
+     perfil la muestran, y el que pide la foto es el que se repinta. */
+  var alVolverLaFoto = null;
+
+  function pedirFoto(repintar) {
+    alVolverLaFoto = repintar;
+    var campo = $('campo-foto');
+    /* Sin vaciarlo, elegir dos veces la misma foto no dispara nada: el
+       navegador ve el mismo archivo y no considera que haya cambiado. */
+    campo.value = '';
+    Sonido.despertar(); Sonido.tocar('clic');
+    campo.click();
+  }
+
+  function fotoElegida(archivo) {
+    Foto.preparar(archivo, function (foto) {
+      if (!Almacen.guardarFoto(foto)) {
+        avisoDeFoto('No entró la foto',
+          'Este aparato no tiene más lugar guardado. Probá con otra foto, o borrá el progreso de algún jugador que ya no juegue.');
+        return;
+      }
+      Sonido.tocar('acierto');
+      /* El inicio es el que siempre está: si la foto llegó sin que
+         nadie la pidiera desde una pantalla, al menos que se vea ahí. */
+      (alVolverLaFoto || pintarInicio)();
+    }, function (motivo) {
+      avisoDeFoto('No se pudo poner la foto', motivo);
+    });
+  }
+
+  function avisoDeFoto(titulo, texto) {
+    preguntar({ titulo: titulo, texto: texto, si: 'Listo', soloAceptar: true });
   }
 
   /* ---------------------- sección Jugar ---------------------- */
@@ -1382,7 +1440,15 @@
     if (!yo) return irA('#/');
     var est = Almacen.estadisticas();
 
-    $('perfil-avatar').textContent = yo.avatar;
+    var foto = Almacen.foto();
+    var fotoPerfil = $('perfil-foto-img');
+    fotoPerfil.hidden = !foto;
+    if (foto) fotoPerfil.src = foto; else fotoPerfil.removeAttribute('src');
+    var emoji = $('perfil-avatar-emoji');
+    emoji.hidden = !!foto;
+    emoji.textContent = yo.avatar;
+    $('btn-sacar-foto').hidden = !foto;
+    $('perfil-avatar').setAttribute('aria-label', foto ? 'Cambiar tu foto' : 'Poner una foto tuya');
     $('perfil-nombre').textContent = yo.nombre;
     var partes = [];
     if (yo.edad) partes.push(yo.edad + ' años');
@@ -1499,7 +1565,14 @@
       var b = Util.crear('button', 'perfil-chip');
       b.type = 'button';
       b.setAttribute('aria-pressed', activo && p.id === activo.id ? 'true' : 'false');
-      b.appendChild(Util.crear('span', 'perfil-chip-avatar', p.avatar));
+      var carita = Util.crear('span', 'perfil-chip-avatar', p.foto ? '' : p.avatar);
+      if (p.foto) {
+        var suFoto = Util.crear('img', 'perfil-chip-foto');
+        suFoto.src = p.foto;
+        suFoto.alt = '';
+        carita.appendChild(suFoto);
+      }
+      b.appendChild(carita);
       var cuerpo = Util.crear('span', 'perfil-chip-cuerpo');
       cuerpo.appendChild(Util.crear('span', 'perfil-chip-nombre', p.nombre));
       if (p.edad) cuerpo.appendChild(Util.crear('span', 'perfil-chip-edad', p.edad + ' años'));
@@ -2178,6 +2251,25 @@
       if (ev.key === 'Enter') $('btn-bien-nombre').click();
     });
     $('btn-bien-listo').addEventListener('click', terminarBienvenida);
+
+    /* la foto: la piden dos pantallas y el campo de archivo es uno solo */
+    $('btn-foto').addEventListener('click', function () { pedirFoto(pintarInicio); });
+    $('perfil-avatar').addEventListener('click', function () { pedirFoto(pintarPerfil); });
+    $('campo-foto').addEventListener('change', function () {
+      var archivo = this.files && this.files[0];
+      if (archivo) fotoElegida(archivo);
+    });
+    $('btn-sacar-foto').addEventListener('click', function () {
+      preguntar({
+        titulo: '¿Sacamos la foto?',
+        texto: 'Vuelve la silueta. Podés volver a poner otra cuando quieras.',
+        si: 'Sí, sacarla'
+      }, function () {
+        Almacen.guardarFoto(null);
+        Sonido.tocar('clic');
+        pintarPerfil();
+      });
+    });
 
     /* lecciones */
     $('btn-leccion-siguiente').addEventListener('click', function () { Leccion.siguiente(); });

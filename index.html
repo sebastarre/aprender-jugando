@@ -139,19 +139,29 @@
          uno: el nombre lleva al perfil y las monedas a la tienda, que
          es lo que uno espera al tocar un contador de monedas. -->
     <div class="portada">
-      <a class="portada-quien" href="#/perfil">
-        <span class="portada-mascota" data-mascota="hola" aria-hidden="true"></span>
-        <span class="portada-datos">
-          <span class="portada-hola" id="inicio-saludo">¡Hola!</span>
-          <span class="portada-linea">
-            <strong class="portada-nombre" id="inicio-nombre">Jugador</strong>
-            <span class="portada-edad" id="inicio-edad" hidden></span>
+      <!-- La ficha son dos cosas que se tocan y van juntas: la foto,
+           que abre la galería, y el resto, que lleva al perfil. Por eso
+           el botón no está adentro del enlace: un botón adentro de un
+           enlace no se puede tocar en serio en ningún navegador. -->
+      <div class="portada-quien">
+        <button class="portada-foto" id="btn-foto" type="button">
+          <img class="portada-foto-img" id="portada-foto-img" alt="" hidden>
+          <span class="portada-silueta" id="portada-silueta" data-ico="silueta" aria-hidden="true"></span>
+          <span class="portada-camara" data-ico="camara" aria-hidden="true"></span>
+        </button>
+        <a class="portada-yo" href="#/perfil">
+          <span class="portada-datos">
+            <span class="portada-hola" id="inicio-saludo">¡Hola!</span>
+            <span class="portada-linea">
+              <strong class="portada-nombre" id="inicio-nombre">Jugador</strong>
+              <span class="portada-edad" id="inicio-edad" hidden></span>
+            </span>
           </span>
-        </span>
-        <!-- La flechita es lo que dice que esto se toca. Sin ella el
-             cartel entero se leía como un encabezado pintado. -->
-        <span class="portada-entrar" data-ico="derecha" aria-hidden="true"></span>
-      </a>
+          <!-- La flechita es lo que dice que esto se toca. Sin ella el
+               cartel entero se leía como un encabezado pintado. -->
+          <span class="portada-entrar" data-ico="derecha" aria-hidden="true"></span>
+        </a>
+      </div>
       <div class="portada-cuentas">
         <span class="portada-cuenta portada-estrellas" id="portada-estrellas"></span>
         <a class="portada-cuenta portada-monedas" href="#/tienda"
@@ -364,7 +374,11 @@
   <!-- ============ PERFIL ============ -->
   <section class="pantalla" id="pantalla-perfil" hidden>
     <div class="cabecera-perfil">
-      <span class="avatar-grande" id="perfil-avatar">🦊</span>
+      <button class="avatar-grande" id="perfil-avatar" type="button">
+        <img class="avatar-foto" id="perfil-foto-img" alt="" hidden>
+        <span class="avatar-emoji" id="perfil-avatar-emoji"></span>
+        <span class="portada-camara" data-ico="camara" aria-hidden="true"></span>
+      </button>
       <div>
         <h1 class="titulo-perfil" id="perfil-nombre">Jugador</h1>
         <p class="subtitulo perfil-sub" id="perfil-desde"></p>
@@ -377,6 +391,8 @@
     <div class="lista-materias" id="perfil-materias"></div>
 
     <div class="acciones-perfil">
+      <button class="btn-secundario" id="btn-sacar-foto" hidden>
+        <span data-ico="silueta" aria-hidden="true"></span> Sacar la foto</button>
       <button class="btn-secundario" id="btn-tienda"><span data-ico="tienda" aria-hidden="true"></span> Tienda</button>
       <button class="btn-secundario" id="btn-ir-config"><span data-ico="configuracion" aria-hidden="true"></span> Configuración</button>
     </div>
@@ -538,6 +554,12 @@
 <!-- Cartel para confirmar una compra. Es propio y no window.confirm()
      porque el navegador puede silenciar los diálogos del sistema, y
      cuando lo hace la compra no pasa nada y nadie se entera por qué. -->
+<!-- El campo para elegir la foto de la galería. Es uno solo para toda
+     la app —lo usan el cartel del inicio y el perfil— y vive acá afuera
+     de las pantallas: adentro de una pantalla escondida hay navegadores
+     que se hacen los distraídos cuando el JavaScript lo abre. -->
+<input id="campo-foto" type="file" accept="image/*" hidden>
+
 <dialog class="dialogo" id="dialogo">
   <div class="dialogo-caja">
     <div class="dialogo-vista" id="dialogo-vista" aria-hidden="true"></div>
@@ -560,6 +582,7 @@
 <script src="js/nucleo/iconos.js"></script>
 <script src="js/nucleo/mascota.js"></script>
 <script src="js/nucleo/almacen.js"></script>
+<script src="js/nucleo/foto.js"></script>
 <script src="js/nucleo/sonido.js"></script>
 <script src="js/nucleo/opciones.js"></script>
 <script src="js/nucleo/motor.js"></script>

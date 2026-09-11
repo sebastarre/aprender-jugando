@@ -490,6 +490,7 @@ js/
   nucleo/iconos.js         Los íconos de la app, dibujados en SVG
   nucleo/mascota.js        La mascota: qué animal y qué disfraz están puestos
   nucleo/almacen.js        Perfiles, récords, historial y errores en localStorage
+  nucleo/foto.js           Achica y recorta la foto que el chico elige de la galería
   nucleo/sonido.js         Sonidos generados con Web Audio (sin archivos)
   nucleo/opciones.js       La botonera de respuestas (tarjetas para elegir)
   nucleo/motor.js          El motor de partidas, común a todas las materias

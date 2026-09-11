@@ -327,18 +327,10 @@ body {
   body.arrancado #pantalla-inicio .quien-juega           { animation-delay: .34s; }
   body.arrancado #pantalla-inicio .instalar              { animation-delay: .40s; }
 
-  /* La mascota de la portada respira. Es un movimiento de cinco
-     píxeles cada cuatro segundos y medio: no llama la atención, pero
-     hace que la pantalla quieta no parezca una foto. */
-  .portada-mascota { animation: flotar 4.6s ease-in-out infinite; }
 }
 @keyframes asomar {
   from { opacity: 0; transform: translateY(18px) scale(.97); }
   to   { opacity: 1; transform: none; }
-}
-@keyframes flotar {
-  0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(-5px); }
 }
 
 /* ============================================================
@@ -431,28 +423,85 @@ body {
   box-shadow: 0 3px 0 rgba(0, 0, 0, .18);
   transition: transform .14s, background .14s, box-shadow .14s;
 }
+/* La ficha entera se hunde cuando se aprieta cualquiera de sus dos
+   mitades: el navegador le pone :active también a los padres de lo que
+   se está apretando, así que un solo par de reglas alcanza. */
 .portada-quien:hover {
-  transform: translateY(-2px);
   background: rgba(255, 255, 255, .16);
   box-shadow: 0 5px 0 rgba(0, 0, 0, .18);
+  transform: translateY(-2px);
 }
 .portada-quien:active {
   transform: translateY(3px);
   box-shadow: 0 0 0 rgba(0, 0, 0, .18);
 }
 
-/* La mascota va en su medallón, como las caritas de «¿Quién juega?»:
-   es la misma idea (esta es la cara del que está jugando). */
-.portada-mascota {
+/* El resto de la ficha: el saludo, el nombre y la flechita. */
+.portada-yo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: inherit;
+  text-decoration: none;
+}
+
+/* La carita del cartel: la foto del chico, o una silueta mientras no
+   haya ninguna. Es un botón aparte del enlace al perfil —tocar la foto
+   cambia la foto, tocar el resto entra al perfil— así que tiene su
+   propio hundido al apretarlo. */
+.portada-foto {
+  position: relative;
   width: 74px;
   height: 74px;
   flex: none;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .16);
+  color: inherit;
+  cursor: pointer;
+  transition: transform .14s, background .14s;
+}
+.portada-foto:hover { transform: translateY(-2px); background: rgba(255, 255, 255, .26); }
+.portada-foto:active { transform: translateY(2px); }
+.portada-foto-img {
+  grid-area: 1 / 1;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  /* recortada, no achatada: la foto ya viene cuadrada de foto.js, pero
+     si alguna vez entra uno de otra forma, mejor que sobre a que
+     deforme la cara */
+  object-fit: cover;
+}
+.portada-silueta {
+  grid-area: 1 / 1;
+  display: grid;
+  place-items: center;
+}
+.portada-silueta .ico { width: 42px; height: 42px; stroke-width: 1.8; }
+
+/* La camarita del rincón. Es lo que dice que la foto se cambia acá:
+   sin ella, una silueta parece un dibujo más y nadie la toca. */
+.portada-camara {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  width: 26px;
+  height: 26px;
   display: grid;
   place-items: center;
   border-radius: 50%;
-  background: rgba(255, 255, 255, .16);
+  background: var(--barra-fuerte);
+  color: var(--sobre-barra);
+  border: 2px solid var(--sobre-barra);
 }
-.portada-mascota .mascota-img { display: block; height: 66px; width: auto; }
+.portada-camara .ico { width: 14px; height: 14px; stroke-width: 2; }
+
 
 .portada-datos { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 1px; }
 /* Sin opacidad: el saludo ya es más chico y más liviano que el nombre,
@@ -655,6 +704,15 @@ body {
   line-height: 1;
   box-shadow: 0 2px 6px -2px rgba(29, 43, 74, .3);
 }
+/* Si el hermano tiene foto, la carita es su foto. */
+.jugador-foto {
+  grid-area: 1 / 1;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
 .jugador-nombre {
   max-width: 100%;
   font-size: .92rem;
@@ -1573,17 +1631,42 @@ body.jugando .pie { display: none; }
   margin-bottom: 20px;
   text-align: left;
 }
+/* La carita grande del perfil. Es un botón: se toca para poner o
+   cambiar la foto, que es donde un grande la va a buscar. */
 .avatar-grande {
+  position: relative;
   font-size: 3rem;
   line-height: 1;
   width: 88px;
   height: 88px;
   flex: none;
+  padding: 0;
   display: grid;
   place-items: center;
   border-radius: 50%;
   background: var(--tarjeta);
   border: 2px solid var(--borde);
+  box-shadow: 0 4px 0 var(--sombra-clay);
+  cursor: pointer;
+  transition: transform .14s, box-shadow .14s, border-color .14s;
+}
+.avatar-grande:hover { transform: translateY(-3px); border-color: var(--primario); box-shadow: 0 7px 0 var(--sombra-clay); }
+.avatar-grande:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--sombra-clay); }
+.avatar-emoji { grid-area: 1 / 1; }
+.avatar-foto {
+  grid-area: 1 / 1;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+/* acá la camarita va sobre papel claro, así que se pinta del primario */
+.avatar-grande .portada-camara {
+  background: var(--primario);
+  color: var(--sobre-primario);
+  border-color: var(--tarjeta);
+  right: 0;
+  bottom: 0;
 }
 .titulo-perfil { font-size: clamp(1.5rem, 4vw, 2.1rem); margin: 0; }
 .perfil-sub { text-align: left; margin: 0; }
@@ -1636,7 +1719,9 @@ body.jugando .pie { display: none; }
   border-color: var(--primario);
   background: var(--seleccion);
 }
-.perfil-chip-avatar { font-size: 1.6rem; line-height: 1; }
+.perfil-chip-avatar { font-size: 1.6rem; line-height: 1; display: grid; place-items: center; }
+/* si el chico tiene foto, la carita del chip también es su foto */
+.perfil-chip-foto { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
 .perfil-chip-nombre { font-weight: 700; overflow-wrap: break-word; min-width: 0; }
 
 .acciones-perfil { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 8px; }
