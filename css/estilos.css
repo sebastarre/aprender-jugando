@@ -1507,6 +1507,45 @@ body.sin-perfil .pie { display: none; }
 }
 .desbloqueo-item > div { flex: 1; min-width: 0; }
 .desbloqueo-icono { font-size: 1.7rem; line-height: 1; flex: none; }
+.desbloqueo-titulo { font-size: 1.25rem; font-weight: 800; text-align: center; }
+
+/* ============================================================
+   Nivel de una materia
+
+   El cartel de arriba de los juegos (y el de los resultados): hasta qué
+   edad están abiertos, una barra, y cuántos puntos faltan para la
+   siguiente. Es lo que les da sentido a los candados de abajo.
+   ============================================================ */
+.nivel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0 0 20px;
+  padding: 14px 16px;
+  border: 2px solid var(--borde);
+  border-radius: var(--radio);
+  background: var(--tarjeta);
+  box-shadow: 0 4px 0 var(--sombra-clay);
+  text-align: left;
+}
+.nivel-titulo { font-size: 1.12rem; font-weight: 800; line-height: 1.2; }
+.nivel-texto { font-size: .92rem; line-height: 1.3; color: var(--tinta-suave); }
+.nivel-barra {
+  height: 14px;
+  border-radius: 999px;
+  background: var(--pista);
+  overflow: hidden;
+}
+.nivel-barra i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #f59e0b;
+  transform-origin: left;
+  transition: transform .6s var(--rebote);
+}
+/* en los resultados va adentro de la tarjeta blanca: se despega con el papel */
+.nivel-fin { background: var(--papel); box-shadow: none; margin: 4px 0 18px; }
 @keyframes aparecer-desbloqueo {
   from { opacity: 0; transform: scale(.94); }
   to   { opacity: 1; transform: none; }

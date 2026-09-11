@@ -246,6 +246,7 @@ window.Tablero = (function () {
       suave: def.suave,
       texto: def.texto,
       edadMin: def.edadMin,
+      edadMax: def.edadMax,
 
       opciones: function () { return []; },
       cantidades: function () { return cantidadesDeBanco(items.length); },

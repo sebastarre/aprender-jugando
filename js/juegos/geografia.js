@@ -247,7 +247,8 @@ window.Geografia = (function () {
       color: '#2563eb',
       suave: '#dbeafe',
       texto: 'Buscalo en el mapa',
-      edadMin: 6,
+      edadMin: 8,
+      edadMax: 12,
       opciones: function () { return [opcionesZona()]; },
       cantidades: cantidadesDeZona,
       resumen: resumenZona,
@@ -276,8 +277,8 @@ window.Geografia = (function () {
       color: '#c2740a',
       suave: '#fef3c7',
       texto: 'De qué país es cada capital',
-      edadMin: 8,
-      requiere: { juego: 'geografia/paises', estrellas: 3 },
+      edadMin: 10,
+      edadMax: 12,
       opciones: function () { return [opcionesZona()]; },
       cantidades: cantidadesDeZona,
       resumen: resumenZona,
@@ -307,6 +308,7 @@ window.Geografia = (function () {
       suave: '#fce7f3',
       texto: 'Reconocé las banderas',
       edadMin: 7,
+      edadMax: 12,
       opciones: function () {
         return [opcionesZona(), {
           id: 'modo',

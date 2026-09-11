@@ -1,21 +1,26 @@
 /* ============================================================
    Materia: Matemática.
 
-   Doce juegos que se responden eligiendo entre tarjetas, ordenados por
-   la edad desde la que tienen sentido:
+   Doce juegos que se responden eligiendo entre tarjetas. Cada uno dice
+   entre qué edades se muestra (edadMin–edadMax), tomado de en qué año
+   de la primaria se enseña cada tema según el Diseño Curricular de la
+   Provincia de Buenos Aires (2018) y los NAP:
 
-     4   Contar            ¿cuántos hay?
-     4   Figuras           círculo, cuadrado, triángulo…
-     5   Mayor y menor     cuál es el más grande o el más chico
-     5   Sumas y restas
-     6   Qué número sigue  2, 4, 6, 8, …
-     6   La hora           el reloj de agujas
-     7   Tablas de multiplicar
-     7   Dobles y mitades
-     7   Cuánto vale       el 5 de 356 vale 50
-     8   Divisiones
-     8   Problemas         cuentas escondidas en un cuento
-     9   Fracciones        qué parte está pintada
+     4–6    Contar            conteo de colecciones (Nivel Inicial)
+     4–7    Figuras           figuras geométricas (Inicial y 1.º)
+     5–8    Mayor y menor     ordenar números (Inicial; hasta 1000 en 2.º)
+     5–10   Sumas y restas    agregar y quitar (Inicial), cuentas en 1.º
+     6–10   Qué número sigue  regularidades de la serie numérica (1.º)
+     7–9    La hora           «leer la hora en relojes de aguja» (2.º)
+     7–9    Dobles y mitades  cálculo mental (2.º)
+     7–9    Cuánto vale       unos, dieces y cienes (2.º)
+     7–12   Problemas         suma y resta desde 1.º, las cuatro en 3.º
+     8–12   Tablas            «la tabla pitagórica» (3.º)
+     8–12   Divisiones        multiplicación y división (3.º)
+     9–12   Fracciones        «fracciones de uso frecuente» (4.º)
+
+   La edad máxima es para no mostrarle a un chico de once el juego de
+   contar manzanitas: hasta ahí se sigue viendo, después se esconde.
 
    Las preguntas se generan cada partida (no hay lista fija), así que
    nunca sale dos veces la misma ronda. Los distractores no son al azar:
@@ -103,6 +108,7 @@ window.Matematica = (function () {
     suave: '#ffedd5',
     texto: '¿Cuántos hay?',
     edadMin: 4,
+    edadMax: 6,
 
     opciones: function () {
       return [{ id: 'rango', titulo: 'Elegí hasta cuánto', tipo: 'grilla', items: RANGOS }];
@@ -203,6 +209,7 @@ window.Matematica = (function () {
     suave: '#fce7f3',
     texto: '¿Cómo se llama?',
     edadMin: 4,
+    edadMax: 7,
 
     opciones: function () {
       return [{ id: 'grupo', titulo: 'Elegí qué figuras', tipo: 'grilla', items: [
@@ -298,6 +305,7 @@ window.Matematica = (function () {
     suave: '#ccfbf1',
     texto: 'El más grande o el más chico',
     edadMin: 5,
+    edadMax: 8,
 
     opciones: function () {
       return [{ id: 'nivel', titulo: 'Elegí los números', tipo: 'grilla', items: RANGOS_COMPARAR }];
@@ -378,6 +386,7 @@ window.Matematica = (function () {
     suave: '#dcfce7',
     texto: 'Cuatro niveles',
     edadMin: 5,
+    edadMax: 10,
 
     opciones: function () {
       return [
@@ -471,6 +480,7 @@ window.Matematica = (function () {
     suave: '#e0e7ff',
     texto: 'Descubrí la regla',
     edadMin: 6,
+    edadMax: 10,
 
     opciones: function () {
       return [{ id: 'nivel', titulo: 'Elegí el nivel', tipo: 'grilla', items: NIVELES_SERIE }];
@@ -589,7 +599,8 @@ window.Matematica = (function () {
     color: '#0891b2',
     suave: '#cffafe',
     texto: 'Leé el reloj de agujas',
-    edadMin: 6,
+    edadMin: 7,
+    edadMax: 9,
 
     opciones: function () {
       return [{ id: 'paso', titulo: 'Elegí la dificultad', tipo: 'grilla', items: PASOS }];
@@ -644,8 +655,8 @@ window.Matematica = (function () {
     color: COLOR,
     suave: '#ede9fe',
     texto: 'Del 2 al 12',
-    edadMin: 7,
-    requiere: { juego: 'matematica/cuentas', estrellas: 3 },
+    edadMin: 8,
+    edadMax: 12,
 
     opciones: function () {
       // el ícono de cada tabla es su propio número: doce veces la misma
@@ -713,6 +724,7 @@ window.Matematica = (function () {
     suave: '#fae8ff',
     texto: 'El doble de 8, la mitad de 14',
     edadMin: 7,
+    edadMax: 9,
 
     opciones: function () {
       return [
@@ -812,6 +824,7 @@ window.Matematica = (function () {
     suave: '#fef3c7',
     texto: 'Unidades, decenas y centenas',
     edadMin: 7,
+    edadMax: 9,
 
     opciones: function () {
       return [{ id: 'largo', titulo: 'Elegí los números', tipo: 'grilla', items: LARGOS }];
@@ -881,6 +894,7 @@ window.Matematica = (function () {
     suave: '#e0f2fe',
     texto: 'Las tablas al revés',
     edadMin: 8,
+    edadMax: 12,
 
     opciones: function () {
       var items = [{ id: 'mezcla', nombre: 'Mezcladas', icono: 'dado' }];
@@ -999,7 +1013,8 @@ window.Matematica = (function () {
     color: '#9333ea',
     suave: '#f3e8ff',
     texto: 'Cuentas escondidas en un cuento',
-    edadMin: 8,
+    edadMin: 7,
+    edadMax: 12,
 
     opciones: function () {
       return [{ id: 'tipo', titulo: 'Elegí los problemas', tipo: 'grilla', items: [
@@ -1127,6 +1142,7 @@ window.Matematica = (function () {
     suave: '#ffe4e6',
     texto: '¿Qué parte está pintada?',
     edadMin: 9,
+    edadMax: 12,
 
     opciones: function () {
       return [{ id: 'tipo', titulo: 'Elegí las fracciones', tipo: 'grilla', items: TIPOS_FRACCION }];
@@ -1173,8 +1189,9 @@ window.Matematica = (function () {
 
   /* ============================================================ */
 
+  // en el orden de las edades, que es como se muestran
   var JUEGOS = [CONTAR, FIGURAS_JUEGO, COMPARAR, CUENTAS, SERIE, RELOJ,
-                TABLAS, DOBLES, POSICION, DIVISION, PROBLEMAS, FRACCIONES];
+                DOBLES, POSICION, PROBLEMAS, TABLAS, DIVISION, FRACCIONES];
   var NUEVOS = {};
   JUEGOS.forEach(function (j) {
     Tablero.conJugar(j);

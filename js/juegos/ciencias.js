@@ -1,18 +1,19 @@
 /* ============================================================
    Materia: Ciencias.
 
-   Diez juegos, ordenados por la edad desde la que tienen sentido:
+   Diez juegos. Las edades salen de en qué año se enseña cada tema según
+   el Diseño Curricular de la Provincia de Buenos Aires (2018):
 
-     4   ¿Quién hace…?        «¡Muuu!» → 🐄
-     4   Mi cuerpo            ¿con qué olemos? → 👃
-     5   ¿Dónde vive?         el delfín → en el mar
-     6   ¿Está vivo?          el árbol sí, la piedra no
-     7   Las plantas          raíz, tallo, hojas, flor
-     7   ¿Qué come?           herbívoro, carnívoro, omnívoro
-     8   Clases de animales   el delfín es un mamífero
-     8   El agua y la materia sólido, líquido, gaseoso
-     9   El cuerpo por dentro el corazón, los pulmones
-    10   El sistema solar     los planetas y la Luna
+     4–6    ¿Quién hace…?         «¡Muuu!» → 🐄           (Nivel Inicial)
+     4–7    Mi cuerpo             ¿con qué olemos? → 👃   (Nivel Inicial)
+     5–8    ¿Dónde vive?          el delfín → en el mar   (Inicial y 1.º)
+     6–9    ¿Está vivo?           el árbol sí, la piedra no
+     7–10   Las plantas           raíz, tallo, hojas      (1.º y 2.º; hay que leer frases)
+     8–11   ¿Qué come?            herbívoros, carnívoros  («da ejemplos de…», 3.º)
+     9–12   Clases de animales    el delfín es mamífero   (vertebrados, 4.º)
+     9–12   El cuerpo por dentro  corazón, pulmones       (órganos en 3.º, sistemas en 5.º y 6.º)
+    10–12   El agua y la materia  sólido, líquido, gas    (cambios de estado, 5.º)
+    10–12   El sistema solar      los planetas y la Luna  (rotación y traslación, 5.º)
 
    Como en Lengua, son listas escritas a mano. Las malas de cada
    pregunta están elegidas para que no haya dos respuestas correctas:
@@ -83,6 +84,7 @@ window.Ciencias = (function () {
     suave: '#ffedd5',
     texto: 'Los ruidos de los animales',
     edadMin: 4,
+    edadMax: 6,
     items: SONIDOS.map(function (s) { return { id: s[0], r: s[1], quien: s[2], sonido: s[3] }; }),
     forma: 'emoji',
     etiqueta: function (v) { return NOMBRE_DE[v] || v; },
@@ -121,6 +123,7 @@ window.Ciencias = (function () {
     suave: '#fce7f3',
     texto: 'Para qué sirve cada parte',
     edadMin: 4,
+    edadMax: 7,
     items: CUERPO.map(function (c) { return { id: c[0], p: c[1], r: c[2] }; }),
     forma: 'emoji',
     etiqueta: function (v) { return PARTE[v] || v; },
@@ -158,6 +161,7 @@ window.Ciencias = (function () {
     suave: '#cffafe',
     texto: 'Mar, selva, granja, polo, desierto',
     edadMin: 5,
+    edadMax: 8,
     items: HABITATS.map(function (h) { return { id: h[0], emoji: h[1], quien: h[2], r: h[3] }; }),
     categorias: [MAR, SELVA, GRANJA, POLO, DESIERTO],
     // el pingüino y la foca también viven en el mar: esa no puede ser «mala»
@@ -198,6 +202,7 @@ window.Ciencias = (function () {
     suave: '#dcfce7',
     texto: 'Seres vivos y cosas',
     edadMin: 6,
+    edadMax: 9,
     items: VIVOS.map(function (v) {
       return { id: 'si-' + v[0], vivo: true, r: v[1], m: NO_VIVOS.map(function (n) { return n[1]; }) };
     }).concat(NO_VIVOS.map(function (n) {
@@ -233,6 +238,7 @@ window.Ciencias = (function () {
     suave: '#dcfce7',
     texto: 'Raíz, tallo, hojas, flor y fruto',
     edadMin: 7,
+    edadMax: 10,
     simbolo: '🌱'
   }, [
     ['agua', '¿Por dónde toma el <b>agua</b> una planta?', 'Por la raíz', ['Por las hojas', 'Por la flor', 'Por el fruto']],
@@ -274,7 +280,8 @@ window.Ciencias = (function () {
     color: '#c2740a',
     suave: '#fef3c7',
     texto: 'Herbívoros, carnívoros y omnívoros',
-    edadMin: 7,
+    edadMin: 8,
+    edadMax: 11,
     items: DIETAS.map(function (d) { return { id: d[0], emoji: d[1], quien: d[2], r: d[3] }; }),
     categorias: ['herbívoro', 'carnívoro', 'omnívoro'],
     cuantas: 3,
@@ -325,7 +332,8 @@ window.Ciencias = (function () {
     color: '#7c3aed',
     suave: '#ede9fe',
     texto: 'Mamíferos, aves, peces…',
-    edadMin: 8,
+    edadMin: 9,
+    edadMax: 12,
     items: CLASES.map(function (c) { return { id: c[0], emoji: c[1], quien: c[2], r: c[3] }; }),
     categorias: ['mamífero', 'ave', 'pez', 'reptil', 'anfibio', 'insecto'],
     forma: 'palabra',
@@ -350,7 +358,8 @@ window.Ciencias = (function () {
     color: '#0369a1',
     suave: '#e0f2fe',
     texto: 'Sólido, líquido y gaseoso',
-    edadMin: 8,
+    edadMin: 10,
+    edadMax: 12,
     simbolo: '💧'
   }, [
     ['hielo', 'El <b>hielo</b> es agua en estado…', 'Sólido', ['Líquido', 'Gaseoso']],
@@ -380,6 +389,7 @@ window.Ciencias = (function () {
     suave: '#ffe4e6',
     texto: 'Corazón, pulmones, huesos…',
     edadMin: 9,
+    edadMax: 12,
     simbolo: '🫀'
   }, [
     ['bombea', '¿Qué órgano <b>bombea la sangre</b> por todo el cuerpo?', 'El corazón', ['Los pulmones', 'El estómago', 'El cerebro']],
@@ -408,6 +418,7 @@ window.Ciencias = (function () {
     suave: '#e0e7ff',
     texto: 'Los planetas, el Sol y la Luna',
     edadMin: 10,
+    edadMax: 12,
     simbolo: '🪐'
   }, [
     ['cerca', '¿Qué planeta está <b>más cerca</b> del Sol?', 'Mercurio', ['Venus', 'La Tierra', 'Marte']],
@@ -429,7 +440,7 @@ window.Ciencias = (function () {
   ]);
 
   var JUEGOS = [QUIEN_HACE, MI_CUERPO, DONDE_VIVE, ESTA_VIVO, PLANTAS, QUE_COME,
-                CLASES_ANIMALES, MATERIA, ORGANOS, ESPACIO];
+                CLASES_ANIMALES, ORGANOS, MATERIA, ESPACIO];
 
   return T.materia('ciencias', JUEGOS);
 })();

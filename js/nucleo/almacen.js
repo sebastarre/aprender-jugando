@@ -30,7 +30,9 @@ window.Almacen = (function () {
       monedas: 0,              // saldo para gastar en la tienda
       monedasTotales: 0,       // cuántas juntó en total, para el perfil
       comprado: {},            // 'tema:selva' -> true
-      equipado: {}             // 'tema' -> 'selva'
+      equipado: {},            // 'tema' -> 'selva'
+      niveles: {},             // 'matematica' -> 9: hasta qué edad abrió jugando
+      progresoNivel: {}        // 'matematica' -> 34: puntos juntados para la próxima
     };
   }
 
@@ -380,6 +382,35 @@ window.Almacen = (function () {
     return mio().monedas;
   }
 
+  /* ---------------------- niveles por materia ----------------------
+     Cada materia arranca con los juegos de la edad del chico. Juntando
+     puntos en esa materia se abren los de la edad siguiente, de a una.
+     Acá sólo se guarda: la cuenta de cuántos puntos hacen falta y cuál
+     es la edad siguiente la hace app.js, que es quien conoce los juegos.
+
+     `niveles` guarda la edad abierta sólo si se ganó jugando, no la edad
+     del chico: si un papá corrige la edad de 9 a 7, el chico vuelve a ver
+     los juegos de 7, salvo que haya abierto otros jugando. */
+  function nivelGanado(materia) {
+    var n = mio().niveles;
+    return (n && n[materia]) || 0;
+  }
+
+  function progresoNivel(materia) {
+    var p = mio().progresoNivel;
+    return (p && p[materia]) || 0;
+  }
+
+  /** Guarda los puntos juntados y, si se abrió una edad nueva, cuál. */
+  function guardarNivel(materia, nivel, progreso) {
+    var yo = mio();
+    if (!yo.niveles) yo.niveles = {};
+    if (!yo.progresoNivel) yo.progresoNivel = {};
+    if (nivel) yo.niveles[materia] = nivel;
+    yo.progresoNivel[materia] = Math.max(0, progreso);
+    guardar();
+  }
+
   /** Descuenta si alcanza; devuelve si se pudo. */
   function gastarMonedas(n) {
     if (monedas() < n) return false;
@@ -520,6 +551,7 @@ window.Almacen = (function () {
     estrellasDeJuego: estrellasDeJuego,
     aciertosDe: aciertosDe, registrarAciertos: registrarAciertos, pesoDe: pesoDe,
     monedas: monedas, monedasTotales: monedasTotales,
+    nivelGanado: nivelGanado, progresoNivel: progresoNivel, guardarNivel: guardarNivel,
     sumarMonedas: sumarMonedas, gastarMonedas: gastarMonedas,
     comprar: comprar, tieneComprado: tieneComprado,
     equipar: equipar, equipado: equipado,

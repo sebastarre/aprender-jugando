@@ -1,18 +1,20 @@
 /* ============================================================
    Materia: Lengua.
 
-   Diez juegos, ordenados por la edad desde la que tienen sentido:
+   Diez juegos. Las edades salen de en qué año se enseña cada tema según
+   el Diseño Curricular de la Provincia de Buenos Aires (2018):
 
-     4   La primera letra     🍎 → M
-     5   La vocal que falta   c_sa
-     6   Rimas                gato → pato
-     6   Contrarios           grande → chico
-     7   Sílabas              ma-ri-po-sa → 4
-     7   Plurales             lápiz → lápices
-     8   Ortografía           vaca, vaka, bacca…
-     8   Sinónimos            contento → feliz
-    10   Tildes               camión, camion, cámion…
-    10   Clases de palabras   correr → verbo
+     4–6    La primera letra     🍎 → M          (Nivel Inicial)
+     5–7    La vocal que falta   c_sa            (Inicial y 1.º)
+     5–7    Rimas                gato → pato     (Inicial y Unidad Pedagógica)
+     6–9    Contrarios           grande → chico  (hay que leer: 1.º)
+     6–9    Sílabas              ma-ri-po-sa     (Unidad Pedagógica, 1.º y 2.º)
+     8–11   Plurales             lápiz → lápices («-z/-ces», 3.º)
+     8–12   Ortografía           vaca, vaka…     (mb, nv, reglas sin excepción: 3.º)
+     8–12   Sinónimos            contento → feliz (3.º)
+     9–12   Tildes               camión, camion… («reglas generales de acentuación», 4.º)
+    10–12   Clases de palabras   correr → verbo  (sustantivo, adjetivo, verbo en 3.º;
+                                                  con adverbio, más adelante)
 
    Todos son listas escritas a mano, no preguntas generadas: en lengua
    las respuestas no se calculan. Cada lista está revisada para que
@@ -75,6 +77,7 @@ window.Lengua = (function () {
     suave: '#ffedd5',
     texto: '¿Con qué letra empieza?',
     edadMin: 4,
+    edadMax: 6,
     items: PRIMERA.map(function (x) { return { id: x[0], emoji: x[1], r: x[2] }; }),
     categorias: LETRAS,
     excluir: function (it) { return SE_CONFUNDEN[it.r] || []; },
@@ -125,6 +128,7 @@ window.Lengua = (function () {
     suave: '#fce7f3',
     texto: 'Completá la palabra',
     edadMin: 5,
+    edadMax: 7,
     items: VOCALES.map(function (x) {
       return { id: sinTilde(x[0]), palabra: x[0], emoji: x[1], hueco: x[2], r: x[0].charAt(x[2]) };
     }),
@@ -182,7 +186,8 @@ window.Lengua = (function () {
     color: '#7c3aed',
     suave: '#ede9fe',
     texto: 'Palabras que suenan igual',
-    edadMin: 6,
+    edadMin: 5,
+    edadMax: 7,
     items: RIMAS.map(function (x) { return { id: sinTilde(x[0]), palabra: x[0], r: x[1], m: x[2] }; }),
     forma: 'palabra',
     consigna: function (it) { return '¿Qué palabra rima con <b>' + it.palabra + '</b>?'; },
@@ -239,6 +244,7 @@ window.Lengua = (function () {
     suave: '#ccfbf1',
     texto: 'Grande y chico, día y noche',
     edadMin: 6,
+    edadMax: 9,
     items: CONTRARIOS.map(function (x) { return { id: sinTilde(x[0]), palabra: x[0], r: x[1], m: x[2] }; }),
     forma: 'palabra',
     consigna: function (it) { return '¿Cuál es lo contrario de <b>' + it.palabra + '</b>?'; },
@@ -272,7 +278,8 @@ window.Lengua = (function () {
     color: '#2563eb',
     suave: '#dbeafe',
     texto: 'Contá los golpes de voz',
-    edadMin: 7,
+    edadMin: 6,
+    edadMax: 9,
     items: SILABAS.map(function (s) {
       var palabra = s.replace(/-/g, '');
       return { id: sinTilde(palabra), palabra: palabra, partes: s, r: s.split('-').length };
@@ -328,7 +335,8 @@ window.Lengua = (function () {
     color: '#16a34a',
     suave: '#dcfce7',
     texto: 'Uno, muchos',
-    edadMin: 7,
+    edadMin: 8,
+    edadMax: 11,
     items: PLURALES.map(function (x) { return { id: sinTilde(x[0]), palabra: x[0], r: x[1], m: x[2] }; }),
     forma: 'palabra',
     consigna: function (it) { return '¿Cuál es el plural de <b>' + it.palabra + '</b>?'; },
@@ -381,6 +389,7 @@ window.Lengua = (function () {
     suave: '#fef3c7',
     texto: 'B o V, C, S o Z, con H o sin H',
     edadMin: 8,
+    edadMax: 12,
     items: ORTOGRAFIA.map(function (x) { return { id: x[0], r: x[0], m: x[1] }; }),
     forma: 'palabra',
     consigna: function () { return '¿Cuál está <b>bien escrita</b>?'; },
@@ -427,6 +436,7 @@ window.Lengua = (function () {
     suave: '#cffafe',
     texto: 'Palabras que dicen lo mismo',
     edadMin: 8,
+    edadMax: 12,
     items: SINONIMOS.map(function (x) { return { id: sinTilde(x[0]), palabra: x[0], r: x[1], m: x[2] }; }),
     forma: 'palabra',
     consigna: function (it) { return '¿Qué palabra significa lo mismo que <b>' + it.palabra + '</b>?'; },
@@ -481,7 +491,8 @@ window.Lengua = (function () {
     color: '#e11d48',
     suave: '#ffe4e6',
     texto: '¿Lleva tilde? ¿Dónde?',
-    edadMin: 10,
+    edadMin: 9,
+    edadMax: 12,
     items: TILDES.map(function (p) { return { id: sinTilde(p), r: p, m: variantesDeTilde(p) }; }),
     forma: 'palabra',
     consigna: function () { return '¿Cuál está <b>bien escrita</b>? Fijate en la tilde.'; },
@@ -538,6 +549,7 @@ window.Lengua = (function () {
     suave: '#e0e7ff',
     texto: 'Sustantivo, adjetivo, verbo…',
     edadMin: 10,
+    edadMax: 12,
     items: CLASES.map(function (x) { return { id: sinTilde(x[0]), palabra: x[0], r: x[1] }; }),
     categorias: ['sustantivo', 'adjetivo', 'verbo', 'adverbio'],
     forma: 'palabra',

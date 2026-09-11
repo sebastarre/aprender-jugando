@@ -56,11 +56,11 @@ los tres, se muestra la respuesta correcta antes de pasar a la siguiente.
 
 **Geografía**
 
-| Juego | Consigna | Cómo se responde |
-|---|---|---|
-| Encontrá el país | «¿Dónde está Argentina?» | Clic en el país en el mapa |
-| Capitales | «¿De qué país es capital Lima?» | Clic en el país en el mapa |
-| Banderas | Muestra una bandera | Clic en el mapa, o eligiendo entre 4 banderas |
+| Edad | Juego | Consigna | Cómo se responde |
+|---|---|---|---|
+| 7–12 | Banderas | Muestra una bandera | Clic en el mapa, o eligiendo entre 4 banderas |
+| 8–12 | Encontrá el país | «¿Dónde está Argentina?» | Clic en el país en el mapa |
+| 10–12 | Capitales | «¿De qué país es capital Lima?» | Clic en el país en el mapa |
 
 Zonas: todo el mundo, América, América del Sur, América del Norte (con Centro
 y Caribe), Europa, África, Asia y Oceanía.
@@ -69,18 +69,18 @@ y Caribe), Europa, África, Asia y Oceanía.
 
 | Edad | Juego | Consigna | Opciones de partida |
 |---|---|---|---|
-| 4 | Contar | Dibujitos de a cinco por fila: «¿Cuántos hay?» | Hasta 5, hasta 10, hasta 20 |
-| 4 | Figuras | Dibuja una figura: «¿Qué figura es?» | Las cuatro básicas, o también óvalo, rombo, pentágono y hexágono |
-| 5 | Mayor y menor | «¿Cuál es el número más grande?» | Hasta 10, hasta 100, o las mismas tres cifras en otro orden |
-| 5 | Sumas y restas | «¿Cuánto es 34 − 17?» | Cuatro niveles; sumas, restas o mezcladas |
-| 6 | Qué número sigue | «2, 4, 6, 8, ?» | De a 1 y 2; de a 3, 5 y 10; saltos raros y dobles |
-| 6 | La hora | Dibuja un reloj de agujas | En punto, y media, y cuarto, o de 5 en 5 |
-| 7 | Tablas de multiplicar | «¿Cuánto es 7 × 8?» | Una tabla del 2 al 12, o mezcladas |
-| 7 | Dobles y mitades | «¿Cuál es la mitad de 14?» | Números chicos o grandes; dobles, mitades o mezclado |
-| 7 | Cuánto vale | «En 356, ¿cuánto vale el 5?» | Tres o cuatro cifras |
-| 8 | Divisiones | «¿Cuánto es 56 ÷ 7?» | Dividir por 2 a 10, o mezcladas |
-| 8 | Problemas | Un cuento corto con una cuenta adentro | Sumar y restar, o las cuatro cuentas |
-| 9 | Fracciones | Dibuja una torta o una barra: «¿Qué parte está pintada?» | Hasta cuartos, o hasta octavos |
+| 4–6 | Contar | Dibujitos de a cinco por fila: «¿Cuántos hay?» | Hasta 5, hasta 10, hasta 20 |
+| 4–7 | Figuras | Dibuja una figura: «¿Qué figura es?» | Las cuatro básicas, o también óvalo, rombo, pentágono y hexágono |
+| 5–8 | Mayor y menor | «¿Cuál es el número más grande?» | Hasta 10, hasta 100, o las mismas tres cifras en otro orden |
+| 5–10 | Sumas y restas | «¿Cuánto es 34 − 17?» | Cuatro niveles; sumas, restas o mezcladas |
+| 6–10 | Qué número sigue | «2, 4, 6, 8, ?» | De a 1 y 2; de a 3, 5 y 10; saltos raros y dobles |
+| 7–9 | La hora | Dibuja un reloj de agujas | En punto, y media, y cuarto, o de 5 en 5 |
+| 7–9 | Dobles y mitades | «¿Cuál es la mitad de 14?» | Números chicos o grandes; dobles, mitades o mezclado |
+| 7–9 | Cuánto vale | «En 356, ¿cuánto vale el 5?» | Tres o cuatro cifras |
+| 7–12 | Problemas | Un cuento corto con una cuenta adentro | Sumar y restar, o las cuatro cuentas |
+| 8–12 | Tablas de multiplicar | «¿Cuánto es 7 × 8?» | Una tabla del 2 al 12, o mezcladas |
+| 8–12 | Divisiones | «¿Cuánto es 56 ÷ 7?» | Dividir por 2 a 10, o mezcladas |
+| 9–12 | Fracciones | Dibuja una torta o una barra: «¿Qué parte está pintada?» | Hasta cuartos, o hasta octavos |
 
 Las preguntas de matemática se generan en cada partida, así que nunca sale dos
 veces la misma ronda. Las respuestas incorrectas no son al azar: son los
@@ -94,31 +94,31 @@ un problema casi nunca es de cálculo, es elegir mal la cuenta.
 
 | Edad | Juego | Consigna |
 |---|---|---|
-| 4 | La primera letra | Un dibujo: «¿Con qué letra empieza?» |
-| 5 | La vocal que falta | Un dibujo y «c ? sa» |
-| 6 | Rimas | «¿Qué palabra rima con gato?» |
-| 6 | Contrarios | «¿Cuál es lo contrario de grande?» |
-| 7 | Sílabas | «¿Cuántas sílabas tiene mariposa?» |
-| 7 | Plurales | «¿Cuál es el plural de lápiz?» |
-| 8 | Ortografía | Cuatro maneras de escribir una palabra: «¿Cuál está bien?» |
-| 8 | Sinónimos | «¿Qué palabra significa lo mismo que contento?» |
-| 10 | Tildes | «¿Cuál está bien escrita?» camión, camion, cámion… |
-| 10 | Clases de palabras | «¿Qué clase de palabra es correr?» |
+| 4–6 | La primera letra | Un dibujo: «¿Con qué letra empieza?» |
+| 5–7 | La vocal que falta | Un dibujo y «c ? sa» |
+| 5–7 | Rimas | «¿Qué palabra rima con gato?» |
+| 6–9 | Contrarios | «¿Cuál es lo contrario de grande?» |
+| 6–9 | Sílabas | «¿Cuántas sílabas tiene mariposa?» |
+| 8–11 | Plurales | «¿Cuál es el plural de lápiz?» |
+| 8–12 | Ortografía | Cuatro maneras de escribir una palabra: «¿Cuál está bien?» |
+| 8–12 | Sinónimos | «¿Qué palabra significa lo mismo que contento?» |
+| 9–12 | Tildes | «¿Cuál está bien escrita?» camión, camion, cámion… |
+| 10–12 | Clases de palabras | «¿Qué clase de palabra es correr?» |
 
 **Ciencias**
 
 | Edad | Juego | Consigna |
 |---|---|---|
-| 4 | ¿Quién hace…? | «¿Quién hace “¡Muuu!”?» y cuatro animales |
-| 4 | Mi cuerpo | «¿Con qué olemos?» y cuatro partes del cuerpo |
-| 5 | ¿Dónde vive? | Un animal: en el mar, la selva, la granja, el polo o el desierto |
-| 6 | ¿Está vivo? | «¿Cuál es un ser vivo?» (el robot se mueve y no lo es) |
-| 7 | Las plantas | Raíz, tallo, hojas, flor y fruto |
-| 7 | ¿Qué come? | Herbívoro, carnívoro u omnívoro |
-| 8 | Clases de animales | Mamífero, ave, pez, reptil, anfibio o insecto |
-| 8 | El agua y la materia | Sólido, líquido y gaseoso |
-| 9 | El cuerpo por dentro | El corazón, los pulmones, los huesos |
-| 10 | El sistema solar | Los planetas, el Sol y la Luna |
+| 4–6 | ¿Quién hace…? | «¿Quién hace “¡Muuu!”?» y cuatro animales |
+| 4–7 | Mi cuerpo | «¿Con qué olemos?» y cuatro partes del cuerpo |
+| 5–8 | ¿Dónde vive? | Un animal: en el mar, la selva, la granja, el polo o el desierto |
+| 6–9 | ¿Está vivo? | «¿Cuál es un ser vivo?» (el robot se mueve y no lo es) |
+| 7–10 | Las plantas | Raíz, tallo, hojas, flor y fruto |
+| 8–11 | ¿Qué come? | Herbívoro, carnívoro u omnívoro |
+| 9–12 | Clases de animales | Mamífero, ave, pez, reptil, anfibio o insecto |
+| 9–12 | El cuerpo por dentro | El corazón, los pulmones, los huesos |
+| 10–12 | El agua y la materia | Sólido, líquido y gaseoso |
+| 10–12 | El sistema solar | Los planetas, el Sol y la Luna |
 
 Los de Lengua y Ciencias son listas escritas a mano, y cada una está revisada
 para que ninguna respuesta mala sea también correcta: ninguna «mala» rima,
@@ -145,18 +145,51 @@ chico falla una vez con uno de ellos, el juego le avisa que busque el punto.
 ## Cómo se adapta a cada chico
 
 La primera vez que se abre, la app pide **nombre y edad** (no hay registro ni
-cuenta: queda todo en el dispositivo). Con la edad decide qué mostrar:
+cuenta: queda todo en el dispositivo). Con la edad decide qué mostrar.
 
-- Los juegos y lecciones **de su edad** aparecen listos para usar.
-- Los de hasta dos años más adelante se ven, pero con un candado que dice
-  desde qué edad se abren. Sirve para que vea que hay más cosas esperándolo.
-- Algunos juegos difíciles piden además **haber practicado el más fácil**: por
-  ejemplo, las tablas de multiplicar se abren al juntar 3 ⭐ en sumas y restas.
-  Cuando una partida destraba un juego, se avisa en la pantalla de resultados.
+**Cada juego tiene una edad desde y una hasta** (`edadMin` y `edadMax`). Las
+edades salen de en qué año de la primaria se enseña cada tema, según el
+[Diseño Curricular de la Provincia de Buenos Aires (2018)](http://servicios.abc.gov.ar/lainstitucion/organismos/consejogeneral/disenioscurriculares/primaria/2018/dis-curricular-PBA-completo.pdf)
+y los NAP. Algunos ejemplos de dónde salió cada número:
 
-Las edades y los requisitos están declarados en cada juego (`edadMin` y
-`requiere`, en `js/juegos/*.js`) y en cada lección (`edadMin`, en
-`js/aprender/contenido.js`). Cambiarlos es cambiar un número.
+| Tema | Año | Edad |
+|---|---|---|
+| Leer la hora «en relojes de aguja» | 2.º | 7 |
+| Unos, dieces y cienes (valor posicional) | 2.º | 7 |
+| La tabla pitagórica, multiplicación y división | 3.º | 8 |
+| Plurales con «-z/-ces», sinónimos y antónimos | 3.º | 8 |
+| Herbívoros, carnívoros y omnívoros | 3.º | 8 |
+| El planisferio y los continentes | 3.º y 4.º | 8 |
+| «Fracciones de uso frecuente» | 4.º | 9 |
+| «Reglas generales de acentuación» (las tildes) | 4.º | 9 |
+| Vertebrados: mamíferos, aves, peces… | 4.º | 9 |
+| Cambios de estado, rotación y traslación | 5.º | 10 |
+| Capitales | 5.º | 10 |
+
+La edad máxima es para no mostrarle a un chico de once el juego de contar
+manzanitas: hasta esa edad el juego se ve, después se esconde.
+
+**Cada materia tiene su nivel.** Arranca en la edad del chico, y juntando
+**100 puntos** jugando esa materia se abren los juegos de la edad siguiente
+(una partida de 10 preguntas da hasta 30). Es por materia: un chico de 7 que
+vuela en matemática puede tener abiertos los juegos de 9 ahí y seguir en los
+de 7 en lengua. En cada materia se ve:
+
+- los juegos abiertos, salvo los que ya le quedan chicos;
+- los de la edad siguiente, con candado y cuántos puntos faltan;
+- arriba de todo, un cartel con una barra que dice cuánto le falta.
+
+Al terminar una partida se muestra cuántos puntos sumó y cuánto le falta; y si
+abrió una edad nueva, un cartel lo anuncia con los juegos que se abrieron.
+
+Si una materia no tiene ningún juego para su edad (Geografía empieza a los 7),
+no hay puntos que juntar: se abre sola cuando cumpla la edad. Los puntos del
+examen y del repaso no suman al nivel, porque mezclan materias.
+
+Lo que se abrió jugando no se pierde si después se le cambia la edad al
+perfil. Los puntos que hacen falta están en `PUNTOS_PARA_ABRIR`, en
+`js/app.js`; las edades, en cada juego (`js/juegos/*.js`) y en cada lección
+(`js/aprender/contenido.js`).
 
 ## Modo examen
 
@@ -525,7 +558,7 @@ entero a partir de la lista.
 ```js
 Tablero.banco({
   id: 'rimas', nombre: 'Rimas', icono: 'rimas', color: '#7c3aed', suave: '#ede9fe',
-  texto: 'Palabras que suenan igual', edadMin: 6,
+  texto: 'Palabras que suenan igual', edadMin: 5, edadMax: 7,
   items: [
     { id: 'gato', palabra: 'gato', r: 'pato', m: ['perro', 'luna', 'mesa'] },
     // r es la correcta; m son las malas (si no están, se usan las
@@ -541,7 +574,7 @@ que esperan el examen y el repaso. Las claves de las preguntas quedan como
 `'rimas:gato'`: dicen solas de qué juego son, así el repaso sabe con qué
 tablero rearmar cada una.
 
-Cada juego tiene que tener `edadMin`: desde qué edad se muestra.
+Cada juego tiene que tener `edadMin` y `edadMax`: entre qué edades se muestra.
 
 **Para agregar una lección** (sección Aprender), copiá una de
 `js/aprender/contenido.js` y sumala a `LECCIONES`:
