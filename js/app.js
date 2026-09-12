@@ -575,11 +575,23 @@
      La foto no sale del aparato. Ver js/nucleo/foto.js. */
   function pintarFotoDePortada() {
     var foto = Almacen.foto();
-    var img = $('portada-foto-img');
-    img.hidden = !foto;
-    if (foto) img.src = foto; else img.removeAttribute('src');
+    ponerLaFoto($('btn-foto'), 'portada-foto-img', foto);
     $('portada-silueta').hidden = !!foto;
     $('btn-foto').setAttribute('aria-label', foto ? 'Cambiar tu foto' : 'Poner una foto tuya');
+  }
+
+  /* Mete (o saca) la foto adentro de un botón redondo. La imagen se arma
+     acá y no está escrita en el index porque una <img> sin foto es una
+     imagen rota esperando que alguien se olvide de esconderla; las
+     fichitas de «¿Quién juega?» ya lo hacían así. */
+  function ponerLaFoto(caja, clase, foto) {
+    var vieja = caja.querySelector('.' + clase);
+    if (vieja) caja.removeChild(vieja);
+    if (!foto) return;
+    var img = Util.crear('img', clase);
+    img.src = foto;
+    img.alt = '';
+    caja.insertBefore(img, caja.firstChild);
   }
 
   /* A quién hay que repintar cuando vuelva la foto: el inicio y el
@@ -1441,9 +1453,7 @@
     var est = Almacen.estadisticas();
 
     var foto = Almacen.foto();
-    var fotoPerfil = $('perfil-foto-img');
-    fotoPerfil.hidden = !foto;
-    if (foto) fotoPerfil.src = foto; else fotoPerfil.removeAttribute('src');
+    ponerLaFoto($('perfil-avatar'), 'avatar-foto', foto);
     var emoji = $('perfil-avatar-emoji');
     emoji.hidden = !!foto;
     emoji.textContent = yo.avatar;
