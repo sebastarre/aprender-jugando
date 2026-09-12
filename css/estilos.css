@@ -2056,8 +2056,14 @@ body.en-bienvenida #fondo-bienvenida { display: block; }
 .nivel-opcion:hover { transform: translateY(-3px); border-color: var(--op-color); box-shadow: 0 7px 0 var(--sombra-clay); }
 .nivel-opcion:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--sombra-clay); }
 
-/* El número, que es lo que ordena. Va en el color del juego y del
-   tamaño de un título: el chico busca «el 3», no lee la lista entera. */
+/* El número, que es lo que ordena. Va del tamaño de un título: el chico
+   busca «el 3», no lee la lista entera.
+
+   Pleno con el número en blanco, y no al revés. El número sobre el tono
+   pálido del juego medía 3,00:1 contra el 3:1 que pide una letra grande:
+   pasaba raspando y cualquier retoque del color lo bajaba. Blanco sobre
+   el color pleno da 3,3:1 y es, además, lo mismo que hace el dibujo de
+   cada juego en su ficha. */
 .nivel-numero {
   flex: none;
   width: 44px;
@@ -2065,11 +2071,12 @@ body.en-bienvenida #fondo-bienvenida { display: block; }
   display: grid;
   place-items: center;
   border-radius: 50%;
-  background: var(--op-suave);
-  color: var(--op-color);
+  background: var(--op-color);
+  color: #fff;
   font-size: 1.45rem;
   font-weight: 800;
   line-height: 1;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, .18);
 }
 .nivel-cuerpo { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .nivel-nombre { font-weight: 800; line-height: 1.2; }
@@ -2082,9 +2089,12 @@ body.en-bienvenida #fondo-bienvenida { display: block; }
   background: var(--op-suave);
   box-shadow: 0 4px 0 var(--op-color);
 }
+/* El elegido se nota por la ficha —filo, relleno y escalón del color—,
+   así que el número no necesita cambiar: se hunde, como todo lo que se
+   aprieta. */
 .nivel-opcion[aria-pressed="true"] .nivel-numero {
-  background: var(--op-color);
-  color: #fff;
+  transform: translateY(2px);
+  box-shadow: none;
 }
 
 /* ---------------- Inglés ---------------- */

@@ -1801,6 +1801,7 @@
 
   /* ---------------------- personalización ---------------------- */
   function pintarPersonalizacion() {
+    pintarEleccionMonigote();
     pintarEleccionAnimal();
     pintarDisfraces();
     pintarCombos();
@@ -1816,6 +1817,45 @@
     $('nota-tienda').textContent = faltan
       ? 'Hay ' + Util.plural(faltan, 'color') + ' más para comprar en la tienda.'
       : 'Ya tenés los ' + total + ' colores. No queda ninguno por comprar.';
+  }
+
+  /**
+   * El monigote del chico: la carita que se ve en «¿Quién juega?», en
+   * el perfil y en el cartel del inicio cuando no hay foto puesta.
+   *
+   * Se elegía en la bienvenida y ahí quedaba: para cambiarlo había que
+   * borrar el perfil y hacerlo de nuevo. Es la misma grilla que la de
+   * la bienvenida, con los que vengan de fábrica más los comprados en
+   * la tienda.
+   */
+  function pintarEleccionMonigote() {
+    var caja = $('eleccion-monigote');
+    var yo = Almacen.activo();
+    Util.vaciar(caja);
+    if (!yo) return;
+
+    avataresDisponibles().forEach(function (a, i) {
+      var b = Util.crear('button', 'boton-avatar', a);
+      b.type = 'button';
+      b.setAttribute('aria-label', 'Monigote ' + (i + 1));
+      b.setAttribute('aria-pressed', yo.avatar === a ? 'true' : 'false');
+      b.addEventListener('click', function () {
+        Almacen.actualizarPerfil(yo.id, { avatar: a });
+        Sonido.despertar(); Sonido.tocar('clic');
+        caja.querySelectorAll('.boton-avatar').forEach(function (o) {
+          o.setAttribute('aria-pressed', o === b ? 'true' : 'false');
+        });
+        /* El inicio muestra la carita de cada chico: si no se repinta,
+           al volver sigue estando la de antes. */
+        pintarInicio();
+      });
+      caja.appendChild(b);
+    });
+
+    var foto = Almacen.foto();
+    $('nota-monigote').textContent = foto
+      ? 'Ahora se ve tu foto. El monigote vuelve si la sacás.'
+      : 'Es tu carita en «¿Quién juega?» y en tu perfil.';
   }
 
   /** Gato o perro. No se compra: es de quién es la mascota. */
