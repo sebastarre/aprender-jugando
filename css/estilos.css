@@ -2025,58 +2025,159 @@ body.en-bienvenida #fondo-bienvenida { display: block; }
   transform: scale(1.06);
 }
 
-/* ============================================================
-   Juegos trabados por edad o por requisito
-   ============================================================ */
-.card.trabada { cursor: not-allowed; background: var(--tarjeta); }
-.card.trabada:hover { transform: none; box-shadow: var(--sombra); border-color: var(--borde); }
-/* Se apaga el dibujo del juego, no el recuadro entero: si se le baja la
-   opacidad a toda la tarjeta también se apagan el título y el candado,
-   que son justo lo que hay que poder leer. */
-.card.trabada .card-icono {
-  background: var(--pista);
-  color: var(--tinta-suave);
+/* ---------------- Inglés ---------------- */
+/* Las palabras en inglés van en la misma letra que el resto, pero el
+   navegador les aplica el corte de sílabas del idioma que declaran. */
+.palabra-en { display: inline-block; }
+.frase-en { display: block; margin-top: 6px; font-size: 1.35rem; font-weight: 800; }
+.frase-en .hueco { color: var(--primario); letter-spacing: .05em; }
+
+/* El cuadrado de color de «¿de qué color es?»: el color se muestra, no
+   se escribe. El filo gris lo despega del papel cuando el color es el
+   blanco. */
+.visual-color {
+  width: clamp(96px, 30vw, 140px);
+  height: clamp(96px, 30vw, 140px);
+  margin: 0 auto;
+  border-radius: var(--radio);
+  border: 3px solid var(--borde);
+  box-shadow: 0 5px 0 var(--sombra-clay);
+}
+
+/* La bandera de la pregunta de continentes. */
+.visual-bandera {
+  display: block;
+  width: clamp(120px, 38vw, 190px);
+  margin: 0 auto;
+  border-radius: 10px;
+  border: 2px solid var(--borde);
+}
+
+/* Los cuadraditos de color de la lección de los colores. */
+.muestrario { display: flex; justify-content: center; flex-wrap: wrap; gap: 14px; }
+.muestra-color { display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: .95rem; }
+.muestra-color span {
+  width: 58px;
+  height: 58px;
+  border-radius: 14px;
+  border: 3px solid var(--borde);
   box-shadow: 0 4px 0 var(--sombra-clay);
 }
-.card.trabada .card-icono > .ico { opacity: .65; }
-.card.trabada .card-titulo { color: var(--tinta-suave); }
 
-/* Un solo renglón, del mismo tamaño y en el mismo lugar que la bajada
-   de las tarjetas destrabadas, así la tarjeta trabada mide igual que
-   las de al lado. El candado, que es lo que hay que entender sin leer,
-   va sobre el dibujo. */
-/* La estrellita al lado del texto y no arriba: en una ficha angosta el
-   texto se parte en dos renglones, y con el ícono como un hijo más del
-   flex se quedaba solo en el primero. Va alineado arriba, pegado a la
-   primera línea. */
-.card-traba {
+/* Dos columnas: el inglés y qué quiere decir. */
+.lista-en { display: flex; flex-direction: column; gap: 8px; max-width: 340px; margin: 0 auto; }
+.lista-en-fila {
   display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  gap: 4px;
-  margin-top: 2px;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: var(--radio-s);
+  background: var(--papel);
+  border: 2px solid var(--borde);
+}
+.lista-en-fila b { font-size: 1.05rem; }
+.lista-en-fila span { color: var(--tinta-suave); font-size: .92rem; text-align: right; }
+
+/* ============================================================
+   Los juegos y las lecciones para más grandes
+
+   No están trabados: se pueden jugar igual. Lo único que los
+   distingue es una etiqueta con la edad sobre el dibujo y, abajo, una
+   barra que se va llenando a medida que domina los de su edad.
+
+   Acá vivía el candado. La ficha trabada iba apagada, con el dibujo en
+   gris y el título en tinta suave, porque no se podía tocar. Ahora se
+   puede, así que va igual de viva que las demás: lo que cambia es lo
+   que cuenta, no lo apagada que está.
+   ============================================================ */
+
+/* La etiqueta de la edad, sobre el dibujo del juego. Del color del
+   papel y con el filo de siempre, para que se lea como una calcomanía
+   pegada encima y no como parte del dibujo. */
+.card-edad {
+  position: absolute;
+  right: -10px;
+  bottom: -2px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--tarjeta);
+  border: 2px solid var(--borde);
+  color: var(--tinta-suave);
+  font-size: .72rem;
+  font-weight: 800;
+  line-height: 1.35;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px -1px rgba(29, 43, 74, .25);
+}
+/* Cuando ya está listo, la etiqueta se prende: es el premio de haber
+   dominado los de su edad, y se ve de lejos en la grilla. */
+.card-edad-listo {
+  /* el verde oscuro y no el claro: la etiqueta es letra chica, y el
+     blanco sobre el verde claro se queda en 3,3:1 */
+  background: var(--exito-osc);
+  border-color: var(--exito-osc);
+  color: #fff;
+}
+
+/* El renglón de abajo del nombre: la barra y la frase. Mismo tamaño y
+   mismo lugar que la bajada de las otras fichas, así una ficha de más
+   grandes mide igual que las de al lado. */
+.card-consejo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  margin-top: 4px;
   font-size: .78rem;
   font-weight: 700;
   line-height: 1.25;
   color: var(--tinta-suave);
 }
-.card-traba .ico { width: 14px; height: 14px; flex: none; margin-top: .15em; }
-.traba-texto { min-width: 0; text-align: left; }
-
-.card-cerrojo {
-  position: absolute;
-  right: -2px;
-  bottom: 2px;
-  width: 28px;
-  height: 28px;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  background: var(--tarjeta);
-  color: var(--tinta-suave);
-  box-shadow: 0 2px 6px -1px rgba(29, 43, 74, .3);
+.card-consejo-listo {
+  flex-direction: row;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 4px;
+  color: var(--exito-osc);
 }
-.card-cerrojo .ico { width: 15px; height: 15px; stroke-width: 2.2; }
+.card-consejo .ico { width: 14px; height: 14px; flex: none; margin-top: .15em; }
+.traba-texto { min-width: 0; text-align: center; }
+.card-consejo-listo .traba-texto { text-align: left; }
+
+/* El sello de «lo dominás»: una partida entera sin errores. */
+.card-dominado {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-top: 4px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: #dcfce7;
+  color: #14532d;
+  font-size: .78rem;
+  font-weight: 800;
+}
+.card-dominado .ico { width: 13px; height: 13px; stroke-width: 3; }
+
+/* La barra de avance y su número. En la ficha va chiquita; en el
+   cartel de arriba de la pantalla, entera. */
+.avance {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+.avance .nivel-barra { flex: 1; min-width: 40px; }
+.avance-cuenta {
+  flex: none;
+  font-size: .82rem;
+  font-weight: 800;
+  color: var(--tinta-suave);
+  font-variant-numeric: tabular-nums;
+}
+.card-consejo .nivel-barra { height: 9px; }
+.card-consejo .avance-cuenta { font-size: .74rem; }
 
 .card-pie { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
 .card-minutos, .card-leida {

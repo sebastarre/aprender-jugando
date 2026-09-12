@@ -367,6 +367,43 @@ window.Iconos = (function () {
     sinonimos: {
       b: [], t: ['<path d="M5 9h14M5 15h14" stroke-width="2.8"/>']
     },
+    /* ---- Inglés ---- */
+    /* Un globo de diálogo con «A/a»: la materia es hablar en otro
+       idioma, no leer un libro. */
+    ingles: {
+      b: ['<path d="M3.5 6.5a2 2 0 0 1 2-2h13a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H10l-4.5 3.5V16.5h-.5a2 2 0 0 1-2-2Z"/>'],
+      t: ['<path d="M3.5 6.5a2 2 0 0 1 2-2h13a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H10l-4.5 3.5V16.5h-.5a2 2 0 0 1-2-2Z"/>',
+          '<text x="12" y="14" text-anchor="middle" font-size="8.5" font-weight="800" fill="currentColor" stroke="none">Aa</text>']
+    },
+    /* Una mano saludando, para las frases hechas. */
+    saludo: {
+      b: [],
+      t: ['<path d="M9 12.5V5.2a1.6 1.6 0 0 1 3.2 0v5.6"/>',
+          '<path d="M12.2 10.3V4.4a1.6 1.6 0 0 1 3.2 0v6.4"/>',
+          '<path d="M15.4 10.8V6.6a1.6 1.6 0 0 1 3.2 0v7.6c0 3.4-2.5 6.3-6 6.3s-6-2.2-6-5.4v-4a1.6 1.6 0 0 1 3.2 0"/>']
+    },
+
+    /* ---- Geografía de los chicos ---- */
+    /* Una montaña con sol: el paisaje más corto de dibujar. */
+    paisajes: {
+      b: ['<path d="M2.5 19.5 9 9l4 6 2.5-3.5 6 8Z"/>'],
+      t: ['<path d="M2.5 19.5 9 9l4 6 2.5-3.5 6 8Z"/>', '<circle cx="7" cy="5.5" r="2.2"/>']
+    },
+    /* Una chincheta en el mapa: dónde se ve cada cosa. */
+    donde: {
+      b: ['<path d="M12 21s6.5-6.2 6.5-11a6.5 6.5 0 1 0-13 0c0 4.8 6.5 11 6.5 11Z"/>'],
+      t: ['<path d="M12 21s6.5-6.2 6.5-11a6.5 6.5 0 1 0-13 0c0 4.8 6.5 11 6.5 11Z"/>',
+          '<circle cx="12" cy="10" r="2.4"/>']
+    },
+    /* El globo terráqueo, pero sólo con la línea del ecuador: los
+       continentes son pedazos grandes, no países. */
+    continentes: {
+      b: ['<circle cx="12" cy="12" r="8.5"/>'],
+      t: ['<circle cx="12" cy="12" r="8.5"/>',
+          '<path d="M3.5 12h17"/>',
+          '<path d="M12 3.5c2.6 2.8 3.9 6 3.9 8.5s-1.3 5.7-3.9 8.5c-2.6-2.8-3.9-6-3.9-8.5S9.4 6.3 12 3.5Z"/>']
+    },
+
     tildes: {
       b: [], t: ['<text x="12" y="18" text-anchor="middle" font-size="17" font-weight="800" fill="currentColor" stroke="none">á</text>']
     },

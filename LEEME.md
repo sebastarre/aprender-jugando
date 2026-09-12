@@ -6,12 +6,13 @@ App para chicos con dos mitades que se apoyan una en la otra:
 - **Jugar** — juegos para practicar eso mismo.
 
 Cada lección termina ofreciendo el juego donde usar lo que se acaba de leer, y
-cada juego tiene su lección al lado. Hay cuatro materias con 35 juegos entre
-todas: **Geografía** (países, capitales y banderas sobre un mapa interactivo),
-**Matemática** (12 juegos, de contar a fracciones), **Lengua** (10, de la
-primera letra a las tildes) y **Ciencias** (10, de los ruidos de los animales
-al sistema solar). Cada juego dice desde qué edad tiene sentido, y hay juegos
-para cada edad de 4 a 12 años.
+cada juego tiene su lección al lado. Hay cinco materias con 48 juegos entre
+todas: **Geografía** (6, de reconocer una montaña a las capitales del mundo en
+un mapa interactivo), **Matemática** (12, de contar a fracciones), **Lengua**
+(10, de la primera letra a las tildes), **Ciencias** (10, de los ruidos de los
+animales al sistema solar) e **Inglés** (10, de los colores al verbo *to be*).
+Cada materia tiene juegos para cada edad de 4 a 12 años, ordenados de menor a
+mayor, y ninguno está cerrado: la edad recomienda, no prohíbe.
 
 ## Cómo usarla
 
@@ -58,9 +59,15 @@ los tres, se muestra la respuesta correcta antes de pasar a la siguiente.
 
 | Edad | Juego | Consigna | Cómo se responde |
 |---|---|---|---|
+| 4–7 | Los lugares | Un dibujo: «¿Qué lugar es este?» | Eligiendo entre 4 |
+| 5–8 | Dónde se ve | «¿Dónde se ve la vaca?» | La ciudad, el campo o el mar |
+| 6–9 | Los continentes | Una bandera: «¿En qué continente está Chile?» | Eligiendo entre 4 |
 | 7–12 | Banderas | Muestra una bandera | Clic en el mapa, o eligiendo entre 4 banderas |
 | 8–12 | Encontrá el país | «¿Dónde está Argentina?» | Clic en el país en el mapa |
 | 10–12 | Capitales | «¿De qué país es capital Lima?» | Clic en el país en el mapa |
+
+Los tres primeros no usan el mapa: geografía para un chico de cuatro no es el
+planisferio, es reconocer una montaña y un río y saber dónde se ve cada cosa.
 
 Zonas: todo el mundo, América, América del Sur, América del Norte (con Centro
 y Caribe), Europa, África, Asia y Oceanía.
@@ -120,7 +127,29 @@ un problema casi nunca es de cálculo, es elegir mal la cuenta.
 | 10–12 | El agua y la materia | Sólido, líquido y gaseoso |
 | 10–12 | El sistema solar | Los planetas, el Sol y la Luna |
 
-Los de Lengua y Ciencias son listas escritas a mano, y cada una está revisada
+**Inglés**
+
+| Edad | Juego | Consigna |
+|---|---|---|
+| 4–6 | Los colores | Un cuadrado de color: «¿De qué color es?» → *red* |
+| 4–7 | Los números | Un número grande: «¿Cómo se dice?» → *seven* |
+| 5–7 | Los animales | Un dibujo: «¿Cómo se dice este animal?» → *dog* |
+| 5–8 | La comida | Un dibujo: «¿Cómo se dice?» → *apple* |
+| 6–9 | La familia | «¿Cómo se dice la hermana?» → *sister* |
+| 6–9 | El cuerpo | «¿Cómo se dice la mano?» → *hand* |
+| 7–10 | La escuela | «¿Cómo se dice el lápiz?» → *pencil* |
+| 8–11 | Las acciones | «¿Cómo se dice correr?» → *run* |
+| 8–12 | Frases | «¿Qué quiere decir *thank you*?» → Gracias |
+| 10–12 | am, is, are | «*The cats ___ black*» → *are* |
+
+Las listas de inglés no tienen ninguna palabra que en castellano tenga dos
+traducciones igual de buenas: hablar es *talk* y *speak*, mirar es *look* y
+*watch*, mamá es *mother* y *mom*. Con cuatro botones en la pantalla, una
+segunda respuesta correcta es un error del juego, no del chico. Las palabras
+en inglés van marcadas con `lang="en"` para que un lector de pantalla las
+pronuncie en inglés.
+
+Los de Lengua, Ciencias e Inglés son listas escritas a mano, y cada una está revisada
 para que ninguna respuesta mala sea también correcta: ninguna «mala» rima,
 ningún «mal escrito» es una palabra que existe (por eso no está «vaso»: *baso*
 y *bazo* existen), ninguna variante de tilde es otra palabra (por eso no está
@@ -169,27 +198,37 @@ y los NAP. Algunos ejemplos de dónde salió cada número:
 La edad máxima es para no mostrarle a un chico de once el juego de contar
 manzanitas: hasta esa edad el juego se ve, después se esconde.
 
-**Cada materia tiene su nivel.** Arranca en la edad del chico, y juntando
-**100 puntos** jugando esa materia se abren los juegos de la edad siguiente
-(una partida de 10 preguntas da hasta 30). Es por materia: un chico de 7 que
-vuela en matemática puede tener abiertos los juegos de 9 ahí y seguir en los
-de 7 en lengua. En cada materia se ve:
+**Ningún juego está cerrado.** La edad ordena y recomienda, no prohíbe. En
+cada materia se ven todos los juegos, del más chico al más grande: arriba los
+de su edad, abajo los de los más grandes. Los de abajo se pueden jugar igual,
+siempre; lo único que pasa es que la ficha avisa para qué edad es, y si
+todavía no está listo, al entrar pregunta «este es para chicos de 6, ¿jugás
+igual?» —con «Jugar igual» como respuesta principal—.
 
-- los juegos abiertos, salvo los que ya le quedan chicos;
-- los de la edad siguiente, con candado y cuántos puntos faltan;
-- arriba de todo, un cartel con una barra que dice cuánto le falta.
+**Estar listo se gana dominando.** Un juego está *dominado* cuando el chico
+terminó una partida con todas las respuestas bien (el 100% de precisión que
+ya le muestra la pantalla de resultados). Cuando domina todos los juegos de
+su edad en una materia, la app le avisa: «ya estás listo para los juegos de 5
+años». La ficha de cada juego más grande tiene una barra que muestra cuánto
+le falta, y arriba de todo hay un cartel con el mismo número en grande.
 
-Al terminar una partida se muestra cuántos puntos sumó y cuánto le falta; y si
-abrió una edad nueva, un cartel lo anuncia con los juegos que se abrieron.
+Es por materia: un chico de 7 que vuela en matemática puede estar listo para
+los de 9 ahí y seguir juntando los de 7 en lengua.
 
-Si una materia no tiene ningún juego para su edad (Geografía empieza a los 7),
-no hay puntos que juntar: se abre sola cuando cumpla la edad. Los puntos del
-examen y del repaso no suman al nivel, porque mezclan materias.
+**Las lecciones funcionan igual**: se ven todas, ordenadas por edad, y las de
+más arriba de su edad avisan para quién son y cuántas de las suyas le faltan
+leer. Se pueden abrir igual.
 
-Lo que se abrió jugando no se pierde si después se le cambia la edad al
-perfil. Los puntos que hacen falta están en `PUNTOS_PARA_ABRIR`, en
-`js/app.js`; las edades, en cada juego (`js/juegos/*.js`) y en cada lección
-(`js/aprender/contenido.js`).
+Antes esto era un candado: los juegos de la edad siguiente pedían 100 puntos
+en la materia y hasta entonces no se podían tocar. Trababa por la razón
+equivocada. Un chico de seis que se sabe las tablas no tiene por qué esperar
+a juntar puntos, y uno de diez que quiere contar manzanitas un rato no le
+hace mal a nadie.
+
+Lo dominado se guarda por perfil y no se pierde si después se le cambia la
+edad. Las edades están en cada juego (`js/juegos/*.js`) y en cada lección
+(`js/aprender/contenido.js`); la cuenta de quién está listo, en `js/app.js`
+(`listoPara`, `consejoDeJuego`).
 
 ## Modo examen
 
@@ -504,6 +543,7 @@ js/
   juegos/matematica.js     Los doce juegos de matemática
   juegos/lengua.js         Los diez juegos de lengua
   juegos/ciencias.js       Los diez juegos de ciencias
+  juegos/ingles.js         Los diez juegos de inglés
   juegos/examen.js         Modo examen: mezcla juegos y pone la nota
   juegos/repaso.js         Modo repaso: rearma las preguntas que se fallaron
   aprender/contenido.js    El texto y los dibujos de las lecciones

@@ -62,6 +62,11 @@
       id: 'ciencias', nombre: 'Ciencias', icono: 'ciencias',
       color: '#8b5cf6', suave: '#ede9fe',
       texto: 'Animales, cuerpo, plantas y espacio', modulo: Ciencias
+    },
+    {
+      id: 'ingles', nombre: 'Inglés', icono: 'ingles',
+      color: '#0f766e', suave: '#ccfbf1',
+      texto: 'Palabras y frases en inglés', modulo: Ingles
     }
   ];
 
@@ -95,122 +100,145 @@
   }
 
   /* ============================================================
-     Edades y niveles
+     Edades: recomendar, no trabar
 
-     Cada juego dice entre qué edades tiene sentido (edadMin, edadMax),
-     y cada materia tiene su propio NIVEL: la edad hasta la que el chico
-     tiene los juegos abiertos. El nivel arranca en su edad, y juntando
-     PUNTOS_PARA_ABRIR puntos jugando esa materia se abren los juegos de
-     la edad siguiente que tenga juegos. Es por materia: un chico de 7
-     que vuela en matemática puede tener abiertos los de 9 ahí y seguir
-     en los de 7 en lengua.
+     Cada juego dice entre qué edades tiene sentido (edadMin, edadMax) y
+     la pantalla los ordena de menor a mayor: arriba los del chico,
+     abajo los de los más grandes.
 
-     Se ven tres cosas:
-       - los juegos abiertos, salvo los que ya le quedan chicos (los de
-         edadMax menor a su edad: a los once no se muestra «contar
-         manzanitas»);
-       - los de la edad siguiente, con candado y cuántos puntos faltan;
-       - nada más. Los de dos o más edades adelante no se muestran: con
-         doce juegos en matemática, mostrar todos era una pantalla llena
-         de candados.
+     Ninguno está cerrado. Los de más arriba de su edad se pueden jugar
+     igual, siempre; lo único que pasa es que la ficha avisa para qué
+     edad es y cuánto le falta para estar listo.
 
-     Antes había un segundo tipo de candado, «juntá 3 estrellas en tal
-     juego». Se fue: el nivel por puntos hace lo mismo con una sola regla.
+     Qué es «estar listo»: haber DOMINADO los juegos de su edad, o sea
+     haber terminado alguna partida de cada uno con todas las respuestas
+     bien. Cuando los domina todos, la app le avisa —«ya estás listo
+     para los de 5 años»— y él decide.
+
+     Antes esto era un candado: los juegos de la edad siguiente pedían
+     100 puntos y hasta entonces no se podían tocar. Trababa por la
+     razón equivocada. Un chico de seis que se sabe las tablas no tiene
+     por qué esperar a juntar puntos, y uno de diez que quiere contar
+     manzanitas un rato tampoco molesta a nadie. La edad sirve para
+     ordenar y para recomendar, no para prohibir.
      ============================================================ */
-  var PUNTOS_PARA_ABRIR = 100;    // una partida de 10 preguntas da hasta 30
-  var MARGEN_LECCIONES = 2;       // las lecciones se pueden leer un poco antes
+  var MINIMO_PARA_DOMINAR = 5;    // preguntas; es la partida más corta que se puede pedir
 
-  /** Hasta qué edad tiene abiertos los juegos de esta materia. */
-  function nivelDe(materia) {
-    var edad = Almacen.edad();
-    if (!edad) return Infinity;          // sin edad cargada, todo abierto
-    return Math.max(edad, Almacen.nivelGanado(materia.id));
+  function edadDelChico() { return Almacen.edad() || 0; }
+
+  /** Las edades en las que arranca algún juego de la materia, de menor a mayor. */
+  function pasosDe(materia) {
+    var vistos = {};
+    materia.juegos.forEach(function (j) { vistos[j.edadMin || 0] = true; });
+    return Object.keys(vistos).map(Number).sort(function (a, b) { return a - b; });
   }
 
-  /** La próxima edad que tiene juegos en esta materia, o null si ya abrió todo. */
-  function siguienteNivel(materia) {
-    var nivel = nivelDe(materia);
-    var proximas = materia.juegos
-      .map(function (j) { return j.edadMin || 0; })
-      .filter(function (e) { return e > nivel; });
-    return proximas.length ? Math.min.apply(null, proximas) : null;
+  /** En qué escalón está: el más alto de los que ya le corresponden. */
+  function pasoDelChico(materia) {
+    var pasos = pasosDe(materia);
+    var edad = edadDelChico();
+    if (!pasos.length) return 0;
+    if (!edad) return pasos[0];
+    var suyo = pasos[0];
+    pasos.forEach(function (p) { if (p <= edad) suyo = p; });
+    return suyo;
   }
 
-  /** ¿Hay algún juego de esta materia que ya pueda jugar? */
-  function tieneAbiertos(materia) {
-    var nivel = nivelDe(materia);
-    return materia.juegos.some(function (j) { return (j.edadMin || 0) <= nivel; });
+  /** El próximo escalón que todavía le queda grande, o null si no hay. */
+  function proximoPaso(materia) {
+    var edad = edadDelChico();
+    if (!edad) return null;
+    var mayores = pasosDe(materia).filter(function (p) { return p > edad; });
+    return mayores.length ? mayores[0] : null;
   }
 
-  function faltanPuntos(materia) {
-    return Math.max(0, PUNTOS_PARA_ABRIR - Almacen.progresoNivel(materia.id));
+  /** ¿Este juego es para más grandes que él? */
+  function esParaMasGrandes(materia, juego) {
+    return !!edadDelChico() && (juego.edadMin || 0) > edadDelChico();
+  }
+
+  function dominado(materia, juego) {
+    return Almacen.dominado(materia.id + '/' + juego.id);
   }
 
   /**
-   * Suma los puntos de una partida a la materia y abre la edad siguiente
-   * si le alcanzan. Devuelve las edades que se abrieron (casi siempre
-   * ninguna o una).
+   * Los juegos que hay que dominar para estar listo para cierta edad:
+   * los de más abajo que ésa, salvo los que ya le quedan chicos.
+   *
+   * Ese «salvo los que le quedan chicos» es lo que hace que la cuenta
+   * sea justa a cualquier edad: a los nueve, los juegos de cuatro no
+   * están en la lista porque ya no se le muestran. Y es la misma
+   * condición con la que se arma la pantalla, así que los juegos que
+   * cuentan son exactamente los que ve sin etiqueta de edad: no hay
+   * ninguno escondido que le falte dominar.
    */
-  function sumarAlNivel(materia, puntos) {
-    var abiertas = [];
-    var progreso = Almacen.progresoNivel(materia.id) + (puntos || 0);
-    var siguiente = siguienteNivel(materia);
-    while (siguiente && progreso >= PUNTOS_PARA_ABRIR) {
-      progreso -= PUNTOS_PARA_ABRIR;
-      Almacen.guardarNivel(materia.id, siguiente, progreso);
-      abiertas.push(siguiente);
-      siguiente = siguienteNivel(materia);
-    }
-    Almacen.guardarNivel(materia.id, 0, progreso);
-    return abiertas;
-  }
-
-  /** ¿Se puede jugar? Y si no, por qué. */
-  function estadoDeJuego(materia, juego) {
-    if (!juego.edadMin || juego.edadMin <= nivelDe(materia)) return { jugable: true };
-    /* Una sola frase, corta y con el número adelante: es lo que va en la
-       tarjeta, abajo del nombre del juego. */
-    if (juego.edadMin === siguienteNivel(materia) && tieneAbiertos(materia)) {
-      var faltan = faltanPuntos(materia);
-      return { jugable: false, tipo: 'nivel', faltan: faltan,
-               motivo: (faltan === 1 ? 'Falta ' : 'Faltan ') + Util.plural(faltan, 'punto') };
-    }
-    // si en esta materia todavía no tiene nada abierto, no hay puntos que
-    // juntar: se abre sola cuando cumpla la edad
-    return { jugable: false, tipo: 'edad', motivo: 'Desde los ' + juego.edadMin + ' años' };
-  }
-
-  /** Los juegos que se le muestran: los abiertos y los de la edad siguiente. */
-  function juegosVisibles(materia) {
-    var edad = Almacen.edad();
-    var lista = materia.juegos.slice();
-    if (edad) {
-      var nivel = nivelDe(materia);
-      var siguiente = siguienteNivel(materia);
-      lista = lista.filter(function (j) {
-        var min = j.edadMin || 0;
-        if (min <= nivel) return (j.edadMax || 99) >= edad;   // salvo los que le quedan chicos
-        return min === siguiente;                             // la próxima edad, con candado
-      });
-    }
-    // de la edad más chica a la más grande: los candados quedan al final
-    return lista.sort(function (a, b) { return (a.edadMin || 0) - (b.edadMin || 0); });
-  }
-
-  function leccionesVisibles(materiaId) {
-    var materia = materiaPorId(materiaId);
-    var nivel = materia ? nivelDe(materia) : Infinity;
-    return leccionesDe(materiaId).filter(function (l) {
-      return !l.edadMin || l.edadMin <= nivel + MARGEN_LECCIONES;
+  function previosA(materia, edadPaso) {
+    var edad = edadDelChico();
+    return materia.juegos.filter(function (j) {
+      var min = j.edadMin || 0;
+      return min < edadPaso && (j.edadMax || 99) >= edad;
     });
   }
 
-  /** Foto de qué juegos están trabados, para detectar desbloqueos después. */
-  function trabadosAhora() {
+  /** Cuánto le falta para estar listo para los juegos de esa edad. */
+  function listoPara(materia, edadPaso) {
+    var previos = previosA(materia, edadPaso);
+    var hechos = previos.filter(function (j) { return dominado(materia, j); }).length;
+    return {
+      total: previos.length,
+      hechos: hechos,
+      faltan: Math.max(0, previos.length - hechos),
+      listo: hechos >= previos.length
+    };
+  }
+
+  /** Lo que la ficha de un juego tiene que contar, además de su nombre. */
+  function consejoDeJuego(materia, juego) {
+    if (!esParaMasGrandes(materia, juego)) return null;
+    var avance = listoPara(materia, juego.edadMin);
+    return {
+      edad: juego.edadMin,
+      listo: avance.listo,
+      avance: avance,
+      /* Dos frases cortas: para quién es, y cómo viene. La ficha mide
+         169px de ancho, así que no entra nada más largo. */
+      titulo: 'Para chicos de ' + juego.edadMin,
+      texto: avance.listo
+        ? '¡Ya estás listo!'
+        : 'Te ' + (avance.faltan === 1 ? 'falta ' : 'faltan ') +
+          Util.plural(avance.faltan, 'juego') + ' para estar listo'
+    };
+  }
+
+  /**
+   * Los juegos que se le muestran: todos, menos los que ya le quedan
+   * chicos (a los once no hace falta ofrecerle contar manzanitas), y de
+   * la edad más chica a la más grande.
+   */
+  function juegosVisibles(materia) {
+    var edad = edadDelChico();
+    return materia.juegos.filter(function (j) {
+      return !edad || (j.edadMax || 99) >= edad;
+    }).sort(function (a, b) { return (a.edadMin || 0) - (b.edadMin || 0); });
+  }
+
+  /**
+   * Las lecciones, con el mismo criterio que los juegos: todas, de la
+   * más chica a la más grande. Antes se escondían las de más arriba de
+   * su edad y una materia entera podía aparecer vacía.
+   */
+  function leccionesVisibles(materiaId) {
+    return leccionesDe(materiaId).slice().sort(function (a, b) {
+      return (a.edadMin || 0) - (b.edadMin || 0);
+    });
+  }
+
+  /** Foto de qué juegos todavía no domina, para festejar los nuevos después. */
+  function sinDominarAhora() {
     var lista = [];
     MATERIAS.forEach(function (m) {
       m.juegos.forEach(function (j) {
-        if (!estadoDeJuego(m, j).jugable) lista.push(m.id + '/' + j.id);
+        if (!dominado(m, j)) lista.push(m.id + '/' + j.id);
       });
     });
     return lista;
@@ -642,12 +670,11 @@
                       function () { irA('#/materia/' + m.id); });
       b.disabled = !m.disponible;
       if (m.disponible) {
-        // cuántos puede jugar ya, no cuántos se ven: los de candado no cuentan
-        var abiertos = juegosVisibles(m).filter(function (j) { return estadoDeJuego(m, j).jugable; }).length;
-        var siguiente = siguienteNivel(m);
-        b.cuerpo.appendChild(Util.crear('span', 'card-texto', abiertos
-          ? Util.plural(abiertos, 'juego')
-          : 'Desde los ' + siguiente + ' años'));
+        /* Todos los que se le muestran, porque todos se pueden jugar.
+           Antes contaba sólo los abiertos, que era el número que
+           importaba cuando había candados. */
+        var cuantos = juegosVisibles(m).length;
+        b.cuerpo.appendChild(Util.crear('span', 'card-texto', Util.plural(cuantos, 'juego')));
       } else {
         b.appendChild(Util.crear('span', 'card-cinta', 'Pronto'));
       }
@@ -656,48 +683,61 @@
   }
 
   /**
-   * El cartel de arriba de los juegos de una materia: hasta qué edad los
-   * tiene abiertos y cuánto le falta para la siguiente. Es lo que explica
-   * los candados de abajo; sin él, un candado que dice «faltan 40 puntos»
-   * no dice ni de qué ni para qué.
+   * El cartel de arriba de los juegos de una materia: en qué edad está
+   * y cuánto le falta para que le digamos que ya está listo para la
+   * siguiente. Es lo que explica las barritas de las fichas de abajo.
+   *
+   * `reciente` lo usa la pantalla de resultados, que muestra el mismo
+   * cartel pero contando la partida que acaba de terminar.
    */
-  function pintarNivel(caja, materia, conPuntos) {
+  function pintarNivel(caja, materia, reciente) {
     Util.vaciar(caja);
     caja.hidden = !Almacen.edad();
     if (caja.hidden) return;
 
-    var siguiente = siguienteNivel(materia);
-    var nombre = materia.nombre;
-    var titulo, texto, progreso = null;
+    var siguiente = proximoPaso(materia);
+    var titulo, texto, avance = null;
 
-    if (!tieneAbiertos(materia)) {
-      titulo = nombre + ' empieza a los ' + siguiente + ' años';
-      texto = 'Mientras tanto, probá las otras materias.';
-    } else if (!siguiente) {
-      titulo = '¡Tenés abiertos todos los juegos de ' + nombre + '!';
-      texto = 'No queda ninguno por abrir.';
+    if (!siguiente) {
+      titulo = 'Todos los juegos de ' + materia.nombre + ' son para vos';
+      texto = 'No queda ninguno más grande: jugá el que quieras.';
     } else {
-      var faltan = faltanPuntos(materia);
-      titulo = conPuntos ? '+' + Util.plural(conPuntos, 'punto') + ' en ' + nombre
-                         : 'Próximo nivel: juegos de ' + siguiente + ' años';
-      texto = 'Te ' + (faltan === 1 ? 'falta ' : 'faltan ') + Util.plural(faltan, 'punto') +
-              ' jugando ' + nombre.toLowerCase() + ' para abrir los juegos de ' + siguiente + ' años.';
-      progreso = Almacen.progresoNivel(materia.id) / PUNTOS_PARA_ABRIR;
+      avance = listoPara(materia, siguiente);
+      if (avance.listo) {
+        titulo = '¡Estás listo para los juegos de ' + siguiente + ' años!';
+        texto = 'Están más abajo, con la barra llena. Probalos cuando quieras.';
+      } else {
+        titulo = reciente ? 'Seguís en los juegos de ' + pasoDelChico(materia) + ' años'
+                          : 'Estás en los juegos de ' + pasoDelChico(materia) + ' años';
+        texto = 'Terminá una partida con todas bien en ' +
+                (avance.faltan === 1 ? 'el juego que te falta' : 'los ' + avance.faltan + ' juegos que te faltan') +
+                ' y te avisamos que ya estás listo para los de ' + siguiente + '.';
+      }
     }
 
     caja.appendChild(Util.crear('b', 'nivel-titulo', titulo));
-    if (progreso !== null) {
-      var barra = Util.crear('div', 'nivel-barra');
-      barra.setAttribute('role', 'progressbar');
-      barra.setAttribute('aria-valuemin', '0');
-      barra.setAttribute('aria-valuemax', String(PUNTOS_PARA_ABRIR));
-      barra.setAttribute('aria-valuenow', String(Almacen.progresoNivel(materia.id)));
-      var relleno = Util.crear('i');
-      relleno.style.transform = 'scaleX(' + Math.min(1, progreso) + ')';
-      barra.appendChild(relleno);
-      caja.appendChild(barra);
+    if (avance && avance.total) {
+      caja.appendChild(barraDeAvance(avance, 'juego dominado', 'juegos dominados'));
     }
     caja.appendChild(Util.crear('span', 'nivel-texto', texto));
+  }
+
+  /** La barra de «cuánto llevás», con su número al lado. */
+  function barraDeAvance(avance, uno, varios) {
+    var caja = Util.crear('div', 'avance');
+    var barra = Util.crear('div', 'nivel-barra');
+    barra.setAttribute('role', 'progressbar');
+    barra.setAttribute('aria-valuemin', '0');
+    barra.setAttribute('aria-valuemax', String(avance.total));
+    barra.setAttribute('aria-valuenow', String(avance.hechos));
+    barra.setAttribute('aria-label', avance.hechos + ' de ' + avance.total + ' ' + varios);
+    var relleno = Util.crear('i');
+    relleno.style.transform = 'scaleX(' + (avance.total ? avance.hechos / avance.total : 0) + ')';
+    barra.appendChild(relleno);
+    caja.appendChild(barra);
+    caja.appendChild(Util.crear('span', 'avance-cuenta',
+      avance.hechos + '/' + avance.total + ' ' + (avance.total === 1 ? uno : varios)));
+    return caja;
   }
 
   function pintarJuegos(materia) {
@@ -718,17 +758,22 @@
     var cont = $('grilla-juegos');
     Util.vaciar(cont);
     juegosVisibles(materia).forEach(function (j) {
-      var estado = estadoDeJuego(materia, j);
-      /* Al juego trabado se le saca la bajada: en su lugar va el
-         requisito, que es la única línea que importa mientras esté
-         cerrado. Con las dos, una ficha de 169px de ancho terminaba con
-         cinco renglones de texto abajo del dibujo. */
-      var b = tarjeta(estado.jugable ? j : sinBajada(j), function () {
-        if (!estado.jugable) return;
-        irA('#/juego/' + materia.id + '/' + j.id);
+      var consejo = consejoDeJuego(materia, j);
+      /* Al juego de los más grandes se le saca la bajada: en su lugar va
+         el consejo, que es la línea que importa. Con las dos, una ficha
+         de 169px de ancho termina con cinco renglones de texto chico
+         abajo del dibujo. */
+      var b = tarjeta(consejo ? sinBajada(j) : j, function () {
+        irAlJuego(materia, j, consejo);
       });
 
-      if (estado.jugable) {
+      if (!consejo) {
+        if (dominado(materia, j)) {
+          var d = Util.crear('div', 'card-dominado');
+          d.appendChild(Iconos.crear('tilde'));
+          d.appendChild(Util.crear('span', null, ' Lo dominás'));
+          b.cuerpo.appendChild(d);
+        }
         var mejor = Almacen.mejorDeJuego(materia.id + '/' + j.id);
         if (mejor > 0) {
           var r = Util.crear('div', 'card-record');
@@ -736,21 +781,46 @@
           r.appendChild(Util.crear('span', null, ' Tu récord: ' + mejor));
           b.cuerpo.appendChild(r);
         }
-      } else {
-        b.classList.add('trabada');
-        b.setAttribute('aria-disabled', 'true');
-        /* El candado va encima del dibujo del juego, como en el ícono de
-           una app bloqueada: se entiende sin leer nada. */
-        b.icono.appendChild(Util.crear('span', 'card-cerrojo'))
-          .appendChild(Iconos.crear('candado'));
-        var traba = Util.crear('div', 'card-traba');
-        // el trofeo es el ícono de los puntos en toda la app
-        traba.appendChild(Iconos.crear(estado.tipo === 'nivel' ? 'trofeo' : 'perfil'));
-        traba.appendChild(Util.crear('span', 'traba-texto', estado.motivo));
-        b.cuerpo.appendChild(traba);
+        cont.appendChild(b);
+        return;
       }
+
+      /* Para más grandes: se puede jugar igual, así que no hay candado
+         ni ficha apagada. Hay una etiqueta con la edad y una barra que
+         se llena a medida que domina los juegos de antes. */
+      b.classList.add('mas-grande');
+      var cinta = Util.crear('span', 'card-edad', consejo.titulo);
+      if (consejo.listo) cinta.classList.add('card-edad-listo');
+      b.icono.appendChild(cinta);
+
+      var caja = Util.crear('div', 'card-consejo');
+      if (consejo.listo) {
+        caja.classList.add('card-consejo-listo');
+        caja.appendChild(Iconos.crear('tilde'));
+        caja.appendChild(Util.crear('span', 'traba-texto', consejo.texto));
+      } else {
+        caja.appendChild(barraDeAvance(consejo.avance, 'juego', 'juegos'));
+        caja.appendChild(Util.crear('span', 'traba-texto', consejo.texto));
+      }
+      b.cuerpo.appendChild(caja);
       cont.appendChild(b);
     });
+  }
+
+  /**
+   * Entrar a un juego. Si es para más grandes y todavía no está listo,
+   * primero se lo avisa; pero la respuesta de arriba es «sí, probalo»,
+   * porque la idea es recomendar y no frenar. Si ya está listo no
+   * pregunta nada: ya se lo dijimos cuando lo estuvo.
+   */
+  function irAlJuego(materia, juego, consejo) {
+    var destino = '#/juego/' + materia.id + '/' + juego.id;
+    if (!consejo || consejo.listo) return irA(destino);
+    preguntar({
+      titulo: 'Este es para chicos de ' + consejo.edad,
+      texto: 'Tenés ' + edadDelChico() + ', así que te puede resultar difícil. Podés jugarlo igual.',
+      si: 'Jugar igual'
+    }, function () { irA(destino); });
   }
 
   /* ---------------------- sección Aprender ---------------------- */
@@ -760,8 +830,7 @@
     Util.vaciar(cont);
     MATERIAS.forEach(function (m) {
       var lista = leccionesVisibles(m.id);
-      var todas = leccionesDe(m.id);
-      var b = tarjeta(lista.length || todas.length ? sinBajada(m) : m,
+      var b = tarjeta(lista.length ? sinBajada(m) : m,
                       function () { irA('#/lecciones/' + m.id); });
       b.disabled = lista.length === 0;
       if (lista.length) {
@@ -769,17 +838,41 @@
         b.cuerpo.appendChild(Util.crear('span', 'card-texto',
           Util.plural(lista.length, 'lección', 'lecciones') +
           (leidas ? ' · ' + leidas + ' leída' + (leidas === 1 ? '' : 's') : '')));
-      } else if (todas.length) {
-        /* Tiene lecciones, pero todavía no para su edad. «Pronto» le
-           decía que no existían; lo que pasa es que son para más grandes. */
-        var primera = Math.min.apply(null, todas.map(function (l) { return l.edadMin || 0; }));
-        b.cuerpo.appendChild(Util.crear('span', 'card-texto',
-          'Desde los ' + (primera - MARGEN_LECCIONES) + ' años'));
       } else {
         b.appendChild(Util.crear('span', 'card-cinta', 'Pronto'));
       }
       cont.appendChild(b);
     });
+  }
+
+  /**
+   * Lo mismo que con los juegos, pero leyendo: una lección de más
+   * arriba de su edad se puede abrir igual, y la ficha le cuenta
+   * cuántas de las de antes ya leyó. Acá «estar listo» es haberlas
+   * leído, que es todo lo que se le puede pedir a una lección.
+   */
+  function consejoDeLeccion(lecciones, leccion) {
+    var edad = edadDelChico();
+    var suya = leccion.edadMin || 0;
+    if (!edad || suya <= edad) return null;
+
+    var previas = lecciones.filter(function (l) {
+      return (l.edadMin || 0) <= edad;
+    });
+    var leidas = previas.filter(function (l) { return Almacen.leccionVista(l.id); }).length;
+    var avance = { total: previas.length, hechos: leidas,
+                   faltan: Math.max(0, previas.length - leidas) };
+    avance.listo = avance.faltan === 0;
+    return {
+      edad: suya,
+      listo: avance.listo,
+      avance: avance,
+      titulo: 'Para chicos de ' + suya,
+      texto: avance.listo
+        ? '¡Ya estás listo!'
+        : 'Te ' + (avance.faltan === 1 ? 'falta ' : 'faltan ') +
+          Util.plural(avance.faltan, 'lección', 'lecciones') + ' de tu edad'
+    };
   }
 
   function pintarLecciones(materia) {
@@ -798,12 +891,34 @@
 
     var cont = $('grilla-lecciones');
     Util.vaciar(cont);
-    leccionesVisibles(materia.id).forEach(function (l) {
+    var lecciones = leccionesVisibles(materia.id);
+    lecciones.forEach(function (l) {
       var vista = Almacen.leccionVista(l.id);
+      var consejo = consejoDeLeccion(lecciones, l);
       var b = tarjeta({
         icono: l.icono, nombre: l.titulo, texto: l.resumen,
         color: materia.color, suave: materia.suave
       }, function () { irA('#/leccion/' + l.id); });
+
+      /* Igual que los juegos: la de más grandes se puede leer igual, y
+         lo único que cambia es que la ficha avisa para quién es y
+         cuántas de las de antes lleva leídas. */
+      if (consejo) {
+        b.classList.add('mas-grande');
+        var cinta = Util.crear('span', 'card-edad', consejo.titulo);
+        if (consejo.listo) cinta.classList.add('card-edad-listo');
+        b.icono.appendChild(cinta);
+        var caja = Util.crear('div', 'card-consejo');
+        if (consejo.listo) {
+          caja.classList.add('card-consejo-listo');
+          caja.appendChild(Iconos.crear('tilde'));
+          caja.appendChild(Util.crear('span', 'traba-texto', consejo.texto));
+        } else {
+          caja.appendChild(barraDeAvance(consejo.avance, 'lección', 'lecciones'));
+          caja.appendChild(Util.crear('span', 'traba-texto', consejo.texto));
+        }
+        b.cuerpo.appendChild(caja);
+      }
 
       var pie = Util.crear('div', 'card-pie');
       pie.appendChild(Util.crear('span', 'card-minutos', '⏱️ ' + l.minutos + ' min'));
@@ -962,7 +1077,7 @@
     $('btn-cambiar-zona').hidden = false;    // el repaso lo esconde
     var materia = materiaPorId(sel.materia);
     var juego = juegoPorId(materia, sel.juego);
-    var trabadosAntes = trabadosAhora();
+    var sinDominarAntes = sinDominarAhora();
 
     var proporcion = r.maximo ? r.puntos / r.maximo : 0;
     var estrellas = proporcion >= 0.9 ? 3 : proporcion >= 0.7 ? 2 : proporcion >= 0.4 ? 1 : 0;
@@ -977,9 +1092,13 @@
       puntos: r.puntos, maximo: r.maximo,
       aciertos: r.aciertos, total: r.total, estrellas: estrellas
     });
-    // los puntos de la partida van al nivel de la materia; si alcanzan,
-    // se abren los juegos de la edad siguiente
-    var abiertas = sumarAlNivel(materia, r.puntos);
+    /* Una partida entera sin errores quiere decir que ya se lo sabe.
+       Se pide un mínimo de preguntas para que no valga con una sola
+       partida de cinco... que es justo el mínimo: con menos de cinco no
+       hay partida que pedir. */
+    if (r.total >= MINIMO_PARA_DOMINAR && r.aciertos === r.total) {
+      Almacen.marcarDominado(materia.id + '/' + juego.id);
+    }
     Almacen.registrarErrores(materia.id, r.errores.map(function (item) {
       return {
         clave: materia.modulo.claveItem(item),
@@ -1018,10 +1137,10 @@
     $('stat-precision').textContent = r.precision + '%';
     $('stat-record').textContent = Almacen.record(clave).puntos;
 
-    pintarNivel($('progreso-nivel'), materia, r.puntos);
-    // si se abrió una edad, lo cuenta el cartel de desbloqueo, que es más grande
-    if (abiertas.length) $('progreso-nivel').hidden = true;
-    pintarDesbloqueos(trabadosAntes, materia, abiertas);
+    var listoAhora = pintarListo(sinDominarAntes, materia);
+    pintarNivel($('progreso-nivel'), materia, true);
+    // si pasó de edad, lo cuenta el cartel grande y el chico no se repite
+    if (listoAhora) $('progreso-nivel').hidden = true;
     pintarRepaso(materia, r.errores);
     Sonido.tocar(esRecord && r.puntos > 0 ? 'record' : 'fin');
     irA('#/fin');
@@ -1043,39 +1162,56 @@
     if (partes.length) caja.appendChild(Util.crear('span', 'premio-detalle', partes.join(' · ')));
   }
 
-  /** Si esta partida destrabó algún juego, se avisa acá. */
-  function pintarDesbloqueos(trabadosAntes, materia, abiertas) {
+  /**
+   * Lo que la partida dejó: los juegos que recién se dominan y, si con
+   * eso alcanzó, el aviso de que ya está listo para la edad siguiente.
+   * Devuelve si hubo aviso de edad, para no repetir el cartel chico.
+   */
+  function pintarListo(sinDominarAntes, materia) {
     var caja = $('desbloqueo');
     Util.vaciar(caja);
-    var ahora = trabadosAhora();
-    var nuevos = trabadosAntes.filter(function (c) { return ahora.indexOf(c) === -1; });
-    caja.hidden = nuevos.length === 0;
-    if (!nuevos.length) return;
 
-    if (abiertas && abiertas.length) {
+    var nuevos = sinDominarAntes.filter(function (clave) {
+      var enc = porClave(clave);
+      return enc.materia && enc.juego && dominado(enc.materia, enc.juego);
+    });
+
+    var siguiente = proximoPaso(materia);
+    var avance = siguiente ? listoPara(materia, siguiente) : null;
+    /* «Listo» sólo si lo logró recién: si ya lo estaba desde antes, el
+       cartel aparecería en todas las partidas para siempre. */
+    var recienListo = !!(avance && avance.listo && nuevos.length);
+
+    caja.hidden = !nuevos.length;
+    if (caja.hidden) return false;
+
+    if (recienListo) {
       caja.appendChild(Util.crear('b', 'desbloqueo-titulo',
-        '¡Abriste los juegos de ' + abiertas[abiertas.length - 1] + ' años de ' + materia.nombre + '!'));
+        '¡Ya estás listo para los juegos de ' + siguiente + ' años!'));
     }
 
     nuevos.forEach(function (clave) {
       var enc = porClave(clave);
-      if (!enc.juego) return;
       var fila = Util.crear('div', 'desbloqueo-item');
-      fila.appendChild(Util.crear('span', 'desbloqueo-icono', '🔓'));
+      fila.appendChild(Util.crear('span', 'desbloqueo-icono', '🏅'));
       var cuerpo = Util.crear('div');
-      cuerpo.appendChild(Util.crear('b', null, '¡Desbloqueaste ' + enc.juego.nombre + '!'));
-      cuerpo.appendChild(Util.crear('div', 'ir-dato', enc.juego.texto));
+      cuerpo.appendChild(Util.crear('b', null, '¡Dominaste ' + enc.juego.nombre + '!'));
+      cuerpo.appendChild(Util.crear('div', 'ir-dato', 'Una partida con todas bien'));
       fila.appendChild(cuerpo);
-      var btn = Util.crear('button', 'btn-secundario', 'Probarlo');
+      caja.appendChild(fila);
+    });
+
+    if (recienListo) {
+      var btn = Util.crear('button', 'btn-secundario', 'Ver los de ' + siguiente + ' años');
       btn.type = 'button';
       btn.addEventListener('click', function () {
         Sonido.tocar('clic');
-        irA('#/juego/' + clave);
+        irA('#/materia/' + materia.id);
       });
-      fila.appendChild(btn);
-      caja.appendChild(fila);
-    });
+      caja.appendChild(btn);
+    }
     Sonido.tocar('record');
+    return recienListo;
   }
 
   function tituloSegun(estrellas) {
@@ -1090,9 +1226,9 @@
   }
 
   /**
-   * La lista de "para repasar" del final de una partida. `materia` puede ser
-   * null: en el repaso y el examen los ítems son de varias materias y cada
-   * uno se trae la suya en `__materia`.
+   * La lista de «para repasar» del final de una partida. `materia` puede
+   * ser null: en el repaso y el examen los ítems son de varias materias
+   * y cada uno se trae la suya en `__materia`.
    */
   function pintarRepaso(materia, errores) {
     var caja = $('repaso');
@@ -1143,9 +1279,7 @@
       ? [juegoPorId(materia, exigido)]
       : [juegoPorId(materia, juegoId)].concat(juegosVisibles(materia));
 
-    var elegido = candidatos.filter(function (j) {
-      return j && estadoDeJuego(materia, j).jugable;
-    })[0];
+    var elegido = candidatos.filter(function (j) { return !!j; })[0];
     return elegido ? { materia: materia, juego: elegido } : null;
   }
 
@@ -1261,15 +1395,24 @@
     var lista = [];
     MATERIAS.forEach(function (m) {
       if (!m.disponible) return;
-      juegosVisibles(m).forEach(function (j) {
-        if (estadoDeJuego(m, j).jugable) lista.push({ materia: m, juego: j });
-      });
+      juegosVisibles(m).forEach(function (j) { lista.push({ materia: m, juego: j }); });
     });
     return lista;
   }
 
-  function hayGeografia() {
-    return selExamen.juegos.some(function (c) { return c.indexOf('geografia/') === 0; });
+  /**
+   * ¿Entró algún juego que se responde sobre el mapa? Sólo ésos hacen
+   * falta elegir zona. No alcanza con mirar si el juego es de
+   * geografía: los tres de los más chicos (los lugares, dónde se ve,
+   * los continentes) son de geografía y no usan el mapa, y pedirles
+   * una zona dejaba el botón de Rendir apagado para siempre.
+   */
+  function hayMapa() {
+    return selExamen.juegos.some(function (clave) {
+      var enc = porClave(clave);
+      return !!(enc.juego && enc.juego.opciones &&
+                enc.juego.opciones().some(function (g) { return g.id === 'zona'; }));
+    });
   }
 
   function pintarExamen() {
@@ -1307,7 +1450,7 @@
     var numero = 2;
 
     /* 2. zona, sólo si entró algo de geografía */
-    if (hayGeografia()) {
+    if (hayMapa()) {
       var b2 = Util.crear('div', 'bloque-config');
       b2.appendChild(Util.crear('h2', 'etiqueta-grupo', (numero++) + '. ¿De qué zona?'));
       var gz = Util.crear('div', 'grilla-continentes');
@@ -1347,7 +1490,7 @@
 
   function faltaParaExamen() {
     if (!selExamen.juegos.length) return 'Elegí al menos un juego';
-    if (hayGeografia() && !selExamen.zona) return 'Elegí la zona del mapa';
+    if (hayMapa() && !selExamen.zona) return 'Elegí la zona del mapa';
     return null;
   }
 
@@ -2134,7 +2277,6 @@
       var mat = materiaPorId(partes[1]);
       var jg = juegoPorId(mat, partes[2]);
       if (!mat || !jg) return irA('#/juegos');
-      if (!estadoDeJuego(mat, jg).jugable) return irA('#/materia/' + mat.id);
       cortarPartida();
       pintarConfig(mat, jg);
       return mostrar('config');

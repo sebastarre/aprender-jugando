@@ -23,7 +23,17 @@ window.Leccion = (function () {
   function enElFinal() { return paso >= total(); }
 
   function pintar() {
-    Util.$('leccion-titulo').textContent = leccion.icono + ' ' + leccion.titulo;
+    /* El ícono es el nombre de un dibujo, no un emoji: pegado con un +
+       el título salía «silabas Qué es una sílaba», con el nombre del
+       archivo adelante. */
+    var titulo = Util.$('leccion-titulo');
+    Util.vaciar(titulo);
+    if (Iconos.existe(leccion.icono)) {
+      titulo.appendChild(Iconos.crear(leccion.icono, 'ico-titulo'));
+    } else if (leccion.icono) {
+      titulo.appendChild(Util.crear('span', null, leccion.icono + ' '));
+    }
+    titulo.appendChild(Util.crear('span', null, leccion.titulo));
     pintarPuntitos();
     if (enElFinal()) pintarFinal();
     else pintarPaso(leccion.pasos[paso]);

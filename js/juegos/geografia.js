@@ -238,8 +238,158 @@ window.Geografia = (function () {
     return Object.assign({}, base, extra, ganchos || {});
   }
 
-  /* ---------------------- los tres juegos ---------------------- */
-  var JUEGOS = [
+  /* ============================================================
+     Los juegos de los más chicos
+
+     Los tres juegos del mapa empiezan a los siete, y geografía para un
+     chico de cuatro no es el planisferio: es reconocer una montaña, un
+     río y una ciudad, y saber dónde se ve cada cosa. Estos tres no usan
+     el mapa; son listas escritas a mano, con el mismo tablero de
+     tarjetas que usan Lengua y Ciencias.
+     ============================================================ */
+  var T = Tablero;
+
+  /* Dibujos que no se confunden entre ellos: ninguna de las respuestas
+     posibles sirve para dos dibujos de la lista. */
+  var PAISAJES = [
+    ['montania', 'la montaña', '🏔️'], ['desierto', 'el desierto', '🏜️'],
+    ['isla', 'la isla', '🏝️'], ['volcan', 'el volcán', '🌋'],
+    ['playa', 'la playa', '🏖️'], ['ciudad', 'la ciudad', '🏙️'],
+    ['campo', 'el campo', '🌾'], ['bosque', 'el bosque', '🌲'],
+    ['mar', 'el mar', '🌊'], ['rio', 'el río', '🏞️'],
+    ['cueva', 'la cueva', '🕳️'], ['puente', 'el puente', '🌉']
+  ];
+
+  var PAISAJES_JUEGO = T.banco({
+    id: 'paisajes',
+    nombre: 'Los lugares',
+    icono: 'paisajes',
+    color: '#0d9488',
+    suave: '#ccfbf1',
+    texto: 'La montaña, el mar, la ciudad…',
+    edadMin: 4,
+    edadMax: 7,
+    items: PAISAJES.map(function (p) { return { id: p[0], r: p[1], emoji: p[2] }; }),
+    forma: 'palabra',
+    consigna: function () { return '¿Qué lugar es este?'; },
+    visual: function (it) {
+      return '<div class="visual-emoji" role="img" aria-label="' + it.r + '">' + it.emoji + '</div>';
+    },
+    textoFallo: function () { return 'Ese no es.'; },
+    textoRevelado: function (it) { return 'Es ' + it.r + '.'; },
+    repaso: function (it) { return { simbolo: it.emoji, nombre: it.r, dato: 'Un lugar de la Tierra' }; }
+  });
+
+  /* Tres lugares y cosas que se ven en uno solo de los tres. Nada que
+     pueda estar en dos: un perro está en la ciudad y en el campo, un
+     pájaro en los tres. */
+  var DONDE = [
+    ['semaforo', 'el semáforo', '🚦', 'en la ciudad'],
+    ['edificio', 'el edificio', '🏢', 'en la ciudad'],
+    ['colectivo', 'el colectivo', '🚌', 'en la ciudad'],
+    ['subte', 'el subte', '🚇', 'en la ciudad'],
+    ['taxi', 'el taxi', '🚕', 'en la ciudad'],
+    ['vaca', 'la vaca', '🐮', 'en el campo'],
+    ['tractor', 'el tractor', '🚜', 'en el campo'],
+    ['gallina', 'la gallina', '🐔', 'en el campo'],
+    ['oveja', 'la oveja', '🐑', 'en el campo'],
+    ['granero', 'el granero', '🏚️', 'en el campo'],
+    ['ballena', 'la ballena', '🐳', 'en el mar'],
+    ['pulpo', 'el pulpo', '🐙', 'en el mar'],
+    ['tiburon', 'el tiburón', '🦈', 'en el mar'],
+    ['barco', 'el barco', '⛵', 'en el mar'],
+    ['delfin', 'el delfín', '🐬', 'en el mar']
+  ];
+
+  var DONDE_JUEGO = T.banco({
+    id: 'donde',
+    nombre: 'Dónde se ve',
+    icono: 'donde',
+    color: '#0891b2',
+    suave: '#cffafe',
+    texto: 'La ciudad, el campo y el mar',
+    edadMin: 5,
+    edadMax: 8,
+    items: DONDE.map(function (d) { return { id: d[0], que: d[1], emoji: d[2], r: d[3] }; }),
+    categorias: ['en la ciudad', 'en el campo', 'en el mar'],
+    cuantas: 3,
+    forma: 'palabra',
+    consigna: function (it) { return '¿Dónde se ve <b>' + it.que + '</b>?'; },
+    visual: function (it) {
+      return '<div class="visual-emoji" role="img" aria-label="' + it.que + '">' + it.emoji + '</div>';
+    },
+    textoFallo: function (it, r) { return 'Ahí no: ' + it.que + ' no se ve ' + r + '.'; },
+    textoRevelado: function (it) { return it.que.charAt(0).toUpperCase() + it.que.slice(1) + ' se ve ' + it.r + '.'; },
+    repaso: function (it) { return { simbolo: it.emoji, nombre: it.que, dato: 'Se ve ' + it.r }; }
+  });
+
+  /* Países conocidos, uno por continente y varios de América, para que
+     el primer contacto con los continentes sea con nombres que el chico
+     ya escuchó. Los 194 llegan después, con el mapa. */
+  var DE_QUE_CONTINENTE = [
+    'AR', 'BR', 'UY', 'CL', 'MX', 'US', 'CA', 'PE',
+    'ES', 'IT', 'FR', 'DE', 'PT',
+    'JP', 'CN', 'IN',
+    'EG', 'ZA', 'KE',
+    'AU', 'NZ'
+  ];
+
+  var CONTINENTES = {
+    america: 'América', europa: 'Europa', asia: 'Asia',
+    africa: 'África', oceania: 'Oceanía'
+  };
+
+  function paisPorId(id) {
+    for (var i = 0; i < window.PAISES.length; i++) {
+      if (window.PAISES[i].id === id) return window.PAISES[i];
+    }
+    return null;
+  }
+
+  var CONTINENTES_JUEGO = T.banco({
+    id: 'continentes',
+    nombre: 'Los continentes',
+    icono: 'continentes',
+    color: '#7c3aed',
+    suave: '#ede9fe',
+    texto: 'En qué continente está cada país',
+    edadMin: 6,
+    edadMax: 9,
+    items: DE_QUE_CONTINENTE.map(function (id) {
+      var p = paisPorId(id);
+      return p ? { id: id.toLowerCase(), pais: p.nombre, bandera: id, r: CONTINENTES[p.cont] } : null;
+    }).filter(Boolean),
+    categorias: [CONTINENTES.america, CONTINENTES.europa, CONTINENTES.asia,
+                 CONTINENTES.africa, CONTINENTES.oceania],
+    forma: 'palabra',
+    consigna: function (it) { return '¿En qué continente está <b>' + it.pais + '</b>?'; },
+    visual: function (it) {
+      return '<img class="visual-bandera" src="' + Util.bandera(it.bandera) +
+             '" alt="Bandera de ' + it.pais + '">';
+    },
+    textoFallo: function (it, r) { return it.pais + ' no está en ' + r + '.'; },
+    textoRevelado: function (it) { return it.pais + ' está en ' + it.r + '.'; },
+    repaso: function (it) {
+      return { imagen: Util.bandera(it.bandera), nombre: it.pais, dato: 'Está en ' + it.r };
+    }
+  });
+
+  var JUEGOS_DE_BANCO = [PAISAJES_JUEGO, DONDE_JUEGO, CONTINENTES_JUEGO];
+  var BANCO_POR_ID = {};
+  JUEGOS_DE_BANCO.forEach(function (j) {
+    j.materia = 'geografia';
+    BANCO_POR_ID[j.id] = j;
+    T.conJugar(j);
+  });
+
+  /** El juego de banco de una clave 'juego:resto', o null si es un país. */
+  function bancoDe(clave) {
+    var p = String(clave).indexOf(':');
+    return p > 0 ? BANCO_POR_ID[clave.slice(0, p)] || null : null;
+  }
+
+  /* ---------------------- los juegos del mapa ---------------------- */
+  var JUEGOS_DE_MAPA = [
     {
       id: 'paises',
       nombre: 'Encontrá el país',
@@ -366,8 +516,8 @@ window.Geografia = (function () {
     }
   ];
 
-  // jugar() es igual para los tres: armar preguntas y arrancar el motor
-  JUEGOS.forEach(function (juego) {
+  // jugar() es igual para los tres del mapa: armar preguntas y arrancar
+  JUEGOS_DE_MAPA.forEach(function (juego) {
     juego.jugar = function (sel, ganchos) {
       var items = juego.preguntas(sel);
       pistaDada = false;
@@ -379,11 +529,26 @@ window.Geografia = (function () {
     };
   });
 
+  /* Primero los de los chicos y después los del mapa. El orden de esta
+     lista no decide cómo se ven: la pantalla los ordena por edad. */
+  var JUEGOS = JUEGOS_DE_BANCO.concat(JUEGOS_DE_MAPA);
+
   return {
     id: 'geografia',
     JUEGOS: JUEGOS,
-    /** Clave con la que se guardan aciertos y errores de esta materia. */
-    claveItem: function (pais) { return pais.id; },
+    /** Clave con la que se guardan aciertos y errores de esta materia.
+        Un país es 'ar'; una pregunta de los juegos de los chicos es
+        'paisajes:montania', con el juego adelante. */
+    claveItem: function (item) { return item.id; },
+
+    /* Los juegos de los chicos sólo los sabe dibujar el suyo: un paisaje
+       puesto en el mapa no es una pregunta. Los países, en cambio, los
+       puede preguntar cualquiera de los tres juegos del mapa, así que
+       ahí no se exige ninguno. */
+    juegoDeClave: function (clave) {
+      var b = bancoDe(clave);
+      return b ? b.id : null;
+    },
     /**
      * Rearma una pregunta a partir de su clave. Lo usa el modo Repaso, que
      * sólo guarda la clave del país que se falló, no la pregunta entera.
@@ -391,6 +556,8 @@ window.Geografia = (function () {
      * continente, y como la zona no cambia entre preguntas, el mapa se reusa.
      */
     itemDeClave: function (clave, juegoId) {
+      var banco = bancoDe(clave);
+      if (banco) return banco.deClave(clave.slice(banco.id.length + 1));
       var pais = null;
       for (var i = 0; i < window.PAISES.length; i++) {
         if (window.PAISES[i].id === clave) { pais = window.PAISES[i]; break; }
@@ -415,6 +582,9 @@ window.Geografia = (function () {
      * Si el repaso cruza continentes no queda otra que el mundo entero.
      */
     ajustarContexto: function (items) {
+      /* Los de los chicos no van al mapa: no tienen zona que ajustar y
+         sus claves no son países, así que ni se los mira. */
+      items = items.filter(function (it) { return !it.juego; });
       if (!items.length) return;
       var ids = items.map(function (it) { return it.id; });
 
@@ -435,11 +605,13 @@ window.Geografia = (function () {
       });
     },
     /** Cómo se dibuja en la lista de repaso. */
-    repaso: function (pais) {
+    repaso: function (item) {
+      var banco = BANCO_POR_ID[item.juego];
+      if (banco) return banco.repaso(item);
       return {
-        imagen: Util.bandera(pais.id),
-        nombre: pais.nombre,
-        dato: 'Capital: ' + pais.capital + ' · ' + pais.sub
+        imagen: Util.bandera(item.id),
+        nombre: item.nombre,
+        dato: 'Capital: ' + item.capital + ' · ' + item.sub
       };
     },
     mapaActual: function () { return mapa; },

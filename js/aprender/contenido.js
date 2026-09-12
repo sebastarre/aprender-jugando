@@ -18,6 +18,24 @@ window.Lecciones = (function () {
 
   /* ---------------------- dibujos reutilizables ---------------------- */
 
+  /** Cuadraditos de color con su nombre en inglés debajo. */
+  function muestrario(colores) {
+    return '<div class="muestrario">' + colores.map(function (c) {
+      return '<div class="muestra-color"><span style="background:' + c[0] + '"></span>' +
+             '<b lang="en">' + c[1] + '</b></div>';
+    }).join('') + '</div>';
+  }
+
+  /** Dos columnas: el inglés a la izquierda y qué quiere decir a la derecha. */
+  function listaEn(pares, alReves) {
+    return '<div class="lista-en">' + pares.map(function (p) {
+      var ingles = alReves ? p[0] : p[1];
+      var otro = alReves ? p[1] : p[0];
+      return '<div class="lista-en-fila"><b lang="en">' + ingles + '</b>' +
+             '<span>' + otro + '</span></div>';
+    }).join('') + '</div>';
+  }
+
   /** Una cuenta en columna, con el acarreo opcional arriba. */
   function columna(arriba, abajo, signo, resultado, llevo, resaltar) {
     function fila(n, clase) {
@@ -497,6 +515,148 @@ window.Lecciones = (function () {
         {
           titulo: 'Los días y los años',
           texto: 'La Tierra da <b>una vuelta sobre sí misma</b> cada día: eso hace el día y la noche. Y da <b>una vuelta alrededor del Sol</b> cada año. La <b>Luna</b> es un satélite: gira alrededor de la Tierra.'
+        }
+      ]
+    },
+
+    /* ---------------------- Inglés ---------------------- */
+    {
+      id: 'los-colores-en-ingles',
+      materia: 'ingles',
+      titulo: 'Los colores en inglés',
+      icono: 'personalizacion',
+      edadMin: 4,
+      minutos: 2,
+      resumen: 'Red, blue, yellow y los demás.',
+      juego: 'ingles/colores',
+      pasos: [
+        {
+          titulo: 'Los tres primeros',
+          texto: 'En inglés el <b>rojo</b> es <b lang="en">red</b>, el <b>azul</b> es <b lang="en">blue</b> y el <b>amarillo</b> es <b lang="en">yellow</b>.',
+          visual: function () {
+            return muestrario([['#dc2626', 'red'], ['#2563eb', 'blue'], ['#eab308', 'yellow']]);
+          }
+        },
+        {
+          titulo: 'Tres más',
+          texto: 'El <b>verde</b> es <b lang="en">green</b>, el <b>naranja</b> es <b lang="en">orange</b> (igual que la fruta) y el <b>violeta</b> es <b lang="en">purple</b>.',
+          visual: function () {
+            return muestrario([['#16a34a', 'green'], ['#ea580c', 'orange'], ['#7c3aed', 'purple']]);
+          },
+          truco: 'Orange es la naranja y el color naranja: la misma palabra para las dos cosas.'
+        },
+        {
+          titulo: 'El blanco y el negro',
+          texto: 'El <b>blanco</b> es <b lang="en">white</b> y el <b>negro</b> es <b lang="en">black</b>. Y el <b>rosa</b> es <b lang="en">pink</b>.',
+          visual: function () {
+            return muestrario([['#f8fafc', 'white'], ['#111827', 'black'], ['#ec4899', 'pink']]);
+          }
+        }
+      ]
+    },
+
+    {
+      id: 'contar-en-ingles',
+      materia: 'ingles',
+      titulo: 'Contar en inglés',
+      icono: 'contar',
+      edadMin: 5,
+      minutos: 2,
+      resumen: 'Del one al ten, de a poco.',
+      juego: 'ingles/numeros-en',
+      pasos: [
+        {
+          titulo: 'Del uno al cinco',
+          texto: '<b lang="en">One, two, three, four, five</b>. Decilos en voz alta mientras contás con los dedos de una mano.',
+          visual: function () {
+            return listaEn([['1', 'one'], ['2', 'two'], ['3', 'three'], ['4', 'four'], ['5', 'five']]);
+          }
+        },
+        {
+          titulo: 'Del seis al diez',
+          texto: '<b lang="en">Six, seven, eight, nine, ten</b>. Con la otra mano.',
+          visual: function () {
+            return listaEn([['6', 'six'], ['7', 'seven'], ['8', 'eight'], ['9', 'nine'], ['10', 'ten']]);
+          },
+          truco: 'Los diez seguidos son una canción: one, two, three, four, five, six, seven, eight, nine, ten.'
+        }
+      ]
+    },
+
+    {
+      id: 'saludar-en-ingles',
+      materia: 'ingles',
+      titulo: 'Saludar en inglés',
+      icono: 'saludo',
+      edadMin: 7,
+      minutos: 3,
+      resumen: 'Hola, gracias y cómo estás.',
+      juego: 'ingles/frases',
+      pasos: [
+        {
+          titulo: 'Hola y chau',
+          texto: '<b lang="en">Hello</b> es «hola» y <b lang="en">goodbye</b> es «adiós». Entre amigos alcanza con <b lang="en">hi</b> y <b lang="en">bye</b>.',
+          visual: function () {
+            return listaEn([['Hello', 'Hola'], ['Goodbye', 'Adiós']], true);
+          }
+        },
+        {
+          titulo: 'Según la hora',
+          texto: 'A la mañana se dice <b lang="en">good morning</b>, a la tarde <b lang="en">good afternoon</b> y a la noche <b lang="en">good night</b>.',
+          visual: function () {
+            return listaEn([['Good morning', 'Buen día'], ['Good afternoon', 'Buenas tardes'],
+                            ['Good night', 'Buenas noches']], true);
+          },
+          truco: 'Good quiere decir «bueno». Good morning es, tal cual, «buena mañana».'
+        },
+        {
+          titulo: 'Ser amable',
+          texto: '<b lang="en">Please</b> es «por favor» y <b lang="en">thank you</b> es «gracias». Si te dan las gracias, se contesta <b lang="en">you are welcome</b>: «de nada».',
+          visual: function () {
+            return listaEn([['Please', 'Por favor'], ['Thank you', 'Gracias'],
+                            ['You are welcome', 'De nada']], true);
+          }
+        },
+        {
+          titulo: 'Cómo estás',
+          texto: '<b lang="en">How are you?</b> es «¿cómo estás?». Se contesta <b lang="en">I am fine, thank you</b>: «estoy bien, gracias».',
+          visual: function () {
+            return listaEn([['How are you?', '¿Cómo estás?'], ['I am fine', 'Estoy bien']], true);
+          }
+        }
+      ]
+    },
+
+    {
+      id: 'am-is-are',
+      materia: 'ingles',
+      titulo: 'am, is, are',
+      icono: 'clases',
+      edadMin: 10,
+      minutos: 3,
+      resumen: 'El verbo to be, que es «ser» y «estar».',
+      juego: 'ingles/tobe',
+      pasos: [
+        {
+          titulo: 'Un verbo para dos cosas',
+          texto: 'En castellano decimos «yo <b>soy</b>» y «yo <b>estoy</b>». En inglés las dos son el mismo verbo: <b lang="en">to be</b>. Lo que cambia es de quién estamos hablando.'
+        },
+        {
+          titulo: 'Am, is, are',
+          texto: 'Con <b lang="en">I</b> va <b lang="en">am</b>. Con <b lang="en">he</b>, <b lang="en">she</b> y <b lang="en">it</b> va <b lang="en">is</b>. Con <b lang="en">you</b>, <b lang="en">we</b> y <b lang="en">they</b> va <b lang="en">are</b>.',
+          visual: function () {
+            return listaEn([['I am', 'Yo soy / estoy'], ['He is', 'Él es / está'],
+                            ['We are', 'Nosotros somos / estamos']], true);
+          },
+          truco: 'Am es una sola: siempre va con I, y nunca con otra cosa.'
+        },
+        {
+          titulo: 'Uno o varios',
+          texto: 'Si es <b>uno solo</b> va <b lang="en">is</b>: <b lang="en">the dog is big</b>. Si son <b>varios</b> va <b lang="en">are</b>: <b lang="en">the dogs are big</b>.',
+          visual: function () {
+            return listaEn([['The dog is big', 'El perro es grande'],
+                            ['The dogs are big', 'Los perros son grandes']], true);
+          }
         }
       ]
     }
