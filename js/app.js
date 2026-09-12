@@ -122,7 +122,11 @@
      manzanitas un rato tampoco molesta a nadie. La edad sirve para
      ordenar y para recomendar, no para prohibir.
      ============================================================ */
-  var MINIMO_PARA_DOMINAR = 5;    // preguntas; es la partida más corta que se puede pedir
+  /* Preguntas mínimas para que una partida perfecta cuente como
+     dominar el juego. Cuatro es el nivel más chico que hay (Las frutas,
+     En casa): con cinco, ganar ese nivel sin errores no contaba y no
+     había manera de saber por qué. */
+  var MINIMO_PARA_DOMINAR = 4;
 
   function edadDelChico() { return Almacen.edad() || 0; }
 
@@ -940,26 +944,69 @@
 
     grupos = juego.opciones();
     grupos.forEach(function (g) {
-      if (g.porDefecto) sel.valores[g.id] = g.porDefecto;
+      /* El nivel arranca en el primero: es el más fácil, y es de donde
+         se empieza. Los demás grupos, en lo que diga el juego. */
+      if (g.esNivel) sel.valores[g.id] = g.items[0] && g.items[0].id;
+      else if (g.porDefecto) sel.valores[g.id] = g.porDefecto;
     });
 
     var caja = $('bloques-opciones');
     Util.vaciar(caja);
     grupos.forEach(function (grupo, i) {
-      caja.appendChild(bloqueDeOpciones(grupo, i + 1, juego));
+      caja.appendChild(grupo.esNivel
+        ? bloqueDeNiveles(grupo, i + 1, juego, materia)
+        : bloqueDeOpciones(grupo, i + 1, juego));
     });
 
-    // el último bloque, común a todos los juegos: cuántas preguntas
-    var bloqueCantidad = Util.crear('div', 'bloque-config');
-    bloqueCantidad.appendChild(
-      Util.crear('h2', 'etiqueta-grupo', (grupos.length + 1) + '. ¿Cuántas preguntas?'));
-    var fila = Util.crear('div', 'fila-opciones');
-    fila.id = 'fila-cantidad';
-    bloqueCantidad.appendChild(fila);
-    caja.appendChild(bloqueCantidad);
-
-    pintarCantidades(juego);
     actualizarResumen(juego);
+  }
+
+  /**
+   * Los niveles de un juego: 1, 2, 3… cada uno con su nombre.
+   *
+   * Reemplazó a la pregunta «¿cuántas preguntas: 5, 10 o todas?», que
+   * era una pregunta de máquina. No decía nada de lo que había adentro
+   * y un chico de cinco no tenía cómo contestarla; el nivel, en cambio,
+   * dice qué entra («Los de la granja», «Tabla del 7») y en qué orden
+   * conviene hacerlos.
+   *
+   * Cada nivel guarda su propio récord, así que la ficha muestra el
+   * mejor puntaje de ese nivel y no el del juego entero.
+   */
+  function bloqueDeNiveles(grupo, numero, juego, materia) {
+    var bloque = Util.crear('div', 'bloque-config');
+    bloque.appendChild(Util.crear('h2', 'etiqueta-grupo', numero + '. ' + grupo.titulo));
+
+    var caja = Util.crear('div', 'grilla-niveles');
+    grupo.items.forEach(function (item, i) {
+      var b = Util.crear('button', 'nivel-opcion');
+      b.type = 'button';
+      b.setAttribute('aria-pressed', sel.valores[grupo.id] === item.id ? 'true' : 'false');
+      b.style.setProperty('--op-color', juego.color);
+      b.style.setProperty('--op-suave', juego.suave);
+
+      b.appendChild(Util.crear('span', 'nivel-numero', String(item.numero || i + 1)));
+      var cuerpo = Util.crear('span', 'nivel-cuerpo');
+      cuerpo.appendChild(Util.crear('span', 'nivel-nombre', item.nombre));
+      var abajo = [];
+      if (item.detalle) abajo.push(item.detalle);
+      if (item.cantidad) abajo.push(Util.plural(item.cantidad, 'pregunta'));
+      var mejor = Almacen.record(materia.id + '/' + juego.id + ':' +
+                                 'Nivel ' + (item.numero || i + 1) + ' · ' + item.nombre).puntos;
+      if (mejor > 0) abajo.push('Tu récord: ' + mejor);
+      if (abajo.length) cuerpo.appendChild(Util.crear('span', 'nivel-detalle', abajo.join(' · ')));
+      b.appendChild(cuerpo);
+
+      b.addEventListener('click', function () {
+        sel.valores[grupo.id] = item.id;
+        marcarElegido(caja, b);
+        actualizarResumen(juego);
+      });
+      caja.appendChild(b);
+    });
+
+    bloque.appendChild(caja);
+    return bloque;
   }
 
   function bloqueDeOpciones(grupo, numero, juego) {
@@ -974,7 +1021,6 @@
       b.addEventListener('click', function () {
         sel.valores[grupo.id] = item.id;
         marcarElegido(caja, b);
-        pintarCantidades(juego);
         actualizarResumen(juego);
       });
       caja.appendChild(b);
@@ -982,34 +1028,6 @@
 
     bloque.appendChild(caja);
     return bloque;
-  }
-
-  function pintarCantidades(juego) {
-    var fila = $('fila-cantidad');
-    if (!fila) return;
-    Util.vaciar(fila);
-
-    var info = juego.cantidades(datosSeleccion());
-    var lista = info.lista;
-    if (lista.indexOf(sel.cantidad) === -1) {
-      sel.cantidad = lista.indexOf(10) !== -1 ? 10 : lista[0];
-    }
-
-    lista.forEach(function (n) {
-      var esTodos = n === 'todos';
-      var b = botonOpcion(
-        esTodos ? '∞' : String(n),
-        esTodos ? 'Todas' : n + ' preguntas',
-        esTodos ? (info.total ? info.total + ' ' + info.unidad : null) : null,
-        juego.color, juego.suave);
-      if (n === sel.cantidad) b.setAttribute('aria-pressed', 'true');
-      b.addEventListener('click', function () {
-        sel.cantidad = n;
-        marcarElegido(fila, b);
-        actualizarResumen(juego);
-      });
-      fila.appendChild(b);
-    });
   }
 
   /**
@@ -1039,9 +1057,48 @@
   }
 
   function datosSeleccion() {
-    var d = { cantidad: sel.cantidad };
+    var d = { cantidad: cantidadDelNivel() };
     Object.keys(sel.valores).forEach(function (k) { d[k] = sel.valores[k]; });
     return d;
+  }
+
+  /** El nivel elegido, o null si el juego no tiene niveles. */
+  function nivelElegido(juego) {
+    var elegido = null;
+    (juego.opciones() || []).forEach(function (g) {
+      if (!g.esNivel) return;
+      g.items.forEach(function (it, i) {
+        if (it.id === sel.valores[g.id]) elegido = { item: it, numero: it.numero || i + 1 };
+      });
+    });
+    return elegido;
+  }
+
+  /* Cuántas preguntas trae el nivel. Los bancos lo dicen (tienen una
+     lista finita); los que generan preguntas nuevas cada vez, no, y ahí
+     van diez, que es la partida de siempre. */
+  function cantidadDelNivel() {
+    var materia = materiaPorId(sel.materia);
+    var juego = juegoPorId(materia, sel.juego);
+    if (!juego) return 10;
+    var n = nivelElegido(juego);
+    return (n && n.item.cantidad) || 10;
+  }
+
+  /**
+   * Cómo se llama la partida elegida: «Nivel 3 · Tabla del 4». Es lo
+   * que se muestra abajo del botón de empezar y, además, la clave con
+   * la que se guarda el récord, así que cada nivel tiene el suyo.
+   */
+  function resumenDePartida(juego) {
+    var partes = [];
+    (juego.opciones() || []).forEach(function (g) {
+      g.items.forEach(function (it, i) {
+        if (it.id !== sel.valores[g.id]) return;
+        partes.push(g.esNivel ? 'Nivel ' + (it.numero || i + 1) + ' · ' + it.nombre : it.nombre);
+      });
+    });
+    return partes.length ? partes.join(' · ') : juego.resumen(datosSeleccion());
   }
 
   function faltaElegir() {
@@ -1059,7 +1116,8 @@
       return;
     }
     $('resumen-partida').textContent =
-      juego.resumen(datosSeleccion()) + ' · ' + Motor.INTENTOS + ' intentos por pregunta';
+      resumenDePartida(juego) + ' · ' + Util.plural(cantidadDelNivel(), 'pregunta') +
+      ' · ' + Motor.INTENTOS + ' intentos por pregunta';
   }
 
   /* ---------------------- jugar ---------------------- */
@@ -1082,7 +1140,7 @@
     var proporcion = r.maximo ? r.puntos / r.maximo : 0;
     var estrellas = proporcion >= 0.9 ? 3 : proporcion >= 0.7 ? 2 : proporcion >= 0.4 ? 1 : 0;
 
-    var detalle = juego.resumen(datosSeleccion());
+    var detalle = resumenDePartida(juego);
     var clave = materia.id + '/' + juego.id + ':' + detalle;
     var esRecord = Almacen.anotar(clave, r.puntos, r.aciertos, r.total);
     if (estrellas > 0) Almacen.sumarEstrellas(estrellas);

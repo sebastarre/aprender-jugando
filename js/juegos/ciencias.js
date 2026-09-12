@@ -85,6 +85,10 @@ window.Ciencias = (function () {
     texto: 'Los ruidos de los animales',
     edadMin: 4,
     edadMax: 6,
+    niveles: [
+      { nombre: 'Los de la granja', filtro: function (it) { return ['vaca', 'perro', 'gato', 'oveja', 'chancho', 'gallo', 'pato', 'caballo'].indexOf(it.id.split(':')[1]) >= 0; } },
+      { nombre: 'Todos los animales' }
+    ],
     items: SONIDOS.map(function (s) { return { id: s[0], r: s[1], quien: s[2], sonido: s[3] }; }),
     forma: 'emoji',
     etiqueta: function (v) { return NOMBRE_DE[v] || v; },
@@ -124,6 +128,10 @@ window.Ciencias = (function () {
     texto: 'Para qué sirve cada parte',
     edadMin: 4,
     edadMax: 7,
+    niveles: [
+      { nombre: 'La cara', filtro: function (it) { return ['olemos', 'vemos', 'escuchamos', 'gusto', 'beso', 'masticamos'].indexOf(it.id.split(':')[1]) >= 0; } },
+      { nombre: 'Todo el cuerpo' }
+    ],
     items: CUERPO.map(function (c) { return { id: c[0], p: c[1], r: c[2] }; }),
     forma: 'emoji',
     etiqueta: function (v) { return PARTE[v] || v; },
@@ -162,6 +170,11 @@ window.Ciencias = (function () {
     texto: 'Mar, selva, granja, polo, desierto',
     edadMin: 5,
     edadMax: 8,
+    niveles: [
+      { nombre: 'El mar y la selva', filtro: function (it) { return /mar|selva/.test(it.r); } },
+      { nombre: 'También la granja', filtro: function (it) { return /mar|selva|granja/.test(it.r); } },
+      { nombre: 'Todos los lugares' }
+    ],
     items: HABITATS.map(function (h) { return { id: h[0], emoji: h[1], quien: h[2], r: h[3] }; }),
     categorias: [MAR, SELVA, GRANJA, POLO, DESIERTO],
     // el pingüino y la foca también viven en el mar: esa no puede ser «mala»
@@ -203,6 +216,10 @@ window.Ciencias = (function () {
     texto: 'Seres vivos y cosas',
     edadMin: 6,
     edadMax: 9,
+    niveles: [
+      { nombre: 'Los que están vivos', filtro: function (it) { return it.vivo; } },
+      { nombre: 'También los que no' }
+    ],
     items: VIVOS.map(function (v) {
       return { id: 'si-' + v[0], vivo: true, r: v[1], m: NO_VIVOS.map(function (n) { return n[1]; }) };
     }).concat(NO_VIVOS.map(function (n) {
@@ -239,6 +256,10 @@ window.Ciencias = (function () {
     texto: 'Raíz, tallo, hojas, flor y fruto',
     edadMin: 7,
     edadMax: 10,
+    niveles: [
+      { nombre: 'Las partes de la planta', filtro: function (it) { return ['agua', 'sostiene', 'alimento', 'abejas', 'manzana', 'zanahoria', 'lechuga', 'tronco'].indexOf(it.id.split(':')[1]) >= 0; } },
+      { nombre: 'Todo sobre las plantas' }
+    ],
     simbolo: '🌱'
   }, [
     ['agua', '¿Por dónde toma el <b>agua</b> una planta?', 'Por la raíz', ['Por las hojas', 'Por la flor', 'Por el fruto']],
@@ -282,6 +303,10 @@ window.Ciencias = (function () {
     texto: 'Herbívoros, carnívoros y omnívoros',
     edadMin: 8,
     edadMax: 11,
+    niveles: [
+      { nombre: 'Herbívoros y carnívoros', filtro: function (it) { return it.r !== 'omnívoro'; } },
+      { nombre: 'Todos, con los omnívoros' }
+    ],
     items: DIETAS.map(function (d) { return { id: d[0], emoji: d[1], quien: d[2], r: d[3] }; }),
     categorias: ['herbívoro', 'carnívoro', 'omnívoro'],
     cuantas: 3,
@@ -334,6 +359,11 @@ window.Ciencias = (function () {
     texto: 'Mamíferos, aves, peces…',
     edadMin: 9,
     edadMax: 12,
+    niveles: [
+      { nombre: 'Mamíferos y aves', filtro: function (it) { return it.r === 'mamífero' || it.r === 'ave'; } },
+      { nombre: 'Con peces y reptiles', filtro: function (it) { return ['mamífero', 'ave', 'pez', 'reptil'].indexOf(it.r) >= 0; } },
+      { nombre: 'Todas las clases' }
+    ],
     items: CLASES.map(function (c) { return { id: c[0], emoji: c[1], quien: c[2], r: c[3] }; }),
     categorias: ['mamífero', 'ave', 'pez', 'reptil', 'anfibio', 'insecto'],
     forma: 'palabra',
@@ -360,6 +390,10 @@ window.Ciencias = (function () {
     texto: 'Sólido, líquido y gaseoso',
     edadMin: 10,
     edadMax: 12,
+    niveles: [
+      { nombre: 'Sólido, líquido y gas', filtro: function (it) { return ['Sólido', 'Líquido', 'Gaseoso', 'Gas'].indexOf(it.r) >= 0; } },
+      { nombre: 'Los cambios de estado' }
+    ],
     simbolo: '💧'
   }, [
     ['hielo', 'El <b>hielo</b> es agua en estado…', 'Sólido', ['Líquido', 'Gaseoso']],
@@ -390,6 +424,10 @@ window.Ciencias = (function () {
     texto: 'Corazón, pulmones, huesos…',
     edadMin: 9,
     edadMax: 12,
+    niveles: [
+      { nombre: 'Los más conocidos', hasta: 6 },
+      { nombre: 'Todo el cuerpo por dentro' }
+    ],
     simbolo: '🫀'
   }, [
     ['bombea', '¿Qué órgano <b>bombea la sangre</b> por todo el cuerpo?', 'El corazón', ['Los pulmones', 'El estómago', 'El cerebro']],
@@ -419,6 +457,10 @@ window.Ciencias = (function () {
     texto: 'Los planetas, el Sol y la Luna',
     edadMin: 10,
     edadMax: 12,
+    niveles: [
+      { nombre: 'Los planetas', filtro: function (it) { return ['cerca', 'grande', 'anillos', 'rojo', 'cuantos', 'caliente', 'lejos', 'pluton'].indexOf(it.id.split(':')[1]) >= 0; } },
+      { nombre: 'Todo el espacio' }
+    ],
     simbolo: '🪐'
   }, [
     ['cerca', '¿Qué planeta está <b>más cerca</b> del Sol?', 'Mercurio', ['Venus', 'La Tierra', 'Marte']],

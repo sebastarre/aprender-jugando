@@ -26,17 +26,29 @@ window.Geografia = (function () {
   var pistaDada = false;
 
   /* ---------------------- opciones compartidas ---------------------- */
+  /* Las zonas son los niveles de los juegos del mapa, de la más chica a
+     la más grande: doce países de América del Sur son un nivel 1 de
+     verdad, y los 194 del planisferio, el último. */
+  var ORDEN_DE_ZONAS = ['america-sur', 'america-norte', 'america', 'europa',
+                        'africa', 'asia', 'oceania', 'mundo'];
+
   function opcionesZona() {
+    var zonas = Mapa.zonas().slice().sort(function (a, b) {
+      var ia = ORDEN_DE_ZONAS.indexOf(a.id), ib = ORDEN_DE_ZONAS.indexOf(b.id);
+      return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
+    });
     return {
       id: 'zona',
-      titulo: 'Elegí la zona',
+      esNivel: true,
+      titulo: 'Elegí el nivel',
       tipo: 'grilla',
-      items: Mapa.zonas().map(function (z) {
+      items: zonas.map(function (z) {
         return {
           id: z.id,
           nombre: z.nombre,
           icono: z.icono,
-          detalle: z.cantidad + ' países' + (z.nota ? ' · ' + z.nota : '')
+          detalle: z.cantidad + ' países' + (z.nota ? ' · ' + z.nota : ''),
+          cantidad: Math.min(10, z.cantidad)
         };
       })
     };
@@ -269,6 +281,11 @@ window.Geografia = (function () {
     texto: 'La montaña, el mar, la ciudad…',
     edadMin: 4,
     edadMax: 7,
+    niveles: [
+      { nombre: 'El agua y la tierra', filtro: function (it) { return ['el mar', 'la montaña', 'el río', 'la playa', 'el bosque', 'el campo'].indexOf(it.r) >= 0; } },
+      { nombre: 'Lugares lejanos', filtro: function (it) { return ['la ciudad', 'el puente'].indexOf(it.r) < 0; } },
+      { nombre: 'Todos los lugares' }
+    ],
     items: PAISAJES.map(function (p) { return { id: p[0], r: p[1], emoji: p[2] }; }),
     forma: 'palabra',
     consigna: function () { return '¿Qué lugar es este?'; },
@@ -310,6 +327,10 @@ window.Geografia = (function () {
     texto: 'La ciudad, el campo y el mar',
     edadMin: 5,
     edadMax: 8,
+    niveles: [
+      { nombre: 'La ciudad y el campo', filtro: function (it) { return it.r !== 'en el mar'; } },
+      { nombre: 'También el mar' }
+    ],
     items: DONDE.map(function (d) { return { id: d[0], que: d[1], emoji: d[2], r: d[3] }; }),
     categorias: ['en la ciudad', 'en el campo', 'en el mar'],
     cuantas: 3,
@@ -355,6 +376,10 @@ window.Geografia = (function () {
     texto: 'En qué continente está cada país',
     edadMin: 6,
     edadMax: 9,
+    niveles: [
+      { nombre: 'América y Europa', filtro: function (it) { return it.r === 'América' || it.r === 'Europa'; } },
+      { nombre: 'Todo el mundo' }
+    ],
     items: DE_QUE_CONTINENTE.map(function (id) {
       var p = paisPorId(id);
       return p ? { id: id.toLowerCase(), pais: p.nombre, bandera: id, r: CONTINENTES[p.cont] } : null;

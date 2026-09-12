@@ -238,6 +238,45 @@ window.Tablero = (function () {
       return Util.muestra(pozo, cuantas);
     }
 
+    /* ---------------------- niveles ----------------------
+
+       Un banco no se juega entero de una: se juega por niveles, y cada
+       nivel es un pedazo con nombre. El nivel 1 de «Los animales» son
+       los de casa, el 2 suma los de la granja, el 3 los salvajes. Cada
+       uno incluye a los anteriores, así que jugar el 3 también repasa
+       lo de antes.
+
+       Cada nivel dice qué preguntas entran, de una de dos maneras:
+         hasta   los primeros N de la lista
+         filtro  una función sobre el ítem (por la respuesta, por la
+                 categoría, por lo que sea)
+       Sin ninguna de las dos, entran todas.
+
+       Antes de esto la pantalla previa preguntaba «¿cuántas preguntas?
+       5, 10 o todas», que es una pregunta de máquina: no dice nada de
+       lo que hay adentro y un chico de cinco no tiene cómo contestarla. */
+    var TOPE_NIVEL = 12;      // preguntas por partida, aunque el nivel tenga más
+
+    var niveles = (def.niveles && def.niveles.length
+                   ? def.niveles
+                   : [{ nombre: 'Todas las preguntas' }]).map(function (n, i) {
+      var pozo = items.filter(function (it, j) {
+        if (n.filtro) return n.filtro(it);
+        if (n.hasta) return j < n.hasta;
+        return true;
+      });
+      return { id: 'n' + (i + 1), numero: i + 1, nombre: n.nombre, pozo: pozo };
+    });
+    var porNivel = {};
+    niveles.forEach(function (n) { porNivel[n.id] = n; });
+
+    /** El nivel elegido; sin nada elegido, el último (que los tiene todos). */
+    function nivelDe(sel) {
+      return porNivel[sel && sel.nivel] || niveles[niveles.length - 1];
+    }
+
+    function cuantasDe(nivel) { return Math.min(TOPE_NIVEL, nivel.pozo.length); }
+
     var juego = {
       id: def.id,
       nombre: def.nombre,
@@ -248,15 +287,30 @@ window.Tablero = (function () {
       edadMin: def.edadMin,
       edadMax: def.edadMax,
 
-      opciones: function () { return []; },
-      cantidades: function () { return cantidadesDeBanco(items.length); },
-      resumen: function (sel) {
-        var r = resumenDeCantidad(sel);
-        return r.charAt(0).toUpperCase() + r.slice(1);
+      opciones: function () {
+        return [{
+          id: 'nivel',
+          esNivel: true,
+          titulo: 'Elegí el nivel',
+          tipo: 'grilla',
+          porDefecto: niveles[0].id,
+          items: niveles.map(function (n) {
+            return { id: n.id, numero: n.numero, nombre: n.nombre,
+                     cantidad: cuantasDe(n) };
+          })
+        }];
       },
+      NIVELES: niveles,
+      /* El examen entra sin nivel elegido y se lleva el banco entero:
+         mide todo lo que el juego sabe preguntar, no un pedazo. */
       examen: function () { return { sinPesar: true }; },
       preguntas: function (sel) {
-        return sortear(juego.materia, items, sel.cantidad, sel.sinPesar);
+        var nivel = nivelDe(sel);
+        return sortear(juego.materia, nivel.pozo, sel.cantidad || cuantasDe(nivel), sel.sinPesar);
+      },
+      resumen: function (sel) {
+        var nivel = nivelDe(sel);
+        return 'Nivel ' + nivel.numero + ' · ' + nivel.nombre;
       },
       montar: function (it) {
         preparar();

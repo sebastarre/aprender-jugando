@@ -78,6 +78,11 @@ window.Lengua = (function () {
     texto: '¿Con qué letra empieza?',
     edadMin: 4,
     edadMax: 6,
+    niveles: [
+      { nombre: 'Las vocales y las primeras letras', filtro: function (it) { return 'AEIOUMPLS'.indexOf(it.r) >= 0; } },
+      { nombre: 'Unas cuantas más', filtro: function (it) { return 'AEIOUMPLSTRDFBGC'.indexOf(it.r) >= 0; } },
+      { nombre: 'Todas las letras' }
+    ],
     items: PRIMERA.map(function (x) { return { id: x[0], emoji: x[1], r: x[2] }; }),
     categorias: LETRAS,
     excluir: function (it) { return SE_CONFUNDEN[it.r] || []; },
@@ -129,6 +134,10 @@ window.Lengua = (function () {
     texto: 'Completá la palabra',
     edadMin: 5,
     edadMax: 7,
+    niveles: [
+      { nombre: 'Palabras cortas', filtro: function (it) { return it.palabra.length <= 4; } },
+      { nombre: 'Todas las palabras' }
+    ],
     items: VOCALES.map(function (x) {
       return { id: sinTilde(x[0]), palabra: x[0], emoji: x[1], hueco: x[2], r: x[0].charAt(x[2]) };
     }),
@@ -188,6 +197,10 @@ window.Lengua = (function () {
     texto: 'Palabras que suenan igual',
     edadMin: 5,
     edadMax: 7,
+    niveles: [
+      { nombre: 'Las primeras rimas', hasta: 12 },
+      { nombre: 'Todas las rimas' }
+    ],
     items: RIMAS.map(function (x) { return { id: sinTilde(x[0]), palabra: x[0], r: x[1], m: x[2] }; }),
     forma: 'palabra',
     consigna: function (it) { return '¿Qué palabra rima con <b>' + it.palabra + '</b>?'; },
@@ -245,6 +258,10 @@ window.Lengua = (function () {
     texto: 'Grande y chico, día y noche',
     edadMin: 6,
     edadMax: 9,
+    niveles: [
+      { nombre: 'Los más conocidos', hasta: 12 },
+      { nombre: 'Todos los contrarios' }
+    ],
     items: CONTRARIOS.map(function (x) { return { id: sinTilde(x[0]), palabra: x[0], r: x[1], m: x[2] }; }),
     forma: 'palabra',
     consigna: function (it) { return '¿Cuál es lo contrario de <b>' + it.palabra + '</b>?'; },
@@ -280,6 +297,11 @@ window.Lengua = (function () {
     texto: 'Contá los golpes de voz',
     edadMin: 6,
     edadMax: 9,
+    niveles: [
+      { nombre: 'De una y de dos sílabas', filtro: function (it) { return it.r <= 2; } },
+      { nombre: 'Hasta tres sílabas', filtro: function (it) { return it.r <= 3; } },
+      { nombre: 'Todas, hasta cinco' }
+    ],
     items: SILABAS.map(function (s) {
       var palabra = s.replace(/-/g, '');
       return { id: sinTilde(palabra), palabra: palabra, partes: s, r: s.split('-').length };
@@ -337,6 +359,11 @@ window.Lengua = (function () {
     texto: 'Uno, muchos',
     edadMin: 8,
     edadMax: 11,
+    niveles: [
+      { nombre: 'Los que terminan en -z', hasta: 6 },
+      { nombre: 'Y los que suman -es', hasta: 15 },
+      { nombre: 'Todos, con los difíciles' }
+    ],
     items: PLURALES.map(function (x) { return { id: sinTilde(x[0]), palabra: x[0], r: x[1], m: x[2] }; }),
     forma: 'palabra',
     consigna: function (it) { return '¿Cuál es el plural de <b>' + it.palabra + '</b>?'; },
@@ -390,6 +417,11 @@ window.Lengua = (function () {
     texto: 'B o V, C, S o Z, con H o sin H',
     edadMin: 8,
     edadMax: 12,
+    niveles: [
+      { nombre: 'Con B y con V', filtro: function (it) { return ['vaca', 'ballena', 'abeja', 'bicicleta', 'escoba', 'caballo'].indexOf(it.r) >= 0; } },
+      { nombre: 'Con H, LL e Y', filtro: function (it) { return ['vaca', 'ballena', 'abeja', 'bicicleta', 'escoba', 'caballo', 'hormiga', 'helado', 'hueso', 'lluvia', 'llave', 'yogur'].indexOf(it.r) >= 0; } },
+      { nombre: 'Todas las palabras' }
+    ],
     items: ORTOGRAFIA.map(function (x) { return { id: x[0], r: x[0], m: x[1] }; }),
     forma: 'palabra',
     consigna: function () { return '¿Cuál está <b>bien escrita</b>?'; },
@@ -437,6 +469,10 @@ window.Lengua = (function () {
     texto: 'Palabras que dicen lo mismo',
     edadMin: 8,
     edadMax: 12,
+    niveles: [
+      { nombre: 'Los más usados', hasta: 12 },
+      { nombre: 'Todos los sinónimos' }
+    ],
     items: SINONIMOS.map(function (x) { return { id: sinTilde(x[0]), palabra: x[0], r: x[1], m: x[2] }; }),
     forma: 'palabra',
     consigna: function (it) { return '¿Qué palabra significa lo mismo que <b>' + it.palabra + '</b>?'; },
@@ -493,6 +529,10 @@ window.Lengua = (function () {
     texto: '¿Lleva tilde? ¿Dónde?',
     edadMin: 9,
     edadMax: 12,
+    niveles: [
+      { nombre: 'Las que llevan tilde', filtro: function (it) { return /[áéíóú]/.test(it.r); } },
+      { nombre: 'Todas, con las que no llevan' }
+    ],
     items: TILDES.map(function (p) { return { id: sinTilde(p), r: p, m: variantesDeTilde(p) }; }),
     forma: 'palabra',
     consigna: function () { return '¿Cuál está <b>bien escrita</b>? Fijate en la tilde.'; },
@@ -550,6 +590,11 @@ window.Lengua = (function () {
     texto: 'Sustantivo, adjetivo, verbo…',
     edadMin: 10,
     edadMax: 12,
+    niveles: [
+      { nombre: 'Verbos y sustantivos', filtro: function (it) { return it.r === 'verbo' || it.r === 'sustantivo'; } },
+      { nombre: 'Con los adjetivos', filtro: function (it) { return it.r !== 'adverbio'; } },
+      { nombre: 'Todas, con los adverbios' }
+    ],
     items: CLASES.map(function (x) { return { id: sinTilde(x[0]), palabra: x[0], r: x[1] }; }),
     categorias: ['sustantivo', 'adjetivo', 'verbo', 'adverbio'],
     forma: 'palabra',

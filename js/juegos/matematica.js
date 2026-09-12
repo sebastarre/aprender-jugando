@@ -111,7 +111,7 @@ window.Matematica = (function () {
     edadMax: 6,
 
     opciones: function () {
-      return [{ id: 'rango', titulo: 'Elegí hasta cuánto', tipo: 'grilla', items: RANGOS }];
+      return [{ id: 'rango', esNivel: true, titulo: 'Elegí el nivel', tipo: 'grilla', items: RANGOS }];
     },
     cantidades: cantidadesFijas,
     resumen: function (sel) { return deLista(RANGOS, sel.rango).nombre + ' · ' + sel.cantidad + ' preguntas'; },
@@ -212,7 +212,7 @@ window.Matematica = (function () {
     edadMax: 7,
 
     opciones: function () {
-      return [{ id: 'grupo', titulo: 'Elegí qué figuras', tipo: 'grilla', items: [
+      return [{ id: 'grupo', esNivel: true, titulo: 'Elegí el nivel', tipo: 'grilla', items: [
         { id: 'basicas', nombre: 'Las cuatro primeras', icono: 'nivel-1', detalle: 'Círculo, cuadrado, triángulo y rectángulo' },
         { id: 'todas', nombre: 'Todas', icono: 'nivel-3', detalle: 'Con óvalo, rombo, pentágono y hexágono' }
       ] }];
@@ -308,7 +308,7 @@ window.Matematica = (function () {
     edadMax: 8,
 
     opciones: function () {
-      return [{ id: 'nivel', titulo: 'Elegí los números', tipo: 'grilla', items: RANGOS_COMPARAR }];
+      return [{ id: 'nivel', esNivel: true, titulo: 'Elegí el nivel', tipo: 'grilla', items: RANGOS_COMPARAR }];
     },
     cantidades: cantidadesFijas,
     resumen: function (sel) { return deLista(RANGOS_COMPARAR, sel.nivel).nombre + ' · ' + sel.cantidad + ' preguntas'; },
@@ -390,7 +390,7 @@ window.Matematica = (function () {
 
     opciones: function () {
       return [
-        { id: 'nivel', titulo: 'Elegí el nivel', tipo: 'grilla', items: NIVELES },
+        { id: 'nivel', esNivel: true, titulo: 'Elegí el nivel', tipo: 'grilla', items: NIVELES },
         {
           id: 'operacion', titulo: 'Elegí las cuentas', tipo: 'fila', porDefecto: 'ambas',
           items: [
@@ -483,7 +483,7 @@ window.Matematica = (function () {
     edadMax: 10,
 
     opciones: function () {
-      return [{ id: 'nivel', titulo: 'Elegí el nivel', tipo: 'grilla', items: NIVELES_SERIE }];
+      return [{ id: 'nivel', esNivel: true, titulo: 'Elegí el nivel', tipo: 'grilla', items: NIVELES_SERIE }];
     },
     cantidades: cantidadesFijas,
     resumen: function (sel) { return 'Nivel ' + deLista(NIVELES_SERIE, sel.nivel).nombre.toLowerCase() + ' · ' + sel.cantidad + ' preguntas'; },
@@ -603,7 +603,7 @@ window.Matematica = (function () {
     edadMax: 9,
 
     opciones: function () {
-      return [{ id: 'paso', titulo: 'Elegí la dificultad', tipo: 'grilla', items: PASOS }];
+      return [{ id: 'paso', esNivel: true, titulo: 'Elegí el nivel', tipo: 'grilla', items: PASOS }];
     },
     cantidades: cantidadesFijas,
     resumen: function (sel) {
@@ -661,11 +661,15 @@ window.Matematica = (function () {
     opciones: function () {
       // el ícono de cada tabla es su propio número: doce veces la misma
       // crucecita y un "2 × 1 … 2 × 10" abajo eran ruido, no información
-      var items = [{ id: 'mezcla', nombre: 'Mezcladas', icono: 'dado' }];
+      /* De la tabla del 2 a la del 12 y, al final, todas mezcladas: el
+         orden de la lista es el orden de los niveles, así que lo más
+         difícil va último. */
+      var items = [];
       for (var t = 2; t <= 12; t++) {
         items.push({ id: String(t), nombre: 'Tabla del ' + t, icono: String(t), iconoNumero: true });
       }
-      return [{ id: 'tabla', titulo: 'Elegí la tabla', tipo: 'grilla', items: items }];
+      items.push({ id: 'mezcla', nombre: 'Todas mezcladas', icono: 'dado', detalle: 'Del 2 al 12' });
+      return [{ id: 'tabla', esNivel: true, titulo: 'Elegí el nivel', tipo: 'grilla', items: items }];
     },
     cantidades: cantidadesFijas,
     resumen: function (sel) {
@@ -728,7 +732,7 @@ window.Matematica = (function () {
 
     opciones: function () {
       return [
-        { id: 'tamano', titulo: 'Elegí los números', tipo: 'grilla', items: TAMANOS },
+        { id: 'tamano', esNivel: true, titulo: 'Elegí el nivel', tipo: 'grilla', items: TAMANOS },
         { id: 'modo', titulo: 'Elegí qué preguntar', tipo: 'fila', porDefecto: 'mezcla', items: [
           { id: 'mezcla', nombre: 'Mezclado', icono: 'dado', detalle: 'Dobles y mitades' },
           { id: 'doble', nombre: 'Dobles', icono: 'mas', detalle: 'Solo dobles' },
@@ -827,7 +831,7 @@ window.Matematica = (function () {
     edadMax: 9,
 
     opciones: function () {
-      return [{ id: 'largo', titulo: 'Elegí los números', tipo: 'grilla', items: LARGOS }];
+      return [{ id: 'largo', esNivel: true, titulo: 'Elegí el nivel', tipo: 'grilla', items: LARGOS }];
     },
     cantidades: cantidadesFijas,
     resumen: function (sel) { return deLista(LARGOS, sel.largo).nombre + ' · ' + sel.cantidad + ' preguntas'; },
@@ -897,11 +901,12 @@ window.Matematica = (function () {
     edadMax: 12,
 
     opciones: function () {
-      var items = [{ id: 'mezcla', nombre: 'Mezcladas', icono: 'dado' }];
+      var items = [];
       for (var t = 2; t <= 10; t++) {
         items.push({ id: String(t), nombre: 'Dividir por ' + t, icono: String(t), iconoNumero: true });
       }
-      return [{ id: 'divisor', titulo: 'Elegí por cuánto dividir', tipo: 'grilla', items: items }];
+      items.push({ id: 'mezcla', nombre: 'Todas mezcladas', icono: 'dado', detalle: 'Del 2 al 10' });
+      return [{ id: 'divisor', esNivel: true, titulo: 'Elegí el nivel', tipo: 'grilla', items: items }];
     },
     cantidades: cantidadesFijas,
     resumen: function (sel) {
@@ -1017,7 +1022,7 @@ window.Matematica = (function () {
     edadMax: 12,
 
     opciones: function () {
-      return [{ id: 'tipo', titulo: 'Elegí los problemas', tipo: 'grilla', items: [
+      return [{ id: 'tipo', esNivel: true, titulo: 'Elegí el nivel', tipo: 'grilla', items: [
         { id: 'sumas', nombre: 'Sumar y restar', icono: 'cuentas', detalle: 'Juntar, regalar, comparar' },
         { id: 'todas', nombre: 'Las cuatro cuentas', icono: 'dado', detalle: 'También multiplicar y repartir' }
       ] }];
@@ -1145,7 +1150,7 @@ window.Matematica = (function () {
     edadMax: 12,
 
     opciones: function () {
-      return [{ id: 'tipo', titulo: 'Elegí las fracciones', tipo: 'grilla', items: TIPOS_FRACCION }];
+      return [{ id: 'tipo', esNivel: true, titulo: 'Elegí el nivel', tipo: 'grilla', items: TIPOS_FRACCION }];
     },
     cantidades: cantidadesFijas,
     resumen: function (sel) { return deLista(TIPOS_FRACCION, sel.tipo).nombre + ' · ' + sel.cantidad + ' preguntas'; },

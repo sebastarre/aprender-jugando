@@ -2025,6 +2025,68 @@ body.en-bienvenida #fondo-bienvenida { display: block; }
   transform: scale(1.06);
 }
 
+/* ============================================================
+   Los niveles de un juego
+
+   La pantalla previa a jugar preguntaba «¿cuántas preguntas?: 5, 10 o
+   todas». Era una pregunta de máquina: no decía nada de lo que había
+   adentro y un chico de cinco no tenía cómo contestarla. Ahora se
+   elige un nivel, con su número grande y su nombre.
+   ============================================================ */
+.grilla-niveles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 10px;
+}
+.nivel-opcion {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  border: 2px solid var(--borde);
+  border-radius: var(--radio);
+  background: var(--tarjeta);
+  box-shadow: 0 4px 0 var(--sombra-clay);
+  transition: transform .12s, border-color .12s, box-shadow .12s, background .12s;
+}
+.nivel-opcion:hover { transform: translateY(-3px); border-color: var(--op-color); box-shadow: 0 7px 0 var(--sombra-clay); }
+.nivel-opcion:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--sombra-clay); }
+
+/* El número, que es lo que ordena. Va en el color del juego y del
+   tamaño de un título: el chico busca «el 3», no lee la lista entera. */
+.nivel-numero {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--op-suave);
+  color: var(--op-color);
+  font-size: 1.45rem;
+  font-weight: 800;
+  line-height: 1;
+}
+.nivel-cuerpo { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.nivel-nombre { font-weight: 800; line-height: 1.2; }
+.nivel-detalle { font-size: .85rem; color: var(--tinta-suave); line-height: 1.25; }
+
+/* El elegido: el número se da vuelta (pleno, con el número en blanco)
+   y la ficha toma el color del juego. */
+.nivel-opcion[aria-pressed="true"] {
+  border-color: var(--op-color);
+  background: var(--op-suave);
+  box-shadow: 0 4px 0 var(--op-color);
+}
+.nivel-opcion[aria-pressed="true"] .nivel-numero {
+  background: var(--op-color);
+  color: #fff;
+}
+
 /* ---------------- Inglés ---------------- */
 /* Las palabras en inglés van en la misma letra que el resto, pero el
    navegador les aplica el corte de sílabas del idioma que declaran. */

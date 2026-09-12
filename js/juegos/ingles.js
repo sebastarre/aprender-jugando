@@ -75,6 +75,10 @@ window.Ingles = (function () {
     texto: 'Red, blue, yellow…',
     edadMin: 4,
     edadMax: 6,
+    niveles: [
+      { nombre: 'Los básicos', filtro: function (it) { return ['red', 'blue', 'yellow', 'green', 'black', 'white'].indexOf(it.r) >= 0; } },
+      { nombre: 'Todos los colores' }
+    ],
     items: COLORES.map(function (c) {
       return { id: c[1], que: c[0], r: c[1], tinta: c[2] };
     }),
@@ -108,6 +112,11 @@ window.Ingles = (function () {
     texto: 'One, two, three…',
     edadMin: 4,
     edadMax: 7,
+    niveles: [
+      { nombre: 'Del one al five', filtro: function (it) { return +it.que <= 5; } },
+      { nombre: 'Hasta el ten', filtro: function (it) { return +it.que <= 10; } },
+      { nombre: 'Hasta el twelve' }
+    ],
     items: NUMEROS.map(function (n, i) {
       return { id: String(i + 1), que: String(i + 1), r: n };
     }),
@@ -143,6 +152,12 @@ window.Ingles = (function () {
     texto: 'Dog, cat, bird…',
     edadMin: 5,
     edadMax: 7,
+    niveles: [
+      { nombre: 'Los de casa', filtro: function (it) { return ['dog', 'cat', 'bird', 'fish', 'mouse'].indexOf(it.r) >= 0; } },
+      { nombre: 'Y los de la granja', filtro: function (it) { return ['dog', 'cat', 'bird', 'fish', 'mouse', 'horse', 'cow', 'pig', 'sheep', 'duck'].indexOf(it.r) >= 0; } },
+      { nombre: 'Y los salvajes', filtro: function (it) { return ['bee', 'butterfly', 'spider'].indexOf(it.r) < 0; } },
+      { nombre: 'Todos, con los bichos' }
+    ],
     items: ANIMALES.map(function (a) {
       return { id: a[1], que: a[0], r: a[1], emoji: a[2] };
     }),
@@ -176,6 +191,11 @@ window.Ingles = (function () {
     texto: 'Apple, bread, milk…',
     edadMin: 5,
     edadMax: 8,
+    niveles: [
+      { nombre: 'Las frutas', filtro: function (it) { return ['apple', 'banana', 'strawberry', 'orange'].indexOf(it.r) >= 0; } },
+      { nombre: 'Lo de todos los días', filtro: function (it) { return ['apple', 'banana', 'strawberry', 'orange', 'bread', 'cheese', 'milk', 'water', 'egg', 'rice'].indexOf(it.r) >= 0; } },
+      { nombre: 'Toda la comida' }
+    ],
     items: COMIDA.map(function (c) {
       return { id: c[1].replace(' ', '-'), que: c[0], r: c[1], emoji: c[2] };
     }),
@@ -206,6 +226,11 @@ window.Ingles = (function () {
     texto: 'Mother, father, sister…',
     edadMin: 6,
     edadMax: 9,
+    niveles: [
+      { nombre: 'En casa', filtro: function (it) { return ['mother', 'father', 'brother', 'sister'].indexOf(it.r) >= 0; } },
+      { nombre: 'Con los abuelos', filtro: function (it) { return ['uncle', 'aunt', 'cousin', 'friend'].indexOf(it.r) < 0; } },
+      { nombre: 'Toda la familia' }
+    ],
     items: FAMILIA.map(function (f) { return { id: f[1], que: f[0], r: f[1] }; })
   });
 
@@ -229,6 +254,10 @@ window.Ingles = (function () {
     texto: 'Head, hand, eye…',
     edadMin: 6,
     edadMax: 9,
+    niveles: [
+      { nombre: 'La cara', filtro: function (it) { return ['eye', 'ear', 'nose', 'mouth', 'face', 'hair', 'tongue', 'tooth'].indexOf(it.r) >= 0; } },
+      { nombre: 'Todo el cuerpo' }
+    ],
     items: CUERPO.map(function (c) { return { id: c[1], que: c[0], r: c[1] }; })
   });
 
@@ -253,6 +282,10 @@ window.Ingles = (function () {
     texto: 'Book, pencil, chair…',
     edadMin: 7,
     edadMax: 10,
+    niveles: [
+      { nombre: 'Los útiles', filtro: function (it) { return ['book', 'pencil', 'pen', 'notebook', 'eraser', 'backpack', 'paper', 'ruler', 'scissors'].indexOf(it.r) >= 0; } },
+      { nombre: 'Toda la escuela' }
+    ],
     items: ESCUELA.map(function (e) { return { id: e[1], que: e[0], r: e[1] }; })
   });
 
@@ -279,6 +312,11 @@ window.Ingles = (function () {
     texto: 'Run, eat, play…',
     edadMin: 8,
     edadMax: 11,
+    niveles: [
+      { nombre: 'Todos los días', filtro: function (it) { return ['run', 'eat', 'sleep', 'drink', 'play', 'walk'].indexOf(it.r) >= 0; } },
+      { nombre: 'En la escuela', filtro: function (it) { return ['run', 'eat', 'sleep', 'drink', 'play', 'walk', 'read', 'write', 'study', 'draw', 'listen', 'see'].indexOf(it.r) >= 0; } },
+      { nombre: 'Todas las acciones' }
+    ],
     items: ACCIONES.map(function (a) { return { id: a[1], que: a[0], r: a[1] }; }),
     repaso: function (it) {
       return { simbolo: '🏃', nombre: it.que, dato: 'En inglés: ' + it.r };
@@ -309,6 +347,11 @@ window.Ingles = (function () {
     texto: 'Thank you, good morning…',
     edadMin: 8,
     edadMax: 12,
+    niveles: [
+      { nombre: 'Saludos', filtro: function (it) { return ['Good morning', 'Good night', 'Goodbye', 'See you later', 'See you tomorrow', 'Nice to meet you'].indexOf(it.ingles) >= 0; } },
+      { nombre: 'Ser amable', filtro: function (it) { return ['Good morning', 'Good night', 'Goodbye', 'See you later', 'See you tomorrow', 'Nice to meet you', 'Please', 'Thank you', 'You are welcome', 'I am sorry'].indexOf(it.ingles) >= 0; } },
+      { nombre: 'Todas las frases' }
+    ],
     items: FRASES.map(function (f) {
       return { id: f[0].toLowerCase().replace(/[^a-z]+/g, '-'), ingles: f[0], r: f[1] };
     }),
@@ -352,6 +395,10 @@ window.Ingles = (function () {
     texto: 'El verbo to be',
     edadMin: 10,
     edadMax: 12,
+    niveles: [
+      { nombre: 'am y is', filtro: function (it) { return it.r !== 'are'; } },
+      { nombre: 'También are' }
+    ],
     items: SER.map(function (s) {
       return { id: s[0].toLowerCase().replace(/[^a-z]+/g, '-'), frase: s[0], r: s[1], pista: s[2] };
     }),

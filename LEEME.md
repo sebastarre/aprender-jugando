@@ -69,12 +69,13 @@ los tres, se muestra la respuesta correcta antes de pasar a la siguiente.
 Los tres primeros no usan el mapa: geografía para un chico de cuatro no es el
 planisferio, es reconocer una montaña y un río y saber dónde se ve cada cosa.
 
-Zonas: todo el mundo, América, América del Sur, América del Norte (con Centro
-y Caribe), Europa, África, Asia y Oceanía.
+En los tres del mapa, los niveles son las zonas, de la más chica a la más
+grande: América del Sur, América del Norte, América, Europa, África, Asia,
+Oceanía y, al final, todo el mundo.
 
 **Matemática**
 
-| Edad | Juego | Consigna | Opciones de partida |
+| Edad | Juego | Consigna | Niveles |
 |---|---|---|---|
 | 4–6 | Contar | Dibujitos de a cinco por fila: «¿Cuántos hay?» | Hasta 5, hasta 10, hasta 20 |
 | 4–7 | Figuras | Dibuja una figura: «¿Qué figura es?» | Las cuatro básicas, o también óvalo, rombo, pentágono y hexágono |
@@ -160,7 +161,23 @@ Varias preguntas tienen trampa a propósito, que son las que más enseñan: el
 delfín es mamífero y el tiburón es pez, el pingüino es un ave aunque no vuele,
 Venus es más caliente que Mercurio aunque esté más lejos del Sol.
 
-En los dos casos se elige también cuántas preguntas tiene la partida.
+**Cada juego se juega por niveles.** Antes de empezar hay una sola pregunta:
+qué nivel. Son 1, 2, 3… y cada uno tiene un nombre que dice qué entra —«Los
+de casa», «Y los de la granja», «Tabla del 7», «Las que llevan tilde»—. Cada
+nivel incluye a los anteriores, así que jugar el 3 también repasa lo de antes,
+y cada uno guarda su propio récord.
+
+Antes de los niveles, la pantalla previa preguntaba «¿cuántas preguntas: 5, 10
+o todas?». Era una pregunta de máquina: no decía nada de lo que había adentro
+y un chico de cinco no tenía cómo contestarla. Entre los 48 juegos hay 154
+niveles.
+
+En los juegos de lista, el nivel dice qué preguntas entran: los primeros N de
+la lista (`hasta`) o las que cumplan algo (`filtro`, por ejemplo «las de una y
+dos sílabas» o «los herbívoros y carnívoros»). En los que generan preguntas
+nuevas cada vez —las cuentas, el reloj, las tablas— los niveles son la
+dificultad que ya tenían: Fácil, Medio, Difícil, Experto; Tabla del 2 a Tabla
+del 12 y todas mezcladas al final.
 
 **Puntaje:** 3 puntos si acierta al primer intento, 2 al segundo, 1 al tercero.
 Al final se ganan hasta 3 estrellas según el porcentaje y se guarda el récord
