@@ -90,17 +90,22 @@ window.Iconos = (function () {
     },
 
     /* ---- secciones y navegación ---- */
+    /* Un libro abierto con renglones en una página. */
     aprender: {
-      b: ['<path d="M3.6 5.4h5.2c1.7 0 3.2 1 3.2 2.3v11c0-1.3-1.5-2.3-3.2-2.3H3.6Z"/>'],
-      t: ['<path d="M12 7.7c0-1.3 1.5-2.3 3.2-2.3h5.2v11h-5.2c-1.7 0-3.2 1-3.2 2.3Z"/>',
-          '<path d="M12 7.7c0-1.3-1.5-2.3-3.2-2.3H3.6v11h5.2c1.7 0 3.2 1 3.2 2.3Z"/>']
+      b: ['<path d="M12 7.3C10.4 5.9 8 5.3 4.4 5.5v12.4c3.6-.2 6 .4 7.6 1.8Z"/>',
+          '<path d="M12 7.3c1.6-1.4 4-2 7.6-1.8v12.4c-3.6-.2-6 .4-7.6 1.8Z"/>'],
+      t: ['<path d="M12 7.3C10.4 5.9 8 5.3 4.4 5.5v12.4c3.6-.2 6 .4 7.6 1.8"/>',
+          '<path d="M12 7.3c1.6-1.4 4-2 7.6-1.8v12.4c-3.6-.2-6 .4-7.6 1.8"/>',
+          '<path d="M12 7.3v12.4"/>',
+          '<path d="M14.6 9.7c1-.4 2.1-.6 3.2-.6M14.6 12.7c1-.4 2.1-.6 3.2-.6"/>']
     },
+    /* El joystick, con la cruz y los dos botones. */
     jugar: {
-      b: ['<path d="M7.5 8h9a4.5 4.5 0 0 1 4.4 5.4l-.6 3A2.6 2.6 0 0 1 16 17.4L14.6 16H9.4L8 17.4a2.6 2.6 0 0 1-4.3-1l-.6-3A4.5 4.5 0 0 1 7.5 8Z"/>'],
-      t: ['<path d="M7.5 8h9a4.5 4.5 0 0 1 4.4 5.4l-.6 3A2.6 2.6 0 0 1 16 17.4L14.6 16H9.4L8 17.4a2.6 2.6 0 0 1-4.3-1l-.6-3A4.5 4.5 0 0 1 7.5 8Z"/>',
-          '<path d="M7.6 11.3v2.2M6.5 12.4h2.2"/>',
-          '<circle cx="16" cy="11.9" r="1" fill="currentColor" stroke="none"/>',
-          '<circle cx="17.8" cy="13.7" r="1" fill="currentColor" stroke="none"/>']
+      b: ['<path d="M8 7.6h8a5 5 0 0 1 4.9 6l-.7 3.5a2.7 2.7 0 0 1-4.6 1.4l-1.7-1.7h-3.8l-1.7 1.7a2.7 2.7 0 0 1-4.6-1.4l-.7-3.5A5 5 0 0 1 8 7.6Z"/>'],
+      t: ['<path d="M8 7.6h8a5 5 0 0 1 4.9 6l-.7 3.5a2.7 2.7 0 0 1-4.6 1.4l-1.7-1.7h-3.8l-1.7 1.7a2.7 2.7 0 0 1-4.6-1.4l-.7-3.5A5 5 0 0 1 8 7.6Z"/>',
+          '<path d="M8.1 10.7v3.6M6.3 12.5h3.6"/>',
+          '<circle cx="15.8" cy="11.5" r="1.15" fill="currentColor" stroke="none"/>',
+          '<circle cx="17.9" cy="13.5" r="1.15" fill="currentColor" stroke="none"/>']
     },
     examen: {
       b: ['<rect x="4.5" y="3.5" width="15" height="17" rx="3"/>'],
@@ -117,10 +122,12 @@ window.Iconos = (function () {
     },
 
     /* ---- barra de arriba y marcador ---- */
+    /* Canto, cara y un brillo: sin el brillo eran dos círculos y parecía un blanco de tiro. */
     moneda: {
-      b: ['<circle cx="12" cy="12" r="8.5"/>'],
-      t: ['<circle cx="12" cy="12" r="8.5"/>',
-          '<circle cx="12" cy="12" r="5"/>']
+      b: ['<circle cx="12" cy="12" r="8.6"/>'],
+      t: ['<circle cx="12" cy="12" r="8.6"/>',
+          '<circle cx="12" cy="12" r="5.6"/>',
+          '<path d="M9.6 9.3a3.3 3.3 0 0 1 2.4-1.2"/>']
     },
     estrella: {
       b: ['<path d="m12 3.4 2.6 5.4 5.9.8-4.3 4.2 1 5.9-5.2-2.8-5.2 2.8 1-5.9L3.5 9.6l5.9-.8Z"/>'],
@@ -130,13 +137,15 @@ window.Iconos = (function () {
       b: ['<path d="M12 20.3S3.8 15.4 3.8 9.6A4.4 4.4 0 0 1 12 7.2a4.4 4.4 0 0 1 8.2 2.4c0 5.8-8.2 10.7-8.2 10.7Z"/>'],
       t: ['<path d="M12 20.3S3.8 15.4 3.8 9.6A4.4 4.4 0 0 1 12 7.2a4.4 4.4 0 0 1 8.2 2.4c0 5.8-8.2 10.7-8.2 10.7Z"/>']
     },
+    /* La copa con sus dos asas y la base llena. */
     trofeo: {
-      b: ['<path d="M7.5 3.6h9v5.2a4.5 4.5 0 0 1-9 0Z"/>'],
-      t: ['<path d="M7.5 3.6h9v5.2a4.5 4.5 0 0 1-9 0Z"/>',
-          '<path d="M7.5 5.2H5a2 2 0 0 0 2.6 2.6"/>',
-          '<path d="M16.5 5.2H19a2 2 0 0 1-2.6 2.6"/>',
-          '<path d="M12 13.3v3.4"/>',
-          '<path d="M8.6 20.4h6.8l-.9-3.7H9.5Z"/>']
+      b: ['<path d="M7 4h10v4.6a5 5 0 0 1-10 0Z"/>',
+          '<path d="M9.2 16.8h5.6l.8 3.7H8.4Z"/>'],
+      t: ['<path d="M7 4h10v4.6a5 5 0 0 1-10 0Z"/>',
+          '<path d="M7 5.6H4.9a2.4 2.4 0 0 0 2.7 3.6"/>',
+          '<path d="M17 5.6h2.1a2.4 2.4 0 0 1-2.7 3.6"/>',
+          '<path d="M12 13.6v3.2"/>',
+          '<path d="M9.2 16.8h5.6l.8 3.7H8.4Z"/>']
     },
     sonido: {
       b: ['<path d="M4.5 9.6h3l4.3-3.6v12l-4.3-3.6h-3Z"/>'],
@@ -154,17 +163,20 @@ window.Iconos = (function () {
       t: ['<path d="M15 4.5 7.5 12l7.5 7.5"/>']
     },
     /* La silueta que va cuando el chico todavía no puso su foto. */
+    /* La silueta que va cuando el chico todavía no puso su foto. */
     silueta: {
-      b: [],
-      t: ['<circle cx="12" cy="8.6" r="3.9"/>',
-          '<path d="M4.6 20.4a7.4 7.4 0 0 1 14.8 0"/>']
+      b: ['<circle cx="12" cy="8.3" r="3.9"/>',
+          '<path d="M4.7 20.3a7.3 7.3 0 0 1 14.6 0Z"/>'],
+      t: ['<circle cx="12" cy="8.3" r="3.9"/>',
+          '<path d="M4.7 20.3a7.3 7.3 0 0 1 14.6 0Z"/>']
     },
 
     /* La camarita del rincón, que dice que la foto se cambia acá. */
+    /* La camarita del rincón, que dice que la foto se cambia acá. */
     camara: {
-      b: [],
-      t: ['<path d="M3.4 8.8h3.3l1.5-2.4h7.6l1.5 2.4h3.3v10.4H3.4z"/>',
-          '<circle cx="12" cy="13.8" r="3.3"/>']
+      b: ['<path d="M4.5 8.2h2.7l1.4-2.3h6.8l1.4 2.3h2.7A1.5 1.5 0 0 1 21 9.7v8.5a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18.2V9.7a1.5 1.5 0 0 1 1.5-1.5Z"/>'],
+      t: ['<path d="M4.5 8.2h2.7l1.4-2.3h6.8l1.4 2.3h2.7A1.5 1.5 0 0 1 21 9.7v8.5a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18.2V9.7a1.5 1.5 0 0 1 1.5-1.5Z"/>',
+          '<circle cx="12" cy="13.6" r="3.3"/>']
     },
 
     /* La cabeza de flecha sola, para «esto lleva a algún lado»: la de
@@ -181,21 +193,25 @@ window.Iconos = (function () {
 
     /* ---- menú del perfil ---- */
     perfil: {
-      b: ['<circle cx="12" cy="8.4" r="3.7"/>'],
-      t: ['<circle cx="12" cy="8.4" r="3.7"/>',
-          '<path d="M4.8 20.2a7.2 7.2 0 0 1 14.4 0"/>']
+      b: ['<circle cx="12" cy="8.3" r="3.8"/>',
+          '<path d="M4.8 20.2a7.2 7.2 0 0 1 14.4 0Z"/>'],
+      t: ['<circle cx="12" cy="8.3" r="3.8"/>',
+          '<path d="M4.8 20.2a7.2 7.2 0 0 1 14.4 0Z"/>']
     },
+    /* Un engranaje de ocho dientes. El de antes era un círculo con rayitos y se leía como un sol. */
     configuracion: {
-      b: ['<circle cx="12" cy="12" r="3.2"/>'],
-      t: ['<circle cx="12" cy="12" r="3.2"/>',
-          '<path d="M12 2.8v2.4M12 18.8v2.4M4.5 12H2.1M21.9 12h-2.4M6.7 6.7 5 5M19 19l-1.7-1.7M6.7 17.3 5 19M19 5l-1.7 1.7"/>']
+      b: ['<path d="M10.3 5.1L10.8 2.5L13.2 2.5L13.7 5.1L15.7 5.9L17.9 4.4L19.6 6.1L18.1 8.3L18.9 10.3L21.5 10.8L21.5 13.2L18.9 13.7L18.1 15.7L19.6 17.9L17.9 19.6L15.7 18.1L13.7 18.9L13.2 21.5L10.8 21.5L10.3 18.9L8.3 18.1L6.1 19.6L4.4 17.9L5.9 15.7L5.1 13.7L2.5 13.2L2.5 10.8L5.1 10.3L5.9 8.3L4.4 6.1L6.1 4.4L8.3 5.9Z"/>'],
+      t: ['<path d="M10.3 5.1L10.8 2.5L13.2 2.5L13.7 5.1L15.7 5.9L17.9 4.4L19.6 6.1L18.1 8.3L18.9 10.3L21.5 10.8L21.5 13.2L18.9 13.7L18.1 15.7L19.6 17.9L17.9 19.6L15.7 18.1L13.7 18.9L13.2 21.5L10.8 21.5L10.3 18.9L8.3 18.1L6.1 19.6L4.4 17.9L5.9 15.7L5.1 13.7L2.5 13.2L2.5 10.8L5.1 10.3L5.9 8.3L4.4 6.1L6.1 4.4L8.3 5.9Z"/>',
+          '<circle cx="12" cy="12" r="3"/>']
     },
+    /* La paleta, con cuatro manchas de pintura en vez de tres. */
     personalizacion: {
       b: ['<path d="M12 3.5a8.5 8.5 0 0 0 0 17c1.3 0 2-.9 2-1.8 0-1.4-1-1.7-1-2.7 0-.8.7-1.4 1.6-1.4h1.6a4.3 4.3 0 0 0 4.3-4.3c0-3.7-3.6-6.8-8.5-6.8Z"/>'],
       t: ['<path d="M12 3.5a8.5 8.5 0 0 0 0 17c1.3 0 2-.9 2-1.8 0-1.4-1-1.7-1-2.7 0-.8.7-1.4 1.6-1.4h1.6a4.3 4.3 0 0 0 4.3-4.3c0-3.7-3.6-6.8-8.5-6.8Z"/>',
-          '<circle cx="7.6" cy="11.6" r="1.1" fill="currentColor" stroke="none"/>',
-          '<circle cx="10.4" cy="7.6" r="1.1" fill="currentColor" stroke="none"/>',
-          '<circle cx="15" cy="8.2" r="1.1" fill="currentColor" stroke="none"/>']
+          '<circle cx="7.4" cy="12.2" r="1.25" fill="currentColor" stroke="none"/>',
+          '<circle cx="9" cy="8" r="1.25" fill="currentColor" stroke="none"/>',
+          '<circle cx="13.2" cy="6.9" r="1.25" fill="currentColor" stroke="none"/>',
+          '<circle cx="16.8" cy="9" r="1.25" fill="currentColor" stroke="none"/>']
     },
     tienda: {
       b: ['<path d="M5 9h14l-1 10.5H6Z"/>'],
@@ -374,10 +390,15 @@ window.Iconos = (function () {
     },
 
     /* Una cabeza de perfil hablando: leer en voz alta. */
+    /* Leer en voz alta: una cabecita que habla, con las ondas del sonido
+       saliendo hacia adelante. La de antes era un perfil que se leía como
+       una oreja. */
     voz: {
-      b: [],
-      t: ['<path d="M13.5 20.5v-3h1.8a1.7 1.7 0 0 0 1.7-1.7v-2.3l1.6-.6-1.6-2.9V9a6 6 0 0 0-12 .3c0 2 .9 3.6 2.5 4.8v6.4"/>',
-          '<path d="M20 5.5c1 1.2 1.5 2.5 1.5 4s-.5 2.8-1.5 4"/>']
+      b: ['<circle cx="9" cy="8.6" r="3.6"/>', '<path d="M2.6 20.2a6.4 6.4 0 0 1 12.8 0Z"/>'],
+      t: ['<circle cx="9" cy="8.6" r="3.6"/>',
+          '<path d="M2.6 20.2a6.4 6.4 0 0 1 12.8 0Z"/>',
+          '<path d="M15.6 6.4a3.6 3.6 0 0 1 0 4.4"/>',
+          '<path d="M18.4 4.2a7 7 0 0 1 0 8.8"/>']
     },
 
     /* ---- Inglés ---- */

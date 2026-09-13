@@ -357,7 +357,7 @@ body {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 10px 14px;
+  gap: 14px;
   padding: 14px;
   margin-bottom: 22px;
   border-radius: var(--radio);
@@ -652,7 +652,7 @@ body {
    de los botones y una tilde; las otras, apagaditas, esperando. Si son
    muchos hermanos la fila se desliza de costado. */
 .quien-juega {
-  margin-top: 26px;
+  margin-top: 22px;
   padding: 16px 16px 8px;
   border: 2px solid var(--borde);
   border-radius: var(--radio);
@@ -1969,7 +1969,7 @@ body.en-bienvenida #fondo-bienvenida { display: block; }
 .grilla-edades {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(78px, 1fr));
-  gap: 10px;
+  gap: 14px 10px;
 }
 /* Las edades y los monigotes son botones de apretar como los demás de
    la app: escaloncito abajo, y se hunden al tocarlos. Antes eran
@@ -2002,7 +2002,7 @@ body.en-bienvenida #fondo-bienvenida { display: block; }
 .grilla-avatares {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(64px, 1fr));
-  gap: 10px;
+  gap: 14px 10px;
   margin-bottom: 22px;
 }
 .boton-avatar {
@@ -2042,7 +2042,9 @@ body.en-bienvenida #fondo-bienvenida { display: block; }
   display: flex;
   align-items: center;
   gap: 14px;
-  margin: 0 0 18px;
+  /* Arriba y no abajo: va después del menú, y sin margen de arriba el
+     escalón de 4px del último botón le caía encima. */
+  margin: 22px 0 0;
   padding: 14px 16px;
   color: inherit;
   text-decoration: none;
@@ -2088,7 +2090,7 @@ body.en-bienvenida #fondo-bienvenida { display: block; }
    La copia del progreso
    ============================================================ */
 .copia-texto { margin: 0 0 12px; color: var(--tinta-suave); line-height: 1.4; }
-.copia-botones { display: flex; flex-wrap: wrap; gap: 10px; }
+.copia-botones { display: flex; flex-wrap: wrap; gap: 14px; }
 .copia-botones .btn-gigante { font-size: 1.1rem; padding: 12px 22px; }
 
 /* El camino del juego a su lección, abajo del subtítulo */
@@ -2105,7 +2107,9 @@ body.en-bienvenida #fondo-bienvenida { display: block; }
 .grilla-niveles {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 10px;
+  /* 14 y no 10: cada ficha tiene 4px de escalón abajo, y con 10 la de
+     la fila siguiente quedaba a tres píxeles, casi tocándola. */
+  gap: 14px;
 }
 .nivel-opcion {
   display: flex;
@@ -3179,3 +3183,38 @@ body.rindiendo .vidas { display: none; }
   min-height: 44px;
   padding: 0 8px;
 }
+
+/* Entre filas va 14px y no 10px en las grillas de botones con escalón
+   (edades, monigotes, niveles): con 10, el escalón de 4px de la fila de
+   arriba quedaba casi tocando la de abajo. */
+
+/* El relleno suave de los íconos, cuando van blancos adentro de un
+   círculo de color: al 20% casi no se veía y el dibujo quedaba en puro
+   contorno. Sobre fondo claro sigue al 20%, que ahí sí alcanza. */
+.boton-menu-icono .ico-blando,
+.card-icono .ico-blando,
+.meta-hoy-icono .ico-blando,
+.portada-foto .ico-blando,
+.portada-camara .ico-blando { opacity: .32; }
+
+/* Las filas de botones que se parten en dos renglones (la meta del día):
+   14px entre renglones, como en las grillas, y aire abajo antes del
+   título que sigue, que no tiene escalón que lo separe. */
+.fila-opciones { row-gap: 14px; }
+#ajuste-meta { margin-bottom: 28px; }
+
+/* Las cuatro cuentas del perfil, de a dos por fila en el celular. En tres
+   columnas la cuarta («lecciones leídas») quedaba sola en un renglón, y la
+   grilla parecía rota. */
+@media (max-width: 560px) {
+  #perfil-stats { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* Configuración: cada título de sección con aire arriba. Los botones de
+   «Agregar jugador» y «Modo parental» terminan sin margen, y su escalón
+   se metía 4px debajo del título que sigue. */
+#pantalla-configuracion .etiqueta-grupo:not(:first-of-type) { margin-top: 30px; }
+
+/* Perfil: la carita grande ahora es un botón con escalón, y en el celular
+   el nombre de abajo quedaba casi tocándolo. */
+.cabecera-perfil .avatar-grande { margin-bottom: 8px; }
