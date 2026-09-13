@@ -312,6 +312,15 @@ baja) y con «Recuperar una copia» se trae en cualquier aparato, avisando antes
 qué jugadores trae y que reemplaza lo que haya. El PIN del modo parental no
 viaja en la copia: el archivo lo puede abrir cualquiera.
 
+## La pizarra
+
+Abajo de las respuestas, en todos los juegos de tarjetas, hay una pizarra
+cuadriculada para hacer la cuenta a mano: una suma de dos cifras no se hace
+de memoria a los siete años, y sin papel el chico elegía al azar entre cuatro
+números. Tiene lápiz negro, azul y rojo, goma, deshacer y borrar todo. Se
+borra sola en cada pregunta nueva, y en los juegos del mapa no aparece.
+Funciona con el dedo, con un lápiz de tableta y con el mouse.
+
 ## Modo examen
 
 Aparte de los juegos hay un **examen**, que no es otro juego sino la misma
@@ -616,6 +625,7 @@ js/
   nucleo/opciones.js       La botonera de respuestas (tarjetas para elegir)
   nucleo/motor.js          El motor de partidas, común a todas las materias
   nucleo/mezcla.js         Partidas con preguntas de varias materias mezcladas
+  nucleo/pizarra.js        La pizarra de abajo de las respuestas, para hacer cuentas a mano
   nucleo/tablero.js        Lo común a los juegos de tarjetas: la botonera, el
                            sorteo, y banco() para armar un juego de una lista
   nucleo/pwa.js            Registra el service worker y el cartel de "Instalar"

@@ -3228,3 +3228,83 @@ body.rindiendo .vidas { display: none; }
    «Recuperar» caía solo abajo, contra la izquierda. */
 .copia-botones { justify-content: center; }
 .copia-botones > * { flex: 1 1 200px; }
+
+/* ============================================================
+   La pizarra
+
+   Abajo de las respuestas, para hacer la cuenta a mano. El lienzo va
+   cuadriculado como una hoja de carpeta, que es donde un chico
+   aprendió a poner los números en columna. La cuadrícula es el fondo
+   del elemento y no está pintada en el lienzo: la goma borra la tinta
+   y la hoja queda.
+   ============================================================ */
+.pizarra {
+  margin-top: 6px;
+  padding: 12px;
+  border: 2px solid var(--borde);
+  border-radius: var(--radio);
+  background: var(--tarjeta);
+  box-shadow: 0 4px 0 var(--sombra-clay);
+}
+.pizarra-barra {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+  margin-bottom: 10px;
+}
+.pizarra-titulo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 800;
+  color: var(--tinta-suave);
+}
+.pizarra-titulo .ico { width: 20px; height: 20px; }
+.pizarra-herramientas { display: flex; flex-wrap: wrap; gap: 6px; }
+
+/* 44 píxeles cada botón: es lo que mide un dedo, y en medio de una
+   cuenta el chico no quiere errarle a la goma. */
+.pizarra-boton,
+.pizarra-color {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  font: inherit;
+  color: var(--tinta);
+  background: var(--papel);
+  border: 2px solid var(--borde);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: border-color .12s, background .12s, transform .12s;
+}
+.pizarra-boton .ico { width: 22px; height: 22px; }
+.pizarra-color i { width: 22px; height: 22px; border-radius: 50%; }
+.pizarra-boton:active:not(:disabled),
+.pizarra-color:active { transform: translateY(2px); }
+.pizarra-boton[aria-pressed="true"],
+.pizarra-color[aria-pressed="true"] {
+  border-color: var(--primario);
+  background: var(--seleccion);
+}
+.pizarra-boton:disabled { opacity: .4; cursor: default; }
+
+.pizarra-lienzo {
+  display: block;
+  width: 100%;
+  height: clamp(220px, 40vh, 420px);
+  border: 2px solid var(--borde);
+  border-radius: var(--radio-s);
+  background-color: #fff;
+  background-image:
+    linear-gradient(#e3eaf6 1px, transparent 1px),
+    linear-gradient(90deg, #e3eaf6 1px, transparent 1px);
+  background-size: 24px 24px;
+  background-position: -1px -1px;
+  /* sin esto, pasar el dedo para dibujar hace scroll de la página */
+  touch-action: none;
+  cursor: crosshair;
+}
