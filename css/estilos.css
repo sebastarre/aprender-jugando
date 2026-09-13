@@ -3218,3 +3218,13 @@ body.rindiendo .vidas { display: none; }
 /* Perfil: la carita grande ahora es un botón con escalón, y en el celular
    el nombre de abajo quedaba casi tocándolo. */
 .cabecera-perfil .avatar-grande { margin-bottom: 8px; }
+
+/* Personalización: la grilla de monigotes termina sin margen y la última
+   fila quedaba a 6px del título de la mascota. */
+#eleccion-monigote { margin-bottom: 30px; }
+
+/* La copia: los dos botones comparten el renglón y van centrados, como
+   el texto de arriba. Antes «Guardar» ocupaba todo el ancho y
+   «Recuperar» caía solo abajo, contra la izquierda. */
+.copia-botones { justify-content: center; }
+.copia-botones > * { flex: 1 1 200px; }
