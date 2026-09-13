@@ -162,6 +162,7 @@
         </a>
       </div>
       <div class="portada-cuentas">
+        <span class="portada-cuenta portada-racha" id="portada-racha" hidden></span>
         <span class="portada-cuenta portada-estrellas" id="portada-estrellas"></span>
         <a class="portada-cuenta portada-monedas" href="#/tienda"
            aria-label="Tus monedas · ir a la tienda" id="portada-monedas"></a>
@@ -198,6 +199,19 @@
         </span>
       </a>
     </nav>
+
+    <!-- La meta de hoy: cuántas respuestas bien lleva, contra las que pide.
+         No hay reto si no la cumple ni cartel de «perdiste la racha»: es
+         para saber si ya jugó hoy, no para que la app lo haga sentir mal. -->
+    <a class="meta-hoy" id="meta-hoy" href="#/juegos" hidden>
+      <span class="meta-hoy-icono" data-ico="trofeo" aria-hidden="true"></span>
+      <span class="meta-hoy-cuerpo">
+        <b class="meta-hoy-titulo" id="meta-hoy-titulo">Meta de hoy</b>
+        <span class="nivel-barra meta-hoy-barra" id="meta-hoy-barra" role="progressbar"
+              aria-valuemin="0"><i></i></span>
+        <span class="meta-hoy-texto" id="meta-hoy-texto"></span>
+      </span>
+    </a>
 
     <!-- Quién juega: una carita por chico y un botón para sumar otro.
          Antes esto vivía en Configuración, que es el último lugar donde
@@ -294,6 +308,7 @@
   <section class="pantalla" id="pantalla-config" hidden>
     <h1 class="titulo-grande" id="titulo-config"></h1>
     <p class="subtitulo" id="subtitulo-config"></p>
+    <p class="enlace-leccion" id="enlace-leccion" hidden></p>
 
     <!-- los bloques de opciones los arma cada juego (js/app.js) -->
     <div id="bloques-opciones"></div>
@@ -362,6 +377,7 @@
         <div class="stat"><b id="stat-record">0</b><span>tu récord</span></div>
       </div>
       <div class="premio-monedas" id="premio-monedas" hidden></div>
+      <p class="meta-cumplida" id="meta-cumplida" hidden></p>
       <div class="nivel nivel-fin" id="progreso-nivel" hidden></div>
       <div class="desbloqueo" id="desbloqueo" hidden></div>
       <div class="repaso" id="repaso" hidden>
@@ -369,8 +385,9 @@
         <div class="lista-repaso" id="lista-repaso"></div>
       </div>
       <div class="botones-fin">
+        <button class="btn-gigante" id="btn-siguiente-nivel" type="button" hidden></button>
         <button class="btn-gigante" id="btn-otra-vez">Jugar de nuevo</button>
-        <button class="btn-secundario" id="btn-cambiar-zona">Cambiar opciones</button>
+        <button class="btn-secundario" id="btn-cambiar-zona">Elegir otro nivel</button>
         <button class="btn-secundario" id="btn-al-inicio">Menú principal</button>
       </div>
     </div>
@@ -445,7 +462,7 @@
         <div class="fila-nombre">Sonidos del juego</div>
         <div class="ir-dato">Los aciertos, los errores y los festejos.</div>
       </div>
-      <button class="interruptor" id="ajuste-sonido" type="button"
+      <button class="interruptor" id="ajuste-sonido" type="button" aria-label="Sonidos del juego"
               role="switch" aria-checked="true"><span></span></button>
     </div>
     <div class="fila-ajuste">
@@ -454,9 +471,13 @@
         <div class="fila-nombre">Leer en voz alta</div>
         <div class="ir-dato" id="dato-voz">Las lecciones y las preguntas de sus ejercicios se escuchan.</div>
       </div>
-      <button class="interruptor" id="ajuste-voz" type="button"
+      <button class="interruptor" id="ajuste-voz" type="button" aria-label="Leer en voz alta"
               role="switch" aria-checked="true"><span></span></button>
     </div>
+
+    <h2 class="etiqueta-grupo">Meta del día</h2>
+    <p class="nota-ranura">Cuántas respuestas bien por día. Al cumplirla gana       <span id="premio-meta">5</span> monedas. Es de cada chico.</p>
+    <div class="fila-opciones" id="ajuste-meta"></div>
 
     <h2 class="etiqueta-grupo">Tus datos</h2>
     <div class="tarjeta-ajustes">
@@ -474,6 +495,17 @@
     <div class="acciones-perfil">
       <button class="btn-secundario" id="btn-nuevo-perfil"><span data-ico="mas" aria-hidden="true"></span> Agregar jugador</button>
       <button class="btn-secundario" id="btn-parental"><span data-ico="candado" aria-hidden="true"></span> Modo parental</button>
+    </div>
+
+    <h2 class="etiqueta-grupo">Una copia de todo</h2>
+    <div class="tarjeta-ajustes copia">
+      <p class="copia-texto">Todo lo de la app vive en este aparato: si se borra el navegador
+        o cambiás de celular, se pierde. Guardá una copia de vez en cuando.</p>
+      <div class="copia-botones">
+        <button class="btn-gigante" id="btn-guardar-copia" type="button">Guardar una copia</button>
+        <button class="btn-secundario" id="btn-recuperar-copia" type="button">Recuperar una copia</button>
+      </div>
+      <input id="campo-copia" type="file" accept="application/json,.json" hidden>
     </div>
 
     <h2 class="etiqueta-grupo">Sobre la app</h2>

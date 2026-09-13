@@ -605,6 +605,7 @@
     edad.textContent = yo && yo.edad ? yo.edad + ' años' : '';
     pintarJugadores();
     pintarFotoDePortada();
+    pintarRachaYMeta();
 
     cuentaDePortada($('portada-estrellas'), 'estrella', Almacen.estrellas());
     cuentaDePortada($('portada-monedas'), 'moneda', Almacen.monedas(), true);
@@ -687,6 +688,151 @@
 
   function avisoDeFoto(titulo, texto) {
     preguntar({ titulo: titulo, texto: texto, si: 'Listo', soloAceptar: true });
+  }
+
+  /* ---------------------- racha y meta del día ---------------------- */
+
+  /** La llamita del cartel y la tarjeta de la meta, en el inicio. */
+  function pintarRachaYMeta() {
+    var racha = Almacen.racha();
+    var chip = $('portada-racha');
+    chip.hidden = racha < 1;
+    if (racha >= 1) {
+      cuentaDePortada(chip, 'fuego', racha);
+      chip.setAttribute('aria-label', Util.plural(racha, 'día seguido', 'días seguidos') + ' jugando');
+      // la llama se apaga, no desaparece, si hoy todavía no jugó
+      chip.classList.toggle('racha-pendiente', !Almacen.jugoHoy());
+    }
+
+    var meta = Almacen.metaDiaria();
+    var tarjeta = $('meta-hoy');
+    tarjeta.hidden = meta <= 0;
+    if (meta <= 0) return;
+    var llevo = Almacen.aciertosDeHoy();
+    var cumplida = llevo >= meta;
+    tarjeta.classList.toggle('cumplida', cumplida);
+    $('meta-hoy-titulo').textContent = cumplida ? '¡Meta de hoy cumplida!' : 'Meta de hoy';
+    var barra = $('meta-hoy-barra');
+    barra.setAttribute('aria-valuemax', String(meta));
+    barra.setAttribute('aria-valuenow', String(Math.min(llevo, meta)));
+    barra.querySelector('i').style.transform = 'scaleX(' + Math.min(1, llevo / meta) + ')';
+    $('meta-hoy-texto').textContent = cumplida
+      ? Util.plural(llevo, 'respuesta bien', 'respuestas bien') + ' hoy. Mañana, otra.'
+      : llevo + ' de ' + meta + ' respuestas bien' +
+        (llevo ? '' : ' · ¡Jugá una partida!');
+  }
+
+  /** El cartelito del final de la partida que cruzó la meta. */
+  function pintarMetaCumplida(delDia) {
+    var caja = $('meta-cumplida');
+    caja.hidden = !(delDia && delDia.metaCumplida);
+    if (caja.hidden) return;
+    caja.textContent = '🏆 ¡Cumpliste la meta de hoy! +' + delDia.premio + ' monedas';
+  }
+
+  var METAS = [
+    { n: 5, nombre: 'Un ratito', detalle: '5 respuestas bien' },
+    { n: 10, nombre: 'Una partida', detalle: '10 respuestas bien' },
+    { n: 20, nombre: 'Dos partidas', detalle: '20 respuestas bien' },
+    { n: 0, nombre: 'Sin meta', detalle: 'Jugar cuando quiera' }
+  ];
+
+  function pintarAjusteMeta() {
+    var caja = $('ajuste-meta');
+    if (!caja) return;
+    Util.vaciar(caja);
+    $('premio-meta').textContent = String(Almacen.PREMIO_META);
+    var actual = Almacen.metaDiaria();
+    METAS.forEach(function (m) {
+      var b = botonOpcion(m.n ? String(m.n) : '—', m.nombre, m.detalle, null, null, true);
+      b.setAttribute('aria-pressed', m.n === actual ? 'true' : 'false');
+      b.addEventListener('click', function () {
+        Almacen.setMeta(m.n);
+        marcarElegido(caja, b);
+      });
+      caja.appendChild(b);
+    });
+  }
+
+  /* ---------------------- la copia del progreso ---------------------- */
+
+  function guardarCopia() {
+    var texto = Almacen.exportar();
+    var hoy = new Date();
+    var nombre = 'aprender-jugando-' + hoy.getFullYear() + '-' + (hoy.getMonth() + 1) + '-' + hoy.getDate() + '.json';
+    var archivo = new Blob([texto], { type: 'application/json' });
+
+    /* En el celular, compartir: abre el menú de guardar en Drive, mandarlo
+       por WhatsApp o dejarlo en Archivos, que es donde lo va a buscar un
+       grande. En la compu, bajarlo a la carpeta de siempre. */
+    var tactil = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+    try {
+      var paraCompartir = new File([archivo], nombre, { type: 'application/json' });
+      if (tactil && navigator.canShare && navigator.canShare({ files: [paraCompartir] })) {
+        navigator.share({ files: [paraCompartir], title: 'Copia de Aprender Jugando' })
+          .catch(function () { /* lo cerró sin elegir: no pasa nada */ });
+        return;
+      }
+    } catch (e) { /* sin File o sin share: se baja */ }
+
+    var enlace = document.createElement('a');
+    enlace.href = URL.createObjectURL(archivo);
+    enlace.download = nombre;
+    document.body.appendChild(enlace);
+    enlace.click();
+    setTimeout(function () {
+      URL.revokeObjectURL(enlace.href);
+      enlace.remove();
+    }, 1500);
+  }
+
+  function copiaElegida(archivo) {
+    var lector = new FileReader();
+    lector.onload = function () {
+      var copia = Almacen.leerCopia(lector.result);
+      if (!copia) {
+        return preguntar({
+          titulo: 'Ese archivo no es una copia',
+          texto: 'Tiene que ser un archivo guardado con «Guardar una copia».',
+          si: 'Listo', soloAceptar: true
+        });
+      }
+      preguntar({
+        titulo: '¿Recuperar esta copia?',
+        texto: 'Trae ' + Util.plural(copia.perfiles.length, 'jugador', 'jugadores') + ': ' +
+               copia.perfiles.map(function (p) { return p.nombre; }).join(', ') +
+               '. Todo lo que hay ahora en este aparato se reemplaza por la copia.',
+        si: 'Sí, recuperar'
+      }, function () {
+        if (Almacen.restaurar(copia)) location.reload();
+        else preguntar({ titulo: 'No se pudo recuperar', texto: 'Este aparato no tiene lugar para guardarla.', si: 'Listo', soloAceptar: true });
+      });
+    };
+    lector.readAsText(archivo);
+  }
+
+  /* ---------------------- la lección de un juego ---------------------- */
+
+  /* En la pantalla de un juego, la lección que lo explica. Es el camino
+     de vuelta: la lección ya termina ofreciendo el juego, y ahora el
+     juego ofrece la lección al que no sabe cómo se hace. */
+  function pintarEnlaceLeccion(materia, juego) {
+    var caja = $('enlace-leccion');
+    Util.vaciar(caja);
+    var clave = materia.id + '/' + juego.id;
+    var leccion = (window.Lecciones ? Lecciones.LECCIONES : []).filter(function (l) {
+      return l.juego === clave || (l.ejercicio && l.ejercicio.juego === clave);
+    })[0];
+    caja.hidden = !leccion;
+    if (!leccion) return;
+    var enlace = Util.crear('a', 'enlace-cruzado');
+    enlace.href = '#/leccion/' + leccion.id;
+    enlace.appendChild(Iconos.crear('aprender'));
+    enlace.appendChild(Util.crear('span', null,
+      Almacen.leccionVista(leccion.id)
+        ? ' Repasá la lección «' + leccion.titulo + '»'
+        : ' ¿No sabés cómo se hace? Mirá la lección «' + leccion.titulo + '»'));
+    caja.appendChild(enlace);
   }
 
   /* ---------------------- sección Jugar ---------------------- */
@@ -965,6 +1111,7 @@
   function pintarConfig(materia, juego) {
     tituloConIcono($('titulo-config'), juego.icono, juego.nombre);
     $('subtitulo-config').textContent = juego.texto;
+    pintarEnlaceLeccion(materia, juego);
 
     sel.materia = materia.id;
     sel.juego = juego.id;
@@ -975,7 +1122,7 @@
     grupos.forEach(function (g) {
       /* El nivel arranca en el primero: es el más fácil, y es de donde
          se empieza. Los demás grupos, en lo que diga el juego. */
-      if (g.esNivel) sel.valores[g.id] = g.items[0] && g.items[0].id;
+      if (g.esNivel) sel.valores[g.id] = nivelSugerido(materia, juego, g);
       else if (g.porDefecto) sel.valores[g.id] = g.porDefecto;
     });
 
@@ -1002,6 +1149,55 @@
    * Cada nivel guarda su propio récord, así que la ficha muestra el
    * mejor puntaje de ese nivel y no el del juego entero.
    */
+  /** La clave con la que se anota que un nivel está hecho. */
+  function claveDeNivel(materia, juego, nivelId) {
+    return materia.id + '/' + juego.id + '#' + nivelId;
+  }
+
+  /* El nivel que se elige solo al entrar: el primero que todavía no hizo
+     con todas bien. Antes arrancaba siempre en el 1, y el que ya iba por
+     la tabla del 7 tenía que bajar la lista cada vez. Si los hizo todos,
+     el último. */
+  function nivelSugerido(materia, juego, grupo) {
+    for (var i = 0; i < grupo.items.length; i++) {
+      if (!Almacen.nivelHecho(claveDeNivel(materia, juego, grupo.items[i].id))) return grupo.items[i].id;
+    }
+    return grupo.items.length ? grupo.items[grupo.items.length - 1].id : null;
+  }
+
+  /** Anota como hecho el nivel que se acaba de jugar con todas bien. */
+  function marcarNivelHecho(materia, juego) {
+    (juego.opciones() || []).forEach(function (g) {
+      if (g.esNivel && sel.valores[g.id]) Almacen.marcarNivel(claveDeNivel(materia, juego, sel.valores[g.id]));
+    });
+  }
+
+  /**
+   * Al terminar una partida bien, el botón para pasar al nivel que sigue.
+   * Con el 80% bien: el mismo corte con el que se completa una lección.
+   */
+  function pintarSiguienteNivel(materia, juego, r) {
+    var btn = $('btn-siguiente-nivel');
+    var otraVez = $('btn-otra-vez');
+    btn.hidden = true;
+    otraVez.className = 'btn-gigante';
+    var grupo = (juego.opciones() || []).filter(function (g) { return g.esNivel; })[0];
+    if (!grupo || !r.total || r.aciertos / r.total < 0.8) return;
+    var i = -1;
+    grupo.items.forEach(function (it, j) { if (it.id === sel.valores[grupo.id]) i = j; });
+    if (i < 0 || i >= grupo.items.length - 1) return;
+    var siguiente = grupo.items[i + 1];
+    btn.textContent = 'Pasar al nivel ' + (siguiente.numero || i + 2) + ': ' + siguiente.nombre;
+    btn.onclick = function () {
+      Sonido.tocar('clic');
+      sel.valores[grupo.id] = siguiente.id;
+      irA('#/jugar');
+    };
+    btn.hidden = false;
+    // jugar de nuevo pasa a segundo plano: lo que se recomienda es avanzar
+    otraVez.className = 'btn-secundario';
+  }
+
   function bloqueDeNiveles(grupo, numero, juego, materia) {
     var bloque = Util.crear('div', 'bloque-config');
     bloque.appendChild(Util.crear('h2', 'etiqueta-grupo', numero + '. ' + grupo.titulo));
@@ -1020,9 +1216,21 @@
       var abajo = [];
       if (item.detalle) abajo.push(item.detalle);
       if (item.cantidad) abajo.push(Util.plural(item.cantidad, 'pregunta'));
-      var mejor = Almacen.record(materia.id + '/' + juego.id + ':' +
-                                 'Nivel ' + (item.numero || i + 1) + ' · ' + item.nombre).puntos;
+      /* El récord se busca con la misma clave con la que se guarda, que
+         incluye las otras opciones elegidas (sumas o restas): con sólo el
+         nombre del nivel, en «Sumas y restas» no aparecía nunca. */
+      var valoresAntes = sel.valores[grupo.id];
+      sel.valores[grupo.id] = item.id;
+      var mejor = Almacen.record(materia.id + '/' + juego.id + ':' + resumenDePartida(juego)).puntos;
+      sel.valores[grupo.id] = valoresAntes;
       if (mejor > 0) abajo.push('Tu récord: ' + mejor);
+      if (Almacen.nivelHecho(claveDeNivel(materia, juego, item.id))) {
+        b.classList.add('nivel-hecho');
+        b.setAttribute('aria-label', 'Nivel ' + (item.numero || i + 1) + ', ' + item.nombre + ', hecho');
+        var sello = Util.crear('span', 'nivel-sello');
+        sello.appendChild(Iconos.crear('tilde'));
+        b.appendChild(sello);
+      }
       if (abajo.length) cuerpo.appendChild(Util.crear('span', 'nivel-detalle', abajo.join(' · ')));
       b.appendChild(cuerpo);
 
@@ -1221,6 +1429,7 @@
     if (r.total >= MINIMO_PARA_DOMINAR && r.aciertos === r.total) {
       Almacen.marcarDominado(materia.id + '/' + juego.id);
     }
+    if (r.total && r.aciertos === r.total) marcarNivelHecho(materia, juego);
     // la lección queda completada recién acá, y no al llegar al final
     if (aprobado) Almacen.marcarLeccion(leccion.id);
     pintarBarraSuperior();
@@ -1275,7 +1484,7 @@
     var esRecord = Almacen.anotar(clave, r.puntos, r.aciertos, r.total);
     if (estrellas > 0) Almacen.sumarEstrellas(estrellas);
 
-    Almacen.registrarPartida({
+    var delDia = Almacen.registrarPartida({
       materia: materia.id, juego: juego.id, detalle: detalle,
       puntos: r.puntos, maximo: r.maximo,
       aciertos: r.aciertos, total: r.total, estrellas: estrellas
@@ -1287,6 +1496,7 @@
     if (r.total >= MINIMO_PARA_DOMINAR && r.aciertos === r.total) {
       Almacen.marcarDominado(materia.id + '/' + juego.id);
     }
+    if (r.total && r.aciertos === r.total) marcarNivelHecho(materia, juego);
     Almacen.registrarErrores(materia.id, r.errores.map(function (item) {
       return {
         clave: materia.modulo.claveItem(item),
@@ -1330,6 +1540,8 @@
     // si pasó de edad, lo cuenta el cartel grande y el chico no se repite
     if (listoAhora) $('progreso-nivel').hidden = true;
     pintarRepaso(materia, r.errores);
+    pintarMetaCumplida(delDia);
+    pintarSiguienteNivel(materia, juego, r);
     Sonido.tocar(esRecord && r.puntos > 0 ? 'record' : 'fin');
     irA('#/fin');
   }
@@ -1570,6 +1782,9 @@
     $('desbloqueo').hidden = true;
     $('progreso-nivel').hidden = true;        // mezcla materias: no suma a ningún nivel
     $('btn-cambiar-zona').hidden = true;      // el repaso no tiene opciones que cambiar
+    $('btn-siguiente-nivel').hidden = true;
+    $('btn-otra-vez').className = 'btn-gigante';
+    $('meta-cumplida').hidden = true;
     pintarRepaso(null, r.errores);
     Sonido.tocar(esRecord && r.puntos > 0 ? 'record' : 'fin');
     irA('#/fin');
@@ -1883,6 +2098,7 @@
     var sw = $('ajuste-sonido');
     if (sw) sw.setAttribute('aria-checked', Almacen.sonidoActivo() ? 'true' : 'false');
     pintarInterruptorVoz();
+    pintarAjusteMeta();
   }
 
   /* Si el aparato no tiene voz, el interruptor queda apagado y lo dice:
@@ -2708,6 +2924,19 @@
     $('btn-otra-vez').addEventListener('click', function () {
       Sonido.tocar('clic');
       irA(tipoUltimaPartida === 'repaso' ? '#/repasando' : '#/jugar');
+    });
+    $('btn-guardar-copia').addEventListener('click', function () {
+      Sonido.despertar(); Sonido.tocar('clic');
+      guardarCopia();
+    });
+    $('btn-recuperar-copia').addEventListener('click', function () {
+      Sonido.despertar(); Sonido.tocar('clic');
+      $('campo-copia').value = '';
+      $('campo-copia').click();
+    });
+    $('campo-copia').addEventListener('change', function () {
+      var archivo = this.files && this.files[0];
+      if (archivo) copiaElegida(archivo);
     });
     $('btn-cambiar-zona').addEventListener('click', function () {
       Sonido.tocar('clic');

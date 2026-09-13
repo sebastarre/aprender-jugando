@@ -2026,6 +2026,75 @@ body.en-bienvenida #fondo-bienvenida { display: block; }
 }
 
 /* ============================================================
+   Racha y meta del día
+   ============================================================ */
+/* La llamita va hundida como las estrellas: es un dato, no un botón. Si
+   hoy todavía no jugó, se apaga un poco en vez de desaparecer: la racha
+   sigue viva hasta que termine el día. */
+.portada-racha {
+  background: rgba(0, 0, 0, .2);
+  box-shadow: inset 0 2px 3px rgba(0, 0, 0, .2);
+}
+.portada-racha .ico { color: #fdba74; }
+.portada-racha.racha-pendiente .ico { color: inherit; opacity: .7; }
+
+.meta-hoy {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 0 0 18px;
+  padding: 14px 16px;
+  color: inherit;
+  text-decoration: none;
+  border: 2px solid var(--borde);
+  border-radius: var(--radio);
+  background: var(--tarjeta);
+  box-shadow: 0 4px 0 var(--sombra-clay);
+  transition: transform .12s, box-shadow .12s;
+}
+.meta-hoy:hover { transform: translateY(-2px); box-shadow: 0 6px 0 var(--sombra-clay); }
+.meta-hoy:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--sombra-clay); }
+.meta-hoy-icono {
+  flex: none;
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #f59e0b;
+  color: #fff;
+  box-shadow: 0 3px 0 #b45309;
+}
+.meta-hoy-icono .ico { width: 26px; height: 26px; }
+.meta-hoy-cuerpo { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.meta-hoy-titulo { font-size: 1.05rem; line-height: 1.2; }
+.meta-hoy-texto { font-size: .88rem; color: var(--tinta-suave); line-height: 1.25; }
+.meta-hoy-barra { height: 12px; }
+.meta-hoy.cumplida { border-color: var(--exito); box-shadow: 0 4px 0 var(--exito-osc); }
+.meta-hoy.cumplida .meta-hoy-icono { background: var(--exito-osc); box-shadow: 0 3px 0 #14532d; }
+.meta-hoy.cumplida .nivel-barra i { background: var(--exito); }
+
+.meta-cumplida {
+  display: inline-block;
+  margin: 0 0 14px;
+  padding: 6px 16px;
+  border-radius: 999px;
+  background: #dcfce7;
+  color: #14532d;
+  font-weight: 800;
+}
+
+/* ============================================================
+   La copia del progreso
+   ============================================================ */
+.copia-texto { margin: 0 0 12px; color: var(--tinta-suave); line-height: 1.4; }
+.copia-botones { display: flex; flex-wrap: wrap; gap: 10px; }
+.copia-botones .btn-gigante { font-size: 1.1rem; padding: 12px 22px; }
+
+/* El camino del juego a su lección, abajo del subtítulo */
+.enlace-leccion { text-align: center; margin: -1em 0 1.4em; }
+
+/* ============================================================
    Los niveles de un juego
 
    La pantalla previa a jugar preguntaba «¿cuántas preguntas?: 5, 10 o
@@ -2078,7 +2147,21 @@ body.en-bienvenida #fondo-bienvenida { display: block; }
   line-height: 1;
   box-shadow: 0 2px 0 rgba(0, 0, 0, .18);
 }
-.nivel-cuerpo { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.nivel-cuerpo { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 2px; }
+
+/* El sello del nivel hecho: una tilde verde a la derecha. */
+.nivel-opcion { position: relative; }
+.nivel-sello {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--exito-osc);
+  color: #fff;
+}
+.nivel-sello .ico { width: 16px; height: 16px; stroke-width: 3; }
 .nivel-nombre { font-weight: 800; line-height: 1.2; }
 .nivel-detalle { font-size: .85rem; color: var(--tinta-suave); line-height: 1.25; }
 
@@ -3081,3 +3164,18 @@ body.rindiendo .vidas { display: none; }
   font-size: .9rem;
 }
 .btn-chico { padding: 7px 16px; font-size: .92rem; }
+
+/* ============================================================
+   Tamaño de dedo
+
+   Los enlaces entre Aprender y Jugar («Aprender matemática», «Jugar a
+   inglés», la lección de un juego) medían 22 píxeles de alto: un chico
+   de cinco los erraba. 44 es lo que mide la yema de un dedo; el texto
+   queda igual y lo que crece es la zona que se puede tocar.
+   ============================================================ */
+.enlace-cruzado {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 8px;
+}

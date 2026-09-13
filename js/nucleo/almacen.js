@@ -31,7 +31,12 @@ window.Almacen = (function () {
       monedasTotales: 0,       // cuántas juntó en total, para el perfil
       comprado: {},            // 'tema:selva' -> true
       equipado: {},            // 'tema' -> 'selva'
-      dominados: {}            // 'matematica/tablas' -> true: lo ganó sin errores
+      dominados: {},           // 'matematica/tablas' -> true: lo ganó sin errores
+      nivelesHechos: {},       // 'matematica/tablas#7' -> true: ese nivel, con todas bien
+      dias: {},                // '2026-09-13' -> respuestas bien ese día
+      meta: 10,                // respuestas bien por día que pide la meta; 0 es sin meta
+      metaCobrada: null,       // el día en que se pagó el premio de la meta
+      mejorRacha: 0
     };
   }
 
@@ -345,7 +350,28 @@ window.Almacen = (function () {
       estrellas: p.estrellas
     });
     if (h.length > TOPE_HISTORIAL) h.splice(0, h.length - TOPE_HISTORIAL);
+
+    // el día: cuántas respuestas bien, para la racha y para la meta
+    if (!yo.dias) yo.dias = {};
+    var hoy = claveDia(new Date());
+    yo.dias[hoy] = (yo.dias[hoy] || 0) + (p.aciertos || 0);
+    var llaves = Object.keys(yo.dias).sort();
+    if (llaves.length > 400) llaves.slice(0, llaves.length - 400).forEach(function (k) { delete yo.dias[k]; });
+
+    /* El premio de la meta se paga una sola vez por día, en la partida
+       que la cruza. Sirve cualquier partida: juego, examen, repaso o el
+       ejercicio de una lección. */
+    var meta = metaDiaria();
+    var cumplidaAhora = meta > 0 && yo.dias[hoy] >= meta && yo.metaCobrada !== hoy;
+    if (cumplidaAhora) {
+      yo.metaCobrada = hoy;
+      yo.monedas = (yo.monedas || 0) + PREMIO_META;
+      yo.monedasTotales = (yo.monedasTotales || 0) + PREMIO_META;
+    }
+    var r = racha();
+    if (r > (yo.mejorRacha || 0)) yo.mejorRacha = r;
     guardar();
+    return { metaCumplida: cumplidaAhora, premio: cumplidaAhora ? PREMIO_META : 0, racha: r };
   }
 
   /** Suma uno al contador de cada cosa que se falló. */
@@ -459,6 +485,22 @@ window.Almacen = (function () {
     return true;
   }
 
+  /* Un nivel está hecho cuando se lo terminó con todas bien. Va aparte de
+     los récords porque el récord guarda la partida con más puntos, y una
+     partida con todas bien pero con segundos intentos puede tener menos
+     puntos que otra con un error. */
+  function nivelHecho(clave) {
+    var d = mio().nivelesHechos;
+    return !!(d && d[clave]);
+  }
+
+  function marcarNivel(clave) {
+    var yo = mio();
+    if (!yo.nivelesHechos) yo.nivelesHechos = {};
+    yo.nivelesHechos[clave] = true;
+    guardar();
+  }
+
   /** Cuántos juegos domina, para el perfil. */
   function cuantosDominados() {
     var d = mio().dominados;
@@ -519,18 +561,65 @@ window.Almacen = (function () {
   }
 
   /** Días seguidos jugando, contando hasta hoy. */
-  function racha() {
-    var h = mio().historial;
-    if (!h.length) return 0;
+  /* ---------------------- racha y meta del día ----------------------
+
+     La racha se contaba mirando las fechas del historial, que guarda las
+     últimas 300 partidas: un chico que juega mucho perdía los días viejos
+     de la cuenta. Ahora cada día jugado queda anotado aparte (`dias`), con
+     cuántas respuestas bien dio ese día, que es también lo que mide la
+     meta. Las fechas del historial se siguen sumando, para los perfiles
+     que ya jugaban antes de que existiera `dias`. */
+  var PREMIO_META = 5;
+
+  function claveDia(fecha) {
+    function dos(n) { return (n < 10 ? '0' : '') + n; }
+    return fecha.getFullYear() + '-' + dos(fecha.getMonth() + 1) + '-' + dos(fecha.getDate());
+  }
+
+  function diasJugados() {
+    var yo = mio();
     var dias = {};
-    h.forEach(function (p) { dias[new Date(p.fecha).toDateString()] = true; });
-    var cuenta = 0;
+    Object.keys(yo.dias || {}).forEach(function (d) { dias[d] = true; });
+    yo.historial.forEach(function (p) { dias[claveDia(new Date(p.fecha))] = true; });
+    return dias;
+  }
+
+  /* Si hoy todavía no jugó, la racha se cuenta desde ayer: a la mañana
+     tiene que ver su racha de 3 días, no un 0 que parece que la perdió. */
+  function racha() {
+    var dias = diasJugados();
     var cursor = new Date();
-    while (dias[cursor.toDateString()]) {
+    if (!dias[claveDia(cursor)]) cursor.setDate(cursor.getDate() - 1);
+    var cuenta = 0;
+    while (dias[claveDia(cursor)]) {
       cuenta++;
       cursor.setDate(cursor.getDate() - 1);
     }
     return cuenta;
+  }
+
+  function jugoHoy() { return !!diasJugados()[claveDia(new Date())]; }
+
+  function mejorRacha() { return Math.max(mio().mejorRacha || 0, racha()); }
+
+  function aciertosDeHoy() {
+    var d = mio().dias;
+    return (d && d[claveDia(new Date())]) || 0;
+  }
+
+  function metaDiaria() {
+    var m = mio().meta;
+    return typeof m === 'number' ? m : 10;
+  }
+
+  function setMeta(n) {
+    mio().meta = Math.max(0, n | 0);
+    guardar();
+  }
+
+  function metaCumplidaHoy() {
+    var meta = metaDiaria();
+    return meta > 0 && aciertosDeHoy() >= meta;
   }
 
   function estadisticas() {
@@ -577,6 +666,53 @@ window.Almacen = (function () {
     return mio().lecciones ? Object.keys(mio().lecciones).length : 0;
   }
 
+  /* ---------------------- la copia ----------------------
+
+     Todo lo que la app sabe vive en el navegador de este aparato. Si se
+     borran los datos del navegador, o se cambia de celular, se pierde
+     todo: años de partidas, las monedas, lo comprado, las fotos. La copia
+     es un archivo con todo eso adentro, que se guarda donde se quiera y
+     se recupera en cualquier aparato.
+
+     El PIN del modo parental no viaja en la copia: el archivo lo puede
+     abrir cualquiera, y un PIN escrito ahí adentro dejaría de servir. */
+  function exportar() {
+    var copia = JSON.parse(JSON.stringify(datos));
+    if (copia.ajustes) copia.ajustes.pin = null;
+    return JSON.stringify({
+      app: 'aprender-jugando',
+      guardada: new Date().toISOString(),
+      datos: copia
+    });
+  }
+
+  /** Lee un archivo de copia. Devuelve los datos si sirve, o null. */
+  function leerCopia(texto) {
+    try {
+      var leido = JSON.parse(texto);
+      var d = leido && leido.app === 'aprender-jugando' ? leido.datos : null;
+      if (!d || !Array.isArray(d.perfiles) || !d.perfiles.length) return null;
+      if (!d.datos || typeof d.datos !== 'object') return null;
+      return d;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /** Reemplaza todo lo guardado por una copia. Hay que recargar después. */
+  function restaurar(d) {
+    var pinDeAhora = datos.ajustes && datos.ajustes.pin;
+    if (!d.ajustes) d.ajustes = {};
+    // el PIN que ya había en este aparato se queda: la copia no trae ninguno
+    if (!d.ajustes.pin && pinDeAhora) d.ajustes.pin = pinDeAhora;
+    try {
+      localStorage.setItem(CLAVE, JSON.stringify(d));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
   function borrarProgreso() {
     datos.datos[datos.activo] = perfilVacio();
     guardar();
@@ -618,6 +754,11 @@ window.Almacen = (function () {
     marcarLeccion: marcarLeccion, leccionVista: leccionVista, cuantasLecciones: cuantasLecciones,
     masFallados: masFallados, estadisticas: estadisticas, borrarProgreso: borrarProgreso,
     sonidoActivo: sonidoActivo, setSonido: setSonido,
+    racha: racha, mejorRacha: mejorRacha, jugoHoy: jugoHoy,
+    aciertosDeHoy: aciertosDeHoy, metaDiaria: metaDiaria, setMeta: setMeta,
+    metaCumplidaHoy: metaCumplidaHoy, PREMIO_META: PREMIO_META,
+    nivelHecho: nivelHecho, marcarNivel: marcarNivel,
+    exportar: exportar, leerCopia: leerCopia, restaurar: restaurar,
     vozActiva: vozActiva, setVoz: setVoz,
     hayPin: hayPin, pinCorrecto: pinCorrecto, setPin: setPin
   };

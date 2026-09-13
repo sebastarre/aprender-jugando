@@ -272,6 +272,46 @@ final.
 El ejercicio de cada lección está en `js/aprender/contenido.js`, en el campo
 `ejercicio` (juego, nivel, cuántas preguntas y la consigna).
 
+## Racha y meta del día
+
+En el cartel del inicio hay una llamita con **los días seguidos** que jugó.
+Si hoy todavía no jugó, la llama se apaga un poco pero la racha no se pierde
+hasta que termina el día: a la mañana tiene que ver su racha de 3, no un 0.
+
+Abajo del menú está la **meta de hoy**: cuántas respuestas bien lleva, contra
+las que pide (10 de fábrica). Cuenta cualquier cosa que se juegue —partidas,
+exámenes, repasos y los ejercicios de las lecciones— y al cumplirla paga 5
+monedas, una sola vez por día. Se cambia en Configuración (un ratito, una
+partida, dos partidas o sin meta) y es de cada chico.
+
+No hay retos: ni «perdiste tu racha» ni avisos de que no cumplió. Es para
+saber si ya jugó hoy, no para que la app lo haga sentir mal.
+
+La racha se cuenta con los días anotados aparte (`dias`, en el perfil) y ya
+no con el historial, que guarda las últimas 300 partidas: un chico que jugaba
+mucho perdía los días viejos de la cuenta.
+
+## Los niveles recuerdan por dónde vas
+
+- Un nivel terminado **con todas bien** lleva una tilde verde en su ficha.
+- Al entrar a un juego queda elegido **el primer nivel que falta**, no el 1:
+  el que ya va por la tabla del 7 no tiene que bajar la lista cada vez.
+- Al terminar una partida con el 80% bien aparece **«Pasar al nivel N»**, y
+  «Jugar de nuevo» pasa a segundo plano.
+- La pantalla de un juego ofrece **la lección que lo explica** («¿No sabés
+  cómo se hace?»): la lección ya terminaba ofreciendo el juego, y ahora el
+  camino va para los dos lados.
+
+## Una copia de todo
+
+Todo vive en el navegador del aparato: si se borran sus datos o se cambia de
+celular, se pierde. En Configuración → «Una copia de todo» se guarda un archivo
+con todos los jugadores, sus partidas, monedas, compras y fotos (en el celular
+se comparte, para dejarlo en Drive o mandarlo por WhatsApp; en la compu se
+baja) y con «Recuperar una copia» se trae en cualquier aparato, avisando antes
+qué jugadores trae y que reemplaza lo que haya. El PIN del modo parental no
+viaja en la copia: el archivo lo puede abrir cualquiera.
+
 ## Modo examen
 
 Aparte de los juegos hay un **examen**, que no es otro juego sino la misma
