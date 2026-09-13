@@ -276,6 +276,12 @@
       <h1 class="titulo-leccion" id="leccion-titulo"></h1>
       <div class="leccion-puntitos" id="leccion-puntitos"></div>
       <p class="leccion-avance" id="leccion-avance"></p>
+      <!-- Se lee sola al aparecer cada paso; esto es para volver a
+           escucharla, o para callarla. -->
+      <button class="btn-voz" id="btn-leccion-voz" type="button" aria-pressed="false" hidden>
+        <span data-ico="sonido" aria-hidden="true"></span>
+        <span id="btn-leccion-voz-texto">Escuchar</span>
+      </button>
     </div>
     <div id="leccion-cuerpo"></div>
     <div class="leccion-botones">
@@ -442,6 +448,15 @@
       <button class="interruptor" id="ajuste-sonido" type="button"
               role="switch" aria-checked="true"><span></span></button>
     </div>
+    <div class="fila-ajuste">
+      <span class="ajuste-icono" data-ico="voz" aria-hidden="true"></span>
+      <div class="fila-cuerpo">
+        <div class="fila-nombre">Leer en voz alta</div>
+        <div class="ir-dato" id="dato-voz">Las lecciones y las preguntas de sus ejercicios se escuchan.</div>
+      </div>
+      <button class="interruptor" id="ajuste-voz" type="button"
+              role="switch" aria-checked="true"><span></span></button>
+    </div>
 
     <h2 class="etiqueta-grupo">Tus datos</h2>
     <div class="tarjeta-ajustes">
@@ -589,6 +604,7 @@
 <script src="js/nucleo/almacen.js"></script>
 <script src="js/nucleo/foto.js"></script>
 <script src="js/nucleo/sonido.js"></script>
+<script src="js/nucleo/voz.js"></script>
 <script src="js/nucleo/opciones.js"></script>
 <script src="js/nucleo/motor.js"></script>
 <script src="js/nucleo/mezcla.js"></script>

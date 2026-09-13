@@ -286,6 +286,8 @@
                    'examen', 'nota', 'configuracion', 'personalizacion'];
 
   function mostrar(nombre) {
+    // lo que se estaba leyendo era de la pantalla de antes
+    Voz.parar();
     PANTALLAS.forEach(function (p) { $('pantalla-' + p).hidden = (p !== nombre); });
     /* La única pantalla sin flecha de volver es el inicio, porque es el
        fondo de todo; la bienvenida tampoco, porque todavía no hay a
@@ -302,6 +304,8 @@
   }
 
   function cortarPartida() {
+    dejarDeLeerPreguntas();
+    ejercicioActual = null;
     Motor.abandonar();
     MATERIAS.forEach(function (m) { if (m.modulo && m.modulo.limpiar) m.modulo.limpiar(); });
   }
@@ -325,11 +329,36 @@
   var PASOS_BIENVENIDA = ['nombre', 'edad', 'avatar'];
 
   function pasoBienvenida(cual) {
+    bienvenida.paso = cual;
     PASOS_BIENVENIDA.forEach(function (p) {
       $('bien-paso-' + p).hidden = (p !== cual);
     });
     pintarPasos(cual);
+    pintarFlechaBienvenida();
     if (cual === 'nombre') setTimeout(function () { $('campo-nombre').focus(); }, 120);
+  }
+
+  /**
+   * La flecha de volver, mientras se arma un perfil. En el segundo y el
+   * tercer paso vuelve al anterior: el que se equivocó de edad tiene que
+   * poder corregirla sin empezar de cero. En el primero aparece sólo
+   * cuando se está sumando otro chico, que ya tiene un inicio al que
+   * volver; la primera vez de todas no hay a dónde.
+   */
+  function puedeVolverEnBienvenida() {
+    if (PASOS_BIENVENIDA.indexOf(bienvenida.paso) > 0) return true;
+    return location.hash === '#/nuevo-jugador' && Almacen.perfiles().length > 0;
+  }
+
+  function pintarFlechaBienvenida() {
+    if ($('pantalla-bienvenida').hidden) return;
+    $('btn-atras').hidden = !puedeVolverEnBienvenida();
+  }
+
+  function volverEnBienvenida() {
+    var i = PASOS_BIENVENIDA.indexOf(bienvenida.paso);
+    if (i > 0) return pasoBienvenida(PASOS_BIENVENIDA[i - 1]);
+    if (puedeVolverEnBienvenida()) irA('#/');
   }
 
   /* Los tres puntitos de arriba de la tarjeta. Saber cuánto falta es
@@ -926,7 +955,7 @@
 
       var pie = Util.crear('div', 'card-pie');
       pie.appendChild(Util.crear('span', 'card-minutos', '⏱️ ' + l.minutos + ' min'));
-      if (vista) pie.appendChild(Util.crear('span', 'card-leida', '✅ Leída'));
+      if (vista) pie.appendChild(Util.crear('span', 'card-leida', l.ejercicio ? '✅ Completada' : '✅ Leída'));
       b.cuerpo.appendChild(pie);
       cont.appendChild(b);
     });
@@ -1126,6 +1155,107 @@
     var juego = juegoPorId(materia, sel.juego);
     if (!materia || !juego) return irA('#/juegos');
     juego.jugar(datosSeleccion(), { alTerminar: terminarPartida });
+  }
+
+  /* ---------------------- el ejercicio de una lección ----------------------
+
+     Unas preguntas de un juego elegidas para lo que explica la lección:
+     la de multiplicar termina con la tabla del 2, la de los colores en
+     inglés con el nivel de los colores básicos. Se juegan en la pantalla
+     de juego de siempre y cuentan como jugadas (errores para repasar,
+     monedas, juegos dominados), pero el final no es el de una partida
+     sino el de la lección: completada con el 80% bien, o probá de nuevo. */
+  var APROBAR_EJERCICIO = 0.8;
+  var ejercicioActual = null;
+  var resultadoEjercicio = null;
+
+  function arrancarEjercicio(leccion) {
+    var ej = leccion.ejercicio;
+    var enc = porClave(ej.juego);
+    if (!enc.materia || !enc.juego) return irA('#/leccion/' + leccion.id);
+
+    ejercicioActual = leccion;
+    sel.materia = enc.materia.id;
+    sel.juego = enc.juego.id;
+    sel.valores = {};
+    (enc.juego.opciones() || []).forEach(function (g) {
+      if (g.esNivel) sel.valores[g.id] = ej.nivel || (g.items[0] && g.items[0].id);
+      else if (g.porDefecto) sel.valores[g.id] = g.porDefecto;
+      else if (g.items[0]) sel.valores[g.id] = g.items[0].id;
+    });
+    Object.keys(ej.valores || {}).forEach(function (k) { sel.valores[k] = ej.valores[k]; });
+
+    var datos = datosSeleccion();
+    datos.cantidad = ej.cantidad || 5;
+    leerPreguntas();
+    enc.juego.jugar(datos, { alTerminar: terminarEjercicio });
+  }
+
+  function terminarEjercicio(r) {
+    dejarDeLeerPreguntas();
+    var leccion = ejercicioActual;
+    ejercicioActual = null;
+    if (!leccion) return irA('#/aprender');
+
+    var enc = porClave(leccion.ejercicio.juego);
+    var materia = enc.materia, juego = enc.juego;
+    var aprobado = r.total > 0 && r.aciertos / r.total >= APROBAR_EJERCICIO;
+
+    Almacen.registrarPartida({
+      materia: materia.id, juego: juego.id, tipo: 'leccion',
+      detalle: 'Ejercicio de «' + leccion.titulo + '»',
+      puntos: r.puntos, maximo: r.maximo,
+      aciertos: r.aciertos, total: r.total, estrellas: 0
+    });
+    Almacen.registrarErrores(materia.id, r.errores.map(function (item) {
+      return {
+        clave: materia.modulo.claveItem(item),
+        nombre: materia.modulo.repaso(item).nombre,
+        juego: juego.id
+      };
+    }));
+    var claves = (r.acertados || []).map(function (item) { return materia.modulo.claveItem(item); });
+    var premio = calcularMonedas(claves.map(function (clave) { return materia.id + ':' + clave; }));
+    Almacen.registrarAciertos(materia.id, claves);
+    Almacen.sumarMonedas(premio.total);
+    if (r.total >= MINIMO_PARA_DOMINAR && r.aciertos === r.total) {
+      Almacen.marcarDominado(materia.id + '/' + juego.id);
+    }
+    // la lección queda completada recién acá, y no al llegar al final
+    if (aprobado) Almacen.marcarLeccion(leccion.id);
+    pintarBarraSuperior();
+
+    resultadoEjercicio = {
+      leccion: leccion.id, aciertos: r.aciertos, total: r.total,
+      aprobado: aprobado, monedas: premio.total
+    };
+    Sonido.tocar(aprobado ? 'fin' : 'revelar');
+    irA('#/leccion/' + leccion.id + '/resultado');
+  }
+
+  /* Mientras dura el ejercicio, la voz lee cada consigna. Se escucha el
+     cartel de la pregunta en vez de pedirle el texto a cada juego: así
+     sirve para los 48 juegos sin tocar ninguno. */
+  var observadorDePreguntas = null;
+  var esperaDeLectura = null;
+
+  function leerPreguntas() {
+    dejarDeLeerPreguntas();
+    if (!Voz.hay() || !Almacen.vozActiva() || !window.MutationObserver) return;
+    var cartel = $('pregunta-texto');
+    observadorDePreguntas = new MutationObserver(function () {
+      clearTimeout(esperaDeLectura);
+      esperaDeLectura = setTimeout(function () {
+        if (cartel.textContent.trim()) Voz.decir(cartel.innerHTML);
+      }, 80);
+    });
+    observadorDePreguntas.observe(cartel, { childList: true, characterData: true, subtree: true });
+  }
+
+  function dejarDeLeerPreguntas() {
+    clearTimeout(esperaDeLectura);
+    if (observadorDePreguntas) observadorDePreguntas.disconnect();
+    observadorDePreguntas = null;
   }
 
   /* ---------------------- resultados ---------------------- */
@@ -1752,6 +1882,20 @@
   function pintarInterruptorSonido() {
     var sw = $('ajuste-sonido');
     if (sw) sw.setAttribute('aria-checked', Almacen.sonidoActivo() ? 'true' : 'false');
+    pintarInterruptorVoz();
+  }
+
+  /* Si el aparato no tiene voz, el interruptor queda apagado y lo dice:
+     prenderlo y que no pase nada es peor que no poder prenderlo. */
+  function pintarInterruptorVoz() {
+    var sw = $('ajuste-voz');
+    if (!sw) return;
+    var hay = Voz.hay() && Voz.tieneCastellano();
+    sw.disabled = !hay;
+    sw.setAttribute('aria-checked', hay && Almacen.vozActiva() ? 'true' : 'false');
+    $('dato-voz').textContent = hay
+      ? 'Las lecciones y las preguntas de sus ejercicios se escuchan.'
+      : 'Este aparato no tiene una voz en castellano instalada.';
   }
 
   function guardarDatos() {
@@ -2272,6 +2416,7 @@
       // exámenes y repasos se distinguen de las partidas sueltas
       var icono = p.tipo === 'examen' ? '📝'
                 : p.tipo === 'repaso' ? '🔁'
+                : p.tipo === 'leccion' ? '🎓'
                 : (materia ? materia.icono : '•');
       fila.appendChild(ponerIcono(Util.crear('span', 'fila-icono'), icono));
       var cuerpo = Util.crear('div', 'fila-cuerpo');
@@ -2320,7 +2465,8 @@
     if (partes[0] === 'bienvenida') {
       cortarPartida();
       empezarBienvenida();
-      return mostrar('bienvenida');
+      mostrar('bienvenida');
+      return pintarFlechaBienvenida();
     }
 
     /* Sumar otro chico. Es la misma bienvenida que la primera vez, pero
@@ -2330,7 +2476,7 @@
       cortarPartida();
       empezarJugadorNuevo();
       mostrar('bienvenida');
-      $('btn-atras').hidden = false;
+      pintarFlechaBienvenida();
       return;
     }
 
@@ -2356,11 +2502,34 @@
 
     if (partes[0] === 'leccion' && partes[1]) {
       cortarPartida();
+      var estado = null;
+      if (partes[2] === 'resultado' && resultadoEjercicio && resultadoEjercicio.leccion === partes[1]) {
+        estado = { fase: 'resultado', resultado: resultadoEjercicio };
+      } else if (partes[2] === 'ejercicio') {
+        estado = { fase: 'ejercicio' };
+      }
       var abierta = Leccion.abrir(partes[1], {
-        alJugar: function (clave) { irA('#/juego/' + clave); }
-      });
+        alJugar: function (clave) { irA('#/juego/' + clave); },
+        alEjercitar: function (l) { irA('#/ejercicio/' + l.id); },
+        alVolver: function (l) { irA('#/lecciones/' + l.materia); },
+        nombreDelJuego: function (clave) {
+          var enc = porClave(clave);
+          return enc.juego ? enc.juego.nombre.toLowerCase() : 'este juego';
+        }
+      }, estado);
       if (!abierta) return irA('#/aprender');
       return mostrar('leccion');
+    }
+
+    /* El ejercicio de una lección se juega en la pantalla de siempre,
+       con el motor de siempre: es un juego de verdad, no un cuestionario
+       aparte que haya que mantener. */
+    if (partes[0] === 'ejercicio' && partes[1]) {
+      var deLeccion = window.Lecciones ? Lecciones.porId(partes[1]) : null;
+      if (!deLeccion || !deLeccion.ejercicio) return irA('#/aprender');
+      cortarPartida();
+      mostrar('juego');
+      return arrancarEjercicio(deLeccion);
     }
 
     if (partes[0] === 'materia' && partes[1]) {
@@ -2453,6 +2622,11 @@
   function volverAtras() {
     var partes = (location.hash || '#/').replace(/^#\/?/, '').split('/').filter(Boolean);
     Sonido.tocar('clic');
+    if (partes[0] === 'bienvenida' || partes[0] === 'nuevo-jugador') return volverEnBienvenida();
+    if (partes[0] === 'ejercicio') {
+      cortarPartida();
+      return irA('#/leccion/' + partes[1] + '/ejercicio');
+    }
     if (partes[0] === 'jugar' || partes[0] === 'fin') {
       cortarPartida();
       return irA('#/juego/' + sel.materia + '/' + sel.juego);
@@ -2559,6 +2733,13 @@
       // si había algo nuevo, la app se recarga sola; si no, vuelve la versión
       setTimeout(pintarVersion, 2500);
     });
+    $('ajuste-voz').addEventListener('click', function () {
+      Almacen.setVoz(!Almacen.vozActiva());
+      if (!Almacen.vozActiva()) Voz.parar();
+      pintarInterruptorVoz();
+      Sonido.despertar(); Sonido.tocar('clic');
+    });
+    $('btn-leccion-voz').addEventListener('click', function () { Leccion.alternarVoz(); });
     $('ajuste-sonido').addEventListener('click', function () {
       Almacen.setSonido(!Almacen.sonidoActivo());
       pintarInterruptorSonido();

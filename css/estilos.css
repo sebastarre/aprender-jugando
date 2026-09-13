@@ -2400,6 +2400,65 @@ body.en-bienvenida #fondo-bienvenida { display: block; }
 .final-icono { font-size: 3.4rem; line-height: 1; margin-bottom: 6px; }
 .paso-final .btn-gigante { margin-top: 10px; }
 
+/* El botón de escuchar la lección. Mientras habla dice «Callar» y va
+   pleno, para que se vea de lejos que está sonando. */
+.btn-voz {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 10px;
+  padding: 8px 16px;
+  font: inherit;
+  font-weight: 800;
+  color: var(--primario-osc);
+  background: var(--tarjeta);
+  border: 2px solid var(--borde);
+  border-radius: 999px;
+  box-shadow: 0 3px 0 var(--sombra-clay);
+  cursor: pointer;
+  transition: transform .12s, box-shadow .12s;
+}
+.btn-voz .ico { width: 20px; height: 20px; }
+.btn-voz:active { transform: translateY(3px); box-shadow: none; }
+.btn-voz[aria-pressed="true"] {
+  background: var(--primario);
+  border-color: var(--primario);
+  color: var(--sobre-primario);
+  box-shadow: 0 3px 0 var(--primario-osc);
+}
+
+/* El ejercicio del final de la lección y su resultado */
+.ejercicio-regla {
+  margin: 4px 0 6px;
+  font-size: .92rem;
+  font-weight: 700;
+  color: var(--tinta-suave);
+}
+.resultado-cifra {
+  margin: 2px 0 8px;
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--tinta-suave);
+}
+.resultado-cifra b { font-size: 2.6rem; color: var(--tinta); }
+.paso-resultado.aprobado .resultado-cifra b { color: var(--exito-osc); }
+.resultado-monedas {
+  display: inline-block;
+  margin: 0 0 6px;
+  padding: 4px 14px;
+  border-radius: 999px;
+  background: #fef3c7;
+  color: #78350f;
+  font-weight: 800;
+}
+.resultado-botones {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
 .leccion-botones {
   display: flex;
   gap: 12px;

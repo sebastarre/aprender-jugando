@@ -586,6 +586,11 @@ window.Almacen = (function () {
   function sonidoActivo() { return datos.ajustes.sonido !== false; }
   function setSonido(v) { datos.ajustes.sonido = !!v; guardar(); }
 
+  /* Leer en voz alta: prendido de fábrica. Es un ajuste del aparato y no
+     de cada chico, igual que el sonido. */
+  function vozActiva() { return datos.ajustes.voz !== false; }
+  function setVoz(v) { datos.ajustes.voz = !!v; guardar(); }
+
   function hayPin() { return !!datos.ajustes.pin; }
   function pinCorrecto(pin) { return datos.ajustes.pin === String(pin); }
   function setPin(pin) {
@@ -613,6 +618,7 @@ window.Almacen = (function () {
     marcarLeccion: marcarLeccion, leccionVista: leccionVista, cuantasLecciones: cuantasLecciones,
     masFallados: masFallados, estadisticas: estadisticas, borrarProgreso: borrarProgreso,
     sonidoActivo: sonidoActivo, setSonido: setSonido,
+    vozActiva: vozActiva, setVoz: setVoz,
     hayPin: hayPin, pinCorrecto: pinCorrecto, setPin: setPin
   };
 })();

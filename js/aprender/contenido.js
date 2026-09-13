@@ -12,6 +12,16 @@
      visual: function ()  devuelve HTML (normalmente un SVG dibujado acá)
      truco:  'texto'      un recuadro con el atajo para acordarse
      video:  'url'        muestra un video embebido (necesita internet)
+
+   Y la lección entera puede tener un `ejercicio`: unas preguntas de un
+   juego que el chico tiene que hacer para terminarla.
+     juego      'materia/juego'
+     nivel      el id del nivel de ese juego (el que mejor ejercita lo
+                que explica la lección)
+     valores    otras opciones del juego, si tiene (sumas o restas)
+     cantidad   cuántas preguntas (5)
+     consigna   lo que se le dice antes de empezar; también lo lee la voz
+   Con el 80% bien la lección queda completada; si no, se vuelve a probar.
    ============================================================ */
 window.Lecciones = (function () {
   'use strict';
@@ -146,6 +156,7 @@ window.Lecciones = (function () {
       minutos: 3,
       resumen: 'Qué hacer cuando una columna se pasa de 9.',
       juego: 'matematica/cuentas',
+      ejercicio: { juego: 'matematica/cuentas', nivel: 'dificil', valores: { operacion: 'suma' }, cantidad: 5, consigna: 'Resolvé cinco sumas. En algunas te vas a tener que llevar una.' },
       pasos: [
         {
           titulo: 'Cada número en su lugar',
@@ -180,6 +191,7 @@ window.Lecciones = (function () {
       minutos: 3,
       resumen: 'Cuando el de arriba es más chico que el de abajo.',
       juego: 'matematica/cuentas',
+      ejercicio: { juego: 'matematica/cuentas', nivel: 'dificil', valores: { operacion: 'resta' }, cantidad: 5, consigna: 'Resolvé cinco restas. En algunas vas a tener que pedir prestado.' },
       pasos: [
         {
           titulo: 'El mismo orden que la suma',
@@ -213,6 +225,7 @@ window.Lecciones = (function () {
       minutos: 2,
       resumen: 'Multiplicar es sumar muchas veces lo mismo.',
       juego: 'matematica/tablas',
+      ejercicio: { juego: 'matematica/tablas', nivel: '2', cantidad: 5, consigna: 'Empezá por la tabla del 2: cinco multiplicaciones.' },
       pasos: [
         {
           titulo: 'Es una suma repetida',
@@ -241,6 +254,7 @@ window.Lecciones = (function () {
       minutos: 3,
       resumen: 'Cuál aguja es cuál y qué significa cada número.',
       juego: 'matematica/reloj',
+      ejercicio: { juego: 'matematica/reloj', nivel: 'media', cantidad: 5, consigna: 'Mirá cada reloj y elegí qué hora marca.' },
       pasos: [
         {
           titulo: 'Dos agujas, dos trabajos',
@@ -271,6 +285,7 @@ window.Lecciones = (function () {
       minutos: 2,
       resumen: 'Los pedazos grandes de tierra donde vivimos.',
       juego: 'geografia/paises',
+      ejercicio: { juego: 'geografia/continentes', nivel: 'n2', cantidad: 5, consigna: 'Elegí en qué continente está cada país.' },
       pasos: [
         {
           titulo: 'Tierra y agua',
@@ -298,6 +313,7 @@ window.Lecciones = (function () {
       minutos: 2,
       resumen: 'La ciudad principal de cada país (no siempre la más grande).',
       juego: 'geografia/capitales',
+      ejercicio: { juego: 'geografia/capitales', nivel: 'america-sur', cantidad: 5, consigna: 'Buscá en el mapa el país de cada capital. Son todos de América del Sur.' },
       pasos: [
         {
           titulo: 'La ciudad donde se decide',
@@ -322,6 +338,7 @@ window.Lecciones = (function () {
       minutos: 2,
       resumen: 'Norte, sur, este, oeste y qué significan los colores.',
       juego: 'geografia/paises',
+      ejercicio: { juego: 'geografia/paises', nivel: 'america-sur', cantidad: 5, consigna: 'Buscá cada país en el mapa de América del Sur.' },
       pasos: [
         {
           titulo: 'Arriba es el norte',
@@ -350,6 +367,7 @@ window.Lecciones = (function () {
       minutos: 2,
       resumen: 'Cómo se corta una palabra en pedacitos.',
       juego: 'lengua/silabas',
+      ejercicio: { juego: 'lengua/silabas', nivel: 'n1', cantidad: 5, consigna: 'Contá cuántas sílabas tiene cada palabra. Aplaudí si te ayuda.' },
       pasos: [
         {
           titulo: 'Las palabras tienen pedacitos',
@@ -379,6 +397,7 @@ window.Lecciones = (function () {
       minutos: 3,
       resumen: 'Para qué sirve cada clase de palabra.',
       juego: 'lengua/clases',
+      ejercicio: { juego: 'lengua/clases', nivel: 'n2', cantidad: 5, consigna: 'Decí si cada palabra es un sustantivo, un adjetivo o un verbo.' },
       pasos: [
         {
           titulo: 'Los sustantivos nombran',
@@ -409,6 +428,7 @@ window.Lecciones = (function () {
       minutos: 4,
       resumen: 'Agudas, graves y esdrújulas.',
       juego: 'lengua/tildes',
+      ejercicio: { juego: 'lengua/tildes', nivel: 'n2', cantidad: 5, consigna: 'Elegí cómo se escribe bien cada palabra: con tilde o sin tilde.' },
       pasos: [
         {
           titulo: 'Hay una sílaba que suena más fuerte',
@@ -444,6 +464,7 @@ window.Lecciones = (function () {
       minutos: 3,
       resumen: 'Cómo se agrupan los animales.',
       juego: 'ciencias/animales',
+      ejercicio: { juego: 'ciencias/animales', nivel: 'n3', cantidad: 5, consigna: 'Decí de qué clase es cada animal.' },
       pasos: [
         {
           titulo: 'Los mamíferos toman leche',
@@ -474,6 +495,7 @@ window.Lecciones = (function () {
       minutos: 3,
       resumen: 'El hielo, el agua y el vapor son lo mismo.',
       juego: 'ciencias/materia',
+      ejercicio: { juego: 'ciencias/materia', nivel: 'n1', cantidad: 5, consigna: 'Decí si cada cosa es sólida, líquida o un gas.' },
       pasos: [
         {
           titulo: 'Tres maneras de estar',
@@ -501,6 +523,7 @@ window.Lecciones = (function () {
       minutos: 3,
       resumen: 'El Sol, los ocho planetas y la Luna.',
       juego: 'ciencias/espacio',
+      ejercicio: { juego: 'ciencias/espacio', nivel: 'n1', cantidad: 5, consigna: 'Contestá cinco preguntas sobre los planetas.' },
       pasos: [
         {
           titulo: 'El Sol es una estrella',
@@ -529,6 +552,7 @@ window.Lecciones = (function () {
       minutos: 2,
       resumen: 'Red, blue, yellow y los demás.',
       juego: 'ingles/colores',
+      ejercicio: { juego: 'ingles/colores', nivel: 'n1', cantidad: 5, consigna: 'Mirá cada color y elegí cómo se dice en inglés.' },
       pasos: [
         {
           titulo: 'Los tres primeros',
@@ -564,6 +588,7 @@ window.Lecciones = (function () {
       minutos: 2,
       resumen: 'Del one al ten, de a poco.',
       juego: 'ingles/numeros-en',
+      ejercicio: { juego: 'ingles/numeros-en', nivel: 'n2', cantidad: 5, consigna: 'Elegí cómo se dice cada número en inglés.' },
       pasos: [
         {
           titulo: 'Del uno al cinco',
@@ -592,6 +617,7 @@ window.Lecciones = (function () {
       minutos: 3,
       resumen: 'Hola, gracias y cómo estás.',
       juego: 'ingles/frases',
+      ejercicio: { juego: 'ingles/frases', nivel: 'n2', cantidad: 5, consigna: 'Elegí qué quiere decir cada frase.' },
       pasos: [
         {
           titulo: 'Hola y chau',
@@ -636,6 +662,7 @@ window.Lecciones = (function () {
       minutos: 3,
       resumen: 'El verbo to be, que es «ser» y «estar».',
       juego: 'ingles/tobe',
+      ejercicio: { juego: 'ingles/tobe', nivel: 'n2', cantidad: 5, consigna: 'Completá cada frase con am, is o are.' },
       pasos: [
         {
           titulo: 'Un verbo para dos cosas',

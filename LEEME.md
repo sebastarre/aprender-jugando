@@ -247,6 +247,31 @@ edad. Las edades están en cada juego (`js/juegos/*.js`) y en cada lección
 (`js/aprender/contenido.js`); la cuenta de quién está listo, en `js/app.js`
 (`listoPara`, `consejoDeJuego`).
 
+## Las lecciones se escuchan y terminan con un ejercicio
+
+**La voz.** Cada paso de una lección se lee en voz alta al aparecer, y hay un
+botón para volver a escucharlo o para callarlo. Usa la voz del propio aparato
+(`speechSynthesis`, en `js/nucleo/voz.js`): no hay audios que bajar ni nada que
+salga del teléfono. Lo que está marcado con `lang="en"` se lee con voz en
+inglés, así *red* no suena como la red de pescar. Se apaga en Configuración →
+«Leer en voz alta»; si el aparato no tiene voz en castellano, ese interruptor
+queda apagado y lo dice.
+
+**El ejercicio.** Al terminar de leer no dice «¡Listo!»: dice «¡Ahora te toca a
+vos!» y arma cinco preguntas de un juego, del nivel que mejor ejercita lo que
+se acaba de explicar. La de multiplicar termina con la tabla del 2, la de las
+sílabas con palabras de una y dos sílabas, la de los colores en inglés con los
+colores básicos. Mientras dura, la voz lee cada pregunta.
+
+Se juega en la pantalla de juego de siempre, con el mismo motor, y cuenta como
+jugado: lo que se falla va al repaso, da monedas y puede dominar el juego. Con
+4 de 5 bien **la lección queda completada**; si no, «Probar de nuevo» o «Leer
+la lección otra vez». Antes una lección se daba por leída con sólo llegar al
+final.
+
+El ejercicio de cada lección está en `js/aprender/contenido.js`, en el campo
+`ejercicio` (juego, nivel, cuántas preguntas y la consigna).
+
 ## Modo examen
 
 Aparte de los juegos hay un **examen**, que no es otro juego sino la misma

@@ -367,6 +367,13 @@ window.Iconos = (function () {
     sinonimos: {
       b: [], t: ['<path d="M5 9h14M5 15h14" stroke-width="2.8"/>']
     },
+    /* Una cabeza de perfil hablando: leer en voz alta. */
+    voz: {
+      b: [],
+      t: ['<path d="M13.5 20.5v-3h1.8a1.7 1.7 0 0 0 1.7-1.7v-2.3l1.6-.6-1.6-2.9V9a6 6 0 0 0-12 .3c0 2 .9 3.6 2.5 4.8v6.4"/>',
+          '<path d="M20 5.5c1 1.2 1.5 2.5 1.5 4s-.5 2.8-1.5 4"/>']
+    },
+
     /* ---- Inglés ---- */
     /* Un globo de diálogo con «A/a»: la materia es hablar en otro
        idioma, no leer un libro. */
