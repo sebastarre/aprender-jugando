@@ -767,21 +767,82 @@
     { n: 0, nombre: 'Sin meta', detalle: 'Jugar cuando quiera' }
   ];
 
+  /* La meta propia va de 1 a 100 respuestas bien. No hace falta guardarla
+     aparte: cualquier número que no sea una de las fijas es personalizada. */
+  var META_MINIMA = 1, META_MAXIMA = 100, META_PERSONAL_INICIAL = 15;
+
   function pintarAjusteMeta() {
     var caja = $('ajuste-meta');
     if (!caja) return;
     Util.vaciar(caja);
     $('premio-meta').textContent = String(Almacen.PREMIO_META);
     var actual = Almacen.metaDiaria();
+    var esFija = METAS.some(function (m) { return m.n === actual; });
+    var personal = esFija ? META_PERSONAL_INICIAL : actual;
+    var panel = $('meta-personal');
+
     METAS.forEach(function (m) {
       var b = botonOpcion(m.n ? String(m.n) : '—', m.nombre, m.detalle, null, null, true);
       b.setAttribute('aria-pressed', m.n === actual ? 'true' : 'false');
       b.addEventListener('click', function () {
         Almacen.setMeta(m.n);
         marcarElegido(caja, b);
+        panel.hidden = true;
       });
       caja.appendChild(b);
     });
+
+    var propia = botonOpcion(String(personal), 'Personalizada', 'Elegí cuántas', null, null, true);
+    propia.setAttribute('aria-pressed', esFija ? 'false' : 'true');
+    propia.setAttribute('aria-controls', 'meta-personal');
+    propia.addEventListener('click', function () {
+      Almacen.setMeta(personal);
+      marcarElegido(caja, propia);
+      panel.hidden = false;
+      pintarNumero();
+    });
+    caja.appendChild(propia);
+
+    function pintarNumero() {
+      propia.querySelector('.opcion-icono').textContent = String(personal);
+      $('meta-personal-numero').textContent = String(personal);
+      $('meta-personal-texto').textContent = (personal === 1 ? 'respuesta bien' : 'respuestas bien') + ' por día';
+      $('meta-menos').disabled = personal <= META_MINIMA;
+      $('meta-mas').disabled = personal >= META_MAXIMA;
+    }
+
+    /* De a uno, y de a cinco si se deja apretado: llegar de 15 a 60
+       tocando 45 veces no es para un chico. */
+    function paso(delta) {
+      personal = Math.max(META_MINIMA, Math.min(META_MAXIMA, personal + delta));
+      Almacen.setMeta(personal);
+      pintarNumero();
+    }
+    function conRepeticion(boton, delta) {
+      var espera = null, repite = null;
+      function parar() { clearTimeout(espera); clearInterval(repite); espera = repite = null; }
+      boton.onpointerdown = function () {
+        parar();
+        espera = setTimeout(function () {
+          repite = setInterval(function () { paso(delta * 5); }, 180);
+        }, 450);
+      };
+      boton.onpointerup = boton.onpointerleave = boton.onpointercancel = function () {
+        // si llegó a repetir, el clic de al soltar no suma uno más
+        boton.dataset.repitio = repite ? '1' : '';
+        parar();
+      };
+      boton.onclick = function () {
+        if (boton.dataset.repitio) { boton.dataset.repitio = ''; return; }
+        Sonido.despertar(); Sonido.tocar('clic');
+        paso(delta);
+      };
+    }
+    conRepeticion($('meta-menos'), -1);
+    conRepeticion($('meta-mas'), 1);
+
+    panel.hidden = esFija;
+    pintarNumero();
   }
 
   /* ---------------------- la copia del progreso ---------------------- */

@@ -3495,3 +3495,51 @@ body.jugando .marcador { display: none; }
   transition: transform .18s var(--rebote), color .18s;
 }
 .card-fila:hover .card-flecha { transform: translateX(3px); color: var(--card-color, var(--primario)); }
+
+/* La meta propia: el número grande entre un − y un + redondos, con el
+   mismo escalón que se hunde que el resto de los botones. */
+.meta-personal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin: 12px 0 4px;
+  padding: 12px 14px;
+  border: 2px solid var(--borde);
+  border-radius: var(--radio-s);
+  background: var(--tarjeta);
+}
+.meta-paso {
+  width: 52px;
+  height: 52px;
+  flex: none;
+  border-radius: 50%;
+  border: 2px solid var(--borde);
+  background: var(--papel);
+  color: var(--tinta);
+  font: inherit;
+  font-size: 1.7rem;
+  font-weight: 800;
+  line-height: 1;
+  box-shadow: 0 4px 0 var(--sombra-clay);
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  transition: transform .12s, box-shadow .12s, border-color .12s;
+}
+.meta-paso:hover:not(:disabled) { border-color: var(--primario); }
+.meta-paso:active:not(:disabled) { transform: translateY(4px); box-shadow: 0 0 0 var(--sombra-clay); }
+.meta-paso:disabled { opacity: .45; cursor: default; }
+.meta-personal-cifra {
+  margin: 0;
+  min-width: 9.5em;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.15;
+}
+.meta-personal-cifra b { font-size: 2.2rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+.meta-personal-cifra span { font-size: .88rem; color: var(--tinta-suave); }
+/* #ajuste-meta deja 28px abajo; con el panel abierto, ese aire va debajo del panel */
+#ajuste-meta:has(+ .meta-personal:not([hidden])) { margin-bottom: 0; }
+#ajuste-meta + .meta-personal { margin-bottom: 28px; }

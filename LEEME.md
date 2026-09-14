@@ -299,7 +299,12 @@ Abajo del menú está la **meta de hoy**: cuántas respuestas bien lleva, contra
 las que pide (10 de fábrica). Cuenta cualquier cosa que se juegue —partidas,
 exámenes, repasos y los ejercicios de las lecciones— y al cumplirla paga 5
 monedas, una sola vez por día. Se cambia en Configuración (un ratito, una
-partida, dos partidas o sin meta) y es de cada chico.
+partida, dos partidas, sin meta o **personalizada**) y es de cada chico.
+
+«Personalizada» abre un − y un + para elegir cualquier número entre 1 y 100
+respuestas bien; dejando apretado, cambia de a cinco. No se guarda aparte:
+cualquier meta que no sea 5, 10, 20 o 0 se muestra como personalizada, y al
+volver a Configuración aparece elegida con su número.
 
 No hay retos: ni «perdiste tu racha» ni avisos de que no cumplió. Es para
 saber si ya jugó hoy, no para que la app lo haga sentir mal.

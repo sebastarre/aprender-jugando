@@ -518,6 +518,15 @@
     <h2 class="etiqueta-grupo">Meta del día</h2>
     <p class="nota-ranura">Cuántas respuestas bien por día. Al cumplirla gana       <span id="premio-meta">5</span> monedas. Es de cada chico.</p>
     <div class="fila-opciones" id="ajuste-meta"></div>
+    <!-- la meta propia: aparece al elegir «Personalizada» -->
+    <div class="meta-personal" id="meta-personal" hidden>
+      <button type="button" class="meta-paso" id="meta-menos" aria-label="Una respuesta menos">−</button>
+      <p class="meta-personal-cifra" aria-live="polite">
+        <b id="meta-personal-numero">15</b>
+        <span id="meta-personal-texto">respuestas bien por día</span>
+      </p>
+      <button type="button" class="meta-paso" id="meta-mas" aria-label="Una respuesta más">+</button>
+    </div>
 
     <h2 class="etiqueta-grupo">Tus datos</h2>
     <div class="tarjeta-ajustes">
