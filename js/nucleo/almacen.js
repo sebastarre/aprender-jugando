@@ -33,6 +33,8 @@ window.Almacen = (function () {
       equipado: {},            // 'tema' -> 'selva'
       dominados: {},           // 'matematica/tablas' -> true: lo ganó sin errores
       nivelesHechos: {},       // 'matematica/tablas#7' -> true: ese nivel, con todas bien
+      cajas: {},               // 'matematica:7x8' -> { caja, proximo }: cuándo vuelve a salir
+      repasoLecciones: {},     // 'que-es-multiplicar' -> { dias, proximo }: cuándo repasarla
       dias: {},                // '2026-09-13' -> respuestas bien ese día
       meta: 10,                // respuestas bien por día que pide la meta; 0 es sin meta
       metaCobrada: null,       // el día en que se pagó el premio de la meta
@@ -384,6 +386,7 @@ window.Almacen = (function () {
       // de qué juego salió, para que Repaso sepa qué tablero armar
       if (item.juego) e[clave].juego = item.juego;
       e[clave].veces++;
+      ponerEnCaja(clave, 0);
     });
     guardar();
   }
@@ -421,9 +424,93 @@ window.Almacen = (function () {
     var fallos = err ? err.veces : 0;
     var aciertos = aciertosDe(k);
 
-    if (!fallos) return aciertos ? 1 : 3;   // nunca lo falló: sabido, o sin ver
+    // nunca lo falló: sabido (salvo que ya le toque volver a verlo), o sin ver
+    if (!fallos) return aciertos ? (estaVencido(k) ? 5 : 1) : 3;
     if (!aciertos) return 6;                // lo falló y nunca le salió
     return fallos > aciertos ? 4 : 2;
+  }
+
+  /* ---------------------- repaso espaciado ----------------------
+
+     Aprender algo una vez no alcanza: se olvida si no vuelve a aparecer,
+     y vuelve mejor si vuelve espaciado (Wouters et al. 2013). Cada cosa
+     que el chico contesta está en una «caja»: cada acierto la sube y la
+     aleja (vuelve en 1, 3, 7 y 14 días); cada fallo la baja a la primera
+     (vuelve mañana).
+
+     Antes el sorteo sólo miraba cuántas veces se falló o acertó algo, no
+     cuándo: lo acertado quedaba con el peso más bajo para siempre y lo
+     aprendido nunca volvía a salir a propósito. */
+  var INTERVALOS = [1, 3, 7, 14];
+
+  function diaDentroDe(dias) {
+    var d = new Date();
+    d.setDate(d.getDate() + dias);
+    return claveDia(d);
+  }
+
+  function cajas() {
+    var yo = mio();
+    if (!yo.cajas) yo.cajas = {};
+    return yo.cajas;
+  }
+
+  /** Lo fallado vuelve a la caja de abajo: sale de nuevo mañana. */
+  function ponerEnCaja(k, caja) {
+    cajas()[k] = { caja: caja, proximo: diaDentroDe(1) };
+  }
+
+  /** Lo acertado sube de caja y se aleja: 1, 3, 7 y 14 días. */
+  function subirDeCaja(k) {
+    var actual = cajas()[k];
+    // acertarlo diez veces la misma tarde no lo manda a dentro de dos
+    // semanas: sólo sube cuando ya le tocaba volver a verlo
+    if (actual && actual.proximo > claveDia(new Date())) return;
+    var caja = Math.min(INTERVALOS.length, (actual ? actual.caja : 0) + 1);
+    cajas()[k] = { caja: caja, proximo: diaDentroDe(INTERVALOS[caja - 1]) };
+  }
+
+  function estaVencido(k) {
+    var c = cajas()[k];
+    return !!(c && c.proximo <= claveDia(new Date()));
+  }
+
+  /**
+   * Lo que ya sabía y hoy le toca volver a ver, del más atrasado al
+   * menos. Lo que está en la lista de errores no entra: eso ya lo junta
+   * el repaso de siempre.
+   */
+  function vencidos(cuantos) {
+    var e = mio().errores;
+    var hoy = claveDia(new Date());
+    var todas = cajas();
+    return Object.keys(todas)
+      .filter(function (k) { return todas[k].proximo <= hoy && !e[k]; })
+      .sort(function (a, b) { return todas[a].proximo < todas[b].proximo ? -1 : 1; })
+      .slice(0, cuantos || 1000)
+      .map(function (k) {
+        var p = k.indexOf(':');
+        return { materia: k.slice(0, p), clave: k.slice(p + 1), juego: null, veces: 1, vencido: true };
+      });
+  }
+
+  function cuantosVencidos() { return vencidos().length; }
+
+  /* Una lección completada vuelve a la semana; si se la aprueba otra vez,
+     al doble de tiempo, hasta un mes. */
+  function programarLeccion(id) {
+    var yo = mio();
+    if (!yo.repasoLecciones) yo.repasoLecciones = {};
+    var antes = yo.repasoLecciones[id];
+    var dias = antes ? Math.min(30, antes.dias * 2) : 7;
+    yo.repasoLecciones[id] = { dias: dias, proximo: diaDentroDe(dias) };
+    guardar();
+  }
+
+  function leccionesParaRepasar() {
+    var r = mio().repasoLecciones || {};
+    var hoy = claveDia(new Date());
+    return Object.keys(r).filter(function (id) { return r[id].proximo <= hoy; });
   }
 
   /** Suma uno al contador de cada cosa que acertó. */
@@ -432,6 +519,7 @@ window.Almacen = (function () {
     claves.forEach(function (clave) {
       var k = materia + ':' + clave;
       a[k] = (a[k] || 0) + 1;
+      subirDeCaja(k);
     });
     guardar();
   }
@@ -746,6 +834,8 @@ window.Almacen = (function () {
     descontarError: descontarError, cuantosErrores: cuantosErrores,
     estrellasDeJuego: estrellasDeJuego,
     aciertosDe: aciertosDe, registrarAciertos: registrarAciertos, pesoDe: pesoDe,
+    vencidos: vencidos, cuantosVencidos: cuantosVencidos,
+    programarLeccion: programarLeccion, leccionesParaRepasar: leccionesParaRepasar,
     monedas: monedas, monedasTotales: monedasTotales,
     dominado: dominado, marcarDominado: marcarDominado, cuantosDominados: cuantosDominados,
     sumarMonedas: sumarMonedas, gastarMonedas: gastarMonedas,

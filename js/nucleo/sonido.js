@@ -40,9 +40,9 @@ window.Sonido = (function () {
           nota(660, 0, .12, 'triangle');
           nota(880, .09, .16, 'triangle');
           break;
-        case 'error':                         // dos notas graves
-          nota(200, 0, .13, 'sawtooth', .12);
-          nota(150, .1, .18, 'sawtooth', .12);
+        case 'error':                         // dos notas suaves: avisa, no reta
+          nota(330, 0, .14, 'sine', .08);
+          nota(294, .12, .2, 'sine', .08);
           break;
         case 'revelar':                       // "ahí estaba"
           nota(420, 0, .14, 'sine');
@@ -51,16 +51,14 @@ window.Sonido = (function () {
         case 'clic':
           nota(520, 0, .05, 'square', .07);
           break;
-        case 'fin':                           // fanfarria corta
-          nota(523, 0, .14, 'triangle');
-          nota(659, .13, .14, 'triangle');
-          nota(784, .26, .14, 'triangle');
-          nota(1046, .39, .32, 'triangle');
-          break;
+        /* El final y el récord suenan igual y bajito. Antes el récord
+           tenía una fanfarria propia: hacía del puntaje el momento más
+           importante de la partida. */
+        case 'fin':
         case 'record':
-          nota(784, 0, .1, 'square', .1);
-          nota(988, .1, .1, 'square', .1);
-          nota(1319, .2, .3, 'square', .1);
+          nota(523, 0, .14, 'sine', .1);
+          nota(659, .12, .14, 'sine', .1);
+          nota(784, .24, .26, 'sine', .1);
           break;
       }
     } catch (e) { /* si el audio falla, el juego sigue igual */ }

@@ -203,6 +203,16 @@
     <!-- La meta de hoy: cuántas respuestas bien lleva, contra las que pide.
          No hay reto si no la cumple ni cartel de «perdiste la racha»: es
          para saber si ya jugó hoy, no para que la app lo haga sentir mal. -->
+    <!-- Repasar hoy: lo que le costó y lo que ya sabía y le toca volver a
+         ver (repaso espaciado: 1, 3, 7 y 14 días). Sólo aparece si hay algo. -->
+    <a class="meta-hoy repaso-hoy" id="repaso-hoy" href="#/repasando" hidden>
+      <span class="meta-hoy-icono" data-ico="repaso" aria-hidden="true"></span>
+      <span class="meta-hoy-cuerpo">
+        <b class="meta-hoy-titulo">Repasar hoy</b>
+        <span class="meta-hoy-texto" id="repaso-hoy-texto"></span>
+      </span>
+    </a>
+
     <a class="meta-hoy" id="meta-hoy" href="#/juegos" hidden>
       <span class="meta-hoy-icono" data-ico="trofeo" aria-hidden="true"></span>
       <span class="meta-hoy-cuerpo">
@@ -243,7 +253,7 @@
     <button class="tarjeta-examen tarjeta-repaso" id="btn-repaso" type="button" hidden>
       <span class="examen-icono" data-ico="repaso" aria-hidden="true"></span>
       <span class="examen-cuerpo">
-        <b>Repasar lo que fallaste</b>
+        <b>Repasar hoy</b>
         <span id="repaso-detalle">Las preguntas que te costaron</span>
       </span>
       <span class="examen-flecha" data-ico="flecha" aria-hidden="true"></span>
@@ -390,19 +400,22 @@
       <h1 class="titulo-fin" id="titulo-fin"></h1>
       <p class="subtitulo" id="subtitulo-fin"></p>
       <div class="stats-fin">
-        <div class="stat"><b id="stat-puntos">0</b><span>puntos</span></div>
+        <div class="stat stat-puntaje"><b id="stat-puntos">0</b><span>puntos</span></div>
         <div class="stat"><b id="stat-aciertos">0</b><span>aciertos</span></div>
         <div class="stat"><b id="stat-precision">0%</b><span>precisión</span></div>
-        <div class="stat"><b id="stat-record">0</b><span>tu récord</span></div>
+        <div class="stat stat-puntaje"><b id="stat-record">0</b><span>tu récord</span></div>
       </div>
-      <div class="premio-monedas" id="premio-monedas" hidden></div>
-      <p class="meta-cumplida" id="meta-cumplida" hidden></p>
+
       <div class="nivel nivel-fin" id="progreso-nivel" hidden></div>
       <div class="desbloqueo" id="desbloqueo" hidden></div>
       <div class="repaso" id="repaso" hidden>
         <h2 class="etiqueta-grupo">Para repasar</h2>
         <div class="lista-repaso" id="lista-repaso"></div>
       </div>
+      <!-- Las monedas y la meta van al final, chicas: están, pero no son
+           lo más importante de lo que acaba de pasar. -->
+      <div class="premio-monedas" id="premio-monedas" hidden></div>
+      <p class="meta-cumplida" id="meta-cumplida" hidden></p>
       <div class="botones-fin">
         <button class="btn-gigante" id="btn-siguiente-nivel" type="button" hidden></button>
         <button class="btn-gigante" id="btn-otra-vez">Jugar de nuevo</button>

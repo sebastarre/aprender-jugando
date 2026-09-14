@@ -19,6 +19,7 @@ window.Leccion = (function () {
   var paso = 0;
   var ganchos = {};
   var resultado = null;       // lo que dejó el ejercicio, si se vuelve de él
+  var respondidas = {};       // número de paso -> { bien, texto } de su predicción
 
   /**
    * Abre una lección. `estado` sirve para volver a una parte:
@@ -30,6 +31,7 @@ window.Leccion = (function () {
     if (!leccion) return false;
     ganchos = nuevosGanchos || {};
     resultado = estado && estado.fase === 'resultado' ? estado.resultado : null;
+    respondidas = {};
     paso = estado && estado.fase ? total() : 0;
     pintar();
     return true;
@@ -52,6 +54,8 @@ window.Leccion = (function () {
     titulo.appendChild(Util.crear('span', null, leccion.titulo));
     pintarPuntitos();
     if (!enElFinal()) pintarPaso(leccion.pasos[paso]);
+    // el «¿por qué?» va cuando le salió: si no, primero tiene que volver a probar
+    else if (resultado && resultado.aprobado && leccion.reflexion && !resultado.reflexionada) pintarReflexion();
     else if (resultado) pintarResultado();
     else if (leccion.ejercicio && ganchos.alEjercitar) pintarEjercicio();
     else pintarFinal();
@@ -76,6 +80,16 @@ window.Leccion = (function () {
 
     var tarjeta = Util.crear('div', 'paso-tarjeta');
     tarjeta.appendChild(Util.crear('h2', 'paso-titulo', datos.titulo));
+
+    /* Lecciones activas: si el paso trae una predicción, primero se le
+       pregunta al chico qué le parece, y recién después se muestra la
+       explicación. Contestar antes de leer le da algo propio contra qué
+       comparar lo que lee; tocar «Siguiente» no le da nada. */
+    if (datos.prediccion && !respondidas[paso]) {
+      pintarPrediccion(caja, tarjeta, datos.prediccion);
+      return;
+    }
+    if (datos.prediccion) tarjeta.appendChild(cartelDeRespuesta(respondidas[paso]));
 
     var texto = Util.crear('p', 'paso-texto');
     texto.innerHTML = datos.texto;          // el contenido es nuestro, no del usuario
@@ -147,6 +161,81 @@ window.Leccion = (function () {
   /** Cuántas hay que acertar: cuatro de cinco, el 80%. */
   function aprobarCon(ej) {
     return Math.ceil((ej.cantidad || 5) * 0.8);
+  }
+
+  /* ---------------------- pensar, no sólo leer ---------------------- */
+
+  /** Las opciones de una pregunta de la lección, mezcladas. */
+  function opcionesDe(textos, alElegir) {
+    var caja = Util.crear('div', 'leccion-opciones');
+    Util.mezclar(textos.map(function (t, i) { return { texto: t, i: i }; })).forEach(function (o) {
+      var b = Util.crear('button', 'leccion-opcion', o.texto);
+      b.type = 'button';
+      b.setAttribute('data-i', String(o.i));
+      b.addEventListener('click', function () { alElegir(o.i, b, caja); });
+      caja.appendChild(b);
+    });
+    return caja;
+  }
+
+  function cartelDeRespuesta(r) {
+    return Util.crear('p', 'leccion-respuesta ' + (r.bien ? 'bien' : 'mal'), r.texto);
+  }
+
+  /** Un paso con predicción, antes de contestarla. */
+  function pintarPrediccion(caja, tarjeta, pred) {
+    tarjeta.appendChild(Util.crear('p', 'paso-texto prediccion-pregunta', pred.pregunta));
+    tarjeta.appendChild(opcionesDe(pred.opciones, function (i) {
+      var bien = i === pred.correcta;
+      Sonido.tocar(bien ? 'acierto' : 'clic');
+      respondidas[paso] = {
+        bien: bien,
+        texto: (bien ? '¡Bien pensado! ' : 'Era «' + pred.opciones[pred.correcta] + '». ') + pred.explicacion
+      };
+      pintar();
+    }));
+    caja.appendChild(tarjeta);
+    Util.$('btn-leccion-atras').hidden = paso === 0;
+    // hasta que no contesta, no hay «Siguiente»: la gracia es pensarlo antes
+    Util.$('btn-leccion-siguiente').hidden = true;
+  }
+
+  /**
+   * «¿Por qué?» después del ejercicio. Andamiaje: hacer bien las cuentas
+   * no alcanza, hay que poder decir por qué se hacen así. Se elige la
+   * razón entre tres, porque hay chicos de cuatro años que todavía no
+   * escriben; y se propone contárselo a un grande, que es la parte social
+   * que un chico solo con una pantalla no tiene.
+   */
+  function pintarReflexion() {
+    var ref = leccion.reflexion;
+    var caja = Util.$('leccion-cuerpo');
+    Util.vaciar(caja);
+
+    var tarjeta = Util.crear('div', 'paso-tarjeta paso-final paso-reflexion');
+    tarjeta.appendChild(Util.crear('div', 'final-icono', '🤔'));
+    tarjeta.appendChild(Util.crear('h2', 'paso-titulo', '¿Por qué?'));
+    tarjeta.appendChild(Util.crear('p', 'paso-texto reflexion-pregunta', ref.pregunta));
+    tarjeta.appendChild(opcionesDe(ref.razones, function (i, elegida, opciones) {
+      var bien = i === ref.correcta;
+      Sonido.tocar(bien ? 'acierto' : 'clic');
+      opciones.querySelectorAll('button').forEach(function (b) { b.disabled = true; });
+      elegida.classList.add(bien ? 'elegida-bien' : 'elegida-mal');
+      if (!bien) opciones.querySelector('[data-i="' + ref.correcta + '"]').classList.add('elegida-bien');
+
+      var respuesta = (bien ? '¡Eso! ' : 'No es por eso. ') + ref.porque;
+      tarjeta.appendChild(cartelDeRespuesta({ bien: bien, texto: respuesta }));
+      if (ref.grande) tarjeta.appendChild(Util.crear('p', 'reflexion-grande', '🗣️ ' + ref.grande));
+      tarjeta.appendChild(boton('btn-gigante', 'Ver cómo me fue', function () {
+        resultado.reflexionada = true;
+        pintar();
+      }));
+      if (Voz.hay() && Almacen.vozActiva()) Voz.decir([respuesta, ref.grande]);
+    }));
+    caja.appendChild(tarjeta);
+
+    Util.$('btn-leccion-atras').hidden = true;
+    Util.$('btn-leccion-siguiente').hidden = true;
   }
 
   /** Cómo le fue en el ejercicio. */
@@ -241,11 +330,20 @@ window.Leccion = (function () {
   function textoParaLeer() {
     if (!enElFinal()) {
       var p = leccion.pasos[paso];
-      return [p.titulo + '.', p.texto, p.truco ? 'Un truco: ' + p.truco : null];
+      // con la predicción sin contestar se leen la pregunta y las opciones,
+      // en el orden de la pantalla; la explicación todavía no
+      if (p.prediccion && !respondidas[paso]) return leerTarjeta();
+      var dicho = p.prediccion ? [respondidas[paso].texto] : [];
+      return [p.titulo + '.'].concat(dicho, [p.texto, p.truco ? 'Un truco: ' + p.truco : null]);
     }
-    var tarjeta = Util.$('leccion-cuerpo');
+    return leerTarjeta();
+  }
+
+  /** Lo que está escrito en la tarjeta de ahora, en orden. */
+  function leerTarjeta() {
     var partes = [];
-    tarjeta.querySelectorAll('.paso-titulo, .paso-texto, .resultado-cifra, .ejercicio-regla')
+    Util.$('leccion-cuerpo')
+      .querySelectorAll('.paso-titulo, .paso-texto, .resultado-cifra, .ejercicio-regla, .leccion-opcion')
       .forEach(function (e) { partes.push(e.textContent + '.'); });
     return partes;
   }

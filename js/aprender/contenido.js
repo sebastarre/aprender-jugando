@@ -22,6 +22,13 @@
      cantidad   cuántas preguntas (5)
      consigna   lo que se le dice antes de empezar; también lo lee la voz
    Con el 80% bien la lección queda completada; si no, se vuelve a probar.
+
+   Y dos momentos para pensar, no sólo leer:
+     prediccion (en un paso)  { pregunta, opciones, correcta, explicacion }
+                              se contesta ANTES de ver la explicación
+     reflexion (en la lección) { pregunta, razones, correcta, porque, grande }
+                              «¿por qué?» después del ejercicio, eligiendo
+                              la razón; «grande» propone contárselo a un adulto
    ============================================================ */
 window.Lecciones = (function () {
   'use strict';
@@ -157,6 +164,7 @@ window.Lecciones = (function () {
       resumen: 'Qué hacer cuando una columna se pasa de 9.',
       juego: 'matematica/cuentas',
       ejercicio: { juego: 'matematica/cuentas', nivel: 'dificil', valores: { operacion: 'suma' }, cantidad: 5, consigna: 'Resolvé cinco sumas. En algunas te vas a tener que llevar una.' },
+      reflexion: {"pregunta":"¿Por qué, cuando una columna da 12, escribís el 2 y te llevás el 1?","razones":["Porque en cada columna entra un solo número, y ese 1 es una decena","Porque el 1 no sirve y se deja de lado","Porque siempre se escribe el número más chico"],"correcta":0,"porque":"El 12 son 1 decena y 2 unidades: el 2 queda en las unidades y la decena se va a su columna.","grande":"Contale a un grande por qué 27 + 15 da 42 y no 32."},
       pasos: [
         {
           titulo: 'Cada número en su lugar',
@@ -165,6 +173,7 @@ window.Lecciones = (function () {
         },
         {
           titulo: 'Empezamos por la derecha',
+          prediccion: {"pregunta":"Para hacer 27 + 15, ¿con qué columna empezarías?","opciones":["Con la de la derecha: 7 + 5","Con la de la izquierda: 2 + 1"],"correcta":0,"explicacion":"Se empieza por las unidades, a la derecha, porque lo que sobre ahí pasa a la columna siguiente."},
           texto: 'Sumamos primero la columna de la derecha: <b>7 + 5 = 12</b>. Pero en cada columna entra un solo número… y 12 son dos.',
           visual: function () { return columna(27, 15, '+', null, null, 'unidades'); }
         },
@@ -192,6 +201,7 @@ window.Lecciones = (function () {
       resumen: 'Cuando el de arriba es más chico que el de abajo.',
       juego: 'matematica/cuentas',
       ejercicio: { juego: 'matematica/cuentas', nivel: 'dificil', valores: { operacion: 'resta' }, cantidad: 5, consigna: 'Resolvé cinco restas. En algunas vas a tener que pedir prestado.' },
+      reflexion: {"pregunta":"¿Por qué, cuando el 4 presta, el 2 pasa a ser 12?","razones":["Porque el 4 presta una decena, que vale diez","Porque se le suma el 10 que sobraba","Porque en las restas siempre se suma 10"],"correcta":0,"porque":"El 4 son cuatro decenas. Presta una, que vale diez, y se queda en 3: 2 + 10 = 12.","grande":"Contale a un grande cómo se resuelve 42 − 17."},
       pasos: [
         {
           titulo: 'El mismo orden que la suma',
@@ -200,6 +210,7 @@ window.Lecciones = (function () {
         },
         {
           titulo: 'Uy: 2 menos 7 no se puede',
+          prediccion: {"pregunta":"En 42 − 17, arriba hay un 2 y abajo un 7. ¿Qué te parece que hay que hacer?","opciones":["Pedirle prestado al 4","Dar vuelta la cuenta: 7 − 2","Poner un 0 y seguir"],"correcta":0,"explicacion":"La cuenta no se da vuelta: el de arriba va siempre primero. Si no alcanza, se le pide prestado al de al lado."},
           texto: 'Arriba hay un <b>2</b> y abajo un <b>7</b>. Al 2 no le alcanza. Entonces le pedimos prestado al número de al lado.',
           visual: function () { return columna(42, 17, '−', null, null, 'unidades'); }
         },
@@ -226,6 +237,7 @@ window.Lecciones = (function () {
       resumen: 'Multiplicar es sumar muchas veces lo mismo.',
       juego: 'matematica/tablas',
       ejercicio: { juego: 'matematica/tablas', nivel: '2', cantidad: 5, consigna: 'Empezá por la tabla del 2: cinco multiplicaciones.' },
+      reflexion: {"pregunta":"¿Por qué 4 × 3 da lo mismo que 3 × 4?","razones":["Porque 3 filas de 4 y 4 filas de 3 son los mismos puntitos","Porque en las multiplicaciones el orden a veces importa","Porque los dos números son chicos"],"correcta":0,"porque":"Si das vuelta los puntitos no aparece ni se va ninguno: siguen siendo 12.","grande":"Mostrale a un grande con puntitos por qué 2 × 5 es lo mismo que 5 × 2."},
       pasos: [
         {
           titulo: 'Es una suma repetida',
@@ -234,6 +246,7 @@ window.Lecciones = (function () {
         },
         {
           titulo: 'Filas y columnas',
+          prediccion: {"pregunta":"Hay 3 filas de 4 puntitos. ¿Cuántos puntitos son?","opciones":["12","7","34"],"correcta":0,"explicacion":"Son 4 + 4 + 4 = 12. El 7 sería 3 + 4, que es otra cuenta."},
           texto: 'Mirá los puntitos: hay <b>3 filas</b> de <b>4</b> cada una. Contálos: son <b>12</b>. Eso es 4 × 3.'
         },
         {
@@ -255,6 +268,7 @@ window.Lecciones = (function () {
       resumen: 'Cuál aguja es cuál y qué significa cada número.',
       juego: 'matematica/reloj',
       ejercicio: { juego: 'matematica/reloj', nivel: 'media', cantidad: 5, consigna: 'Mirá cada reloj y elegí qué hora marca.' },
+      reflexion: {"pregunta":"¿Por qué, cuando la aguja larga está en el 6, son 30 minutos?","razones":["Porque cada número vale 5 minutos, y seis veces 5 es 30","Porque son las 6","Porque la aguja corta también está en el 6"],"correcta":0,"porque":"Contá de 5 en 5 desde el 12 hasta el 6: 5, 10, 15, 20, 25, 30.","grande":"Preguntale a un grande qué hora es, y fijate vos en el reloj."},
       pasos: [
         {
           titulo: 'Dos agujas, dos trabajos',
@@ -263,6 +277,7 @@ window.Lecciones = (function () {
         },
         {
           titulo: 'Los números valen distinto',
+          prediccion: {"pregunta":"La aguja larga está en el 3. ¿Cuántos minutos te parece que son?","opciones":["15 minutos","3 minutos","30 minutos"],"correcta":0,"explicacion":"Para la aguja larga cada número vale 5 minutos: 5, 10, 15."},
           texto: 'Para la aguja larga, cada número son <b>5 minutos</b>. El 1 son 5 minutos, el 2 son 10, el 3 son 15… Acá la larga está en el 3: son las <b>3 y cuarto</b>.',
           visual: function () { return reloj(3, 15); },
           truco: 'Contá de a 5 en 5 mientras vas de número en número.'
@@ -286,6 +301,7 @@ window.Lecciones = (function () {
       resumen: 'Los pedazos grandes de tierra donde vivimos.',
       juego: 'geografia/paises',
       ejercicio: { juego: 'geografia/continentes', nivel: 'n2', cantidad: 5, consigna: 'Elegí en qué continente está cada país.' },
+      reflexion: {"pregunta":"¿Por qué Argentina y Brasil están en el mismo continente?","razones":["Porque los dos están en el mismo gran pedazo de tierra: América","Porque hablan el mismo idioma","Porque tienen la misma bandera"],"correcta":0,"porque":"Un continente es un pedazo grande de tierra: no importan el idioma ni la bandera.","grande":"Buscá con un grande, en un mapa, dónde está Argentina y dónde está España."},
       pasos: [
         {
           titulo: 'Tierra y agua',
@@ -293,6 +309,7 @@ window.Lecciones = (function () {
         },
         {
           titulo: 'Son cinco (con gente)',
+          prediccion: {"pregunta":"¿Cuántos continentes con gente te parece que hay?","opciones":["5","2","194"],"correcta":0,"explicacion":"194 son los países. Los continentes son pedazos mucho más grandes, y con gente hay 5."},
           texto: 'América, Europa, África, Asia y Oceanía. Hay un sexto, la <b>Antártida</b>, pero es de hielo y no vive nadie ahí de forma permanente.',
           visual: continentes
         },
@@ -314,6 +331,7 @@ window.Lecciones = (function () {
       resumen: 'La ciudad principal de cada país (no siempre la más grande).',
       juego: 'geografia/capitales',
       ejercicio: { juego: 'geografia/capitales', nivel: 'america-sur', cantidad: 5, consigna: 'Buscá en el mapa el país de cada capital. Son todos de América del Sur.' },
+      reflexion: {"pregunta":"¿Por qué Brasilia es la capital de Brasil, si São Paulo es más grande?","razones":["Porque la capital es donde está el gobierno, no la ciudad más grande","Porque Brasilia es más linda","Porque São Paulo está en otro país"],"correcta":0,"porque":"Lo que hace a una ciudad capital es que ahí está el gobierno del país.","grande":"Preguntale a un grande cuál es la capital de Argentina."},
       pasos: [
         {
           titulo: 'La ciudad donde se decide',
@@ -322,6 +340,7 @@ window.Lecciones = (function () {
         },
         {
           titulo: 'Ojo: no siempre es la más grande',
+          prediccion: {"pregunta":"¿La capital de Brasil te parece que es su ciudad más grande?","opciones":["No, es otra ciudad","Sí, la capital siempre es la más grande"],"correcta":0,"explicacion":"La capital es donde está el gobierno. En Brasil es Brasilia, aunque São Paulo sea más grande."},
           texto: 'Mucha gente cree que la capital es la ciudad más grande, pero no. En <b>Brasil</b> la capital es Brasilia, aunque São Paulo y Río sean más grandes. En <b>Estados Unidos</b> es Washington, no Nueva York.',
           visual: function () { return paisCapital(['BR', 'US', 'AU']); },
           truco: 'Cuando dudes entre dos ciudades famosas, la capital suele ser la menos famosa.'
@@ -339,6 +358,7 @@ window.Lecciones = (function () {
       resumen: 'Norte, sur, este, oeste y qué significan los colores.',
       juego: 'geografia/paises',
       ejercicio: { juego: 'geografia/paises', nivel: 'america-sur', cantidad: 5, consigna: 'Buscá cada país en el mapa de América del Sur.' },
+      reflexion: {"pregunta":"Si en el mapa Brasil queda a la derecha de Perú, ¿qué es Brasil de Perú?","razones":["Está al este","Está al oeste","Está al norte"],"correcta":0,"porque":"En los mapas, la derecha es el este y la izquierda, el oeste.","grande":"Jugá con un grande: uno dice norte, sur, este u oeste y el otro señala."},
       pasos: [
         {
           titulo: 'Arriba es el norte',
@@ -348,6 +368,7 @@ window.Lecciones = (function () {
         },
         {
           titulo: 'Los colores cuentan algo',
+          prediccion: {"pregunta":"En un mapa, ¿qué te parece que es lo que está pintado de azul?","opciones":["Agua: mares, ríos y lagos","Los países más fríos","El cielo"],"correcta":0,"explicacion":"El azul es siempre agua. La tierra se pinta de otros colores."},
           texto: 'El <b>azul</b> es siempre agua: océanos, mares, ríos y lagos. La tierra se pinta de otro color, y las <b>líneas</b> que la cruzan son los límites entre países.'
         },
         {
@@ -368,6 +389,7 @@ window.Lecciones = (function () {
       resumen: 'Cómo se corta una palabra en pedacitos.',
       juego: 'lengua/silabas',
       ejercicio: { juego: 'lengua/silabas', nivel: 'n1', cantidad: 5, consigna: 'Contá cuántas sílabas tiene cada palabra. Aplaudí si te ayuda.' },
+      reflexion: {"pregunta":"¿Por qué «sol» tiene una sola sílaba si tiene tres letras?","razones":["Porque se dice en un solo golpe de voz","Porque las sílabas son las vocales","Porque las palabras cortas no se cortan"],"correcta":0,"porque":"Las sílabas se cuentan por golpes de voz: «sol» sale de una vez.","grande":"Aplaudí con un grande los nombres de toda tu familia."},
       pasos: [
         {
           titulo: 'Las palabras tienen pedacitos',
@@ -376,6 +398,7 @@ window.Lecciones = (function () {
         },
         {
           titulo: 'Contalas aplaudiendo',
+          prediccion: {"pregunta":"Decí «mariposa» aplaudiendo. ¿Cuántos aplausos son?","opciones":["4","8","2"],"correcta":0,"explicacion":"Ma-ri-po-sa: cuatro golpes de voz. Letras tiene 8, pero las sílabas se cuentan por golpes, no por letras."},
           texto: '«Ma-ri-po-sa» son <b>cuatro</b> aplausos: tiene cuatro sílabas. «Sol» es un solo aplauso: tiene una. «Ca-sa» tiene dos.',
           visual: function () { return trozos(['ca', 'sa']); },
           truco: 'Decí la palabra despacio y aplaudí con cada golpe: cada aplauso es una sílaba.'
@@ -398,6 +421,7 @@ window.Lecciones = (function () {
       resumen: 'Para qué sirve cada clase de palabra.',
       juego: 'lengua/clases',
       ejercicio: { juego: 'lengua/clases', nivel: 'n2', cantidad: 5, consigna: 'Decí si cada palabra es un sustantivo, un adjetivo o un verbo.' },
+      reflexion: {"pregunta":"¿Por qué «correr» es un verbo?","razones":["Porque dice una acción, algo que se hace","Porque es una palabra larga","Porque nombra una cosa"],"correcta":0,"porque":"Los verbos dicen lo que alguien hace. Los sustantivos nombran y los adjetivos dicen cómo es algo.","grande":"Decile a un grande tres verbos de cosas que hiciste hoy."},
       pasos: [
         {
           titulo: 'Los sustantivos nombran',
@@ -409,6 +433,7 @@ window.Lecciones = (function () {
         },
         {
           titulo: 'Los verbos son acciones',
+          prediccion: {"pregunta":"En «el perro corre», ¿cuál palabra dice lo que hace?","opciones":["corre","perro","el"],"correcta":0,"explicacion":"«Perro» nombra quién es; «corre» cuenta qué hace. La que dice qué hace es el verbo."},
           texto: 'Un <b>verbo</b> dice lo que alguien hace: el perro <b>corre</b>, <b>come</b>, <b>duerme</b>. Cuando no dice quién lo hace, termina en -ar, -er o -ir: <b>saltar</b>, <b>correr</b>, <b>escribir</b>.',
           truco: 'Para encontrar el verbo, preguntá «¿qué hace?». El perro… corre.'
         },
@@ -429,6 +454,7 @@ window.Lecciones = (function () {
       resumen: 'Agudas, graves y esdrújulas.',
       juego: 'lengua/tildes',
       ejercicio: { juego: 'lengua/tildes', nivel: 'n2', cantidad: 5, consigna: 'Elegí cómo se escribe bien cada palabra: con tilde o sin tilde.' },
+      reflexion: {"pregunta":"¿Por qué «camión» lleva tilde y «reloj» no, si las dos son agudas?","razones":["Porque camión termina en n, y reloj termina en j","Porque camión es más larga","Porque reloj es una palabra grave"],"correcta":0,"porque":"Las agudas llevan tilde sólo cuando terminan en n, s o vocal.","grande":"Explicale a un grande por qué «sofá» lleva tilde."},
       pasos: [
         {
           titulo: 'Hay una sílaba que suena más fuerte',
@@ -437,6 +463,7 @@ window.Lecciones = (function () {
         },
         {
           titulo: 'Agudas: la fuerte es la última',
+          prediccion: {"pregunta":"Decí «camión» despacio. ¿Qué parte suena más fuerte?","opciones":["mión","ca"],"correcta":0,"explicacion":"Ca-MIÓN: la fuerte es la última sílaba. Por eso es una palabra aguda."},
           texto: 'Si la sílaba fuerte es <b>la última</b>, la palabra es <b>aguda</b>. Llevan tilde cuando terminan en <b>n</b>, <b>s</b> o <b>vocal</b>: camión, compás, sofá. <b>Reloj</b> no lleva, porque termina en j.',
           visual: function () { return trozos(['ca', 'mión'], 1); }
         },
@@ -465,9 +492,11 @@ window.Lecciones = (function () {
       resumen: 'Cómo se agrupan los animales.',
       juego: 'ciencias/animales',
       ejercicio: { juego: 'ciencias/animales', nivel: 'n3', cantidad: 5, consigna: 'Decí de qué clase es cada animal.' },
+      reflexion: {"pregunta":"¿Por qué el pingüino es un ave si no vuela?","razones":["Porque tiene plumas y nace de un huevo","Porque vive donde hace frío","Porque nada muy bien"],"correcta":0,"porque":"Lo que hace a un ave son las plumas, el pico y el huevo, no volar.","grande":"Contale a un grande por qué el delfín no es un pez."},
       pasos: [
         {
           titulo: 'Los mamíferos toman leche',
+          prediccion: {"pregunta":"El delfín vive en el mar y nada. ¿Qué te parece que es?","opciones":["Un mamífero","Un pez"],"correcta":0,"explicacion":"Aunque nade, respira aire y de bebé toma leche: eso lo hace un mamífero."},
           texto: 'Los <b>mamíferos</b> de bebés toman la leche de su mamá, y casi todos tienen pelo. El perro, el elefante… y también <b>el delfín y la ballena</b>, aunque vivan en el mar.',
           truco: 'El delfín nada como un pez, pero respira aire y toma leche: es un mamífero.'
         },
@@ -496,6 +525,7 @@ window.Lecciones = (function () {
       resumen: 'El hielo, el agua y el vapor son lo mismo.',
       juego: 'ciencias/materia',
       ejercicio: { juego: 'ciencias/materia', nivel: 'n1', cantidad: 5, consigna: 'Decí si cada cosa es sólida, líquida o un gas.' },
+      reflexion: {"pregunta":"¿Por qué el hielo y el vapor son la misma agua?","razones":["Porque sólo cambió la temperatura, no lo que es","Porque tienen el mismo color","Porque los dos están fríos"],"correcta":0,"porque":"Al calentar o enfriar el agua cambia cómo está (sólida, líquida o gas), pero sigue siendo agua.","grande":"Pensá con un grande dónde viste agua sólida, líquida y gaseosa en tu casa."},
       pasos: [
         {
           titulo: 'Tres maneras de estar',
@@ -504,6 +534,7 @@ window.Lecciones = (function () {
         },
         {
           titulo: 'Cómo es cada una',
+          prediccion: {"pregunta":"Si ponés agua en un vaso con forma de estrella, ¿qué forma toma?","opciones":["La del vaso: una estrella","Sigue siendo redonda","No tiene ninguna forma"],"correcta":0,"explicacion":"Los líquidos toman la forma de lo que los contiene. Los sólidos tienen la suya."},
           texto: 'Un <b>sólido</b> tiene su propia forma. Un <b>líquido</b> toma la forma del vaso donde lo pongas. Un <b>gas</b> se escapa y ocupa todo el lugar que encuentra.',
           truco: 'Sólido tiene forma, líquido toma la forma del vaso, gas se escapa.'
         },
@@ -524,9 +555,11 @@ window.Lecciones = (function () {
       resumen: 'El Sol, los ocho planetas y la Luna.',
       juego: 'ciencias/espacio',
       ejercicio: { juego: 'ciencias/espacio', nivel: 'n1', cantidad: 5, consigna: 'Contestá cinco preguntas sobre los planetas.' },
+      reflexion: {"pregunta":"¿Por qué hay día y noche?","razones":["Porque la Tierra gira sobre sí misma","Porque el Sol se apaga a la noche","Porque la Luna tapa al Sol"],"correcta":0,"porque":"La Tierra da una vuelta sobre sí misma cada día: la parte que mira al Sol tiene día.","grande":"Con una linterna y una pelota, mostrale a un grande cómo se hacen el día y la noche."},
       pasos: [
         {
           titulo: 'El Sol es una estrella',
+          prediccion: {"pregunta":"¿El Sol te parece que es un planeta?","opciones":["No, es una estrella","Sí, el más grande de todos"],"correcta":0,"explicacion":"El Sol es una estrella, como las que se ven de noche. Los planetas giran a su alrededor."},
           texto: 'El <b>Sol</b> no es un planeta: es una <b>estrella</b>, como las que se ven de noche, sólo que está mucho más cerca. Alrededor de él giran ocho planetas.'
         },
         {
@@ -553,6 +586,7 @@ window.Lecciones = (function () {
       resumen: 'Red, blue, yellow y los demás.',
       juego: 'ingles/colores',
       ejercicio: { juego: 'ingles/colores', nivel: 'n1', cantidad: 5, consigna: 'Mirá cada color y elegí cómo se dice en inglés.' },
+      reflexion: {"pregunta":"¿Por qué «orange» sirve para dos cosas?","razones":["Porque es el nombre de la fruta y también del color","Porque es una palabra muy larga","Porque es un color que no existe"],"correcta":0,"porque":"En inglés, orange es la naranja y también el color naranja.","grande":"Nombrá con un grande cosas de tu casa: ¿de qué color son, en inglés?"},
       pasos: [
         {
           titulo: 'Los tres primeros',
@@ -563,6 +597,7 @@ window.Lecciones = (function () {
         },
         {
           titulo: 'Tres más',
+          prediccion: {"pregunta":"¿Cómo te parece que se dice «naranja» en inglés? Suena parecido.","opciones":["orange","green","purple"],"correcta":0,"explicacion":"Orange: se parece a «naranja», y sirve para la fruta y para el color."},
           texto: 'El <b>verde</b> es <b lang="en">green</b>, el <b>naranja</b> es <b lang="en">orange</b> (igual que la fruta) y el <b>violeta</b> es <b lang="en">purple</b>.',
           visual: function () {
             return muestrario([['#16a34a', 'green'], ['#ea580c', 'orange'], ['#7c3aed', 'purple']]);
@@ -589,6 +624,7 @@ window.Lecciones = (function () {
       resumen: 'Del one al ten, de a poco.',
       juego: 'ingles/numeros-en',
       ejercicio: { juego: 'ingles/numeros-en', nivel: 'n2', cantidad: 5, consigna: 'Elegí cómo se dice cada número en inglés.' },
+      reflexion: {"pregunta":"Si «five» es 5, ¿por qué «six» es 6?","razones":["Porque viene justo después de five","Porque tiene tres letras","Porque rima con five"],"correcta":0,"porque":"Los números van en orden, en inglés igual que en castellano: después de five viene six.","grande":"Contá con un grande hasta ten en inglés, levantando un dedo por número."},
       pasos: [
         {
           titulo: 'Del uno al cinco',
@@ -599,6 +635,7 @@ window.Lecciones = (function () {
         },
         {
           titulo: 'Del seis al diez',
+          prediccion: {"pregunta":"Ya sabés one, two, three, four, five. ¿Qué te parece que viene después de five?","opciones":["six","ten","one"],"correcta":0,"explicacion":"Después del cinco viene el seis: six."},
           texto: '<b lang="en">Six, seven, eight, nine, ten</b>. Con la otra mano.',
           visual: function () {
             return listaEn([['6', 'six'], ['7', 'seven'], ['8', 'eight'], ['9', 'nine'], ['10', 'ten']]);
@@ -618,6 +655,7 @@ window.Lecciones = (function () {
       resumen: 'Hola, gracias y cómo estás.',
       juego: 'ingles/frases',
       ejercicio: { juego: 'ingles/frases', nivel: 'n2', cantidad: 5, consigna: 'Elegí qué quiere decir cada frase.' },
+      reflexion: {"pregunta":"¿Por qué «good night» se dice a la noche y no a la mañana?","razones":["Porque night quiere decir noche","Porque good quiere decir chau","Porque es más corto"],"correcta":0,"porque":"Night es noche: good night es «buenas noches».","grande":"Saludá a un grande en inglés, según la hora que sea."},
       pasos: [
         {
           titulo: 'Hola y chau',
@@ -628,6 +666,7 @@ window.Lecciones = (function () {
         },
         {
           titulo: 'Según la hora',
+          prediccion: {"pregunta":"«Good» quiere decir «bueno» y «morning», «mañana». ¿Qué te parece que es «good morning»?","opciones":["Buen día","Buenas noches","Adiós"],"correcta":0,"explicacion":"Good morning es, tal cual, «buena mañana»: buen día."},
           texto: 'A la mañana se dice <b lang="en">good morning</b>, a la tarde <b lang="en">good afternoon</b> y a la noche <b lang="en">good night</b>.',
           visual: function () {
             return listaEn([['Good morning', 'Buen día'], ['Good afternoon', 'Buenas tardes'],
@@ -663,6 +702,7 @@ window.Lecciones = (function () {
       resumen: 'El verbo to be, que es «ser» y «estar».',
       juego: 'ingles/tobe',
       ejercicio: { juego: 'ingles/tobe', nivel: 'n2', cantidad: 5, consigna: 'Completá cada frase con am, is o are.' },
+      reflexion: {"pregunta":"¿Por qué se dice «she is» y no «she are»?","razones":["Porque she es una sola persona, y con una va is","Porque she es una chica","Porque are es sólo para I"],"correcta":0,"porque":"Con he, she e it (uno solo) va is; con you, we y they va are; con I, am.","grande":"Decile a un grande una frase con am, una con is y una con are."},
       pasos: [
         {
           titulo: 'Un verbo para dos cosas',
@@ -679,6 +719,7 @@ window.Lecciones = (function () {
         },
         {
           titulo: 'Uno o varios',
+          prediccion: {"pregunta":"En «The dogs ___ big» hay varios perros. ¿Qué te parece que va?","opciones":["are","is","am"],"correcta":0,"explicacion":"Con varios va are; con uno solo, is."},
           texto: 'Si es <b>uno solo</b> va <b lang="en">is</b>: <b lang="en">the dog is big</b>. Si son <b>varios</b> va <b lang="en">are</b>: <b lang="en">the dogs are big</b>.',
           visual: function () {
             return listaEn([['The dog is big', 'El perro es grande'],

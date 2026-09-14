@@ -272,6 +272,23 @@ final.
 El ejercicio de cada lección está en `js/aprender/contenido.js`, en el campo
 `ejercicio` (juego, nivel, cuántas preguntas y la consigna).
 
+**Pensar, no sólo leer.** Tocar «Siguiente» no enseña nada. Cada lección tiene
+dos momentos en que el chico tiene que pensar:
+
+- **Una predicción** en uno de los pasos: antes de ver la explicación, la
+  pregunta («Hay 3 filas de 4 puntitos. ¿Cuántos son?»). Hasta que contesta no
+  aparece «Siguiente»; después se ve si pensó bien y, si no, por qué era la
+  otra. Contestar antes de leer le da algo propio contra qué comparar.
+  Campo `prediccion` del paso: `{ pregunta, opciones, correcta, explicacion }`.
+- **Un «¿por qué?»** al aprobar el ejercicio, antes del resultado: elige la
+  razón entre tres (no se escribe: hay chicos de cuatro años), ve la
+  explicación y una propuesta para hacer con un grande («Mostrale a un grande
+  con puntitos por qué 2 × 5 es lo mismo que 5 × 2»). Hacer bien las cuentas
+  no alcanza: hay que poder decir por qué se hacen así.
+  Campo `reflexion` de la lección: `{ pregunta, razones, correcta, porque, grande }`.
+
+La voz lee las dos, con las opciones en el orden en que están en pantalla.
+
 ## Racha y meta del día
 
 En el cartel del inicio hay una llamita con **los días seguidos** que jugó.
@@ -387,10 +404,27 @@ Las cuentas de sumar y restar quedan afuera del pesado: su pozo es enorme
 cambiaría nada. Sí entran las tablas y el reloj, que son pozos chicos y de
 memorizar.
 
-Además hay una tarjeta **Repasar lo que fallaste** arriba de todo en Jugar,
-que arma una partida sólo con eso. Aparece recién con 5 errores juntados
-(con menos quedaría una partida de dos preguntas). Reglas normales: tres
-intentos y te dice en el momento si acertaste, porque esto es para aprender.
+**Lo aprendido también vuelve, espaciado.** Aprender algo una vez no alcanza:
+se olvida si no vuelve a aparecer, y se recuerda mejor si vuelve con días de
+por medio. Cada cosa contestada está en una **caja**:
+
+| Pasa esto | Vuelve a salir |
+|---|---|
+| La falla | mañana (caja 0) |
+| La acierta cuando le tocaba | en 1, 3, 7 y 14 días, según la caja |
+| La acierta de nuevo el mismo día | no cambia: diez aciertos una tarde no son dos semanas |
+
+Lo que ya le toca volver a ver pesa 5 en el sorteo de las partidas (casi como
+lo fallado). Las lecciones aprobadas vuelven a la semana, y si se aprueban
+otra vez, al doble de tiempo, hasta un mes. Todo se guarda en el perfil
+(`cajas` y `repasoLecciones`, en `js/nucleo/almacen.js`).
+
+Hay una tarjeta **Repasar hoy** en el inicio y arriba de todo en Jugar, que
+arma una partida con lo fallado y lo que toca volver a ver (al menos tres
+lugares para esto último, así lo aprendido no queda tapado por los errores),
+o lleva a la lección que toca repasar. Aparece con 5 errores juntados o con 3
+cosas para hoy, y si no hay nada, no está. Reglas normales: tres intentos y
+te dice en el momento si acertaste, porque esto es para aprender.
 
 Dos detalles que importan:
 
@@ -406,6 +440,20 @@ Una pregunta la dibuja el juego del que salió. En matemática eso es
 obligatorio: una tabla puesta en el tablero de sumas saldría «7 undefined 8»,
 así que si ese juego está trabado la pregunta se saltea. En geografía no, que
 cualquier juego sabe preguntar por cualquier país.
+
+## Qué ocupa el centro
+
+Los premios compiten con el contenido por la atención del chico. Siguen
+existiendo, pero fuera del medio:
+
+- **Mientras se juega** no hay contador de puntos. El acierto dice «¡Muy
+  bien!» o «Te salió al segundo intento», no «+3 puntos».
+- **El error suena suave**: avisa, no reta. El final y el récord suenan
+  igual y bajito; el récord ya no tiene fanfarria propia.
+- **La pantalla de fin** muestra estrellas, aciertos y precisión, y lo que
+  falló con cuándo vuelve («la tenés abajo, y va a volver a salir en el
+  repaso de mañana»). No muestra puntos ni récord, y las monedas y la meta
+  van al final, chicas.
 
 ## Monedas y tienda
 

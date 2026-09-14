@@ -143,7 +143,11 @@ window.Motor = (function () {
     caja.classList.add('sube');
     luego(function () { caja.classList.remove('sube'); }, 400);
 
-    aviso(festejo() + ' +' + ganados + (ganados === 1 ? ' punto' : ' puntos'), 'bien');
+    /* El acierto dice qué pasó, no cuántos puntos dio: los puntos
+       compiten con el contenido en vez de reforzarlo. Si salió en un
+       segundo o tercer intento, se lo dice: es feedback, no un premio. */
+    aviso(e.intento === 0 ? festejo()
+      : '¡Bien! Te salió al ' + (e.intento === 1 ? 'segundo' : 'tercer') + ' intento.', 'bien');
     luego(siguiente, ESPERA_ACIERTO);
   }
 
@@ -198,8 +202,7 @@ window.Motor = (function () {
   }
 
   function festejo() {
-    return Util.alAzar(['¡Muy bien! 🎉', '¡Excelente! ⭐', '¡Perfecto! 👏',
-                        '¡Genial! 🙌', '¡Lo lograste! 🥳']);
+    return Util.alAzar(['¡Muy bien!', '¡Eso es!', '¡Bien pensado!', '¡Correcto!']);
   }
 
   /* ---------------------- avance y cierre ---------------------- */

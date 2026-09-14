@@ -606,6 +606,7 @@
     pintarJugadores();
     pintarFotoDePortada();
     pintarRachaYMeta();
+    pintarRepasoHoy();
 
     cuentaDePortada($('portada-estrellas'), 'estrella', Almacen.estrellas());
     cuentaDePortada($('portada-monedas'), 'moneda', Almacen.monedas(), true);
@@ -720,6 +721,35 @@
       ? Util.plural(llevo, 'respuesta bien', 'respuestas bien') + ' hoy. Mañana, otra.'
       : llevo + ' de ' + meta + ' respuestas bien' +
         (llevo ? '' : ' · ¡Jugá una partida!');
+  }
+
+  /* ---------------------- repasar hoy ---------------------- */
+
+  function textoRepasoHoy() {
+    var errores = Almacen.cuantosErrores(), vencidos = Almacen.cuantosVencidos();
+    var partes = [];
+    if (errores) partes.push(Util.plural(errores, 'cosa que te costó', 'cosas que te costaron'));
+    if (vencidos) partes.push(Util.plural(vencidos, 'cosa que ya sabías', 'cosas que ya sabías') + ' y toca volver a ver');
+    return partes.join(' y ') || 'Nada para repasar hoy';
+  }
+
+  /* La tarjeta del inicio. Aparece sólo si hay algo: una ronda de repaso
+     o una lección que le toca repasar. */
+  function pintarRepasoHoy() {
+    var tarjeta = $('repaso-hoy');
+    if (!tarjeta) return;
+    var lecciones = Almacen.leccionesParaRepasar()
+      .map(function (id) { return window.Lecciones ? Lecciones.porId(id) : null; })
+      .filter(function (l) { return l && l.ejercicio; });
+    var hayRonda = Repaso.hayParaRepasar();
+    tarjeta.hidden = !hayRonda && !lecciones.length;
+    if (tarjeta.hidden) return;
+    var texto = hayRonda ? textoRepasoHoy() : '';
+    if (lecciones.length) {
+      texto += (texto ? '. ' : '') + 'Toca repasar la lección «' + lecciones[0].titulo + '»';
+    }
+    $('repaso-hoy-texto').textContent = texto;
+    tarjeta.href = hayRonda ? '#/repasando' : '#/ejercicio/' + lecciones[0].id;
   }
 
   /** El cartelito del final de la partida que cruzó la meta. */
@@ -1102,6 +1132,9 @@
       var pie = Util.crear('div', 'card-pie');
       pie.appendChild(Util.crear('span', 'card-minutos', '⏱️ ' + l.minutos + ' min'));
       if (vista) pie.appendChild(Util.crear('span', 'card-leida', l.ejercicio ? '✅ Completada' : '✅ Leída'));
+      if (Almacen.leccionesParaRepasar().indexOf(l.id) >= 0) {
+        pie.appendChild(Util.crear('span', 'card-repasar', '🔁 Toca repasarla'));
+      }
       b.cuerpo.appendChild(pie);
       cont.appendChild(b);
     });
@@ -1431,7 +1464,11 @@
     }
     if (r.total && r.aciertos === r.total) marcarNivelHecho(materia, juego);
     // la lección queda completada recién acá, y no al llegar al final
-    if (aprobado) Almacen.marcarLeccion(leccion.id);
+    if (aprobado) {
+      Almacen.marcarLeccion(leccion.id);
+      // vuelve en una semana, y si la aprueba otra vez, cada vez más lejos
+      Almacen.programarLeccion(leccion.id);
+    }
     pintarBarraSuperior();
 
     resultadoEjercicio = {
@@ -1528,7 +1565,7 @@
       cont.appendChild(e);
     }
 
-    $('titulo-fin').textContent = esRecord && r.puntos > 0 ? '¡Récord nuevo! 🏅' : tituloSegun(estrellas);
+    $('titulo-fin').textContent = tituloSegun(estrellas);
     $('subtitulo-fin').textContent = comentario(r, estrellas);
     $('stat-puntos').textContent = r.puntos;
     $('stat-aciertos').textContent = r.aciertos + '/' + r.total;
@@ -1615,14 +1652,17 @@
   }
 
   function tituloSegun(estrellas) {
-    return ['¡Seguí practicando! 💪', '¡Bien ahí! 👍', '¡Muy bien! 🎉', '¡Sos un crack! 🏆'][estrellas];
+    return ['Seguí practicando', '¡Bien!', '¡Muy bien!', '¡Excelente!'][estrellas];
   }
 
+  /* Lo que se le dice al terminar habla de qué salió y qué falta, no de
+     puntos. Lo que falló ya quedó anotado para el repaso de los próximos
+     días, y se lo cuenta: el error tiene un lugar a donde ir. */
   function comentario(r, estrellas) {
-    if (r.errores.length === 0) return '¡No fallaste ni una! Increíble.';
-    if (estrellas === 3) return 'Acertaste ' + r.aciertos + ' de ' + r.total + '. ¡Casi perfecto!';
-    if (estrellas === 2) return 'Vas muy bien: repasá lo de abajo y probá de nuevo.';
-    return 'Mirá lo de abajo antes de volver a jugar. ¡Vas a mejorar!';
+    var n = r.errores.length;
+    if (!n) return 'Todas bien. Ya podés probar el nivel siguiente.';
+    if (n === 1) return 'Te costó una: la tenés abajo, y va a volver a salir en el repaso de mañana.';
+    return 'Te costaron ' + n + ': las tenés abajo, y van a volver a salir en el repaso de los próximos días.';
   }
 
   /**
@@ -1687,8 +1727,7 @@
     var boton = $('btn-repaso');
     boton.hidden = !Repaso.hayParaRepasar();
     if (boton.hidden) return;
-    $('repaso-detalle').textContent =
-      'Tenés ' + Util.plural(Repaso.cuantosPendientes(), 'cosa', 'cosas') + ' para repasar';
+    $('repaso-detalle').textContent = textoRepasoHoy();
   }
 
   function arrancarRepaso() {

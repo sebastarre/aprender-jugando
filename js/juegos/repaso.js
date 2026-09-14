@@ -19,12 +19,18 @@ window.Repaso = (function () {
      preguntas y el chico la termina antes de entender qué pasó. */
   var MINIMO = 5;
 
+  /* También hay repaso cuando le toca volver a ver cosas que ya sabía
+     (repaso espaciado). Con tres alcanza: son cosas sabidas y la ronda
+     es corta, que es justo lo que conviene repetir seguido. */
+  var MINIMO_VENCIDOS = 3;
+
   function hayParaRepasar() {
-    return Almacen.cuantosErrores() >= MINIMO;
+    var errores = Almacen.cuantosErrores();
+    return errores >= MINIMO || errores + Almacen.cuantosVencidos() >= MINIMO_VENCIDOS;
   }
 
   function cuantosPendientes() {
-    return Almacen.cuantosErrores();
+    return Math.min(CANTIDAD, Almacen.cuantosErrores() + Almacen.cuantosVencidos());
   }
 
   /**
@@ -45,9 +51,17 @@ window.Repaso = (function () {
     /* Se ordena la lista entera, no sólo las diez primeras: abajo algunas
        se van a descartar (juego trabado, clave vieja) y hay que tener con
        qué reemplazarlas para que el repaso llegue a las diez preguntas. */
-    var elegidos = Util.muestraPesada(candidatos, candidatos.length, function (f) {
+    var errores = Util.muestraPesada(candidatos, candidatos.length, function (f) {
       return f.veces;
     });
+
+    /* Lo que ya sabía y le toca volver a ver: por lo menos tres lugares,
+       si hay, aunque haya muchos errores. Si sólo se repasara lo fallado,
+       lo aprendido nunca volvería a salir. */
+    // no dicen de qué juego son: juegoParaRepasar lo busca por la clave
+    var vencidos = Almacen.vencidos(cuantas);
+    var lugares = Math.min(vencidos.length, Math.max(3, cuantas - errores.length));
+    var elegidos = vencidos.slice(0, lugares).concat(errores, vencidos.slice(lugares));
 
     var items = [];
     var modulos = {};                       // materia id -> el módulo, para el paso de abajo
