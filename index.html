@@ -280,11 +280,19 @@
 
   <!-- ============ JUEGOS DE UNA MATERIA ============ -->
   <section class="pantalla" id="pantalla-materia" hidden>
-    <h1 class="titulo-grande" id="titulo-materia"></h1>
-    <p class="subtitulo" id="subtitulo-materia"></p>
-    <!-- hasta qué edad tiene abiertos los juegos, y cuánto falta para la siguiente -->
+    <!-- La cabecera va del color de la materia: es lo que dice de un vistazo
+         dónde estás, y el atajo a sus lecciones es un botón y no un enlace gris. -->
+    <header class="materia-cabecera" id="materia-cabecera">
+      <span class="materia-cabecera-icono" id="materia-icono" aria-hidden="true"></span>
+      <div class="materia-cabecera-datos">
+        <h1 class="materia-cabecera-titulo" id="titulo-materia"></h1>
+        <p class="materia-cabecera-texto" id="subtitulo-materia"></p>
+      </div>
+      <a class="materia-aprender" id="materia-aprender" hidden></a>
+    </header>
+    <!-- cuánto falta para los juegos de más grandes; si no queda ninguno, no está -->
     <div class="nivel" id="nivel-materia" hidden></div>
-    <div class="grilla-cards" id="grilla-juegos"></div>
+    <div class="grilla-cards grilla-filas" id="grilla-juegos"></div>
   </section>
 
   <!-- ============ LECCIONES DE UNA MATERIA ============ -->

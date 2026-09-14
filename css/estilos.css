@@ -3374,3 +3374,124 @@ body.jugando .marcador { display: none; }
 .estrellas-fin { font-size: 2.2rem; }
 .estrellas-fin span { animation: none; }
 #pantalla-fin .premio-monedas { margin-top: 16px; font-size: .9rem; opacity: .9; }
+
+/* ============================================================
+   Juegos de una materia: cabecera de color y filas anchas
+
+   La cabecera usa el mismo relieve que la portada del inicio, pintada
+   con el color de la materia. Los juegos van en filas: el dibujo a la
+   izquierda, el nombre y lo que lleva hecho, y una flechita que dice
+   que se toca. Con tres juegos ya no queda un hueco en la grilla.
+   ============================================================ */
+.materia-cabecera {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px 14px;
+  padding: 16px;
+  margin: 6px 0 18px;
+  border-radius: var(--radio);
+  color: #fff;
+  background: linear-gradient(170deg, var(--materia-color) 0%, var(--materia-color) 45%, var(--materia-fuerte) 135%);
+  box-shadow:
+    0 5px 0 var(--materia-fuerte),
+    0 14px 26px -10px rgba(15, 23, 42, .3),
+    inset 0 1.5px 0 rgba(255, 255, 255, .22);
+}
+.materia-cabecera::before,
+.materia-cabecera::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.materia-cabecera::before {
+  width: 168px; height: 168px; right: -56px; bottom: -94px;
+  background: rgba(255, 255, 255, .07);
+}
+.materia-cabecera::after {
+  width: 72px; height: 72px; right: 78px; top: -42px;
+  border: 10px solid rgba(255, 255, 255, .07);
+}
+.materia-cabecera > * { position: relative; z-index: 1; }
+
+.materia-cabecera-icono {
+  width: 60px;
+  height: 60px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #fff;
+  color: var(--materia-color);
+  font-size: 2rem;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, .2);
+}
+.materia-cabecera-icono .ico { width: 34px; height: 34px; stroke-width: 1.9; }
+.materia-cabecera-datos { flex: 1 1 140px; min-width: 0; }
+.materia-cabecera-titulo {
+  margin: 0;
+  font-size: clamp(1.6rem, 5vw, 2.2rem);
+  font-weight: 800;
+  line-height: 1.1;
+}
+.materia-cabecera-texto { margin: 3px 0 0; font-size: .95rem; font-weight: 600; }
+
+.materia-aprender {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, .16);
+  border: 1.5px solid rgba(255, 255, 255, .5);
+  box-shadow: 0 3px 0 rgba(0, 0, 0, .2);
+  color: #fff;
+  font-weight: 800;
+  font-size: .92rem;
+  text-decoration: none;
+  transition: transform .14s, background .14s, box-shadow .14s;
+}
+.materia-aprender:hover { background: rgba(0, 0, 0, .26); }
+.materia-aprender:active { transform: translateY(3px); box-shadow: 0 0 0 rgba(0, 0, 0, .2); }
+.materia-aprender .ico { width: 1.15em; height: 1.15em; }
+
+#pantalla-materia .nivel { box-shadow: none; }
+
+.grilla-cards.grilla-filas { display: flex; flex-direction: column; gap: 12px; }
+.card.card-fila {
+  flex-direction: row;
+  align-items: center;
+  text-align: left;
+  gap: 14px;
+  padding: 14px 12px 14px 14px;
+}
+.card-fila .card-icono { width: 64px; height: 64px; font-size: 2rem; }
+.card-fila .card-icono .ico { width: 36px; height: 36px; }
+.card-fila .card-cuerpo { flex: 1; align-items: flex-start; gap: 3px; }
+.card-fila-linea { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; }
+.card-fila .card-titulo { font-size: 1.12rem; }
+.card-fila .card-texto { font-size: .88rem; }
+.card-fila .avance { max-width: 280px; margin-top: 5px; }
+.card-fila .nivel-barra { height: 9px; }
+.card-fila .nivel-barra i { background: var(--card-color, #f59e0b); }
+.card-fila .avance-cuenta { font-size: .78rem; }
+.card-empezar { margin-top: 4px; font-size: .8rem; font-weight: 800; color: var(--tinta-suave); }
+.card-fila .card-edad { position: static; box-shadow: none; }
+.card-fila .card-consejo { align-items: flex-start; width: 100%; max-width: 280px; }
+.card-fila .card-consejo-listo { justify-content: flex-start; }
+.card-fila .traba-texto { text-align: left; }
+.card-fila .card-dominado { margin-top: 5px; }
+.card-flecha {
+  flex: none;
+  align-self: center;
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--tinta-suave);
+  transition: transform .18s var(--rebote), color .18s;
+}
+.card-fila:hover .card-flecha { transform: translateX(3px); color: var(--card-color, var(--primario)); }

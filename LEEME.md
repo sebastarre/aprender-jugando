@@ -552,6 +552,19 @@ difusa que despega la tarjeta del fondo, y una luz interna arriba. Al apretar
 se hunde hasta apoyarse. Todo lo que se mueve usa la misma curva de rebote
 (`--rebote`), que es la que da sensación de juguete en vez de formulario.
 
+### La pantalla de juegos de una materia
+
+Arriba, una **cabecera del color de la materia** (el mismo relieve que la
+portada del inicio) con su dibujo, cuántos juegos tiene y un botón a sus
+lecciones. El color va un poco oscurecido: tal cual, el blanco chico no
+llegaba a 4,5:1 sobre el naranja de Lengua ni el violeta de Ciencias.
+
+Abajo, **un juego por fila**: dibujo, nombre, bajada y lo que lleva hecho
+(«2/5 niveles hechos», o «Empezá por el nivel 1»), con una flechita que dice
+que se toca. Antes era una grilla de fichas blancas iguales que dejaba un
+hueco con juegos impares y mostraba el récord como único dato. El cartel de
+edad sólo aparece si todavía quedan juegos de más grandes.
+
 ## La mascota
 
 Un **gato o un perro**, lo elige el chico en Personalización y no se

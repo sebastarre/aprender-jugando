@@ -949,71 +949,106 @@
     return caja;
   }
 
-  function pintarJuegos(materia) {
-    tituloConIcono($('titulo-materia'), materia.icono, materia.nombre);
-    pintarNivel($('nivel-materia'), materia);
+  /**
+   * Cuántos niveles de un juego terminó con todas bien. null si el juego
+   * no tiene niveles (los de geografía se eligen por zona).
+   */
+  function nivelesDeJuego(materia, juego) {
+    var grupo = (juego.opciones() || []).filter(function (g) { return g.esNivel; })[0];
+    if (!grupo || !grupo.items.length) return null;
+    var hechos = grupo.items.filter(function (it) {
+      return Almacen.nivelHecho(claveDeNivel(materia, juego, it.id));
+    }).length;
+    return { hechos: hechos, total: grupo.items.length };
+  }
 
-    var sub = $('subtitulo-materia');
-    Util.vaciar(sub);
-    sub.appendChild(document.createTextNode('Elegí un juego para practicar. '));
-    if (leccionesVisibles(materia.id).length) {
-      var link = Util.crear('a', 'enlace-cruzado');
-      link.appendChild(Iconos.crear('aprender'));
-      link.appendChild(Util.crear('span', null, ' Aprender ' + materia.nombre.toLowerCase()));
-      link.href = '#/lecciones/' + materia.id;
-      sub.appendChild(link);
+  function pintarJuegos(materia) {
+    var juegos = juegosVisibles(materia);
+
+    var cabecera = $('materia-cabecera');
+    /* un poco más oscuro que el color de la materia: el texto blanco
+       chico no llega a 4,5:1 sobre el naranja de Lengua ni el violeta
+       de Ciencias tal cual */
+    cabecera.style.setProperty('--materia-color', Util.oscurecer(materia.color, 0.8));
+    cabecera.style.setProperty('--materia-fuerte', Util.oscurecer(materia.color, 0.6));
+    var icono = $('materia-icono');
+    Util.vaciar(icono);
+    ponerIcono(icono, materia.icono);
+    $('titulo-materia').textContent = materia.nombre;
+    $('subtitulo-materia').textContent = Util.plural(juegos.length, 'juego') + ' para practicar';
+
+    var aprender = $('materia-aprender');
+    aprender.hidden = !leccionesVisibles(materia.id).length;
+    if (!aprender.hidden) {
+      Util.vaciar(aprender);
+      aprender.appendChild(Iconos.crear('aprender'));
+      aprender.appendChild(Util.crear('span', null, 'Aprender ' + materia.nombre.toLowerCase()));
+      aprender.href = '#/lecciones/' + materia.id;
     }
+
+    /* El cartel de nivel sólo cuando dice algo: si ya no quedan juegos
+       de más grandes, decía «todos son para vos» y ocupaba lugar. */
+    pintarNivel($('nivel-materia'), materia);
+    if (!proximoPaso(materia)) $('nivel-materia').hidden = true;
 
     var cont = $('grilla-juegos');
     Util.vaciar(cont);
-    juegosVisibles(materia).forEach(function (j) {
-      var consejo = consejoDeJuego(materia, j);
-      /* Al juego de los más grandes se le saca la bajada: en su lugar va
-         el consejo, que es la línea que importa. Con las dos, una ficha
-         de 169px de ancho termina con cinco renglones de texto chico
-         abajo del dibujo. */
-      var b = tarjeta(consejo ? sinBajada(j) : j, function () {
-        irAlJuego(materia, j, consejo);
-      });
+    juegos.forEach(function (j) {
+      cont.appendChild(filaDeJuego(materia, j));
+    });
+  }
 
-      if (!consejo) {
-        if (dominado(materia, j)) {
-          var d = Util.crear('div', 'card-dominado');
-          d.appendChild(Iconos.crear('tilde'));
-          d.appendChild(Util.crear('span', null, ' Lo dominás'));
-          b.cuerpo.appendChild(d);
-        }
-        var mejor = Almacen.mejorDeJuego(materia.id + '/' + j.id);
-        if (mejor > 0) {
-          var r = Util.crear('div', 'card-record');
-          r.appendChild(Iconos.crear('trofeo'));
-          r.appendChild(Util.crear('span', null, ' Tu récord: ' + mejor));
-          b.cuerpo.appendChild(r);
-        }
-        cont.appendChild(b);
-        return;
-      }
+  /**
+   * Una fila por juego: el dibujo, el nombre con su bajada y, abajo,
+   * cuánto lleva. Antes era una grilla de fichas blancas iguales, con un
+   * hueco si los juegos eran impares y el récord como único dato: ahora
+   * lo que se ve es el progreso de niveles, que dice qué le falta.
+   */
+  function filaDeJuego(materia, j) {
+    var consejo = consejoDeJuego(materia, j);
+    var b = tarjeta(j, function () { irAlJuego(materia, j, consejo); });
+    b.classList.add('card-fila');
 
-      /* Para más grandes: se puede jugar igual, así que no hay candado
-         ni ficha apagada. Hay una etiqueta con la edad y una barra que
-         se llena a medida que domina los juegos de antes. */
+    // el nombre, con la edad al lado si es para más grandes
+    var titulo = b.cuerpo.querySelector('.card-titulo');
+    var linea = Util.crear('span', 'card-fila-linea');
+    b.cuerpo.insertBefore(linea, titulo);
+    linea.appendChild(titulo);
+
+    if (consejo) {
       b.classList.add('mas-grande');
       var cinta = Util.crear('span', 'card-edad', consejo.titulo);
       if (consejo.listo) cinta.classList.add('card-edad-listo');
-      b.icono.appendChild(cinta);
+      linea.appendChild(cinta);
 
       var caja = Util.crear('div', 'card-consejo');
       if (consejo.listo) {
         caja.classList.add('card-consejo-listo');
         caja.appendChild(Iconos.crear('tilde'));
-        caja.appendChild(Util.crear('span', 'traba-texto', consejo.texto));
       } else {
         caja.appendChild(barraDeAvance(consejo.avance, 'juego', 'juegos'));
-        caja.appendChild(Util.crear('span', 'traba-texto', consejo.texto));
       }
+      caja.appendChild(Util.crear('span', 'traba-texto', consejo.texto));
       b.cuerpo.appendChild(caja);
-      cont.appendChild(b);
-    });
+    } else {
+      var niveles = nivelesDeJuego(materia, j);
+      if (niveles && niveles.hechos) {
+        b.cuerpo.appendChild(barraDeAvance(niveles, 'nivel hecho', 'niveles hechos'));
+      } else if (niveles) {
+        b.cuerpo.appendChild(Util.crear('span', 'card-empezar', 'Empezá por el nivel 1'));
+      }
+      if (dominado(materia, j)) {
+        var d = Util.crear('div', 'card-dominado');
+        d.appendChild(Iconos.crear('tilde'));
+        d.appendChild(Util.crear('span', null, ' Lo dominás'));
+        b.cuerpo.appendChild(d);
+      }
+    }
+
+    var flecha = Util.crear('span', 'card-flecha', '›');
+    flecha.setAttribute('aria-hidden', 'true');
+    b.appendChild(flecha);
+    return b;
   }
 
   /**
