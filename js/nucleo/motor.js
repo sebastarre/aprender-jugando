@@ -14,6 +14,7 @@
          esCorrecta: function (item, respuesta) {},
          alAcertar / alFallar / alRevelar: function (...) {},
          textoFallo / textoRevelado: function (...) { return '...'; },
+         pista: function (item, intento, respuesta) { return '...'; },
          alTerminar: function (resultado) {}
        });
 
@@ -41,7 +42,8 @@ window.Motor = (function () {
   /* ---------------------- cartel de mensajes ---------------------- */
   function aviso(texto, tipo) {
     var el = Util.$('aviso');
-    el.textContent = texto;
+    // los textos de algunos juegos marcan palabras en inglés con <span lang>: acá va sólo el texto
+    el.textContent = String(texto).replace(/<[^>]*>/g, '');
     el.className = 'aviso ' + (tipo || '');
     el.style.animation = 'none';
     void el.offsetWidth;                // reinicia la animación de entrada
@@ -173,7 +175,15 @@ window.Motor = (function () {
 
     var cola = 'Te ' + (quedan === 1 ? 'queda 1 intento' : 'quedan ' + quedan + ' intentos');
     var propio = e.cfg.textoFallo ? e.cfg.textoFallo(item, respuesta, quedan) : '';
-    aviso((propio ? propio + ' ' : '¡Casi! ') + cola, 'mal');
+
+    /* Andamiaje: cada intento que falla trae más ayuda que el anterior.
+       Primero una pista para pensar («empezá por las unidades»), después
+       una con el paso concreto, y recién al tercero la respuesta con su
+       explicación. Sin esto, los intentos 2 y 3 eran sólo otra chance de
+       tocar un botón, y con cuatro opciones se acertaba por descarte. */
+    var pista = e.cfg.pista ? e.cfg.pista(item, e.intento, respuesta) : '';
+    if (pista) aviso((propio ? propio + ' ' : '') + '💡 ' + pista, 'pista');
+    else aviso((propio ? propio + ' ' : '¡Casi! ') + cola, 'mal');
 
     luego(function () { if (e) e.bloqueado = false; }, ESPERA_FALLO);
   }

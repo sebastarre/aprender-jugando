@@ -321,6 +321,28 @@ números. Tiene lápiz negro, azul y rojo, goma, deshacer y borrar todo. Se
 borra sola en cada pregunta nueva, y en los juegos del mapa no aparece.
 Funciona con el dedo, con un lápiz de tableta y con el mouse.
 
+## Pistas: cada intento fallado trae más ayuda
+
+Con tres intentos y cuatro opciones se acertaba por descarte el 75% de las
+veces sin saber. Ahora, en los juegos que tienen pistas, cada fallo trae más
+ayuda que el anterior (andamiaje):
+
+1. **Primer fallo:** qué tipo de error parece ser y una pista para pensar.
+   «Casi: te olvidaste de la que te llevabas. Empezá por las unidades: 7 + 5.»
+2. **Segundo fallo:** una pista con el paso concreto, sin decir la respuesta.
+   «Unidades: 7 + 5 = 12, escribís 2 y te llevás 1. Ahora las decenas: 2 + 1 + 1.»
+3. **Tercer fallo:** la respuesta con su explicación, no sólo el resultado.
+   «27 + 15 = 42: 7 + 5 = 12, escribís 2 y te llevás 1; después 2 + 1 + 1 = 4.»
+
+Tienen pistas: sumas y restas, tablas, divisiones, la hora, qué número sigue,
+dobles y mitades, cuánto vale una cifra, sílabas y ortografía. Las de
+matemática salen de los números de cada cuenta y no están escritas a mano. En
+el examen no hay pistas: ahí se mide.
+
+Un juego agrega pistas con `pista: function (item, intento)` en sus ganchos
+(`Tablero.ganchos`) o en su banco (`Tablero.banco`). Sin pista, el aviso de
+fallo es el de siempre.
+
 ## Modo examen
 
 Aparte de los juegos hay un **examen**, que no es otro juego sino la misma

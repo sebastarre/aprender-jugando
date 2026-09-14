@@ -138,6 +138,8 @@ window.Tablero = (function () {
         Opciones.bloquear();
       },
       textoFallo: textos.fallo || function () { return 'No es esa.'; },
+      // la ayuda de cada intento fallado; sin pista, el aviso de siempre
+      pista: textos.pista || null,
       textoRevelado: textos.revelado || function (it) {
         return 'Era «' + plano(correcta(it)) + '».';
       }
@@ -208,6 +210,7 @@ window.Tablero = (function () {
    *   def.forma, def.mostrar, def.etiqueta   ver respuestas()
    *   def.repaso     function (item) -> { simbolo, nombre, dato }
    *   def.textoFallo, def.textoRevelado
+   *   def.pista      function (item, intento) -> la ayuda de ese intento (1 o 2)
    */
   function banco(def) {
     var items = def.items.map(function (x) {
@@ -321,7 +324,7 @@ window.Tablero = (function () {
         });
       },
       ganchos: function () {
-        return ganchos(correcta, { fallo: def.textoFallo, revelado: def.textoRevelado });
+        return ganchos(correcta, { fallo: def.textoFallo, revelado: def.textoRevelado, pista: def.pista });
       },
       deClave: function (resto) {
         var it = porId[def.id + ':' + resto];

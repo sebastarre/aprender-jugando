@@ -308,7 +308,12 @@ window.Lengua = (function () {
     }),
     categorias: [1, 2, 3, 4, 5],
     consigna: function (it) { return '¿Cuántas sílabas tiene <b>' + it.palabra + '</b>?'; },
-    textoFallo: function (it, r) { return 'No son ' + r + '. Probá decirla aplaudiendo.'; },
+    textoFallo: function (it, r) { return 'No son ' + r + '.'; },
+    pista: function (it, intento) {
+      if (intento === 1) return 'Decí «' + it.palabra + '» despacio y aplaudí en cada golpe de voz.';
+      var partes = it.partes.split('-');
+      return 'Empieza así: ' + partes[0] + (partes.length > 1 ? ' · …' : '') + ' ¿Cuántos golpes más?';
+    },
     textoRevelado: function (it) {
       return 'Tiene ' + it.r + ': ' + it.partes.split('-').join(' · ') + '.';
     },
@@ -426,7 +431,11 @@ window.Lengua = (function () {
     forma: 'palabra',
     consigna: function () { return '¿Cuál está <b>bien escrita</b>?'; },
     textoFallo: function (it, r) { return '«' + r + '» tiene un error.'; },
-    textoRevelado: function (it) { return 'Se escribe «' + it.r + '».'; },
+    textoRevelado: function (it) { return 'Se escribe «' + it.r + '». ' + reglaDe(it.r); },
+    pista: function (it, intento) {
+      if (intento === 1) return reglaDe(it.r);
+      return 'Empieza así: «' + it.r.slice(0, Math.ceil(it.r.length / 2)) + '…»';
+    },
     repaso: function (it) { return { simbolo: '✏️', nombre: 'Se escribe', dato: it.r }; }
   });
 
@@ -606,6 +615,23 @@ window.Lengua = (function () {
     },
     repaso: function (it) { return { simbolo: '🏷️', nombre: it.palabra, dato: 'Es un ' + it.r }; }
   });
+
+  /* La regla que ayuda con cada palabra de ortografía. Se busca en la
+     palabra misma, en orden de la más específica a la más general: «mb»
+     antes que «b», «gue/gui» antes que «g». */
+  function reglaDe(palabra) {
+    if (/mb/.test(palabra)) return 'Antes de B siempre va M.';
+    if (/nv/.test(palabra)) return 'Antes de V siempre va N.';
+    if (/^h|[aeiou]h/.test(palabra)) return 'Ojo con la H: no suena, pero se escribe.';
+    if (/ll/.test(palabra)) return 'Fijate si va LL o Y: suenan igual.';
+    if (/y/.test(palabra)) return 'Fijate si va Y o LL: suenan igual.';
+    if (/gu[ei]/.test(palabra)) return 'El sonido «gue» y «gui» se escribe con GU.';
+    if (/g[ei]|j/.test(palabra)) return 'Fijate si va G o J: antes de E y de I suenan igual.';
+    if (/qu/.test(palabra)) return 'El sonido «que» y «qui» se escribe con QU.';
+    if (/c[ei]|z/.test(palabra)) return 'Fijate si va C, Z o S: suenan parecido.';
+    if (/[bv]/.test(palabra)) return 'Fijate si va B o V: suenan igual.';
+    return 'Mirala letra por letra.';
+  }
 
   var JUEGOS = [PRIMERA_LETRA, VOCAL_QUE_FALTA, RIMAS_JUEGO, CONTRARIOS_JUEGO, SILABAS_JUEGO,
                 PLURALES_JUEGO, ORTOGRAFIA_JUEGO, SINONIMOS_JUEGO, TILDES_JUEGO, CLASES_JUEGO];

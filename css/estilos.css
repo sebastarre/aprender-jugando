@@ -1263,7 +1263,11 @@ body {
 .aviso.bien  { background: var(--exito-osc); color: #fff; }
 .aviso.mal   { background: var(--error-osc); color: #fff; }
 .aviso.dato  { background: var(--aviso); color: #3a2500; }
-.aviso.bien, .aviso.mal, .aviso.dato { animation: aparecer-aviso .2s ease both; }
+/* La pista: ni el rojo del error ni el amarillo del dato. Es ayuda, no
+   reto, y tiene que poder leerse con calma: por eso letra oscura sobre
+   crema (9:1) y no blanco sobre color. */
+.aviso.pista { background: #fef3c7; color: #78350f; border: 2px solid #fcd34d; }
+.aviso.bien, .aviso.mal, .aviso.dato, .aviso.pista { animation: aparecer-aviso .2s ease both; }
 @keyframes aparecer-aviso {
   from { opacity: .2; transform: scale(.96); }
   to   { opacity: 1; transform: none; }

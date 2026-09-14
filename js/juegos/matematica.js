@@ -361,6 +361,103 @@ window.Matematica = (function () {
   ];
 
   /** Arma una cuenta que da un resultado válido (nunca negativo). */
+  /* ---------------------- andamiaje de las cuentas ----------------------
+
+     Las pistas y las explicaciones salen de los mismos números de la
+     cuenta: no hay que escribirlas a mano, y dicen el paso que sirve para
+     ESA cuenta (si hay que llevarse, si hay que pedir prestado). */
+  function unidades(n) { return n % 10; }
+  function decenas(n) { return Math.floor(n / 10); }
+
+  function contarDesde(desde, cuantos, paso) {
+    var lista = [];
+    for (var i = 1; i <= Math.min(cuantos - 1, 3); i++) lista.push(desde + i * paso);
+    return lista.join(', ');
+  }
+
+  /* Qué error parece ser. Los distractores de cada cuenta son justo los
+     errores típicos (uno de más o de menos, diez de más o de menos, la
+     operación contraria), así que se puede decir cuál fue. */
+  function diagnosticoCuenta(it, r) {
+    var suma = it.op === '+';
+    var hayQueLlevar = suma && unidades(it.a) + unidades(it.b) >= 10;
+    var hayQuePedir = !suma && unidades(it.a) < unidades(it.b);
+    if (hayQueLlevar && r === it.resultado - 10) return 'Casi: te olvidaste de la que te llevabas.';
+    if (hayQuePedir && r === it.resultado + 10) return 'Casi: te olvidaste de que pediste prestado.';
+    // con números de una cifra no hay decenas que mirar
+    if ((it.a >= 10 || it.b >= 10) && (r === it.resultado + 10 || r === it.resultado - 10)) {
+      return 'Las unidades están bien; mirá las decenas.';
+    }
+    if (r === it.resultado + 1) return 'Muy cerca: te pasaste por uno.';
+    if (r === it.resultado - 1) return 'Muy cerca: te faltó uno.';
+    if (!suma && r === it.a + it.b) return 'Esa es la suma, y acá hay que restar.';
+    if (suma && r === Math.abs(it.a - it.b)) return 'Esa es la resta, y acá hay que sumar.';
+    return 'No es ' + r + '.';
+  }
+
+  function pistaCuenta(it, intento) {
+    var a = it.a, b = it.b, suma = it.op === '+';
+    if (b === 0) return (suma ? 'Sumar' : 'Restar') + ' 0 no cambia el número.';
+    if (!suma && a === b) return 'Si le sacás todo lo que tiene, ¿cuánto queda?';
+
+    // números chicos: se cuenta
+    if (a < 10 && b < 10) {
+      if (suma) {
+        var mayor = Math.max(a, b), menor = Math.min(a, b);
+        if (intento === 1) return 'Empezá en el ' + mayor + ' y contá ' + menor + ' más.';
+        return menor === 1
+          ? '¿Qué número viene después del ' + mayor + '?'
+          : 'Contá desde el ' + mayor + ': ' + contarDesde(mayor, menor, 1) + '… ¿y el que sigue?';
+      }
+      if (intento === 1) return 'Empezá en el ' + a + ' y contá ' + b + ' para atrás.';
+      return b === 1
+        ? '¿Qué número viene antes del ' + a + '?'
+        : 'Contá para atrás desde el ' + a + ': ' + contarDesde(a, b, -1) + '… ¿y el que sigue?';
+    }
+
+    // números grandes: se va por columnas
+    var ua = unidades(a), ub = unidades(b);
+    var grandes = a >= 100 || b >= 100;
+    if (suma) {
+      var su = ua + ub;
+      if (intento === 1) {
+        return 'Empezá por las unidades: ' + ua + ' + ' + ub + '.' +
+               (su >= 10 ? ' Da más de 9: te vas a llevar una.' : '');
+      }
+      var sigue = grandes ? 'Después seguí igual con las decenas y las centenas.'
+                          : 'Ahora las decenas: ' + decenas(a) + ' + ' + decenas(b) + (su >= 10 ? ' + 1.' : '.');
+      return 'Unidades: ' + ua + ' + ' + ub + ' = ' + su +
+             (su >= 10 ? ', escribís ' + (su % 10) + ' y te llevás 1. ' : '. ') + sigue;
+    }
+    if (intento === 1) {
+      return ua < ub
+        ? 'Empezá por las unidades: a ' + ua + ' no le podés sacar ' + ub + ', así que pedile prestado a las decenas.'
+        : 'Empezá por las unidades: ' + ua + ' − ' + ub + '.';
+    }
+    var siguen = grandes ? ' Después seguí igual con las decenas y las centenas.'
+                         : ' Ahora las decenas: ' + (ua < ub ? (decenas(a) - 1) + ' − ' + decenas(b) + ' (una menos, la que prestaste).'
+                                                           : decenas(a) + ' − ' + decenas(b) + '.');
+    return ua < ub
+      ? 'Con la prestada son ' + (ua + 10) + ' − ' + ub + ' = ' + (ua + 10 - ub) + '.' + siguen
+      : 'Unidades: ' + ua + ' − ' + ub + ' = ' + (ua - ub) + '.' + siguen;
+  }
+
+  /* La respuesta con el camino, no sólo el resultado. */
+  function explicacionCuenta(it) {
+    var base = it.a + ' ' + it.op + ' ' + it.b + ' = ' + it.resultado;
+    if ((it.a < 10 && it.b < 10) || it.a >= 100 || it.b >= 100) return base + '.';
+    var ua = unidades(it.a), ub = unidades(it.b), da = decenas(it.a), db = decenas(it.b);
+    if (it.op === '+') {
+      var su = ua + ub;
+      return su >= 10
+        ? base + ': ' + ua + ' + ' + ub + ' = ' + su + ', escribís ' + (su % 10) + ' y te llevás 1; después ' + da + ' + ' + db + ' + 1 = ' + (da + db + 1) + '.'
+        : base + ': ' + ua + ' + ' + ub + ' = ' + su + ' y ' + da + ' + ' + db + ' = ' + (da + db) + '.';
+    }
+    return ua < ub
+      ? base + ': con la prestada, ' + (ua + 10) + ' − ' + ub + ' = ' + (ua + 10 - ub) + ', y ' + (da - 1) + ' − ' + db + ' = ' + (da - 1 - db) + '.'
+      : base + ': ' + ua + ' − ' + ub + ' = ' + (ua - ub) + ' y ' + da + ' − ' + db + ' = ' + (da - db) + '.';
+  }
+
   function cuenta(nivel, operacion) {
     var a, b;
     if (operacion === '+') {
@@ -434,8 +531,9 @@ window.Matematica = (function () {
     },
     ganchos: function () {
       return T.ganchos(function (it) { return it.resultado; }, {
-        fallo: function (it, respuesta) { return 'No, ' + respuesta + ' no es.'; },
-        revelado: function (it) { return it.a + ' ' + it.op + ' ' + it.b + ' = ' + it.resultado; }
+        fallo: diagnosticoCuenta,
+        pista: pistaCuenta,
+        revelado: explicacionCuenta
       });
     }
   };
@@ -520,6 +618,13 @@ window.Matematica = (function () {
     ganchos: function () {
       return T.ganchos(function (it) { return it.respuesta; }, {
         fallo: function (it, r) { return 'No va el ' + r + '.'; },
+        pista: function (it, intento) {
+          if (intento === 1) return 'Fijate cuánto cambia de un número al siguiente.';
+          var m = it.muestra;
+          var cambio = it.paso === 'x2' ? 'se duplica'
+            : (it.paso.charAt(0) === '+' ? 'se suma ' : 'se resta ') + Math.abs(parseInt(it.paso, 10));
+          return 'Del ' + m[2] + ' al ' + m[3] + ' ' + cambio + '. ¿Y después del ' + m[3] + '?';
+        },
         revelado: function (it) {
           var regla = it.paso === 'x2' ? 'cada uno es el doble del anterior'
             : (it.paso.charAt(0) === '+' ? 'se suma ' : 'se resta ') + Math.abs(parseInt(it.paso, 10));
@@ -640,7 +745,16 @@ window.Matematica = (function () {
     ganchos: function () {
       return T.ganchos(function (it) { return it.texto; }, {
         fallo: function (it, respuesta) { return 'No son las ' + respuesta + '.'; },
-        revelado: function (it) { return 'Eran las ' + it.texto; }
+        pista: function (it, intento) {
+          if (intento === 1) return 'Mirá primero la aguja corta: es la que marca la hora.';
+          return it.minuto === 0
+            ? 'La aguja larga está arriba, en el 12: es en punto.'
+            : 'La aguja larga está en el ' + (it.minuto / 5) + ': son ' + it.minuto + ' minutos.';
+        },
+        revelado: function (it) {
+          return 'Eran las ' + it.texto + ': la aguja corta marca las ' + it.hora +
+                 (it.minuto ? ' y la larga, ' + it.minuto + ' minutos.' : ' y la larga está en el 12.');
+        }
       });
     }
   };
@@ -701,8 +815,23 @@ window.Matematica = (function () {
     },
     ganchos: function () {
       return T.ganchos(function (it) { return it.resultado; }, {
-        fallo: function (it, respuesta) { return 'No, ' + respuesta + ' no es.'; },
-        revelado: function (it) { return it.a + ' × ' + it.b + ' = ' + it.resultado; }
+        fallo: function (it, r) {
+          // los distractores son la fila de al lado y la suma: se puede decir cuál fue
+          if (r === it.resultado + it.a || r === it.resultado - it.a ||
+              r === it.resultado + it.b || r === it.resultado - it.b) return 'Te corriste un lugar en la tabla.';
+          if (r === it.a + it.b) return 'Esa es la suma, y acá hay que multiplicar.';
+          return 'No, ' + r + ' no es.';
+        },
+        pista: function (it, intento) {
+          if (it.b === 1) return 'Cualquier número por 1 da el mismo número.';
+          if (it.b === 10) return 'Por 10, al número se le agrega un 0 al final.';
+          if (intento === 1) return 'Es el ' + it.a + ' sumado ' + it.b + ' veces.';
+          return it.a + ' × ' + (it.b - 1) + ' = ' + it.a * (it.b - 1) + '. Uno más: sumale ' + it.a + '.';
+        },
+        revelado: function (it) {
+          var suma = it.b <= 5 && it.b > 1 ? ' (' + new Array(it.b + 1).join(it.a + ' + ').slice(0, -3) + ')' : '';
+          return it.a + ' × ' + it.b + ' = ' + it.resultado + suma + '.';
+        }
       });
     }
   };
@@ -774,7 +903,20 @@ window.Matematica = (function () {
     },
     ganchos: function () {
       return T.ganchos(function (it) { return it.respuesta; }, {
-        fallo: function (it, r) { return 'No es ' + r + '.'; },
+        fallo: function (it, r) {
+          if (it.modo === 'mitad' && r === it.n * 2) return 'Ese es el doble, y acá es la mitad.';
+          return 'No es ' + r + '.';
+        },
+        pista: function (it, intento) {
+          if (it.modo === 'doble') {
+            if (intento === 1 || it.n < 10) return 'El doble es el mismo número dos veces: ' + it.n + ' + ' + it.n + '.';
+            var d = decenas(it.n) * 10, u = unidades(it.n);
+            return 'Por partes: el doble de ' + d + ' es ' + d * 2 + ', y el de ' + u + ' es ' + u * 2 + '.';
+          }
+          return intento === 1
+            ? 'La mitad es repartir ' + it.n + ' en dos partes iguales.'
+            : '¿Qué número, sumado dos veces, da ' + it.n + '?';
+        },
         revelado: function (it) {
           return it.modo === 'doble'
             ? 'El doble de ' + it.n + ' es ' + it.respuesta + ' (' + it.n + ' + ' + it.n + ').'
@@ -864,6 +1006,10 @@ window.Matematica = (function () {
       var nombres = { 1: 'unidades', 10: 'decenas', 100: 'centenas', 1000: 'unidades de mil' };
       return T.ganchos(function (it) { return it.respuesta; }, {
         fallo: function (it, r) { return 'No vale ' + r + '.'; },
+        pista: function (it, intento) {
+          if (intento === 1) return 'Contá los lugares desde la derecha: unidades, decenas, centenas…';
+          return 'El ' + it.cifra + ' está en el lugar de las ' + nombres[it.respuesta / it.cifra] + '.';
+        },
         revelado: function (it) {
           var lugar = it.respuesta / it.cifra;
           return 'Vale ' + it.respuesta + ': está en el lugar de las ' + nombres[lugar] + '.';
@@ -936,6 +1082,10 @@ window.Matematica = (function () {
     ganchos: function () {
       return T.ganchos(function (it) { return it.respuesta; }, {
         fallo: function (it, r) { return 'No: ' + r + ' × ' + it.d + ' no da ' + it.a + '.'; },
+        pista: function (it, intento) {
+          if (intento === 1) return '¿Qué número por ' + it.d + ' da ' + it.a + '?';
+          return 'Recorré la tabla del ' + it.d + ': ' + it.d + ', ' + it.d * 2 + ', ' + it.d * 3 + '… hasta llegar a ' + it.a + '.';
+        },
         revelado: function (it) {
           return it.a + ' ÷ ' + it.d + ' = ' + it.respuesta + ', porque ' + it.respuesta + ' × ' + it.d + ' = ' + it.a + '.';
         }
