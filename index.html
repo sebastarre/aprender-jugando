@@ -635,17 +635,68 @@
     </div>
 
     <div id="caja-parental" hidden>
+      <!-- de quién son los datos, si hay más de un chico en el aparato -->
+      <div class="parental-chicos" id="parental-chicos" role="group" aria-label="De quién ver los datos"></div>
       <p class="subtitulo" id="parental-sub"></p>
 
-      <h2 class="etiqueta-grupo">En qué está flojo</h2>
-      <div class="lista-repaso" id="parental-fallos"></div>
+      <h2 class="etiqueta-grupo">Esta semana</h2>
+      <div class="stats-fin parental-stats" id="parental-stats"></div>
+      <div class="semana" id="parental-semana" role="img"></div>
+
+      <h2 class="etiqueta-grupo">Por materia</h2>
+      <div class="parental-lista" id="parental-materias"></div>
+
+      <h2 class="etiqueta-grupo">Lo que le cuesta</h2>
+      <p class="nota-ranura">Lo que más falló. Ya vuelve a salir solo en el repaso de los próximos días.</p>
+      <div class="lista-repaso parental-bloque" id="parental-fallos"></div>
+
+      <h2 class="etiqueta-grupo">Para hacer juntos</h2>
+      <p class="nota-ranura">De las lecciones que completó: una propuesta corta para charlar o hacer con un grande.</p>
+      <div class="parental-lista" id="parental-juntos"></div>
+
+      <h2 class="etiqueta-grupo">Límites</h2>
+      <h3 class="parental-sub-grupo">Tiempo por día</h3>
+      <p class="nota-ranura">Cuenta el tiempo jugando y en las lecciones. La partida que está en curso termina; lo que no deja es empezar otra.</p>
+      <div class="fila-opciones" id="parental-tiempo"></div>
+      <div class="parental-tiempo-hoy">
+        <p id="parental-tiempo-hoy"></p>
+        <button class="btn-secundario" id="btn-mas-tiempo" type="button" hidden>Dar 15 minutos más hoy</button>
+      </div>
+
+      <h3 class="parental-sub-grupo">Materias que ve</h3>
+      <div class="parental-lista" id="parental-materias-control"></div>
+
+      <h3 class="parental-sub-grupo">Monedas y tienda</h3>
+      <div class="fila-ajuste">
+        <span class="ajuste-icono" data-ico="tienda" aria-hidden="true"></span>
+        <div class="fila-cuerpo">
+          <div class="fila-nombre">Mostrar monedas y tienda</div>
+          <div class="ir-dato">Apagadas, las monedas se siguen juntando pero no se ven.</div>
+        </div>
+        <button class="interruptor" id="ajuste-tienda" type="button" aria-label="Mostrar monedas y tienda"
+                role="switch" aria-checked="true"><span></span></button>
+      </div>
 
       <h2 class="etiqueta-grupo">Últimas partidas</h2>
       <div class="tabla-partidas" id="parental-partidas"></div>
 
       <div class="acciones-perfil">
+        <button class="btn-gigante" id="btn-cerrar-parental" type="button">Listo, cerrar</button>
         <button class="btn-secundario" id="btn-cambiar-pin">Cambiar PIN</button>
         <button class="btn-secundario peligro" id="btn-borrar-progreso">Borrar el progreso de este jugador</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ DESCANSO: se terminó el tiempo del día ============ -->
+  <section class="pantalla" id="pantalla-descanso" hidden>
+    <div class="tarjeta-descanso">
+      <div class="descanso-icono" aria-hidden="true">🌙</div>
+      <h1 class="titulo-grande">¡Por hoy alcanza!</h1>
+      <p class="subtitulo" id="descanso-texto"></p>
+      <div class="botones-fin">
+        <button class="btn-gigante" id="btn-descanso-inicio" type="button">Volver al inicio</button>
+        <button class="btn-secundario" id="btn-descanso-grande" type="button">Soy un grande: dar más tiempo</button>
       </div>
     </div>
   </section>

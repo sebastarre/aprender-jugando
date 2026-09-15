@@ -260,7 +260,7 @@ window.Leccion = (function () {
       : r.aciertos >= aprobarCon(leccion.ejercicio) - 1
         ? 'Te faltó una sola. Probá de nuevo, que sale.'
         : 'Mirá la lección otra vez y después probá de nuevo: vas a ver que sale.'));
-    if (r.monedas) {
+    if (r.monedas && Almacen.control().tienda) {
       tarjeta.appendChild(Util.crear('p', 'resultado-monedas', '+' + r.monedas + ' monedas'));
     }
 

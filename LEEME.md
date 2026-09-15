@@ -686,9 +686,33 @@ En **personalización** están las paletas de colores: las tres gratis y las que
 se compran con monedas.
 
 Dentro de configuración está el **modo parental**, protegido con un PIN de 4 números
-que se elige la primera vez que se entra. Muestra en qué está flojo (lo que más
-falla, ordenado por cantidad de veces) y las últimas partidas con fecha y
-resultado. También permite borrar el progreso de un jugador.
+que se elige la primera vez que se entra. Es un panel para el grande:
+
+- **De quién.** Con más de un chico en el aparato, arriba se elige de quién ver
+  y ajustar. Al cerrar el panel vuelve a quedar elegido el que estaba jugando.
+- **Esta semana.** Días jugados de 7, respuestas bien, porcentaje de aciertos,
+  tiempo jugando, y un gráfico con las respuestas bien de cada día.
+- **Por materia.** Precisión, partidas, lecciones completadas y juegos
+  dominados de cada una.
+- **Lo que le cuesta.** Lo que más falló, con su materia. Eso ya vuelve solo en
+  el repaso espaciado.
+- **Para hacer juntos.** De las últimas lecciones que completó, la propuesta
+  «contale a un grande» de su «¿por qué?», para que el grande la vea.
+- **Límites**, de cada chico:
+  - **Tiempo por día** (sin límite, 15, 30, 45 o 60 minutos). Cuenta el tiempo
+    con la app a la vista y un juego o una lección en pantalla. No corta nada a
+    la mitad: cumplido el tiempo, lo que no deja es *empezar* una partida, una
+    lección, un repaso o un examen, y muestra «¡Por hoy alcanza!». Desde el
+    panel se pueden dar 15 minutos más, sólo por ese día.
+  - **Materias que ve.** Una materia oculta no aparece en Jugar, Aprender, el
+    examen ni el repaso, y no se abre ni con el enlace. Tiene que quedar una.
+  - **Monedas y tienda.** Apagadas, las monedas se siguen juntando pero no se
+    ven en ningún lado y la tienda no se abre.
+- Las últimas partidas, cambiar el PIN y borrar el progreso (los límites no se
+  borran: son del grande, no progreso).
+
+El tiempo se guarda por día en el perfil (`tiempo`, los últimos 60 días) y los
+límites en `control` (`js/nucleo/almacen.js`).
 
 Todo se guarda en el navegador (`localStorage`), en el dispositivo: no viaja a
 ningún servidor.

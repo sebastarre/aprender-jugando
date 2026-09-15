@@ -38,7 +38,9 @@ window.Almacen = (function () {
       dias: {},                // '2026-09-13' -> respuestas bien ese día
       meta: 10,                // respuestas bien por día que pide la meta; 0 es sin meta
       metaCobrada: null,       // el día en que se pagó el premio de la meta
-      mejorRacha: 0
+      mejorRacha: 0,
+      tiempo: {},              // '2026-09-13' -> segundos jugando o en lecciones
+      control: {}              // lo que decide el grande: { minutos, ocultas, tienda, extra }
     };
   }
 
@@ -710,6 +712,69 @@ window.Almacen = (function () {
     return meta > 0 && aciertosDeHoy() >= meta;
   }
 
+  /* ---------------------- control parental ----------------------
+
+     Es de cada chico: un hermano de 5 y otro de 11 no necesitan el mismo
+     tiempo ni las mismas materias. Los minutos extra valen sólo el día
+     en que se dieron. */
+  function control() {
+    var c = mio().control || {};
+    return {
+      minutos: typeof c.minutos === 'number' ? c.minutos : 0,
+      ocultas: c.ocultas || {},
+      tienda: c.tienda !== false,
+      extra: c.extra && c.extra.dia === claveDia(new Date()) ? c.extra.minutos : 0
+    };
+  }
+
+  function setControl(cambios) {
+    var yo = mio();
+    if (!yo.control) yo.control = {};
+    Object.keys(cambios).forEach(function (k) { yo.control[k] = cambios[k]; });
+    guardar();
+  }
+
+  function darMinutosHoy(n) {
+    setControl({ extra: { dia: claveDia(new Date()), minutos: control().extra + n } });
+  }
+
+  /** Suma tiempo al día de hoy. Se guardan los últimos 60 días. */
+  function sumarTiempo(segundos) {
+    var yo = mio();
+    if (!yo.tiempo) yo.tiempo = {};
+    var hoy = claveDia(new Date());
+    yo.tiempo[hoy] = (yo.tiempo[hoy] || 0) + segundos;
+    var llaves = Object.keys(yo.tiempo).sort();
+    if (llaves.length > 60) llaves.slice(0, llaves.length - 60).forEach(function (k) { delete yo.tiempo[k]; });
+    guardar();
+  }
+
+  function segundosDeHoy() {
+    var t = mio().tiempo;
+    return (t && t[claveDia(new Date())]) || 0;
+  }
+
+  /** Los últimos `n` días, del más viejo a hoy: respuestas bien y tiempo. */
+  function ultimosDias(n) {
+    var yo = mio();
+    var lista = [];
+    for (var i = n - 1; i >= 0; i--) {
+      var d = new Date();
+      d.setDate(d.getDate() - i);
+      var k = claveDia(d);
+      lista.push({
+        fecha: d,
+        aciertos: (yo.dias && yo.dias[k]) || 0,
+        segundos: (yo.tiempo && yo.tiempo[k]) || 0
+      });
+    }
+    return lista;
+  }
+
+  function historialDesde(ms) {
+    return mio().historial.filter(function (p) { return p.fecha >= ms; });
+  }
+
   function estadisticas() {
     var h = mio().historial;
     var total = 0, aciertos = 0, puntos = 0;
@@ -802,7 +867,10 @@ window.Almacen = (function () {
   }
 
   function borrarProgreso() {
+    // lo que decidió el grande (límites, materias, tienda) no es progreso: se queda
+    var control = mio().control;
     datos.datos[datos.activo] = perfilVacio();
+    if (control) datos.datos[datos.activo].control = control;
     guardar();
   }
 
@@ -847,6 +915,9 @@ window.Almacen = (function () {
     racha: racha, mejorRacha: mejorRacha, jugoHoy: jugoHoy,
     aciertosDeHoy: aciertosDeHoy, metaDiaria: metaDiaria, setMeta: setMeta,
     metaCumplidaHoy: metaCumplidaHoy, PREMIO_META: PREMIO_META,
+    control: control, setControl: setControl, darMinutosHoy: darMinutosHoy,
+    sumarTiempo: sumarTiempo, segundosDeHoy: segundosDeHoy,
+    ultimosDias: ultimosDias, historialDesde: historialDesde,
     nivelHecho: nivelHecho, marcarNivel: marcarNivel,
     exportar: exportar, leerCopia: leerCopia, restaurar: restaurar,
     vozActiva: vozActiva, setVoz: setVoz,

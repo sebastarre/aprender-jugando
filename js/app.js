@@ -282,13 +282,14 @@
   var ultimoResultado = null;
   var bienvenida = { nombre: '', edad: null, avatar: null, editando: null };
   var PANTALLAS = ['bienvenida', 'inicio', 'juegos', 'aprender', 'materia', 'lecciones', 'leccion',
-                   'config', 'juego', 'fin', 'perfil', 'tienda', 'parental',
+                   'config', 'juego', 'fin', 'perfil', 'tienda', 'parental', 'descanso',
                    'examen', 'nota', 'configuracion', 'personalizacion'];
 
   function mostrar(nombre) {
     // lo que se estaba leyendo era de la pantalla de antes
     Voz.parar();
     PANTALLAS.forEach(function (p) { $('pantalla-' + p).hidden = (p !== nombre); });
+    pantallaActual = nombre;
     /* La única pantalla sin flecha de volver es el inicio, porque es el
        fondo de todo; la bienvenida tampoco, porque todavía no hay a
        dónde volver. */
@@ -610,15 +611,16 @@
 
     cuentaDePortada($('portada-estrellas'), 'estrella', Almacen.estrellas());
     cuentaDePortada($('portada-monedas'), 'moneda', Almacen.monedas(), true);
+    $('portada-monedas').hidden = !Almacen.control().tienda;
 
     /* La bajada de cada botón dice qué hay adentro, no qué es: "3
        materias" sirve más que "practicá lo que aprendiste", que es lo
        mismo que ya dice el título. */
-    var conJuegos = MATERIAS.filter(function (m) { return m.disponible; }).length;
+    var conJuegos = materiasVisibles().filter(function (m) { return m.disponible; }).length;
     $('menu-jugar-detalle').textContent =
       Util.plural(conJuegos, 'materia') + ' para practicar';
 
-    var conLecciones = MATERIAS.filter(function (m) {
+    var conLecciones = materiasVisibles().filter(function (m) {
       return leccionesVisibles(m.id).length;
     }).length;
     $('menu-aprender-detalle').textContent = conLecciones
@@ -757,7 +759,7 @@
     var caja = $('meta-cumplida');
     caja.hidden = !(delDia && delDia.metaCumplida);
     if (caja.hidden) return;
-    caja.textContent = '🏆 ¡Cumpliste la meta de hoy! +' + delDia.premio + ' monedas';
+    caja.textContent = '🏆 ¡Cumpliste la meta de hoy!' + (Almacen.control().tienda ? ' +' + delDia.premio + ' monedas' : '');
   }
 
   var METAS = [
@@ -935,7 +937,7 @@
 
     var cont = $('grilla-materias');
     Util.vaciar(cont);
-    MATERIAS.forEach(function (m) {
+    materiasVisibles().forEach(function (m) {
       var b = tarjeta(m.disponible ? sinBajada(m) : m,
                       function () { irA('#/materia/' + m.id); });
       b.disabled = !m.disponible;
@@ -1133,7 +1135,7 @@
     $('saludo-aprender').textContent = saludo() + 'Explicaciones cortas, con dibujos y ejemplos.';
     var cont = $('grilla-materias-aprender');
     Util.vaciar(cont);
-    MATERIAS.forEach(function (m) {
+    materiasVisibles().forEach(function (m) {
       var lista = leccionesVisibles(m.id);
       var b = tarjeta(lista.length ? sinBajada(m) : m,
                       function () { irA('#/lecciones/' + m.id); });
@@ -1682,8 +1684,8 @@
   /** Cuántas monedas dejó la partida, y por qué. */
   function pintarPremio(caja, premio) {
     Util.vaciar(caja);
-    caja.hidden = premio.total === 0;
-    if (!premio.total) return;
+    caja.hidden = premio.total === 0 || !Almacen.control().tienda;
+    if (caja.hidden) return;
 
     var cifra = Util.crear('b', 'premio-cifra', '+' + premio.total + ' ');
     cifra.appendChild(Iconos.crear('moneda'));
@@ -1808,7 +1810,7 @@
    */
   function juegoParaRepasar(materiaId, juegoId, clave) {
     var materia = materiaPorId(materiaId);
-    if (!materia || !materia.disponible || !materia.modulo.itemDeClave) return null;
+    if (!materia || !materia.disponible || materiaOculta(materia) || !materia.modulo.itemDeClave) return null;
 
     var exigido = materia.modulo.juegoDeClave ? materia.modulo.juegoDeClave(clave) : null;
     var candidatos = exigido
@@ -1932,7 +1934,7 @@
   function juegosParaExamen() {
     var lista = [];
     MATERIAS.forEach(function (m) {
-      if (!m.disponible) return;
+      if (!m.disponible || materiaOculta(m)) return;
       juegosVisibles(m).forEach(function (j) { lista.push({ materia: m, juego: j }); });
     });
     return lista;
@@ -2698,8 +2700,73 @@
     pintarTienda();
   }
 
+  /* ---------------------- límites del modo parental ---------------------- */
+
+  var activoAntesDelPanel = null;   // el chico que jugaba antes de entrar al panel
+  var pantallaActual = null;
+  var RUTAS_CON_TIEMPO = ['jugar', 'ejercicio', 'repasando', 'rindiendo', 'leccion'];
+  var TICK_TIEMPO = 30;             // segundos
+  var OPCIONES_TIEMPO = [
+    { n: 0, nombre: 'Sin límite', detalle: 'Cuando quiera' },
+    { n: 15, nombre: '15 minutos', detalle: 'Un ratito' },
+    { n: 30, nombre: '30 minutos', detalle: 'Media hora' },
+    { n: 45, nombre: '45 minutos', detalle: 'Tres cuartos' },
+    { n: 60, nombre: '1 hora', detalle: 'Una hora' }
+  ];
+  var DIAS = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+
+  function materiaOculta(m) { return !!(m && Almacen.control().ocultas[m.id]); }
+  function materiasVisibles() { return MATERIAS.filter(function (m) { return !materiaOculta(m); }); }
+
+  /** La materia de la que es la pantalla pedida, si es de alguna. */
+  function materiaDeLaRuta(partes) {
+    if (['materia', 'juego', 'lecciones'].indexOf(partes[0]) >= 0) return materiaPorId(partes[1]);
+    if (partes[0] === 'jugar') return materiaPorId(sel.materia);
+    if ((partes[0] === 'leccion' || partes[0] === 'ejercicio') && window.Lecciones) {
+      var l = Lecciones.porId(partes[1]);
+      return l ? materiaPorId(l.materia) : null;
+    }
+    return null;
+  }
+
+  function minutosPermitidosHoy() {
+    var c = Almacen.control();
+    return c.minutos ? c.minutos + c.extra : 0;
+  }
+
+  function tiempoAgotado() {
+    var permitidos = minutosPermitidosHoy();
+    return permitidos > 0 && Almacen.segundosDeHoy() >= permitidos * 60;
+  }
+
+  /* Se cuenta el tiempo con la app a la vista y un juego o una lección en
+     pantalla: dejarla abierta en el menú no suma. No corta nada a la
+     mitad; eso lo decide el ruteo, que no deja empezar otra cosa. */
+  function contarTiempo() {
+    setInterval(function () {
+      if (document.visibilityState !== 'visible') return;
+      if (pantallaActual !== 'juego' && pantallaActual !== 'leccion') return;
+      if (!Almacen.activo()) return;
+      Almacen.sumarTiempo(TICK_TIEMPO);
+    }, TICK_TIEMPO * 1000);
+  }
+
+  function textoDeTiempo(segundos) {
+    var min = Math.round(segundos / 60);
+    if (min < 60) return Util.plural(min, 'minuto');
+    var h = Math.floor(min / 60), resto = min % 60;
+    return h + (h === 1 ? ' hora' : ' horas') + (resto ? ' y ' + resto + ' min' : '');
+  }
+
+  function pintarDescanso() {
+    var yo = Almacen.activo();
+    $('descanso-texto').textContent = (yo ? yo.nombre + ', hoy' : 'Hoy') + ' ya jugaste ' +
+      textoDeTiempo(Almacen.segundosDeHoy()) + '. Mañana seguimos.';
+  }
+
   /* ---------------------- modo parental ---------------------- */
   function pintarParental() {
+    if (!activoAntesDelPanel && Almacen.activo()) activoAntesDelPanel = Almacen.activo().id;
     $('caja-parental').hidden = true;
     $('caja-pin').hidden = false;
     $('error-pin').hidden = true;
@@ -2738,24 +2805,238 @@
 
     var yo = Almacen.activo();
     var est = Almacen.estadisticas();
-    $('parental-sub').textContent = 'Datos de ' + (yo ? yo.nombre : '') + ' · ' +
-      Util.plural(est.partidas, 'partida') + ' · ' + est.precision + '% de aciertos';
+    pintarChicosDelPanel(yo);
+    var partes = [];
+    if (yo && yo.edad) partes.push(yo.edad + ' años');
+    partes.push(Util.plural(est.partidas, 'partida') + ' en total');
+    if (est.racha > 1) partes.push(est.racha + ' días seguidos jugando');
+    $('parental-sub').textContent = (yo ? yo.nombre + ' · ' : '') + partes.join(' · ');
 
-    var fallos = $('parental-fallos');
-    Util.vaciar(fallos);
-    var lista = Almacen.masFallados(10);
-    if (!lista.length) {
-      fallos.appendChild(Util.crear('p', 'vacio', 'Todavía no hay errores registrados.'));
-    }
-    lista.forEach(function (f) {
-      var materia = materiaPorId(f.materia);
-      fallos.appendChild(itemRepaso({
-        simbolo: materia ? materia.icono : '•',
-        nombre: f.nombre,
-        dato: 'Falló ' + Util.plural(f.veces, 'vez', 'veces')
-      }));
+    pintarSemana();
+    pintarMateriasDelPanel(est);
+    pintarFallosDelPanel();
+    pintarJuntos();
+    pintarLimites();
+    pintarPartidasDelPanel(est);
+  }
+
+  /* Con más de un chico, se elige de quién ver y ajustar. Al salir del
+     panel vuelve a quedar elegido el que estaba jugando (ver enrutar). */
+  function pintarChicosDelPanel(yo) {
+    var caja = $('parental-chicos');
+    Util.vaciar(caja);
+    var todos = Almacen.perfiles();
+    caja.hidden = todos.length < 2;
+    todos.forEach(function (p) {
+      var b = Util.crear('button', 'chico-panel');
+      b.type = 'button';
+      b.setAttribute('aria-pressed', yo && p.id === yo.id ? 'true' : 'false');
+      b.appendChild(Util.crear('span', 'chico-panel-avatar', p.avatar || '🙂'));
+      b.appendChild(Util.crear('span', null, p.nombre));
+      b.addEventListener('click', function () {
+        Sonido.tocar('clic');
+        Almacen.usar(p.id);
+        abrirParental();
+      });
+      caja.appendChild(b);
+    });
+  }
+
+  /** Cuatro números de la semana y las respuestas bien de cada día. */
+  function pintarSemana() {
+    var dias = Almacen.ultimosDias(7);
+    var desde = new Date();
+    desde.setHours(0, 0, 0, 0);
+    desde.setDate(desde.getDate() - 6);
+    var aciertos = 0, total = 0;
+    Almacen.historialDesde(desde.getTime()).forEach(function (p) {
+      aciertos += p.aciertos;
+      total += p.total;
+    });
+    var jugados = dias.filter(function (d) { return d.aciertos || d.segundos; }).length;
+    var bien = dias.reduce(function (s, d) { return s + d.aciertos; }, 0);
+    var segundos = dias.reduce(function (s, d) { return s + d.segundos; }, 0);
+
+    var stats = $('parental-stats');
+    Util.vaciar(stats);
+    [
+      [jugados + '/7', 'días jugados'],
+      [String(bien), 'respuestas bien'],
+      [total ? Math.round(aciertos / total * 100) + '%' : '—', 'de aciertos'],
+      [textoDeTiempo(segundos).replace(' minutos', ' min').replace(' minuto', ' min'), 'jugando']
+    ].forEach(function (par) {
+      var d = Util.crear('div', 'stat');
+      d.appendChild(Util.crear('b', null, par[0]));
+      d.appendChild(Util.crear('span', null, par[1]));
+      stats.appendChild(d);
     });
 
+    var grafico = $('parental-semana');
+    Util.vaciar(grafico);
+    var maximo = Math.max.apply(null, dias.map(function (d) { return d.aciertos; })) || 1;
+    grafico.setAttribute('aria-label', 'Respuestas bien por día: ' + dias.map(function (d) {
+      return DIAS[d.fecha.getDay()] + ' ' + d.aciertos;
+    }).join(', '));
+    dias.forEach(function (d, i) {
+      var col = Util.crear('div', 'semana-dia' + (i === dias.length - 1 ? ' hoy' : ''));
+      col.appendChild(Util.crear('span', 'semana-cifra', d.aciertos ? String(d.aciertos) : ''));
+      var pozo = Util.crear('div', 'semana-pozo');
+      var barra = Util.crear('i', 'semana-barra' + (d.aciertos ? '' : ' vacia'));
+      barra.style.height = (d.aciertos ? Math.max(6, d.aciertos / maximo * 100) : 0) + '%';
+      pozo.appendChild(barra);
+      col.appendChild(pozo);
+      col.appendChild(Util.crear('span', 'semana-nombre', i === dias.length - 1 ? 'Hoy' : DIAS[d.fecha.getDay()].slice(0, 3)));
+      grafico.appendChild(col);
+    });
+  }
+
+  /** Cómo va en cada materia: precisión, lecciones y juegos dominados. */
+  function pintarMateriasDelPanel(est) {
+    var caja = $('parental-materias');
+    Util.vaciar(caja);
+    MATERIAS.filter(function (m) { return m.disponible; }).forEach(function (m) {
+      var d = est.porMateria[m.id];
+      var pct = d && d.total ? Math.round(d.aciertos / d.total * 100) : 0;
+      var lecciones = leccionesDe(m.id);
+      var leidas = lecciones.filter(function (l) { return Almacen.leccionVista(l.id); }).length;
+      var dominados = m.juegos.filter(function (j) { return dominado(m, j); }).length;
+
+      var fila = Util.crear('div', 'fila-materia');
+      fila.appendChild(ponerIcono(Util.crear('span', 'fila-icono'), m.icono));
+      var cuerpo = Util.crear('div', 'fila-cuerpo');
+      var nombre = Util.crear('div', 'fila-nombre', m.nombre);
+      if (materiaOculta(m)) nombre.appendChild(Util.crear('span', 'etiqueta-oculta', 'Oculta'));
+      cuerpo.appendChild(nombre);
+      var barra = Util.crear('div', 'barra-progreso');
+      var relleno = Util.crear('i');
+      relleno.style.width = pct + '%';
+      relleno.style.background = m.color;
+      barra.appendChild(relleno);
+      cuerpo.appendChild(barra);
+      var detalle = [d ? Util.plural(d.partidas, 'partida') : 'Sin partidas'];
+      if (lecciones.length) detalle.push(leidas + '/' + lecciones.length + ' lecciones');
+      detalle.push(dominados + '/' + m.juegos.length + ' juegos dominados');
+      cuerpo.appendChild(Util.crear('div', 'ir-dato', detalle.join(' · ')));
+      fila.appendChild(cuerpo);
+      fila.appendChild(Util.crear('span', 'fila-dato', d ? pct + '%' : '—'));
+      caja.appendChild(fila);
+    });
+  }
+
+  function pintarFallosDelPanel() {
+    var caja = $('parental-fallos');
+    Util.vaciar(caja);
+    var lista = Almacen.masFallados(8);
+    if (!lista.length) caja.appendChild(Util.crear('p', 'vacio', 'Todavía no hay errores registrados.'));
+    lista.forEach(function (f) {
+      var materia = materiaPorId(f.materia);
+      var item = itemRepaso({
+        simbolo: '•',
+        nombre: f.nombre,
+        dato: (materia ? materia.nombre + ' · ' : '') + 'falló ' + Util.plural(f.veces, 'vez', 'veces')
+      });
+      // el dibujo de la materia, no su nombre escrito como símbolo
+      var simbolo = item.querySelector('.item-simbolo');
+      if (simbolo && materia) { simbolo.textContent = ''; ponerIcono(simbolo, materia.icono); }
+      caja.appendChild(item);
+    });
+  }
+
+  /* Las propuestas de «contale a un grande» de las lecciones que completó:
+     es la parte social del aprendizaje, y el panel es donde el grande
+     las ve. Las tres más nuevas en el orden de las lecciones. */
+  function pintarJuntos() {
+    var caja = $('parental-juntos');
+    Util.vaciar(caja);
+    var lista = (window.Lecciones ? Lecciones.LECCIONES : []).filter(function (l) {
+      return l.reflexion && l.reflexion.grande && Almacen.leccionVista(l.id) &&
+             !materiaOculta(materiaPorId(l.materia));
+    }).slice(-3).reverse();
+    if (!lista.length) {
+      caja.appendChild(Util.crear('p', 'vacio', 'Cuando complete lecciones, acá van a aparecer ideas para hacer juntos lo que aprendió.'));
+    }
+    lista.forEach(function (l) {
+      var idea = Util.crear('div', 'idea-juntos');
+      idea.appendChild(Util.crear('b', null, 'Aprendió «' + l.titulo + '»'));
+      idea.appendChild(Util.crear('p', null, l.reflexion.grande));
+      caja.appendChild(idea);
+    });
+  }
+
+  function pintarLimites() {
+    var c = Almacen.control();
+
+    var tiempo = $('parental-tiempo');
+    Util.vaciar(tiempo);
+    OPCIONES_TIEMPO.forEach(function (o) {
+      var b = botonOpcion(o.n ? String(o.n) : '—', o.nombre, o.detalle, null, null, true);
+      b.setAttribute('aria-pressed', o.n === c.minutos ? 'true' : 'false');
+      b.addEventListener('click', function () {
+        Almacen.setControl({ minutos: o.n });
+        marcarElegido(tiempo, b);
+        pintarTiempoHoy();
+      });
+      tiempo.appendChild(b);
+    });
+    pintarTiempoHoy();
+
+    var materias = $('parental-materias-control');
+    Util.vaciar(materias);
+    MATERIAS.filter(function (m) { return m.disponible; }).forEach(function (m) {
+      var fila = Util.crear('div', 'fila-ajuste');
+      fila.appendChild(ponerIcono(Util.crear('span', 'ajuste-icono'), m.icono));
+      var cuerpo = Util.crear('div', 'fila-cuerpo');
+      cuerpo.appendChild(Util.crear('div', 'fila-nombre', m.nombre));
+      var dato = Util.crear('div', 'ir-dato');
+      cuerpo.appendChild(dato);
+      fila.appendChild(cuerpo);
+      var llave = Util.crear('button', 'interruptor');
+      llave.type = 'button';
+      llave.setAttribute('role', 'switch');
+      llave.setAttribute('aria-label', 'Mostrar ' + m.nombre);
+      llave.appendChild(Util.crear('span'));
+      function pintarLlave() {
+        var visible = !materiaOculta(m);
+        llave.setAttribute('aria-checked', visible ? 'true' : 'false');
+        dato.textContent = visible ? 'Se ve en Jugar y en Aprender' : 'Oculta: no aparece en ningún lado';
+      }
+      llave.addEventListener('click', function () {
+        var ocultas = Object.assign({}, Almacen.control().ocultas);
+        if (!ocultas[m.id] && materiasVisibles().length <= 1) {
+          return preguntar({
+            titulo: 'Tiene que quedar una',
+            texto: 'Si se ocultan todas las materias no queda nada para jugar.',
+            si: 'Entendido',
+            soloAceptar: true
+          }, function () {});
+        }
+        Sonido.tocar('clic');
+        if (ocultas[m.id]) delete ocultas[m.id]; else ocultas[m.id] = true;
+        Almacen.setControl({ ocultas: ocultas });
+        pintarLlave();
+        pintarMateriasDelPanel(Almacen.estadisticas());
+        pintarJuntos();
+      });
+      pintarLlave();
+      fila.appendChild(llave);
+      materias.appendChild(fila);
+    });
+
+    $('ajuste-tienda').setAttribute('aria-checked', c.tienda ? 'true' : 'false');
+  }
+
+  function pintarTiempoHoy() {
+    var c = Almacen.control();
+    var texto = 'Hoy lleva ' + textoDeTiempo(Almacen.segundosDeHoy());
+    if (c.minutos) {
+      texto += ' de ' + textoDeTiempo(minutosPermitidosHoy() * 60) +
+        (c.extra ? ' (con ' + c.extra + ' extra)' : '');
+    }
+    $('parental-tiempo-hoy').textContent = texto + '.';
+    $('btn-mas-tiempo').hidden = !c.minutos;
+  }
+
+  function pintarPartidasDelPanel(est) {
     var tabla = $('parental-partidas');
     Util.vaciar(tabla);
     if (!est.ultimas.length) {
@@ -2808,6 +3089,12 @@
   function enrutar() {
     var partes = (location.hash || '#/').replace(/^#\/?/, '').split('/').filter(Boolean);
 
+    // al salir del panel, vuelve a quedar elegido el chico que estaba jugando
+    if (activoAntesDelPanel && partes[0] !== 'parental') {
+      Almacen.usar(activoAntesDelPanel);
+      activoAntesDelPanel = null;
+    }
+
     // sin perfil o sin edad, lo primero es la bienvenida
     if (Almacen.necesitaBienvenida() && partes[0] !== 'bienvenida') {
       return irA('#/bienvenida');
@@ -2829,6 +3116,17 @@
       mostrar('bienvenida');
       pintarFlechaBienvenida();
       return;
+    }
+
+    /* Los límites del modo parental. Una materia oculta no se abre ni
+       con el enlace; sin tienda, la tienda lleva a Personalización; con
+       el tiempo del día cumplido, no se empieza nada nuevo. */
+    if (materiaOculta(materiaDeLaRuta(partes))) return irA('#/');
+    if (partes[0] === 'tienda' && !Almacen.control().tienda) return irA('#/personalizacion');
+    if (RUTAS_CON_TIEMPO.indexOf(partes[0]) >= 0 && tiempoAgotado()) {
+      cortarPartida();
+      pintarDescanso();
+      return mostrar('descanso');
     }
 
     if (partes[0] === 'juegos') {
@@ -2950,6 +3248,10 @@
     if (partes[0] === 'personalizacion') {
       cortarPartida();
       pintarPersonalizacion();
+      var conTienda = Almacen.control().tienda;
+      $('btn-tienda').hidden = !conTienda;
+      $('nota-tienda').hidden = !conTienda;
+      $('nota-disfraces').hidden = !conTienda;
       return mostrar('personalizacion');
     }
 
@@ -3126,6 +3428,20 @@
     $('btn-otro-examen').addEventListener('click', function () { Sonido.tocar('clic'); irA('#/examen'); });
     $('btn-nota-inicio').addEventListener('click', function () { Sonido.tocar('clic'); irA('#/'); });
     $('btn-parental').addEventListener('click', function () { Sonido.tocar('clic'); irA('#/parental'); });
+    $('ajuste-tienda').addEventListener('click', function () {
+      Sonido.tocar('clic');
+      Almacen.setControl({ tienda: !Almacen.control().tienda });
+      pintarLimites();
+    });
+    $('btn-mas-tiempo').addEventListener('click', function () {
+      Sonido.tocar('clic');
+      Almacen.darMinutosHoy(15);
+      pintarTiempoHoy();
+    });
+    $('btn-cerrar-parental').addEventListener('click', function () { Sonido.tocar('clic'); irA('#/'); });
+    $('btn-descanso-inicio').addEventListener('click', function () { Sonido.tocar('clic'); irA('#/'); });
+    $('btn-descanso-grande').addEventListener('click', function () { Sonido.tocar('clic'); irA('#/parental'); });
+    contarTiempo();
 
     /* modo parental */
     $('btn-pin').addEventListener('click', intentarPin);

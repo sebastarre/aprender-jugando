@@ -3543,3 +3543,84 @@ body.jugando .marcador { display: none; }
 /* #ajuste-meta deja 28px abajo; con el panel abierto, ese aire va debajo del panel */
 #ajuste-meta:has(+ .meta-personal:not([hidden])) { margin-bottom: 0; }
 #ajuste-meta + .meta-personal { margin-bottom: 28px; }
+
+/* ============================================================
+   Panel de control parental
+   ============================================================ */
+.parental-chicos { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin: 0 0 12px; }
+.chico-panel {
+  font: inherit;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 6px 16px 6px 8px;
+  border-radius: 999px;
+  border: 2px solid var(--borde);
+  background: var(--tarjeta);
+  color: var(--tinta);
+  cursor: pointer;
+  box-shadow: 0 3px 0 var(--sombra-clay);
+}
+.chico-panel[aria-pressed="true"] { border-color: var(--primario); background: var(--seleccion); }
+.chico-panel-avatar { font-size: 1.5rem; line-height: 1; }
+
+.parental-stats { margin: 0 0 12px; }
+.semana {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  height: 160px;
+  padding: 12px 12px 10px;
+  margin: 0 0 28px;
+  background: var(--tarjeta);
+  border: 2px solid var(--borde);
+  border-radius: var(--radio-s);
+}
+.semana-dia { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 0; }
+.semana-pozo { flex: 1; width: 100%; display: flex; align-items: flex-end; justify-content: center; }
+.semana-barra { display: block; width: 100%; max-width: 34px; border-radius: 8px 8px 3px 3px; background: var(--primario); }
+.semana-cifra { min-height: 1.1em; font-size: .78rem; font-weight: 800; color: var(--tinta-suave); font-variant-numeric: tabular-nums; }
+.semana-nombre { font-size: .8rem; font-weight: 700; color: var(--tinta-suave); text-transform: capitalize; }
+.semana-dia.hoy .semana-nombre { color: var(--tinta); font-weight: 800; }
+
+.parental-lista { display: flex; flex-direction: column; gap: 10px; margin: 0 0 28px; }
+.parental-lista .fila-ajuste { margin-bottom: 0; }
+.parental-bloque { margin-bottom: 28px; }
+.parental-sub-grupo { font-size: 1.05rem; font-weight: 800; margin: 18px 0 6px; }
+.parental-tiempo-hoy { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin: 14px 0 8px; }
+.parental-tiempo-hoy p { margin: 0; font-weight: 700; }
+.etiqueta-oculta {
+  margin-left: 8px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--pista);
+  color: var(--tinta);
+  font-size: .75rem;
+  font-weight: 800;
+  vertical-align: .1em;
+}
+.idea-juntos { background: var(--tarjeta); border: 2px solid var(--borde); border-radius: var(--radio-s); padding: 12px 14px; }
+.idea-juntos b { display: block; margin-bottom: 2px; }
+.idea-juntos p { margin: 0; color: var(--tinta-suave); }
+#pantalla-parental .fila-materia .ir-dato { margin-top: 4px; }
+
+.tarjeta-descanso {
+  max-width: 460px;
+  margin: 24px auto;
+  text-align: center;
+  background: var(--tarjeta);
+  border: 2px solid var(--borde);
+  border-radius: var(--radio);
+  padding: 28px 22px;
+  box-shadow: var(--sombra-suave);
+}
+.descanso-icono { font-size: 3.4rem; line-height: 1; margin-bottom: 6px; }
+
+/* Cuatro números: de a dos en el celular, los cuatro en fila en la
+   compu. Con auto-fit quedaban tres arriba y uno solo abajo. */
+.parental-stats { grid-template-columns: repeat(2, 1fr); }
+@media (min-width: 640px) {
+  .parental-stats { grid-template-columns: repeat(4, 1fr); }
+}
