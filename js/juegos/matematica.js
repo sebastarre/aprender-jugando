@@ -89,7 +89,25 @@ window.Matematica = (function () {
   /* ============================================================
      Contar
      ============================================================ */
-  var COSAS = ['🍎', '🐟', '⭐', '🎈', '🐞', '🌸', '🍓', '🐥', '⚽', '🦋'];
+  /* Dibujos propios, no emoji: el emoji lo dibuja cada teléfono a su
+     manera, y contar doce manzanas que en un Android se ven de un color
+     y en un iPhone de otro no ayuda. Están en assets/contar/, hechos
+     todos con el mismo estilo (ver herramientas/preparar-dibujos.js).
+     El nombre en plural va en el aria-label, para el lector de pantalla. */
+  var COSAS = [
+    { id: 'manzana', uno: 'manzana', muchos: 'manzanas' },
+    { id: 'frutilla', uno: 'frutilla', muchos: 'frutillas' },
+    { id: 'banana', uno: 'banana', muchos: 'bananas' },
+    { id: 'pez', uno: 'pez', muchos: 'peces' },
+    { id: 'globo', uno: 'globo', muchos: 'globos' },
+    { id: 'mariquita', uno: 'mariquita', muchos: 'mariquitas' },
+    { id: 'flor', uno: 'flor', muchos: 'flores' },
+    { id: 'pollito', uno: 'pollito', muchos: 'pollitos' },
+    { id: 'pelota', uno: 'pelota', muchos: 'pelotas' },
+    { id: 'mariposa', uno: 'mariposa', muchos: 'mariposas' }
+  ];
+
+  function dibujoDe(cosa) { return 'assets/contar/' + cosa.id + '.png'; }
   var RANGOS = [
     { id: 'hasta5', nombre: 'Hasta 5', icono: '5', iconoNumero: true, detalle: 'Para empezar', desde: 1, hasta: 5 },
     { id: 'hasta10', nombre: 'Hasta 10', icono: '10', iconoNumero: true, detalle: 'Como los dedos', desde: 1, hasta: 10 },
@@ -129,8 +147,11 @@ window.Matematica = (function () {
       consigna('¿Cuántos hay?');
       /* De a cinco por fila, como en un ábaco: así 7 se ve como «cinco y
          dos» y no hay que contar de a uno cada vez. */
-      var html = '<div class="contar" role="img" aria-label="' + it.n + ' dibujos">';
-      for (var i = 0; i < it.n; i++) html += '<span>' + it.cosa + '</span>';
+      var html = '<div class="contar" role="img" aria-label="' +
+                 it.n + ' ' + (it.n === 1 ? it.cosa.uno : it.cosa.muchos) + '">';
+      for (var i = 0; i < it.n; i++) {
+        html += '<img src="' + dibujoDe(it.cosa) + '" alt="" draggable="false">';
+      }
       T.visual(html + '</div>');
       // el error de contar: pasarse uno o quedarse corto
       armarRespuestas(it.n, distractores(it.n, [it.n - 1, it.n + 1, it.n - 2, it.n + 2], 3, 1));
@@ -146,7 +167,11 @@ window.Matematica = (function () {
       return n > 0 && n <= 30 ? itemContar(n) : null;
     },
     repaso: function (it) {
-      return { simbolo: it.cosa, nombre: 'Contar ' + it.n + ' dibujos', dato: 'Eran ' + it.n };
+      return {
+        imagen: dibujoDe(it.cosa), dibujo: true,
+        nombre: 'Contar ' + it.n + ' ' + (it.n === 1 ? it.cosa.uno : it.cosa.muchos),
+        dato: 'Eran ' + it.n
+      };
     }
   };
 

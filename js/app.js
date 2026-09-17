@@ -1786,6 +1786,9 @@
       img.src = datos.imagen;
       img.alt = '';
       img.loading = 'lazy';
+      /* Una bandera es un rectángulo y se recorta; un dibujo suelto
+         (las manzanas de contar) es cuadrado y tiene que entrar entero. */
+      if (datos.dibujo) img.className = 'ir-dibujo';
       item.appendChild(img);
     } else {
       item.appendChild(Util.crear('span', 'item-simbolo', datos.simbolo || '•'));

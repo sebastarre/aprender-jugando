@@ -351,6 +351,33 @@ números. Tiene lápiz negro, azul y rojo, goma, deshacer y borrar todo. Se
 borra sola en cada pregunta nueva, y en los juegos del mapa no aparece.
 Funciona con el dedo, con un lápiz de tableta y con el mouse.
 
+## Los dibujos de contar
+
+El juego de contar usaba emoji (🍎, 🦋). El problema no es que sean feos: los
+dibuja el sistema operativo, así que las mismas doce manzanas se ven de un
+color en Android, de otro en iPhone y de otro en la compu.
+
+Ahora son **dibujos propios**, en `assets/contar/`: manzana, frutilla, banana,
+pez, globo, mariquita, flor, pollito, pelota y mariposa. Los generamos con IA
+(higgsfield, modelo `gpt_image_2_5`), todos pedidos con el mismo estilo:
+contorno grueso, colores planos y fondo blanco.
+
+`herramientas/preparar-dibujos.js` los deja listos para la app, con Chrome o
+Edge headless y sin instalar nada:
+
+1. les saca el fondo **desde los bordes hacia adentro**, como un balde de
+   pintura. Borrar todo lo blanco era más simple, pero le comía los gajos
+   blancos a la pelota de fútbol: un blanco rodeado de contorno es dibujo;
+2. los recorta al dibujo y los centra, así doce manzanas y doce mariposas se
+   ven del mismo tamaño;
+3. los achica a 256×256, de ~900 KB a unos 45 KB cada uno. La app se guarda
+   entera para usarla sin internet, así que el peso importa: los diez juntos
+   suman menos de medio mega.
+
+La pelota es de colores y no la clásica blanca y negra, justamente porque casi
+toda blanca no sobrevivía al recorte. Las direcciones de los originales quedan
+anotadas en el mismo archivo, para poder rehacerlos.
+
 ## Pistas: cada intento fallado trae más ayuda
 
 Con tres intentos y cuatro opciones se acertaba por descarte el 75% de las

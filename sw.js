@@ -2,7 +2,7 @@
    Guarda toda la app en el celular para que funcione sin internet. */
 'use strict';
 
-const VERSION = 'aprender-jugando-12be97f5f3';
+const VERSION = 'aprender-jugando-421d343c7f';
 const ARCHIVOS = [
   "./assets/banderas/ad.png",
   "./assets/banderas/ae.png",
@@ -198,6 +198,16 @@ const ARCHIVOS = [
   "./assets/banderas/za.png",
   "./assets/banderas/zm.png",
   "./assets/banderas/zw.png",
+  "./assets/contar/banana.png",
+  "./assets/contar/flor.png",
+  "./assets/contar/frutilla.png",
+  "./assets/contar/globo.png",
+  "./assets/contar/manzana.png",
+  "./assets/contar/mariposa.png",
+  "./assets/contar/mariquita.png",
+  "./assets/contar/pelota.png",
+  "./assets/contar/pez.png",
+  "./assets/contar/pollito.png",
   "./assets/fuentes/baloo2.woff2",
   "./assets/icono-192.png",
   "./assets/icono-512.png",

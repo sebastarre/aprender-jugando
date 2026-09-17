@@ -1511,6 +1511,24 @@ body.jugando .pie { display: none; }
   font-size: clamp(1.8rem, 7vw, 2.4rem);
   line-height: 1;
 }
+/* Los dibujos de contar. Van en em, así siguen al tamaño de la grilla
+   en un celular chico igual que seguían los emoji que había antes. */
+.contar img {
+  width: 1.25em;
+  height: 1.25em;
+  display: block;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+/* En la lista de repaso: cuadrado y entero, sin el recorte ni el filo
+   que llevan las banderas. */
+.item-repaso img.ir-dibujo {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+  border: none;
+  border-radius: 0;
+}
 
 .serie { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
 .serie span {
