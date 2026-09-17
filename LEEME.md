@@ -1,4 +1,12 @@
-# Aprender Jugando
+# Bichito Curioso
+
+> Antes se llamaba **Aprender Jugando**. El nombre cambió en todo lo que se ve
+> (la cortina de arranque, la bienvenida, el título y el nombre al instalarla),
+> pero no en lo de adentro: el repositorio y la dirección siguen siendo
+> `aprender-jugando`, y también las claves del `localStorage`, la marca de las
+> copias (`app: 'aprender-jugando'`), el prefijo de la caché y el `id` del
+> manifiesto. Cambiar cualquiera de esas cosas haría que el celular crea que es
+> otra app, o que se pierdan el progreso y las copias viejas.
 
 App para chicos con dos mitades que se apoyan una en la otra:
 

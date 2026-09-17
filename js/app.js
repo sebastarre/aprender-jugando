@@ -852,7 +852,7 @@
   function guardarCopia() {
     var texto = Almacen.exportar();
     var hoy = new Date();
-    var nombre = 'aprender-jugando-' + hoy.getFullYear() + '-' + (hoy.getMonth() + 1) + '-' + hoy.getDate() + '.json';
+    var nombre = 'bichito-curioso-' + hoy.getFullYear() + '-' + (hoy.getMonth() + 1) + '-' + hoy.getDate() + '.json';
     var archivo = new Blob([texto], { type: 'application/json' });
 
     /* En el celular, compartir: abre el menú de guardar en Drive, mandarlo
@@ -862,7 +862,7 @@
     try {
       var paraCompartir = new File([archivo], nombre, { type: 'application/json' });
       if (tactil && navigator.canShare && navigator.canShare({ files: [paraCompartir] })) {
-        navigator.share({ files: [paraCompartir], title: 'Copia de Aprender Jugando' })
+        navigator.share({ files: [paraCompartir], title: 'Copia de Bichito Curioso' })
           .catch(function () { /* lo cerró sin elegir: no pasa nada */ });
         return;
       }
