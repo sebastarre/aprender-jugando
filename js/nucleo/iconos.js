@@ -125,13 +125,22 @@ window.Iconos = (function () {
     /* Canto, cara y un brillo: sin el brillo eran dos círculos y parecía un blanco de tiro. */
     moneda: {
       b: ['<circle cx="12" cy="12" r="8.6"/>'],
+      /* Una estrellita acuñada en la cara, y el brillo del canto arriba a
+         la izquierda, que es de donde viene la luz en todos los íconos.
+         Antes eran dos círculos concéntricos y un brillo adentro: en
+         grande se leía como el lente de una cámara, y en chiquito como
+         un botón. La estrella la vuelve una ficha que vale algo. */
       t: ['<circle cx="12" cy="12" r="8.6"/>',
-          '<circle cx="12" cy="12" r="5.6"/>',
-          '<path d="M9.6 9.3a3.3 3.3 0 0 1 2.4-1.2"/>']
+          '<path d="M12 7.4 13.32 10.18 16.38 10.58 14.14 12.7 14.7 15.72 12 14.25 9.3 15.72 9.86 12.7 7.62 10.58 10.68 10.18Z" fill="currentColor" stroke-width="1.1"/>',
+          '<path d="M6.6 8.4a6.5 6.5 0 0 1 1.9-1.9" stroke-width="1.8"/>']
     },
+    /* Cinco puntas con el corazón más gordo que el de una estrella
+       geométrica: así no se afina y se sigue leyendo a 13 píxeles, que es
+       como aparece en la portada. Sin destello al costado: en chiquito no
+       se entendía qué era y parecía un trébol. */
     estrella: {
-      b: ['<path d="m12 3.4 2.6 5.4 5.9.8-4.3 4.2 1 5.9-5.2-2.8-5.2 2.8 1-5.9L3.5 9.6l5.9-.8Z"/>'],
-      t: ['<path d="m12 3.4 2.6 5.4 5.9.8-4.3 4.2 1 5.9-5.2-2.8-5.2 2.8 1-5.9L3.5 9.6l5.9-.8Z"/>']
+      b: ['<path d="M12 3.6 14.41 8.68 19.99 9.4 15.9 13.27 16.94 18.8 12 16.1 7.06 18.8 8.1 13.27 4.01 9.4 9.59 8.68Z"/>'],
+      t: ['<path d="M12 3.6 14.41 8.68 19.99 9.4 15.9 13.27 16.94 18.8 12 16.1 7.06 18.8 8.1 13.27 4.01 9.4 9.59 8.68Z"/>']
     },
     corazon: {
       b: ['<path d="M12 20.3S3.8 15.4 3.8 9.6A4.4 4.4 0 0 1 12 7.2a4.4 4.4 0 0 1 8.2 2.4c0 5.8-8.2 10.7-8.2 10.7Z"/>'],
