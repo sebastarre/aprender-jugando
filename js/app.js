@@ -282,7 +282,7 @@
   var ultimoResultado = null;
   var bienvenida = { nombre: '', edad: null, avatar: null, editando: null };
   var PANTALLAS = ['bienvenida', 'inicio', 'juegos', 'aprender', 'materia', 'lecciones', 'leccion',
-                   'config', 'juego', 'fin', 'perfil', 'tienda', 'parental', 'descanso',
+                   'config', 'juego', 'fin', 'perfil', 'tienda', 'parental', 'descanso', 'plan',
                    'examen', 'nota', 'configuracion', 'personalizacion'];
 
   function mostrar(nombre) {
@@ -608,6 +608,7 @@
     pintarFotoDePortada();
     pintarRachaYMeta();
     pintarRepasoHoy();
+    pintarPlanDelInicio();
 
     cuentaDePortada($('portada-estrellas'), 'estrella', Almacen.estrellas());
     cuentaDePortada($('portada-monedas'), 'moneda', Almacen.monedas(), true);
@@ -2211,6 +2212,7 @@
     if (!yo) return irA('#/');
 
     pintarInterruptorSonido();
+    pintarPlanEnConfiguracion();
     $('ajuste-nombre').value = yo.nombre;
     $('aviso-guardado').hidden = true;
 
@@ -2703,6 +2705,146 @@
     pintarTienda();
   }
 
+  /* ---------------------- la mensualidad ----------------------
+
+     El cobro y el estado viven en js/nucleo/suscripcion.js; acá sólo se
+     pintan. La pantalla es para el grande: explica antes de pedir. */
+
+  function textoDeDias(n) {
+    return n === 1 ? 'Te queda 1 día de prueba gratis' : 'Te quedan ' + n + ' días de prueba gratis';
+  }
+
+  function pintarPlan() {
+    var est = Suscripcion.estado();
+    var cfg = Suscripcion.CONFIG;
+    var enPlay = Suscripcion.enLaAppDePlay();
+
+    var chip = $('plan-estado');
+    chip.className = 'plan-estado ' + est.tipo;
+    chip.textContent = {
+      libre: 'En la página web todo está abierto',
+      activa: 'Tu suscripción está activa',
+      prueba: textoDeDias(est.dias),
+      vencida: 'Terminó la prueba gratis'
+    }[est.tipo];
+
+    // los números salen de lo que hay, así no quedan viejos cuando se sume un juego
+    var juegos = MATERIAS.reduce(function (s, m) { return s + m.juegos.length; }, 0);
+    var lecciones = window.Lecciones ? Lecciones.LECCIONES.length : 0;
+    $('plan-cuenta-juegos').textContent = 'Los ' + juegos + ' juegos';
+    $('plan-cuenta-lecciones').textContent = 'Las ' + lecciones + ' lecciones';
+    $('plan-paso-prueba').textContent = Util.plural(cfg.diasDePrueba, 'día') + ' gratis';
+
+    $('plan-precio').textContent = cfg.precioDeReferencia;
+    Suscripcion.precio().then(function (p) { $('plan-precio').textContent = p; });
+    $('plan-precio-nota').textContent = est.tipo === 'activa'
+      ? 'Se renueva sola cada mes. La cancelás cuando quieras desde Google Play.'
+      : 'Los primeros ' + Util.plural(cfg.diasDePrueba, 'día') + ' son gratis y sin tarjeta. Cancelás cuando quieras.';
+
+    $('plan-puerta').hidden = true;
+    $('plan-mensaje').hidden = true;
+    $('btn-plan-suscribirme').hidden = est.tipo === 'activa' || !enPlay;
+    $('btn-plan-revisar').hidden = !enPlay || est.tipo === 'activa';
+
+    var descargar = $('plan-descargar');
+    descargar.hidden = enPlay || !cfg.fichaDePlay;
+    if (!descargar.hidden) descargar.href = cfg.fichaDePlay;
+    if (!enPlay) {
+      mensajeDelPlan('La suscripción se paga desde la app de Bichito Curioso en Google Play. ' +
+                     'En esta página web todo sigue abierto.', 'info');
+    }
+    if (est.tipo === 'activa') mensajeDelPlan('¡Gracias por suscribirte! Todo está abierto.', 'bien');
+  }
+
+  function mensajeDelPlan(texto, tipo) {
+    var m = $('plan-mensaje');
+    m.textContent = texto;
+    m.className = 'plan-mensaje ' + (tipo || '');
+    m.hidden = false;
+  }
+
+  /* Antes de pagar, el PIN del modo parental. Si todavía no hay PIN, se
+     crea acá mismo: es el mismo que protege el panel de los grandes. */
+  function abrirPuertaDelPlan() {
+    var hay = Almacen.hayPin();
+    $('plan-puerta-texto').textContent = hay
+      ? 'Esto lo hace un grande. Ingresá el PIN del modo parental.'
+      : 'Esto lo hace un grande. Elegí un PIN de 4 números: va a ser también el del modo parental.';
+    $('btn-plan-pin').textContent = hay ? 'Seguir' : 'Crear PIN y seguir';
+    $('plan-pin').value = '';
+    $('plan-pin-error').hidden = true;
+    $('plan-mensaje').hidden = true;
+    $('btn-plan-suscribirme').hidden = true;
+    $('plan-puerta').hidden = false;
+    setTimeout(function () { $('plan-pin').focus(); }, 60);
+  }
+
+  function pasarPuertaDelPlan() {
+    var valor = $('plan-pin').value.trim();
+    var error = $('plan-pin-error');
+    if (!/^\d{4}$/.test(valor)) {
+      error.textContent = 'Tienen que ser 4 números.';
+      error.hidden = false;
+      return;
+    }
+    if (!Almacen.hayPin()) {
+      Almacen.setPin(valor);
+    } else if (!Almacen.pinCorrecto(valor)) {
+      error.textContent = 'PIN incorrecto.';
+      error.hidden = false;
+      $('plan-pin').value = '';
+      return;
+    }
+    Sonido.tocar('clic');
+    $('plan-puerta').hidden = true;
+    comprarPlan();
+  }
+
+  function comprarPlan() {
+    mensajeDelPlan('Abriendo Google Play…', 'info');
+    Suscripcion.comprar().then(function (est) {
+      pintarPlan();
+      if (est.tipo !== 'activa') {
+        mensajeDelPlan('Google Play registró el pago. Si en un rato no se activa, tocá «Ya pagué».', 'info');
+      }
+    }).catch(function (e) {
+      $('btn-plan-suscribirme').hidden = false;
+      mensajeDelPlan(
+        e.motivo === 'cancelado' ? 'No se hizo ningún pago.'
+          : e.motivo === 'sin-play' ? 'La suscripción se paga desde la app de Google Play.'
+          : 'Google Play no pudo completar el pago. Probá de nuevo en un rato.',
+        e.motivo === 'cancelado' ? 'info' : 'mal');
+    });
+  }
+
+  /* En el inicio, sólo los últimos 3 días de prueba y cuando terminó. Un
+     cartel de «te quedan 7 días» todos los días le habla al chico de
+     plata, y la app es para él; el grande ve el plan en Configuración. */
+  var AVISAR_PRUEBA_DESDE = 3;
+
+  function pintarPlanDelInicio() {
+    var tarjeta = $('plan-hoy');
+    if (!tarjeta) return;
+    var est = Suscripcion.estado();
+    tarjeta.hidden = !(est.tipo === 'vencida' || (est.tipo === 'prueba' && est.dias <= AVISAR_PRUEBA_DESDE));
+    if (tarjeta.hidden) return;
+    tarjeta.classList.toggle('vencida', est.tipo === 'vencida');
+    $('plan-hoy-titulo').textContent = est.tipo === 'prueba' ? 'Prueba gratis' : 'Terminó la prueba gratis';
+    $('plan-hoy-texto').textContent = est.tipo === 'prueba'
+      ? textoDeDias(est.dias) + '. Mostrale el plan a un grande.'
+      : 'Para seguir jugando, pedile a un grande que mire el plan.';
+  }
+
+  function pintarPlanEnConfiguracion() {
+    var est = Suscripcion.estado();
+    $('config-plan-dato').textContent = {
+      libre: 'En la página web todo está abierto. La suscripción se paga desde la app de Google Play.',
+      activa: 'Suscripción activa. Se renueva sola cada mes.',
+      prueba: textoDeDias(est.dias) + '.',
+      vencida: 'Terminó la prueba gratis. Para seguir jugando hace falta la suscripción.'
+    }[est.tipo];
+  }
+
   /* ---------------------- límites del modo parental ---------------------- */
 
   var activoAntesDelPanel = null;   // el chico que jugaba antes de entrar al panel
@@ -3126,6 +3268,13 @@
        el tiempo del día cumplido, no se empieza nada nuevo. */
     if (materiaOculta(materiaDeLaRuta(partes))) return irA('#/');
     if (partes[0] === 'tienda' && !Almacen.control().tienda) return irA('#/personalizacion');
+    /* Terminó la prueba gratis y no hay suscripción: se puede mirar la
+       app, pero no empezar un juego, una lección ni un repaso. Son las
+       mismas rutas que cuentan tiempo, las que son «usar» la app. */
+    if (RUTAS_CON_TIEMPO.indexOf(partes[0]) >= 0 && Suscripcion.bloquea()) {
+      cortarPartida();
+      return irA('#/plan');
+    }
     if (RUTAS_CON_TIEMPO.indexOf(partes[0]) >= 0 && tiempoAgotado()) {
       cortarPartida();
       pintarDescanso();
@@ -3268,6 +3417,12 @@
       cortarPartida();
       pintarParental();
       return mostrar('parental');
+    }
+
+    if (partes[0] === 'plan') {
+      cortarPartida();
+      pintarPlan();
+      return mostrar('plan');
     }
 
     cortarPartida();
@@ -3446,6 +3601,32 @@
     $('btn-descanso-grande').addEventListener('click', function () { Sonido.tocar('clic'); irA('#/parental'); });
     contarTiempo();
 
+    /* la mensualidad */
+    $('btn-plan-suscribirme').addEventListener('click', function () {
+      Sonido.despertar(); Sonido.tocar('clic');
+      abrirPuertaDelPlan();
+    });
+    $('btn-plan-pin').addEventListener('click', pasarPuertaDelPlan);
+    $('plan-pin').addEventListener('keydown', function (ev) {
+      if (ev.key === 'Enter') pasarPuertaDelPlan();
+    });
+    $('btn-plan-pin-cancelar').addEventListener('click', function () {
+      Sonido.tocar('clic');
+      $('plan-puerta').hidden = true;
+      $('btn-plan-suscribirme').hidden = false;
+    });
+    $('btn-plan-revisar').addEventListener('click', function () {
+      Sonido.tocar('clic');
+      mensajeDelPlan('Revisando con Google Play…');
+      Suscripcion.revisar().then(function (est) {
+        pintarPlan();
+        mensajeDelPlan(est.tipo === 'activa' ? '¡Listo! Tu suscripción está activa.'
+          : Suscripcion.enLaAppDePlay()
+            ? 'Google Play no encontró una suscripción en esta cuenta.'
+            : 'Esto se revisa desde la app instalada con Google Play.');
+      });
+    });
+
     /* modo parental */
     $('btn-pin').addEventListener('click', intentarPin);
     $('campo-pin').addEventListener('keydown', function (ev) {
@@ -3500,4 +3681,11 @@
   conectar();
   enrutar();
   Arranque.empezar();   // levanta la cortina del nombre y larga el inicio
+
+  /* Al abrir, se le pregunta a Google si la suscripción sigue activa (la
+     pudieron haber cancelado o renovado). Si cambió algo, se repinta. */
+  Suscripcion.revisar().then(function () {
+    if (!$('pantalla-inicio').hidden) pintarPlanDelInicio();
+    if (!$('pantalla-plan').hidden) pintarPlan();
+  });
 })();

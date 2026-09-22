@@ -831,7 +831,12 @@ window.Almacen = (function () {
      abrir cualquiera, y un PIN escrito ahí adentro dejaría de servir. */
   function exportar() {
     var copia = JSON.parse(JSON.stringify(datos));
-    if (copia.ajustes) copia.ajustes.pin = null;
+    if (copia.ajustes) {
+      copia.ajustes.pin = null;
+      /* El plan tampoco: es de este aparato. Si viajara, una copia de un
+         celular con la suscripción paga la activaría en cualquier otro. */
+      delete copia.ajustes.plan;
+    }
     return JSON.stringify({
       app: 'aprender-jugando',
       guardada: new Date().toISOString(),
@@ -858,6 +863,9 @@ window.Almacen = (function () {
     if (!d.ajustes) d.ajustes = {};
     // el PIN que ya había en este aparato se queda: la copia no trae ninguno
     if (!d.ajustes.pin && pinDeAhora) d.ajustes.pin = pinDeAhora;
+    // y el plan también es el de este aparato, venga lo que venga en la copia
+    if (datos.ajustes && datos.ajustes.plan) d.ajustes.plan = datos.ajustes.plan;
+    else delete d.ajustes.plan;
     try {
       localStorage.setItem(CLAVE, JSON.stringify(d));
       return true;
@@ -887,6 +895,23 @@ window.Almacen = (function () {
   function pinCorrecto(pin) { return datos.ajustes.pin === String(pin); }
   function setPin(pin) {
     datos.ajustes.pin = pin ? String(pin) : null;
+    guardar();
+  }
+
+  /* La mensualidad (js/nucleo/suscripcion.js). Es del aparato y no de
+     cada chico: la suscripción de Google Play es de la cuenta del
+     celular, y cubre a todos los hermanos que jueguen en él.
+       pruebaDesde  cuándo empezó la prueba gratis
+       activa       si la última vez Google dijo que estaba pagada
+       verificada   cuándo fue esa última vez
+       enPlay       si alguna vez se abrió desde la app de Google Play */
+  function plan() {
+    if (!datos.ajustes.plan) datos.ajustes.plan = {};
+    return datos.ajustes.plan;
+  }
+  function guardarPlan(cambios) {
+    var p = plan();
+    Object.keys(cambios).forEach(function (k) { p[k] = cambios[k]; });
     guardar();
   }
 
@@ -920,6 +945,7 @@ window.Almacen = (function () {
     ultimosDias: ultimosDias, historialDesde: historialDesde,
     nivelHecho: nivelHecho, marcarNivel: marcarNivel,
     exportar: exportar, leerCopia: leerCopia, restaurar: restaurar,
+    plan: plan, guardarPlan: guardarPlan,
     vozActiva: vozActiva, setVoz: setVoz,
     hayPin: hayPin, pinCorrecto: pinCorrecto, setPin: setPin
   };

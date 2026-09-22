@@ -702,6 +702,84 @@ Donde va texto blanco encima de un color fuerte se usan las variantes oscuras
 por debajo del mínimo legible. Los tonos vivos se usan para rellenos —el país
 correcto en el mapa, el borde de una tarjeta— donde no llevan texto encima.
 
+## La mensualidad
+
+**Prueba gratis y después suscripción mensual de Google Play.** Todo el código
+está en `js/nucleo/suscripcion.js`; la pantalla es `#/plan` («Tu plan», en
+Configuración).
+
+### Cómo funciona
+
+- Los primeros **7 días** está todo abierto, sin tarjeta.
+- Terminada la prueba, los chicos pueden seguir mirando la app, pero para
+  **empezar** un juego, una lección, un repaso o un examen hace falta la
+  suscripción. Lo que ya hicieron no se pierde nunca.
+- Un grande toca «Suscribirme con Google Play». Antes se pide el **PIN del modo
+  parental** (si no hay, se crea ahí): es una app para chicos y un chico no
+  puede suscribirse solo. Google cobra, renueva cada mes y maneja las
+  cancelaciones; la app nunca ve una tarjeta.
+- Al abrir la app se le pregunta a Google si la suscripción sigue activa. Sin
+  internet se confía en la última respuesta durante 35 días.
+- La suscripción es **del aparato**, no de cada chico: cubre a todos los
+  hermanos que jueguen en ese celular. No viaja en la copia de seguridad.
+- En el inicio, un cartel avisa sólo en los **últimos 3 días** de prueba y
+  cuando terminó. Antes no: un «te quedan 7 días» todos los días le habla de
+  plata al chico, y la app es para él.
+
+**Sólo se cobra adentro de la app de Google Play**, que es el único lugar
+donde se puede pagar. En la página web (y en iPhone) todo sigue abierto: si
+no, un chico quedaría bloqueado sin que el grande tenga cómo pagar. Hasta que
+la app esté publicada en Google Play, nada cambia para nadie.
+
+### Lo que se configura
+
+Arriba de todo en `js/nucleo/suscripcion.js`, en `CONFIG`:
+
+| Campo | Qué es |
+|---|---|
+| `producto` | El ID de la suscripción en Play Console (`bichito_mensual`) |
+| `precioDeReferencia` | El precio que se muestra si no se puede leer el de Google. **El precio real lo pone Google** desde Play Console, y la app lo lee de ahí |
+| `diasDePrueba` | Los días gratis (7) |
+| `fichaDePlay` | El link a la ficha de Google Play, para el botón «Descargar» de la web |
+| `soloEnLaAppDePlay` | `true`: en la web no se cobra. `false`: se cobra en todos lados |
+
+### Para ponerla en marcha (lo hace el dueño de la app)
+
+1. **Cuenta de desarrollador de Google Play** (pago único de USD 25).
+2. **Empaquetar la app para Android** como TWA con Bubblewrap:
+   `npx @bubblewrap/cli init --manifest https://sebastarre.github.io/aprender-jugando/manifest.json`.
+   En `twa-manifest.json`, activar la facturación:
+   `"features": { "playBilling": { "enabled": true } }`.
+3. **Digital Asset Links.** Google tiene que comprobar que la página es tuya:
+   un archivo `assetlinks.json` en `https://sebastarre.github.io/.well-known/`.
+   Ojo: va en la raíz del dominio, no en `/aprender-jugando/`, así que hay que
+   crear el repositorio `sebastarre.github.io` para alojarlo (o pasar la app a
+   un dominio propio).
+4. **Crear la suscripción** en Play Console → Monetizar → Suscripciones, con el
+   ID `bichito_mensual`, período mensual y el precio. **Sin prueba gratis en
+   Play**: la prueba ya la da la app, y con las dos se sumarían.
+5. **La app es para chicos**: completar el programa «Diseñado para familias»
+   de Google Play. El pago detrás del PIN parental ya cumple con que un chico no
+   pueda comprar solo.
+6. **Probar con cuentas de prueba** (Play Console → Configuración → Pruebas de
+   licencia): compran sin que se cobre.
+
+### Lo que falta y conviene saber
+
+- **Sin servidor.** La app le pregunta a Google desde el celular. Alcanza para
+  que funcione, pero quien sepa borrar los datos del navegador puede volver a
+  empezar la prueba. Para cerrarlo hace falta un servidor que valide las
+  compras con la API de Google Play.
+- **El reconocimiento de la compra.** Google devuelve la plata de una
+  suscripción que no se «reconoce» en 3 días. Con la facturación de Play
+  activada en la TWA, la documentación de Chrome indica que se reconoce sola,
+  pero **hay que confirmarlo con una compra de prueba** antes de publicar: si a
+  los 3 días Google la reembolsa, hay que reconocerla desde un servidor.
+- La compra y el precio de Google se probaron con una imitación de Google Play
+  en el navegador (el recorrido completo: prueba vencida, freno, PIN, pago,
+  cancelación y activación). Con Google Play de verdad todavía no se probó,
+  porque la app no está publicada.
+
 ## Perfiles y modo parental
 
 El botón de la esquina superior derecha abre un menú con tres opciones: **ver

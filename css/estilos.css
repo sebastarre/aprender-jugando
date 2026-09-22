@@ -3642,3 +3642,207 @@ body.jugando .marcador { display: none; }
 @media (min-width: 640px) {
   .parental-stats { grid-template-columns: repeat(4, 1fr); }
 }
+
+/* ============================================================
+   El plan (la mensualidad)
+
+   Una pantalla para el grande. Arriba, el mismo cartel de color que la
+   portada del inicio (sigue la paleta elegida); después el precio y el
+   botón, que es lo primero que busca un grande; y recién abajo qué
+   incluye, cómo funciona y las preguntas de siempre.
+   ============================================================ */
+.plan-cabecera {
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+  padding: 26px 18px 22px;
+  margin: 6px 0 18px;
+  border-radius: var(--radio);
+  color: var(--sobre-barra);
+  background: linear-gradient(170deg, var(--barra) 0%, var(--barra) 45%, var(--barra-fuerte) 135%);
+  box-shadow:
+    0 5px 0 var(--barra-fuerte),
+    0 14px 26px -10px rgba(15, 23, 42, .3),
+    inset 0 1.5px 0 rgba(255, 255, 255, .22);
+}
+.plan-cabecera::before,
+.plan-cabecera::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.plan-cabecera::before { width: 190px; height: 190px; right: -60px; bottom: -110px; background: rgba(255, 255, 255, .07); }
+.plan-cabecera::after { width: 80px; height: 80px; left: -24px; top: -30px; border: 10px solid rgba(255, 255, 255, .07); }
+.plan-cabecera > * { position: relative; z-index: 1; }
+
+.plan-insignia {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 8px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #fff;
+  color: var(--barra);
+  box-shadow: 0 4px 0 rgba(0, 0, 0, .2);
+}
+.plan-insignia svg { width: 38px; height: 38px; }
+.plan-marca { margin: 0; font-weight: 800; font-size: .95rem; letter-spacing: .02em; }
+.plan-titulo { margin: 2px 0 12px; font-size: clamp(1.6rem, 5.4vw, 2.2rem); font-weight: 800; line-height: 1.1; }
+
+/* En qué está: una pastilla blanca con un punto del color del estado. */
+.plan-estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 6px 14px 6px 12px;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--tinta);
+  font-weight: 800;
+  font-size: .92rem;
+}
+.plan-estado::before {
+  content: "";
+  width: 10px;
+  height: 10px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--pista);
+}
+.plan-estado.prueba::before { background: #f59e0b; }
+.plan-estado.activa::before { background: var(--exito); }
+.plan-estado.vencida::before { background: var(--error); }
+
+.plan-precio-tarjeta {
+  text-align: center;
+  background: var(--tarjeta);
+  border: 2px solid var(--borde);
+  border-radius: var(--radio);
+  padding: 22px 18px 16px;
+  margin: 0 0 28px;
+  box-shadow: var(--sombra-suave);
+}
+.plan-precio { margin: 0; display: flex; align-items: baseline; justify-content: center; gap: 8px; flex-wrap: wrap; }
+.plan-precio b { font-size: clamp(2.3rem, 9vw, 3rem); font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
+.plan-precio span { font-size: 1.05rem; font-weight: 700; color: var(--tinta-suave); }
+.plan-precio-nota { margin: 8px 0 18px; color: var(--tinta-suave); }
+.plan-boton { width: 100%; max-width: 420px; }
+.plan-descargar { display: inline-block; margin-top: 4px; text-decoration: none; }
+#btn-plan-revisar { margin-top: 12px; }
+
+.plan-mensaje {
+  margin: 14px auto 0;
+  max-width: 460px;
+  padding: 10px 14px;
+  border-radius: var(--radio-s);
+  font-weight: 700;
+  line-height: 1.4;
+  background: var(--papel);
+  color: var(--tinta);
+}
+.plan-mensaje.bien { background: #dcfce7; color: #14532d; }
+.plan-mensaje.mal { background: #fee2e2; color: #7f1d1d; }
+
+.plan-puerta { max-width: 360px; margin: 4px auto 0; }
+.plan-puerta-texto { margin: 0 0 12px; font-weight: 700; }
+.plan-puerta .campo-pin { margin-bottom: 10px; }
+
+/* Qué incluye: una fila por cosa, con su dibujo en un círculo. */
+.plan-incluye { list-style: none; margin: 0 0 28px; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.plan-incluye li {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px;
+  background: var(--tarjeta);
+  border: 2px solid var(--borde);
+  border-radius: var(--radio-s);
+}
+.plan-incluye-icono {
+  width: 44px;
+  height: 44px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--seleccion);
+  color: var(--primario);
+}
+.plan-incluye-icono .ico { width: 24px; height: 24px; }
+.plan-incluye div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.plan-incluye b { font-size: 1.05rem; }
+.plan-incluye span { color: var(--tinta-suave); line-height: 1.4; }
+
+/* Cómo funciona: tres pasos numerados, unidos por una línea. */
+.plan-pasos { list-style: none; counter-reset: paso; margin: 0 0 28px; padding: 0; }
+.plan-pasos li {
+  counter-increment: paso;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0 0 18px 54px;
+  min-height: 40px;
+}
+.plan-pasos li::before {
+  content: counter(paso);
+  position: absolute;
+  left: 0;
+  top: -2px;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--barra);
+  color: var(--sobre-barra);
+  font-weight: 800;
+  box-shadow: 0 3px 0 var(--barra-fuerte);
+}
+.plan-pasos li:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  left: 18px;
+  top: 40px;
+  bottom: 2px;
+  width: 2px;
+  background: var(--pista);
+}
+.plan-pasos b { font-size: 1.05rem; }
+.plan-pasos span { color: var(--tinta-suave); line-height: 1.4; }
+
+.plan-preguntas { display: flex; flex-direction: column; gap: 10px; margin: 0 0 12px; }
+.plan-preguntas details {
+  background: var(--tarjeta);
+  border: 2px solid var(--borde);
+  border-radius: var(--radio-s);
+  padding: 0 14px;
+}
+.plan-preguntas summary {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 52px;
+  font-weight: 800;
+}
+.plan-preguntas summary::-webkit-details-marker { display: none; }
+.plan-preguntas summary::after {
+  content: "+";
+  flex: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--tinta-suave);
+  transition: transform .18s;
+}
+.plan-preguntas details[open] summary::after { transform: rotate(45deg); }
+.plan-preguntas p { margin: 0 0 14px; color: var(--tinta-suave); line-height: 1.5; }
+
+/* La tarjeta del inicio: la de la meta, en amarillo; en rojo si terminó. */
+.plan-hoy .meta-hoy-icono { background: #f59e0b; box-shadow: 0 3px 0 #b45309; }
+.plan-hoy.vencida .meta-hoy-icono { background: var(--error-osc); box-shadow: 0 3px 0 #7f1d1d; }

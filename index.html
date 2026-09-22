@@ -213,6 +213,16 @@
       </span>
     </a>
 
+    <!-- La prueba gratis: cuántos días quedan, o que ya terminó. Sólo
+         aparece donde se cobra (la app de Google Play) y sin plan pago. -->
+    <a class="meta-hoy plan-hoy" id="plan-hoy" href="#/plan" hidden>
+      <span class="meta-hoy-icono" data-ico="estrella" aria-hidden="true"></span>
+      <span class="meta-hoy-cuerpo">
+        <b class="meta-hoy-titulo" id="plan-hoy-titulo">Prueba gratis</b>
+        <span class="meta-hoy-texto" id="plan-hoy-texto"></span>
+      </span>
+    </a>
+
     <a class="meta-hoy" id="meta-hoy" href="#/juegos" hidden>
       <span class="meta-hoy-icono" data-ico="trofeo" aria-hidden="true"></span>
       <span class="meta-hoy-cuerpo">
@@ -546,6 +556,16 @@
       <button class="btn-secundario" id="btn-parental"><span data-ico="candado" aria-hidden="true"></span> Modo parental</button>
     </div>
 
+    <h2 class="etiqueta-grupo">Tu plan</h2>
+    <div class="fila-ajuste">
+      <span class="ajuste-icono" data-ico="estrella" aria-hidden="true"></span>
+      <div class="fila-cuerpo">
+        <div class="fila-nombre" id="config-plan-nombre">Plan Bichito Curioso</div>
+        <div class="ir-dato" id="config-plan-dato"></div>
+      </div>
+      <a class="btn-secundario btn-chico" href="#/plan">Ver el plan</a>
+    </div>
+
     <h2 class="etiqueta-grupo">Una copia de todo</h2>
     <div class="tarjeta-ajustes copia">
       <p class="copia-texto">Todo lo de la app vive en este aparato: si se borra el navegador
@@ -701,6 +721,95 @@
     </div>
   </section>
 
+  <!-- ============ EL PLAN: la mensualidad ============
+       Es una pantalla para el grande, no para el chico: explica qué
+       incluye, cuánto sale y cómo se cancela antes de pedir nada, y el
+       botón de pagar pide el PIN del modo parental. -->
+  <section class="pantalla" id="pantalla-plan" hidden>
+    <header class="plan-cabecera">
+      <span class="plan-insignia" aria-hidden="true">
+        <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.6"
+             stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="24" cy="24" r="18"/>
+          <path d="M24 6c4.6 5 6.9 11 6.9 18S28.6 37 24 42c-4.6-5-6.9-11-6.9-18S19.4 11 24 6Z"/>
+          <path d="M7.2 18h33.6M7.2 30h33.6"/>
+        </svg>
+      </span>
+      <p class="plan-marca">Bichito Curioso</p>
+      <h1 class="plan-titulo">Todo para aprender jugando</h1>
+      <p class="plan-estado" id="plan-estado"></p>
+    </header>
+
+    <!-- el precio y el botón: lo primero que busca un grande -->
+    <div class="plan-precio-tarjeta">
+      <p class="plan-precio"><b id="plan-precio">$ 4.000</b><span>por mes</span></p>
+      <p class="plan-precio-nota" id="plan-precio-nota"></p>
+      <button class="btn-gigante plan-boton" id="btn-plan-suscribirme" type="button">Suscribirme con Google Play</button>
+      <p class="plan-mensaje" id="plan-mensaje" role="status" aria-live="polite" hidden></p>
+
+      <!-- Para grandes: el PIN del modo parental antes de pagar. Una app
+           para chicos no puede dejar que un chico se suscriba solo. -->
+      <div class="plan-puerta" id="plan-puerta" hidden>
+        <p class="plan-puerta-texto" id="plan-puerta-texto">Esto lo hace un grande. Ingresá el PIN del modo parental.</p>
+        <input class="campo-pin" id="plan-pin" type="password" inputmode="numeric"
+               maxlength="4" autocomplete="off" aria-label="PIN de cuatro números" placeholder="••••">
+        <p class="error-pin" id="plan-pin-error" hidden></p>
+        <div class="botones-fin">
+          <button class="btn-gigante" id="btn-plan-pin" type="button">Seguir</button>
+          <button class="btn-secundario" id="btn-plan-pin-cancelar" type="button">Cancelar</button>
+        </div>
+      </div>
+
+      <a class="btn-secundario plan-descargar" id="plan-descargar" target="_blank" rel="noopener" hidden>Descargar de Google Play</a>
+      <button class="btn-texto" id="btn-plan-revisar" type="button">Ya pagué: revisar mi suscripción</button>
+    </div>
+
+    <h2 class="etiqueta-grupo">Qué incluye</h2>
+    <ul class="plan-incluye">
+      <li><span class="plan-incluye-icono" data-ico="jugar" aria-hidden="true"></span>
+        <div><b id="plan-cuenta-juegos">Todos los juegos</b><span>De matemática, lengua, ciencias, geografía e inglés, con niveles para chicos de 4 a 12.</span></div></li>
+      <li><span class="plan-incluye-icono" data-ico="aprender" aria-hidden="true"></span>
+        <div><b id="plan-cuenta-lecciones">Todas las lecciones</b><span>Leídas en voz alta, con una pregunta para pensar y un ejercicio al final.</span></div></li>
+      <li><span class="plan-incluye-icono" data-ico="repaso" aria-hidden="true"></span>
+        <div><b>Repaso que no se olvida</b><span>Lo que le costó vuelve a salir al otro día, y lo que ya sabe, cada vez más espaciado.</span></div></li>
+      <li><span class="plan-incluye-icono" data-ico="candado" aria-hidden="true"></span>
+        <div><b>Panel para los grandes</b><span>Cómo le va en la semana, qué le cuesta y límites de tiempo y de materias.</span></div></li>
+      <li><span class="plan-incluye-icono" data-ico="tilde" aria-hidden="true"></span>
+        <div><b>Sin publicidad y sin internet</b><span>Nada de avisos, y una vez instalada funciona sin conexión. Vale para todos los chicos del celular.</span></div></li>
+    </ul>
+
+    <h2 class="etiqueta-grupo">Cómo funciona</h2>
+    <ol class="plan-pasos">
+      <li><b id="plan-paso-prueba">7 días gratis</b><span>Todo abierto desde el primer día, sin poner ninguna tarjeta.</span></li>
+      <li><b>Si les gusta, se suscriben</b><span>Un grande toca «Suscribirme» y paga con su cuenta de Google Play. La app nunca ve la tarjeta.</span></li>
+      <li><b>Se renueva sola cada mes</b><span>Y se cancela cuando quieras desde Google Play, en «Pagos y suscripciones». Sin llamar a nadie.</span></li>
+    </ol>
+
+    <h2 class="etiqueta-grupo">Preguntas</h2>
+    <div class="plan-preguntas">
+      <details>
+        <summary>¿Qué pasa cuando termina la prueba?</summary>
+        <p>Los chicos pueden seguir mirando la app, pero para empezar un juego, una lección o un repaso hace falta la suscripción. No se cobra nada sola: la prueba no pide tarjeta.</p>
+      </details>
+      <details>
+        <summary>¿Se pierde el progreso si no me suscribo o si cancelo?</summary>
+        <p>No. Todo lo que hicieron (partidas, lecciones, monedas, lo que les cuesta) queda guardado en el celular y vuelve a estar ahí cuando se suscriban.</p>
+      </details>
+      <details>
+        <summary>¿Cómo cancelo?</summary>
+        <p>En el celular: Google Play → tu foto → Pagos y suscripciones → Suscripciones → Bichito Curioso → Cancelar. Seguís teniendo el plan hasta el final del mes que pagaste.</p>
+      </details>
+      <details>
+        <summary>¿Sirve para varios chicos?</summary>
+        <p>Sí. La suscripción es del celular: todos los jugadores que tengan su perfil ahí la usan.</p>
+      </details>
+      <details>
+        <summary>¿Por qué no puedo pagar desde la página web?</summary>
+        <p>Los pagos los hace Google, y eso sólo funciona desde la app instalada con Google Play. En la página web todo sigue abierto.</p>
+      </details>
+    </div>
+  </section>
+
 </main>
 
 <!-- Cartel para confirmar una compra. Es propio y no window.confirm()
@@ -743,6 +852,7 @@
 <script src="js/nucleo/tablero.js"></script>
 <script src="js/nucleo/pizarra.js"></script>
 <script src="js/nucleo/pwa.js"></script>
+<script src="js/nucleo/suscripcion.js"></script>
 <script src="js/nucleo/arranque.js"></script>
 <script src="js/mapa.js"></script>
 <script src="js/juegos/geografia.js"></script>
