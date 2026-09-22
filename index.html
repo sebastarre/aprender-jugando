@@ -333,9 +333,67 @@
   </section>
 
   <!-- ============ CONFIGURACIÓN DE PARTIDA ============ -->
+  <!-- ============ EL CAMINO DE NIVELES DE UN JUEGO ============
+       El mapa, como en los juegos de caramelos: se juega de a un nivel,
+       y pasar uno abre el siguiente. El modo libre (la pantalla de abajo)
+       sigue estando para el que quiere elegir él. -->
+  <section class="pantalla" id="pantalla-camino" hidden>
+    <header class="camino-cabecera" id="camino-cabecera">
+      <span class="camino-cabecera-icono" id="camino-icono" aria-hidden="true"></span>
+      <div class="camino-cabecera-datos">
+        <h1 class="camino-titulo" id="camino-titulo"></h1>
+        <p class="camino-progreso" id="camino-progreso"></p>
+        <span class="camino-barra" role="progressbar" id="camino-barra" aria-valuemin="0"><i></i></span>
+      </div>
+    </header>
+    <div class="camino-acciones">
+      <a class="btn-secundario btn-chico" id="camino-libre">Modo libre</a>
+      <a class="btn-secundario btn-chico" id="camino-leccion" hidden></a>
+    </div>
+    <div class="recomendacion" id="camino-terminado" hidden></div>
+    <div class="camino" id="camino"></div>
+  </section>
+
+  <!-- La hoja de un nivel: sube desde abajo al tocarlo en el mapa. -->
+  <div class="hoja-fondo" id="hoja-nivel" hidden>
+    <div class="hoja" role="dialog" aria-modal="true" aria-labelledby="hoja-titulo">
+      <span class="hoja-insignia" id="hoja-insignia" aria-hidden="true"></span>
+      <p class="hoja-antetitulo" id="hoja-antetitulo"></p>
+      <h2 class="hoja-titulo" id="hoja-titulo"></h2>
+      <p class="hoja-detalle" id="hoja-detalle"></p>
+      <div class="hoja-estrellas" id="hoja-estrellas" aria-hidden="true"></div>
+      <p class="hoja-regla" id="hoja-regla"></p>
+      <button class="btn-gigante" id="btn-hoja-jugar" type="button">¡Jugar!</button>
+      <button class="btn-texto" id="btn-hoja-cerrar" type="button">Cerrar</button>
+    </div>
+  </div>
+
+  <!-- ============ NIVEL TERMINADO ============ -->
+  <section class="pantalla" id="pantalla-nivel-fin" hidden>
+    <div class="tarjeta-fin nivel-fin">
+      <span class="nivel-fin-insignia" id="nivel-fin-insignia" aria-hidden="true"></span>
+      <div class="nivel-fin-estrellas" id="nivel-fin-estrellas" role="img"></div>
+      <h1 class="titulo-fin" id="nivel-fin-titulo"></h1>
+      <p class="subtitulo" id="nivel-fin-texto"></p>
+      <div class="recomendacion" id="nivel-fin-recomendacion" hidden></div>
+      <div class="repaso" id="nivel-fin-repaso" hidden>
+        <h2 class="etiqueta-grupo">Para repasar</h2>
+        <div class="lista-repaso" id="nivel-fin-lista"></div>
+      </div>
+      <div class="premio-monedas" id="nivel-fin-monedas" hidden></div>
+      <p class="meta-cumplida" id="nivel-fin-meta" hidden></p>
+      <div class="botones-fin">
+        <button class="btn-gigante" id="btn-nivel-principal" type="button"></button>
+        <button class="btn-secundario" id="btn-nivel-otra-vez" type="button">Jugar otra vez</button>
+        <button class="btn-secundario" id="btn-nivel-mapa" type="button">Volver al mapa</button>
+      </div>
+    </div>
+  </section>
+
   <section class="pantalla" id="pantalla-config" hidden>
     <h1 class="titulo-grande" id="titulo-config"></h1>
     <p class="subtitulo" id="subtitulo-config"></p>
+    <p class="config-al-mapa"><a class="btn-secundario btn-chico" id="config-al-mapa">Volver al mapa de niveles</a></p>
     <p class="enlace-leccion" id="enlace-leccion" hidden></p>
 
     <!-- los bloques de opciones los arma cada juego (js/app.js) -->
@@ -659,51 +717,115 @@
       <div class="parental-chicos" id="parental-chicos" role="group" aria-label="De quién ver los datos"></div>
       <p class="subtitulo" id="parental-sub"></p>
 
-      <h2 class="etiqueta-grupo">Esta semana</h2>
-      <div class="stats-fin parental-stats" id="parental-stats"></div>
-      <div class="semana" id="parental-semana" role="img"></div>
-
-      <h2 class="etiqueta-grupo">Por materia</h2>
-      <div class="parental-lista" id="parental-materias"></div>
-
-      <h2 class="etiqueta-grupo">Lo que le cuesta</h2>
-      <p class="nota-ranura">Lo que más falló. Ya vuelve a salir solo en el repaso de los próximos días.</p>
-      <div class="lista-repaso parental-bloque" id="parental-fallos"></div>
-
-      <h2 class="etiqueta-grupo">Para hacer juntos</h2>
-      <p class="nota-ranura">De las lecciones que completó: una propuesta corta para charlar o hacer con un grande.</p>
-      <div class="parental-lista" id="parental-juntos"></div>
-
-      <h2 class="etiqueta-grupo">Límites</h2>
-      <h3 class="parental-sub-grupo">Tiempo por día</h3>
-      <p class="nota-ranura">Cuenta el tiempo jugando y en las lecciones. La partida que está en curso termina; lo que no deja es empezar otra.</p>
-      <div class="fila-opciones" id="parental-tiempo"></div>
-      <div class="parental-tiempo-hoy">
-        <p id="parental-tiempo-hoy"></p>
-        <button class="btn-secundario" id="btn-mas-tiempo" type="button" hidden>Dar 15 minutos más hoy</button>
+      <!-- Mucho para mirar, en cuatro pestañas, en el orden de lo que un
+           grande quiere saber primero: cómo viene, qué aprendió, cómo le
+           va en cada juego, y recién después los límites. -->
+      <div class="pestanas" role="tablist" aria-label="Secciones del panel">
+        <button class="pestana" role="tab" type="button" id="pestana-resumen" aria-controls="panel-resumen" aria-selected="true">Resumen</button>
+        <button class="pestana" role="tab" type="button" id="pestana-aprendizaje" aria-controls="panel-aprendizaje" aria-selected="false" tabindex="-1">Aprendizaje</button>
+        <button class="pestana" role="tab" type="button" id="pestana-juegos" aria-controls="panel-juegos" aria-selected="false" tabindex="-1">Juegos</button>
+        <button class="pestana" role="tab" type="button" id="pestana-limites" aria-controls="panel-limites" aria-selected="false" tabindex="-1">Límites</button>
       </div>
 
-      <h3 class="parental-sub-grupo">Materias que ve</h3>
-      <div class="parental-lista" id="parental-materias-control"></div>
+      <!-- ---------- Resumen ---------- -->
+      <div class="panel-pestana" id="panel-resumen" role="tabpanel" aria-labelledby="pestana-resumen">
+        <h2 class="etiqueta-grupo">Desde que empezó</h2>
+        <div class="stats-fin parental-total" id="parental-total"></div>
 
-      <h3 class="parental-sub-grupo">Monedas y tienda</h3>
-      <div class="fila-ajuste">
-        <span class="ajuste-icono" data-ico="tienda" aria-hidden="true"></span>
-        <div class="fila-cuerpo">
-          <div class="fila-nombre">Mostrar monedas y tienda</div>
-          <div class="ir-dato">Apagadas, las monedas se siguen juntando pero no se ven.</div>
+        <div class="titulo-con-selector">
+          <h2 class="etiqueta-grupo">Actividad</h2>
+          <div class="selector-periodo" role="group" aria-label="Período">
+            <button class="chip-periodo" type="button" data-dias="7" aria-pressed="true">7 días</button>
+            <button class="chip-periodo" type="button" data-dias="30" aria-pressed="false">30 días</button>
+          </div>
         </div>
-        <button class="interruptor" id="ajuste-tienda" type="button" aria-label="Mostrar monedas y tienda"
-                role="switch" aria-checked="true"><span></span></button>
+        <div class="stats-fin parental-stats" id="parental-stats"></div>
+        <p class="grafico-titulo">Respuestas bien por día</p>
+        <div class="semana" id="parental-semana" role="img"></div>
+        <p class="grafico-titulo">Minutos jugando por día</p>
+        <div class="semana semana-minutos" id="parental-minutos" role="img"></div>
+
+        <h2 class="etiqueta-grupo">Cuándo juega</h2>
+        <div class="parental-cuando" id="parental-cuando"></div>
+
+        <h2 class="etiqueta-grupo">Para hacer juntos</h2>
+        <p class="nota-ranura">De las lecciones que completó: una propuesta corta para charlar o hacer con un grande.</p>
+        <div class="parental-lista" id="parental-juntos"></div>
       </div>
 
-      <h2 class="etiqueta-grupo">Últimas partidas</h2>
-      <div class="tabla-partidas" id="parental-partidas"></div>
+      <!-- ---------- Aprendizaje ---------- -->
+      <div class="panel-pestana" id="panel-aprendizaje" role="tabpanel" aria-labelledby="pestana-aprendizaje" hidden>
+        <h2 class="etiqueta-grupo">Cómo va mejorando</h2>
+        <p class="nota-ranura">Qué parte de las respuestas contesta bien, semana por semana.</p>
+        <p class="parental-tendencia" id="parental-tendencia"></p>
+        <div class="semana" id="parental-mejora" role="img"></div>
 
-      <div class="acciones-perfil">
+        <h2 class="etiqueta-grupo">Por materia</h2>
+        <div class="parental-lista" id="parental-materias"></div>
+
+        <h2 class="etiqueta-grupo">Su memoria</h2>
+        <p class="nota-ranura">Todo lo que contestó alguna vez, según qué tan firme lo tiene. Lo que falla vuelve al otro día; lo que acierta, cada vez más espaciado.</p>
+        <div class="memoria" id="parental-memoria"></div>
+
+        <h2 class="etiqueta-grupo">Lo que le cuesta</h2>
+        <p class="nota-ranura">Lo que más falló. Ya vuelve a salir solo en el repaso de los próximos días.</p>
+        <div class="lista-repaso parental-bloque" id="parental-fallos"></div>
+
+        <h2 class="etiqueta-grupo">Lo que mejor le sale</h2>
+        <p class="nota-ranura">Lo que más veces contestó bien.</p>
+        <div class="lista-repaso parental-bloque" id="parental-aciertos"></div>
+
+        <h2 class="etiqueta-grupo">Lecciones</h2>
+        <p class="parental-resumen-lecciones" id="parental-resumen-lecciones"></p>
+        <div class="parental-lista" id="parental-lecciones"></div>
+      </div>
+
+      <!-- ---------- Juegos ---------- -->
+      <div class="panel-pestana" id="panel-juegos" role="tabpanel" aria-labelledby="pestana-juegos" hidden>
+        <h2 class="etiqueta-grupo">Juego por juego</h2>
+        <p class="nota-ranura">Por dónde va en el mapa de niveles de cada juego, cuánto lo jugó y cuánto acierta.</p>
+        <div class="parental-juegos" id="parental-juegos"></div>
+
+        <h2 class="etiqueta-grupo">Exámenes</h2>
+        <div class="tabla-partidas" id="parental-examenes"></div>
+
+        <h2 class="etiqueta-grupo">Últimas partidas</h2>
+        <div class="tabla-partidas" id="parental-partidas"></div>
+      </div>
+
+      <!-- ---------- Límites ---------- -->
+      <div class="panel-pestana" id="panel-limites" role="tabpanel" aria-labelledby="pestana-limites" hidden>
+        <h2 class="etiqueta-grupo">Tiempo por día</h2>
+        <p class="nota-ranura">Cuenta el tiempo jugando y en las lecciones. La partida que está en curso termina; lo que no deja es empezar otra.</p>
+        <div class="fila-opciones" id="parental-tiempo"></div>
+        <div class="parental-tiempo-hoy">
+          <p id="parental-tiempo-hoy"></p>
+          <button class="btn-secundario" id="btn-mas-tiempo" type="button" hidden>Dar 15 minutos más hoy</button>
+        </div>
+
+        <h2 class="etiqueta-grupo">Materias que ve</h2>
+        <div class="parental-lista" id="parental-materias-control"></div>
+
+        <h2 class="etiqueta-grupo">Monedas y tienda</h2>
+        <div class="fila-ajuste">
+          <span class="ajuste-icono" data-ico="tienda" aria-hidden="true"></span>
+          <div class="fila-cuerpo">
+            <div class="fila-nombre">Mostrar monedas y tienda</div>
+            <div class="ir-dato">Apagadas, las monedas se siguen juntando pero no se ven.</div>
+          </div>
+          <button class="interruptor" id="ajuste-tienda" type="button" aria-label="Mostrar monedas y tienda"
+                  role="switch" aria-checked="true"><span></span></button>
+        </div>
+
+        <h2 class="etiqueta-grupo">El panel</h2>
+        <div class="acciones-perfil">
+          <button class="btn-secundario" id="btn-cambiar-pin">Cambiar PIN</button>
+          <button class="btn-secundario peligro" id="btn-borrar-progreso">Borrar el progreso de este jugador</button>
+        </div>
+      </div>
+
+      <div class="acciones-perfil parental-cerrar">
         <button class="btn-gigante" id="btn-cerrar-parental" type="button">Listo, cerrar</button>
-        <button class="btn-secundario" id="btn-cambiar-pin">Cambiar PIN</button>
-        <button class="btn-secundario peligro" id="btn-borrar-progreso">Borrar el progreso de este jugador</button>
       </div>
     </div>
   </section>
@@ -866,6 +988,7 @@
 <script src="js/aprender/leccion.js"></script>
 <script src="js/tienda/catalogo.js"></script>
 <script src="js/tienda/temas.js"></script>
+<script src="js/camino.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

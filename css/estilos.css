@@ -3846,3 +3846,535 @@ body.jugando .marcador { display: none; }
 /* La tarjeta del inicio: la de la meta, en amarillo; en rojo si terminó. */
 .plan-hoy .meta-hoy-icono { background: #f59e0b; box-shadow: 0 3px 0 #b45309; }
 .plan-hoy.vencida .meta-hoy-icono { background: var(--error-osc); box-shadow: 0 3px 0 #7f1d1d; }
+
+/* ============================================================
+   El camino de niveles (el mapa de cada juego)
+
+   Como un juego de mapa: los niveles son botones redondos gordos, con
+   el mismo escalón que se hunde que el resto de la app, unidos por un
+   camino que serpentea. Lo hecho va del color del juego y lo que falta,
+   gris y punteado. Tres cosas le hablan al chico sin palabras: su cara
+   sobre el nivel que le toca, el anillo que late en ese nivel, y las
+   estrellas abajo de cada uno que ya pasó.
+   ============================================================ */
+.camino-cabecera {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  margin: 6px 0 12px;
+  border-radius: var(--radio);
+  color: #fff;
+  background: linear-gradient(170deg, var(--camino-color) 0%, var(--camino-color) 45%, var(--camino-oscuro) 135%);
+  box-shadow:
+    0 5px 0 var(--camino-oscuro),
+    0 14px 26px -10px rgba(15, 23, 42, .3),
+    inset 0 1.5px 0 rgba(255, 255, 255, .22);
+}
+.camino-cabecera::after {
+  content: "";
+  position: absolute;
+  width: 170px; height: 170px; right: -56px; bottom: -100px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .08);
+  pointer-events: none;
+}
+.camino-cabecera-icono {
+  width: 60px; height: 60px; flex: none;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  background: #fff;
+  color: var(--camino-color);
+  font-size: 2rem;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, .2);
+}
+.camino-cabecera-icono .ico { width: 34px; height: 34px; stroke-width: 1.9; }
+.camino-cabecera-datos { flex: 1; min-width: 0; position: relative; z-index: 1; }
+.camino-titulo { margin: 0; font-size: clamp(1.4rem, 5vw, 1.9rem); font-weight: 800; line-height: 1.1; }
+.camino-progreso { margin: 4px 0 8px; font-weight: 700; font-size: .95rem; }
+.camino-barra {
+  display: block;
+  height: 12px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, .22);
+  overflow: hidden;
+}
+.camino-barra i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #fde047;
+  transform-origin: left;
+  transition: transform .8s var(--rebote);
+}
+.camino-acciones { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 0 0 6px; }
+.camino-acciones a { display: inline-flex; align-items: center; gap: 6px; text-decoration: none; }
+.camino-acciones .ico { width: 1.1em; height: 1.1em; }
+
+.camino { position: relative; margin: 0 auto 30px; max-width: 460px; }
+.camino-trazo { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.camino-trazo path { fill: none; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.camino-fondo { stroke: var(--pista); stroke-width: 9; stroke-dasharray: 1 17; }
+.camino-hecho { stroke: var(--camino-color); stroke-width: 11; opacity: .9; }
+
+.camino-nivel {
+  position: absolute;
+  width: 68px;
+  height: 68px;
+  margin: 0;
+  padding: 0;
+  transform: translate(-50%, -50%);
+  border: none;
+  border-radius: 50%;
+  font: inherit;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: var(--camino-color);
+  box-shadow: 0 6px 0 var(--camino-oscuro), 0 10px 18px -6px rgba(15, 23, 42, .35);
+  transition: transform .14s var(--rebote), box-shadow .14s;
+  -webkit-tap-highlight-color: transparent;
+  z-index: 2;
+}
+.camino-nivel:active { transform: translate(-50%, calc(-50% + 5px)); box-shadow: 0 1px 0 var(--camino-oscuro); }
+.camino-cara { display: grid; place-items: center; }
+.camino-numero { font-size: 1.7rem; font-weight: 800; line-height: 1; }
+.camino-cara .ico { width: 30px; height: 30px; stroke-width: 2.2; }
+
+/* el que toca: un poco más grande, y un anillo que late */
+.camino-nivel.actual { width: 76px; height: 76px; }
+.camino-nivel.actual::after {
+  content: "";
+  position: absolute;
+  inset: -9px;
+  border-radius: 50%;
+  border: 4px solid var(--camino-color);
+  opacity: .5;
+  animation: latido 1.6s ease-out infinite;
+}
+@keyframes latido {
+  0% { transform: scale(.92); opacity: .6; }
+  70% { transform: scale(1.18); opacity: 0; }
+  100% { transform: scale(1.18); opacity: 0; }
+}
+
+.camino-nivel.cerrado {
+  background: #e3e9f5;
+  color: #7b8aa8;
+  box-shadow: 0 6px 0 #c3cee3;
+}
+
+/* los desafíos: más grandes, con un filo dorado */
+.camino-nivel.desafio { width: 84px; height: 84px; border: 4px solid #fbbf24; }
+.camino-nivel.desafio .camino-cara .ico { width: 38px; height: 38px; }
+.camino-nivel.desafio.cerrado { border-color: #d8dfec; }
+.camino-nivel.final { width: 92px; height: 92px; }
+.camino-numerito {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 6px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: #fbbf24;
+  color: #422006;
+  font-size: .8rem;
+  font-weight: 800;
+  box-shadow: 0 2px 0 #b45309;
+}
+
+.camino-estrellas {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translate(-50%, 6px);
+  display: flex;
+  gap: 1px;
+}
+.camino-estrellas span { display: grid; color: #cfd8ea; }
+.camino-estrellas .ico { width: 17px; height: 17px; stroke-width: 2; }
+.camino-estrellas .ganada { color: #f59e0b; }
+.camino-estrellas .ganada .ico-blando { fill: #fbbf24; opacity: 1; }
+
+/* el que se acaba de abrir: aparece con un saltito */
+.camino-nivel.recien { animation: se-abre .7s var(--rebote) .7s both; }
+@keyframes se-abre {
+  0% { transform: translate(-50%, -50%) scale(.6); }
+  60% { transform: translate(-50%, -50%) scale(1.18); }
+  100% { transform: translate(-50%, -50%) scale(1); }
+}
+
+/* la cara del chico, arriba del nivel que le toca */
+.camino-yo {
+  position: absolute;
+  z-index: 3;
+  /* bien arriba del nivel: tapando el número, no se sabía cuál era */
+  transform: translate(-50%, calc(-100% - 42px));
+  pointer-events: none;
+  transition: left .9s cubic-bezier(.4, 0, .2, 1), top .9s cubic-bezier(.4, 0, .2, 1);
+}
+.camino-yo-cara {
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #fff;
+  border: 3px solid var(--camino-color);
+  box-shadow: 0 4px 10px -2px rgba(15, 23, 42, .35);
+  font-size: 1.6rem;
+  line-height: 1;
+  overflow: hidden;
+}
+.camino-yo-cara img { width: 100%; height: 100%; object-fit: cover; }
+.camino-yo::after {           /* la puntita del globo, que señala el nivel */
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -7px;
+  width: 12px;
+  height: 12px;
+  background: var(--camino-color);
+  transform: translateX(-50%) rotate(45deg);
+  border-radius: 2px;
+  z-index: -1;
+}
+
+.camino-etapa {
+  position: absolute;
+  transform: translateY(-50%);
+  max-width: 38%;
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: var(--tarjeta);
+  border: 2px solid var(--borde);
+  color: var(--tinta-suave);
+  font-size: .8rem;
+  font-weight: 800;
+  line-height: 1.2;
+  z-index: 1;
+}
+.camino-etapa.a-la-izquierda { left: 0; }
+.camino-etapa.a-la-derecha { right: 0; text-align: right; }
+
+/* ---------- la hoja de un nivel ---------- */
+.hoja-fondo {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(15, 23, 42, .45);
+}
+.hoja {
+  width: 100%;
+  max-width: 480px;
+  text-align: center;
+  background: var(--tarjeta);
+  border-radius: 26px 26px 0 0;
+  padding: 26px 20px calc(18px + env(safe-area-inset-bottom));
+  box-shadow: 0 -10px 30px -10px rgba(15, 23, 42, .35);
+  transform: translateY(100%);
+  transition: transform .28s cubic-bezier(.2, .9, .3, 1.1);
+}
+.hoja-fondo.abierta .hoja { transform: translateY(0); }
+.hoja-insignia {
+  width: 76px;
+  height: 76px;
+  margin: -64px auto 8px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--camino-color);
+  color: #fff;
+  font-size: 2rem;
+  font-weight: 800;
+  border: 5px solid var(--tarjeta);
+  box-shadow: 0 5px 0 var(--camino-oscuro);
+}
+.hoja-insignia .ico { width: 34px; height: 34px; stroke-width: 2.2; }
+.hoja-insignia.desafio { background: #f59e0b; box-shadow: 0 5px 0 #b45309; }
+.hoja-insignia.cerrado { background: #e3e9f5; color: #7b8aa8; box-shadow: 0 5px 0 #c3cee3; }
+.hoja-antetitulo { margin: 0; font-weight: 800; color: var(--tinta-suave); font-size: .9rem; letter-spacing: .02em; }
+.hoja-titulo { margin: 2px 0 6px; font-size: 1.5rem; font-weight: 800; line-height: 1.15; }
+.hoja-detalle { margin: 0 0 10px; color: var(--tinta-suave); }
+.hoja-estrellas { display: flex; justify-content: center; gap: 4px; margin: 0 0 10px; }
+.hoja-estrellas span { display: grid; color: #cfd8ea; }
+.hoja-estrellas .ico { width: 30px; height: 30px; }
+.hoja-estrellas .ganada { color: #f59e0b; }
+.hoja-estrellas .ganada .ico-blando { fill: #fbbf24; opacity: 1; }
+.hoja-regla { margin: 0 0 16px; font-size: .92rem; font-weight: 700; color: var(--tinta-suave); }
+.hoja .btn-gigante { width: 100%; }
+.hoja .btn-texto { margin-top: 8px; }
+
+/* ---------- nivel terminado ---------- */
+.nivel-fin { text-align: center; }
+.nivel-fin-insignia {
+  width: 96px;
+  height: 96px;
+  margin: 4px auto 10px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--camino-color);
+  color: #fff;
+  font-size: 2.6rem;
+  font-weight: 800;
+  box-shadow: 0 7px 0 var(--camino-oscuro);
+}
+.nivel-fin-insignia .ico { width: 46px; height: 46px; stroke-width: 2.2; }
+.nivel-fin-insignia.desafio { background: #f59e0b; box-shadow: 0 7px 0 #b45309; }
+.nivel-fin.paso .nivel-fin-insignia { animation: se-abre-fin .6s var(--rebote) both; }
+@keyframes se-abre-fin {
+  0% { transform: scale(.7); }
+  60% { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+.nivel-fin-estrellas { display: flex; justify-content: center; align-items: flex-end; gap: 6px; margin: 0 0 6px; }
+.nivel-fin-estrellas span { display: grid; color: #d7dfed; }
+.nivel-fin-estrellas .ico { width: 50px; height: 50px; }
+/* la del medio, más grande y más alta, como un podio */
+.nivel-fin-estrellas span:nth-child(2) { margin-bottom: 10px; }
+.nivel-fin-estrellas span:nth-child(2) .ico { width: 62px; height: 62px; }
+.nivel-fin-estrellas .ganada { color: #f59e0b; animation: estrella-sale .55s var(--rebote) both; }
+.nivel-fin-estrellas .ganada .ico-blando { fill: #fbbf24; opacity: 1; }
+@keyframes estrella-sale {
+  0% { transform: scale(0) rotate(-40deg); }
+  65% { transform: scale(1.3) rotate(8deg); }
+  100% { transform: scale(1) rotate(0); }
+}
+
+/* ---------- ¿y ahora? ---------- */
+.recomendacion { margin: 6px 0 18px; display: flex; flex-direction: column; gap: 10px; text-align: left; }
+.recomendacion-titulo { margin: 0; font-size: 1.15rem; font-weight: 800; text-align: center; }
+.recomendacion-vacia { margin: 0; text-align: center; color: var(--tinta-suave); }
+.recomendacion-opcion {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 12px 12px 14px;
+  border-radius: var(--radio-s);
+  background: var(--tarjeta);
+  border: 2px solid var(--borde);
+  box-shadow: 0 4px 0 var(--sombra-clay);
+  color: var(--tinta);
+  text-decoration: none;
+  transition: transform .14s, border-color .14s;
+}
+.recomendacion-opcion:hover { border-color: var(--rec-color); transform: translateY(-2px); }
+.recomendacion-opcion:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--sombra-clay); }
+.recomendacion-icono {
+  width: 52px; height: 52px; flex: none;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  background: var(--rec-color);
+  color: #fff;
+  font-size: 1.6rem;
+}
+.recomendacion-icono .ico { width: 28px; height: 28px; }
+.recomendacion-cuerpo { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.recomendacion-arriba, .recomendacion-abajo { font-size: .85rem; color: var(--tinta-suave); font-weight: 700; }
+.recomendacion-cuerpo b { font-size: 1.08rem; line-height: 1.2; }
+
+/* en la fila de un juego: las estrellas del mapa */
+.card-estrellas { display: inline-flex; align-items: center; margin-top: 3px; font-size: .8rem; font-weight: 800; color: #92400e; }
+.card-estrellas .ico { width: 14px; height: 14px; color: #f59e0b; }
+.card-estrellas .ico-blando { fill: #fbbf24; opacity: 1; }
+
+.config-al-mapa { text-align: center; margin: -8px 0 18px; }
+.config-al-mapa a { text-decoration: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .camino-nivel.actual::after,
+  .camino-nivel.recien,
+  .nivel-fin.paso .nivel-fin-insignia,
+  .nivel-fin-estrellas .ganada { animation: none; }
+  .camino-yo, .hoja { transition: none; }
+}
+
+/* ============================================================
+   Panel parental: las estadísticas
+
+   Mucho para mirar, así que en pestañas, y cada cosa con el gráfico más
+   simple que la cuenta: barras para lo que cambia día a día, una barra
+   en tres partes para la memoria, rieles horizontales para el horario.
+   ============================================================ */
+.pestanas {
+  position: sticky;
+  top: 60px;              /* abajo de la flecha de volver, que también queda fija */
+  z-index: 5;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  padding: 4px;
+  margin: 4px 0 22px;
+  border-radius: 999px;
+  background: var(--tarjeta);
+  border: 2px solid var(--borde);
+  box-shadow: 0 6px 14px -8px rgba(15, 23, 42, .25);
+}
+.pestana {
+  font: inherit;
+  font-weight: 800;
+  font-size: .9rem;
+  min-height: 42px;
+  padding: 6px 4px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--tinta-suave);
+  cursor: pointer;
+  transition: background .15s, color .15s;
+}
+.pestana[aria-selected="true"] { background: var(--primario); color: var(--sobre-primario, #fff); }
+.pestana:not([aria-selected="true"]):hover { background: var(--papel); color: var(--tinta); }
+
+.parental-total { grid-template-columns: repeat(3, 1fr); margin: 0 0 26px; }
+@media (min-width: 640px) { .parental-total { grid-template-columns: repeat(4, 1fr); } }
+.parental-total .stat b { font-size: 1.35rem; }
+.parental-total .stat span { font-size: .8rem; line-height: 1.25; display: block; }
+
+.titulo-con-selector { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; margin-bottom: 12px; }
+.titulo-con-selector .etiqueta-grupo { margin: 0; }
+.selector-periodo { display: inline-flex; gap: 4px; padding: 3px; border-radius: 999px; background: var(--papel); border: 2px solid var(--borde); }
+.chip-periodo {
+  font: inherit;
+  font-weight: 800;
+  font-size: .85rem;
+  min-height: 36px;
+  padding: 4px 14px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--tinta-suave);
+  cursor: pointer;
+}
+.chip-periodo[aria-pressed="true"] { background: var(--tarjeta); color: var(--tinta); box-shadow: 0 2px 6px -2px rgba(15, 23, 42, .25); }
+
+.grafico-titulo { margin: 4px 0 6px; font-weight: 800; font-size: .92rem; color: var(--tinta-suave); }
+.semana-minutos .semana-barra { background: #0d9488; }
+/* treinta días no entran con números arriba: quedan las barras y la fecha cada cinco */
+.semana.muchas { gap: 2px; padding-left: 8px; padding-right: 8px; }
+.semana.muchas .semana-cifra { visibility: hidden; }
+.semana.muchas .semana-barra { border-radius: 4px 4px 2px 2px; }
+.semana.muchas .semana-nombre { font-size: .68rem; white-space: nowrap; overflow: visible; }
+
+.parental-tendencia { margin: 0 0 10px; font-weight: 700; }
+
+/* cuándo juega */
+.parental-cuando { display: grid; grid-template-columns: 1fr; gap: 12px; margin: 0 0 28px; }
+@media (min-width: 640px) { .parental-cuando { grid-template-columns: 1fr 1fr; } }
+.cuando-bloque {
+  background: var(--tarjeta);
+  border: 2px solid var(--borde);
+  border-radius: var(--radio-s);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.cuando-titulo { margin-bottom: 2px; }
+.cuando-fila { display: grid; grid-template-columns: 5.5em 1fr 3em; align-items: center; gap: 8px; }
+.cuando-nombre { font-size: .88rem; font-weight: 700; color: var(--tinta-suave); }
+.cuando-riel { height: 10px; border-radius: 999px; background: var(--pista); overflow: hidden; }
+.cuando-riel i { display: block; height: 100%; border-radius: inherit; background: var(--primario); }
+.cuando-cifra { font-size: .82rem; font-weight: 800; text-align: right; font-variant-numeric: tabular-nums; }
+
+/* la memoria: una barra en tres partes */
+.memoria { margin: 0 0 28px; }
+.memoria-barra {
+  display: flex;
+  height: 22px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--pista);
+  margin-bottom: 12px;
+}
+.memoria-barra i { display: block; flex-basis: 0; min-width: 6px; }
+.memoria-aprendiendo { background: #f59e0b; }
+.memoria-afianzando { background: #3b82f6; }
+.memoria-sabidas { background: #16a34a; }
+.memoria-leyenda { display: flex; flex-direction: column; gap: 8px; }
+.memoria-item { display: flex; align-items: flex-start; gap: 10px; }
+.memoria-item div { display: flex; flex-direction: column; }
+.memoria-item span:not(.memoria-punto) { font-size: .85rem; color: var(--tinta-suave); }
+.memoria-punto { width: 14px; height: 14px; flex: none; border-radius: 50%; margin-top: 4px; }
+.memoria-hoy { margin: 12px 0 0; font-weight: 700; }
+
+/* lecciones */
+.parental-resumen-lecciones { margin: 0 0 10px; font-weight: 700; color: var(--tinta-suave); }
+.estado-leccion {
+  flex: none;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: .78rem;
+  font-weight: 800;
+  background: var(--papel);
+  color: var(--tinta-suave);
+  border: 2px solid var(--borde);
+}
+.estado-leccion.hecha { background: #dcfce7; color: #14532d; border-color: #bbf7d0; }
+.estado-leccion.repasar { background: #dbeafe; color: #1e3a8a; border-color: #bfdbfe; }
+.fila-leccion:not(.hecha) .fila-nombre { color: var(--tinta-suave); }
+
+/* juego por juego */
+.parental-juegos { display: flex; flex-direction: column; gap: 10px; margin: 0 0 28px; }
+.juegos-materia {
+  background: var(--tarjeta);
+  border: 2px solid var(--borde);
+  border-radius: var(--radio-s);
+  padding: 0 14px;
+}
+.juegos-materia summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 60px;
+}
+.juegos-materia summary::-webkit-details-marker { display: none; }
+.juegos-materia summary::after {
+  content: "›";
+  margin-left: auto;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--tinta-suave);
+  transition: transform .18s;
+}
+.juegos-materia[open] summary::after { transform: rotate(90deg); }
+.juegos-materia-resumen { display: flex; flex-direction: column; }
+.juegos-materia-resumen span { font-size: .85rem; color: var(--tinta-suave); font-weight: 700; }
+.juego-panel { display: flex; flex-direction: column; gap: 5px; padding: 12px 0; border-top: 2px solid var(--borde); }
+.juego-panel-arriba { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.juego-panel-nivel { font-size: .82rem; font-weight: 800; color: var(--tinta-suave); white-space: nowrap; }
+.juego-panel-riel { height: 8px; border-radius: 999px; background: var(--pista); overflow: hidden; }
+.juego-panel-riel i { display: block; height: 100%; border-radius: inherit; }
+
+/* exámenes: la nota adentro del círculo */
+.nota-examen {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-weight: 800;
+  font-size: 1.1rem;
+  background: #fef3c7;
+  color: #78350f;
+}
+.nota-examen.buena { background: #dcfce7; color: #14532d; }
+.nota-examen.baja { background: #fee2e2; color: #7f1d1d; }
+
+.parental-cerrar { margin-top: 18px; }
+
+/* la fila de los nombres ocupa lo mismo aunque el día no lleve nombre:
+   si no, esas barras bajaban más que las otras y se pisaban con las fechas */
+.semana-nombre { min-height: 1.3em; }

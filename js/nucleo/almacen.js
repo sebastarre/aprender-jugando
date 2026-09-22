@@ -33,6 +33,7 @@ window.Almacen = (function () {
       equipado: {},            // 'tema' -> 'selva'
       dominados: {},           // 'matematica/tablas' -> true: lo ganó sin errores
       nivelesHechos: {},       // 'matematica/tablas#7' -> true: ese nivel, con todas bien
+      mapas: {},               // 'matematica/tablas' -> { '3': 2 }: estrellas de cada nivel del camino
       cajas: {},               // 'matematica:7x8' -> { caja, proximo }: cuándo vuelve a salir
       repasoLecciones: {},     // 'que-es-multiplicar' -> { dias, proximo }: cuándo repasarla
       dias: {},                // '2026-09-13' -> respuestas bien ese día
@@ -351,7 +352,8 @@ window.Almacen = (function () {
       maximo: p.maximo,
       aciertos: p.aciertos,
       total: p.total,
-      estrellas: p.estrellas
+      estrellas: p.estrellas,
+      segundos: p.segundos || 0      // cuánto duró, para las estadísticas del panel
     });
     if (h.length > TOPE_HISTORIAL) h.splice(0, h.length - TOPE_HISTORIAL);
 
@@ -775,6 +777,46 @@ window.Almacen = (function () {
     return mio().historial.filter(function (p) { return p.fecha >= ms; });
   }
 
+  /* ---------------------- para las estadísticas del panel ---------------------- */
+
+  /** Las últimas partidas (hasta 300), de la más vieja a la más nueva. */
+  function historial() { return mio().historial.slice(); }
+
+  /** Segundos jugados en total, en los días que se guardan (los últimos 60). */
+  function tiempoTotal() {
+    var t = mio().tiempo || {};
+    return Object.keys(t).reduce(function (s, k) { return s + t[k]; }, 0);
+  }
+
+  /** Lo que más veces contestó bien: [{ materia, clave, veces }]. */
+  function masAcertados(cuantos) {
+    var a = mio().aciertosPorItem || {};
+    return Object.keys(a).map(function (k) {
+      var p = k.indexOf(':');
+      return { materia: k.slice(0, p), clave: k.slice(p + 1), veces: a[k] };
+    }).sort(function (x, y) { return y.veces - x.veces; }).slice(0, cuantos || 8);
+  }
+
+  /**
+   * Qué tan firme tiene lo que contestó alguna vez, según las cajas del
+   * repaso espaciado: en la 0 y la 1 lo está aprendiendo (lo falló hace
+   * poco, o lo acertó una vez), en la 2 y la 3 lo está afianzando, y en
+   * la última ya lo sabe (vuelve recién a las dos semanas).
+   */
+  function resumenDeMemoria() {
+    var c = mio().cajas || {};
+    var hoy = claveDia(new Date());
+    var r = { aprendiendo: 0, afianzando: 0, sabidas: 0, paraHoy: 0 };
+    Object.keys(c).forEach(function (k) {
+      var x = c[k];
+      if (x.caja <= 1) r.aprendiendo++;
+      else if (x.caja < INTERVALOS.length) r.afianzando++;
+      else r.sabidas++;
+      if (x.proximo <= hoy) r.paraHoy++;
+    });
+    return r;
+  }
+
   function estadisticas() {
     var h = mio().historial;
     var total = 0, aciertos = 0, puntos = 0;
@@ -905,6 +947,33 @@ window.Almacen = (function () {
        activa       si la última vez Google dijo que estaba pagada
        verificada   cuándo fue esa última vez
        enPlay       si alguna vez se abrió desde la app de Google Play */
+  /* ---------------------- el camino de niveles ----------------------
+
+     Las estrellas de cada nivel del mapa de cada juego, la mejor vez. Un
+     nivel está pasado con una estrella o más, y eso abre el siguiente. */
+  function mapaDe(clave) {
+    var yo = mio();
+    if (!yo.mapas) yo.mapas = {};
+    return yo.mapas[clave] || {};
+  }
+
+  function estrellasDeNivel(clave, numero) {
+    return mapaDe(clave)[numero] || 0;
+  }
+
+  /** Anota las estrellas de un nivel si mejoró. Devuelve las de antes. */
+  function anotarNivelDelMapa(clave, numero, estrellas) {
+    var yo = mio();
+    if (!yo.mapas) yo.mapas = {};
+    if (!yo.mapas[clave]) yo.mapas[clave] = {};
+    var antes = yo.mapas[clave][numero] || 0;
+    if (estrellas > antes) {
+      yo.mapas[clave][numero] = estrellas;
+      guardar();
+    }
+    return antes;
+  }
+
   function plan() {
     if (!datos.ajustes.plan) datos.ajustes.plan = {};
     return datos.ajustes.plan;
@@ -943,9 +1012,12 @@ window.Almacen = (function () {
     control: control, setControl: setControl, darMinutosHoy: darMinutosHoy,
     sumarTiempo: sumarTiempo, segundosDeHoy: segundosDeHoy,
     ultimosDias: ultimosDias, historialDesde: historialDesde,
+    historial: historial, tiempoTotal: tiempoTotal,
+    masAcertados: masAcertados, resumenDeMemoria: resumenDeMemoria,
     nivelHecho: nivelHecho, marcarNivel: marcarNivel,
     exportar: exportar, leerCopia: leerCopia, restaurar: restaurar,
     plan: plan, guardarPlan: guardarPlan,
+    mapaDe: mapaDe, estrellasDeNivel: estrellasDeNivel, anotarNivelDelMapa: anotarNivelDelMapa,
     vozActiva: vozActiva, setVoz: setVoz,
     hayPin: hayPin, pinCorrecto: pinCorrecto, setPin: setPin
   };

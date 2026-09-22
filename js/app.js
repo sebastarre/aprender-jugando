@@ -283,6 +283,7 @@
   var bienvenida = { nombre: '', edad: null, avatar: null, editando: null };
   var PANTALLAS = ['bienvenida', 'inicio', 'juegos', 'aprender', 'materia', 'lecciones', 'leccion',
                    'config', 'juego', 'fin', 'perfil', 'tienda', 'parental', 'descanso', 'plan',
+                   'camino', 'nivel-fin',
                    'examen', 'nota', 'configuracion', 'personalizacion'];
 
   function mostrar(nombre) {
@@ -306,6 +307,8 @@
 
   function cortarPartida() {
     dejarDeLeerPreguntas();
+    cerrarHojaDeNivel();
+    nivelEnJuego = null;
     ejercicioActual = null;
     Motor.abandonar();
     MATERIAS.forEach(function (m) { if (m.modulo && m.modulo.limpiar) m.modulo.limpiar(); });
@@ -1095,13 +1098,25 @@
       caja.appendChild(Util.crear('span', 'traba-texto', consejo.texto));
       b.cuerpo.appendChild(caja);
     } else {
-      var niveles = nivelesDeJuego(materia, j);
-      if (niveles && niveles.hechos) {
-        b.cuerpo.appendChild(barraDeAvance(niveles, 'nivel hecho', 'niveles hechos'));
-      } else if (niveles) {
-        b.cuerpo.appendChild(Util.crear('span', 'card-empezar', 'Empezá por el nivel 1'));
+      // lo que lleva del camino de niveles, con sus estrellas
+      var prog = progresoDelMapa(materia, j);
+      if (prog.completo) {
+        var listo = Util.crear('div', 'card-dominado');
+        listo.appendChild(Iconos.crear('trofeo'));
+        listo.appendChild(Util.crear('span', null, ' ¡Terminaste los ' + prog.total + ' niveles!'));
+        b.cuerpo.appendChild(listo);
+      } else if (prog.pasados) {
+        b.cuerpo.appendChild(barraDeAvance({ hechos: prog.pasados, total: prog.total }, 'nivel', 'niveles'));
+      } else {
+        b.cuerpo.appendChild(Util.crear('span', 'card-empezar', prog.total + ' niveles · empezá por el 1'));
       }
-      if (dominado(materia, j)) {
+      if (prog.estrellas) {
+        var est = Util.crear('span', 'card-estrellas');
+        est.appendChild(Iconos.crear('estrella'));
+        est.appendChild(Util.crear('span', null, ' ' + prog.estrellas + ' de ' + prog.maximo));
+        b.cuerpo.appendChild(est);
+      }
+      if (!prog.completo && dominado(materia, j)) {
         var d = Util.crear('div', 'card-dominado');
         d.appendChild(Iconos.crear('tilde'));
         d.appendChild(Util.crear('span', null, ' Lo dominás'));
@@ -1122,13 +1137,434 @@
    * pregunta nada: ya se lo dijimos cuando lo estuvo.
    */
   function irAlJuego(materia, juego, consejo) {
-    var destino = '#/juego/' + materia.id + '/' + juego.id;
+    // se entra al camino de niveles; el modo libre está adentro
+    var destino = '#/mapa/' + materia.id + '/' + juego.id;
     if (!consejo || consejo.listo) return irA(destino);
     preguntar({
       titulo: 'Este es para chicos de ' + consejo.edad,
       texto: 'Tenés ' + edadDelChico() + ', así que te puede resultar difícil. Podés jugarlo igual.',
       si: 'Jugar igual'
     }, function () { irA(destino); });
+  }
+
+  /* ======================== el camino de niveles ========================
+
+     Cada juego tiene un mapa de 10 a 20 niveles (los arma cada juego en
+     su `mapa()`). Se juegan en orden: pasar uno, con una estrella o más,
+     abre el siguiente. Cada cinco hay un desafío: una sola oportunidad
+     por pregunta y sin pistas, y se pasa con el 70%.
+
+     Las estrellas de un nivel común salen de los puntos (acertar al
+     primer intento vale más que al tercero); las de un desafío, de
+     cuántas acertó. Con la mitad de los puntos se pasa: el mapa es para
+     avanzar, y para las tres estrellas está el volver a jugarlo. */
+  var nivelEnJuego = null;       // { materia, juego, nivel } mientras se juega uno
+  var ultimoNivel = null;        // cómo le fue en el último, para su pantalla de fin
+  var recienAbierto = null;      // 'materia/juego#n': el nivel que se acaba de abrir
+
+  function claveDeMapa(materia, juego) { return materia.id + '/' + juego.id; }
+  function nivelesDelMapa(juego) { return juego.mapa ? juego.mapa() : []; }
+
+  function progresoDelMapa(materia, juego) {
+    var niveles = nivelesDelMapa(juego);
+    var guardado = Almacen.mapaDe(claveDeMapa(materia, juego));
+    var pasados = 0, estrellas = 0, actual = null;
+    niveles.forEach(function (n) {
+      var e = guardado[n.numero] || 0;
+      estrellas += e;
+      if (e > 0) pasados++;
+      else if (!actual) actual = n.numero;
+    });
+    return {
+      total: niveles.length, pasados: pasados, estrellas: estrellas,
+      maximo: niveles.length * 3, actual: actual,
+      completo: niveles.length > 0 && pasados === niveles.length
+    };
+  }
+
+  function nivelAbierto(materia, juego, numero) {
+    return numero === 1 || Almacen.estrellasDeNivel(claveDeMapa(materia, juego), numero - 1) > 0;
+  }
+
+  function estrellasDelNivel(nivel, r) {
+    if (!r.total) return 0;
+    if (nivel.test) {
+      var p = r.aciertos / r.total;
+      return p >= 1 ? 3 : p >= 0.85 ? 2 : p >= 0.7 ? 1 : 0;
+    }
+    var q = r.maximo ? r.puntos / r.maximo : 0;
+    return q >= 0.95 ? 3 : q >= 0.75 ? 2 : q >= 0.5 ? 1 : 0;
+  }
+
+  /** La cara del chico para el mapa: su foto, o el monigote que eligió. */
+  function caraDelChico() {
+    var caja = Util.crear('span', 'camino-yo-cara');
+    var foto = Almacen.foto();
+    if (foto) {
+      var img = new Image();
+      img.src = foto;
+      img.alt = '';
+      caja.appendChild(img);
+    } else {
+      var yo = Almacen.activo();
+      caja.textContent = yo ? yo.avatar : '🙂';
+    }
+    return caja;
+  }
+
+  function pintarCamino(materia, juego) {
+    var prog = progresoDelMapa(materia, juego);
+    var cab = $('camino-cabecera');
+    cab.style.setProperty('--camino-color', Util.oscurecer(juego.color, 0.82));
+    cab.style.setProperty('--camino-oscuro', Util.oscurecer(juego.color, 0.6));
+    var icono = $('camino-icono');
+    Util.vaciar(icono);
+    ponerIcono(icono, juego.icono);
+    $('camino-titulo').textContent = juego.nombre;
+    $('camino-progreso').textContent = prog.completo
+      ? '¡Terminaste los ' + prog.total + ' niveles! · ' + prog.estrellas + ' de ' + prog.maximo + ' estrellas'
+      : 'Nivel ' + prog.actual + ' de ' + prog.total + ' · ' + Util.plural(prog.estrellas, 'estrella');
+    var barra = $('camino-barra');
+    barra.setAttribute('aria-valuemax', String(prog.total));
+    barra.setAttribute('aria-valuenow', String(prog.pasados));
+    barra.setAttribute('aria-label', prog.pasados + ' de ' + prog.total + ' niveles');
+    barra.firstElementChild.style.transform = 'scaleX(' + (prog.total ? prog.pasados / prog.total : 0) + ')';
+
+    $('camino-libre').href = '#/juego/' + materia.id + '/' + juego.id;
+    var leccion = leccionesVisibles(materia.id).filter(function (l) {
+      return l.juego === claveDeMapa(materia, juego);
+    })[0];
+    var enlace = $('camino-leccion');
+    enlace.hidden = !leccion;
+    if (leccion) {
+      Util.vaciar(enlace);
+      enlace.appendChild(Iconos.crear('aprender'));
+      enlace.appendChild(Util.crear('span', null, Almacen.leccionVista(leccion.id) ? ' Repasar la lección' : ' Ver la lección'));
+      enlace.href = '#/leccion/' + leccion.id;
+    }
+
+    var terminado = $('camino-terminado');
+    terminado.hidden = !prog.completo;
+    if (prog.completo) pintarRecomendacion(terminado, materia, juego, '¡Terminaste el mapa! ¿Y ahora?');
+
+    var clave = claveDeMapa(materia, juego);
+    var recien = null;
+    if (recienAbierto && recienAbierto.indexOf(clave + '#') === 0) {
+      recien = parseInt(recienAbierto.slice(clave.length + 1), 10);
+      recienAbierto = null;
+    }
+    var niveles = nivelesDelMapa(juego);
+    var actual = Camino.pintar($('camino'), {
+      niveles: niveles,
+      estrellas: Almacen.mapaDe(clave),
+      color: Util.oscurecer(juego.color, 0.9),
+      oscuro: Util.oscurecer(juego.color, 0.62),
+      cara: caraDelChico,
+      recien: recien,
+      alTocar: function (nivel, abierto) {
+        Sonido.despertar(); Sonido.tocar('clic');
+        abrirHojaDeNivel(materia, juego, nivel, abierto);
+      }
+    });
+
+    /* Al entrar, el nivel que toca a la vista. Si se acaba de abrir, la
+       cara camina hasta él y después se abre su hoja sola: el siguiente
+       paso es jugarlo, y queda a un toque. */
+    setTimeout(function () {
+      var destino = actual || $('camino').lastElementChild;
+      if (destino && destino.scrollIntoView) destino.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }, recien ? 80 : 30);
+    if (recien) {
+      setTimeout(function () {
+        if ($('pantalla-camino').hidden) return;
+        Sonido.tocar('acierto');
+        abrirHojaDeNivel(materia, juego, niveles[recien - 1], true);
+      }, 1300);
+    }
+  }
+
+  function abrirHojaDeNivel(materia, juego, nivel, abierto) {
+    var clave = claveDeMapa(materia, juego);
+    var estrellas = Almacen.estrellasDeNivel(clave, nivel.numero);
+    var hoja = $('hoja-nivel');
+    hoja.style.setProperty('--camino-color', Util.oscurecer(juego.color, 0.9));
+    hoja.style.setProperty('--camino-oscuro', Util.oscurecer(juego.color, 0.62));
+
+    var insignia = $('hoja-insignia');
+    Util.vaciar(insignia);
+    insignia.className = 'hoja-insignia' + (nivel.test ? ' desafio' : '') + (abierto ? '' : ' cerrado');
+    if (!abierto) insignia.appendChild(Iconos.crear('candado'));
+    else if (nivel.test) insignia.appendChild(Iconos.crear('trofeo'));
+    else insignia.textContent = String(nivel.numero);
+
+    $('hoja-antetitulo').textContent = 'Nivel ' + nivel.numero + (nivel.test ? ' · Desafío' : '');
+    $('hoja-titulo').textContent = nivel.nombre;
+    $('hoja-detalle').textContent = nivel.detalle || '';
+
+    var fila = $('hoja-estrellas');
+    Util.vaciar(fila);
+    fila.hidden = !abierto;
+    for (var i = 0; i < 3; i++) {
+      var e = Util.crear('span', i < estrellas ? 'ganada' : '');
+      e.appendChild(Iconos.crear('estrella'));
+      fila.appendChild(e);
+    }
+
+    $('hoja-regla').textContent = !abierto
+      ? 'Pasá el nivel ' + (nivel.numero - 1) + ' para abrir éste.'
+      : nivel.test
+        ? 'Una sola oportunidad por pregunta y sin pistas. Se pasa con 7 de cada 10.'
+        : 'Tres intentos por pregunta, con pistas si te equivocás.';
+
+    var jugar = $('btn-hoja-jugar');
+    jugar.hidden = !abierto;
+    jugar.textContent = estrellas ? 'Jugar otra vez' : '¡Jugar!';
+    jugar.onclick = function () {
+      Sonido.despertar(); Sonido.tocar('clic');
+      cerrarHojaDeNivel();
+      irA('#/nivel/' + materia.id + '/' + juego.id + '/' + nivel.numero);
+    };
+    hoja.hidden = false;
+    requestAnimationFrame(function () { hoja.classList.add('abierta'); });
+    setTimeout(function () { (abierto ? jugar : $('btn-hoja-cerrar')).focus(); }, 60);
+  }
+
+  function cerrarHojaDeNivel() {
+    var hoja = $('hoja-nivel');
+    hoja.classList.remove('abierta');
+    hoja.hidden = true;
+  }
+
+  function jugarNivel(materia, juego, numero) {
+    var nivel = nivelesDelMapa(juego)[numero - 1];
+    if (!nivel || !nivelAbierto(materia, juego, numero)) {
+      return irA('#/mapa/' + materia.id + '/' + juego.id);
+    }
+    nivelEnJuego = { materia: materia, juego: juego, nivel: nivel };
+    sel.materia = materia.id;
+    sel.juego = juego.id;
+    var items = nivel.preguntas();
+    /* El desafío: una oportunidad y sin pistas. Dice igual si estuvo
+       bien o mal (no es un examen mudo): es para chicos, y cada respuesta
+       enseña algo aunque ya no sume. */
+    var reglas = nivel.test ? { intentos: 1, pista: null } : {};
+    juego.montar(items[0]);
+    Motor.jugar(Object.assign({
+      items: items,
+      render: function (item) { juego.montar(item); }
+    }, juego.ganchos(), reglas, { alTerminar: terminarNivel }));
+  }
+
+  function terminarNivel(r) {
+    var ctx = nivelEnJuego;
+    nivelEnJuego = null;
+    if (!ctx) return irA('#/juegos');
+    var materia = ctx.materia, juego = ctx.juego, nivel = ctx.nivel;
+    var clave = claveDeMapa(materia, juego);
+    var completoAntes = progresoDelMapa(materia, juego).completo;
+
+    var estrellas = estrellasDelNivel(nivel, r);
+    var antes = Almacen.anotarNivelDelMapa(clave, nivel.numero, estrellas);
+    // a la cuenta de estrellas del chico va sólo lo que mejoró
+    if (estrellas > antes) Almacen.sumarEstrellas(estrellas - antes);
+
+    var delDia = Almacen.registrarPartida({
+      materia: materia.id, juego: juego.id, tipo: 'mapa',
+      detalle: 'Nivel ' + nivel.numero + ' · ' + nivel.nombre,
+      puntos: r.puntos, maximo: r.maximo, aciertos: r.aciertos, total: r.total,
+      estrellas: estrellas, segundos: r.segundos
+    });
+    if (r.total >= MINIMO_PARA_DOMINAR && r.aciertos === r.total) {
+      Almacen.marcarDominado(materia.id + '/' + juego.id);
+    }
+    Almacen.registrarErrores(materia.id, r.errores.map(function (item) {
+      return {
+        clave: materia.modulo.claveItem(item),
+        nombre: materia.modulo.repaso(item).nombre,
+        juego: juego.id
+      };
+    }));
+    var claves = (r.acertados || []).map(function (item) { return materia.modulo.claveItem(item); });
+    var premio = calcularMonedas(claves.map(function (c) { return materia.id + ':' + c; }));
+    Almacen.registrarAciertos(materia.id, claves);
+    Almacen.sumarMonedas(premio.total);
+
+    var paso = estrellas > 0;
+    var siguiente = nivelesDelMapa(juego)[nivel.numero] || null;
+    if (paso && antes === 0 && siguiente) recienAbierto = clave + '#' + siguiente.numero;
+    var completo = progresoDelMapa(materia, juego).completo;
+
+    ultimoNivel = {
+      materia: materia, juego: juego, nivel: nivel, r: r,
+      estrellas: estrellas, antes: antes, paso: paso, siguiente: siguiente,
+      termino: completo && !completoAntes, completo: completo,
+      premio: premio, delDia: delDia
+    };
+    pintarBarraSuperior();
+    irA('#/nivel-fin');
+  }
+
+  function pintarFinDeNivel() {
+    var u = ultimoNivel;
+    var nivel = u.nivel, r = u.r;
+    var tarjeta = document.querySelector('.nivel-fin');
+    tarjeta.style.setProperty('--camino-color', Util.oscurecer(u.juego.color, 0.9));
+    tarjeta.style.setProperty('--camino-oscuro', Util.oscurecer(u.juego.color, 0.62));
+    tarjeta.classList.toggle('paso', u.paso);
+
+    var insignia = $('nivel-fin-insignia');
+    Util.vaciar(insignia);
+    insignia.className = 'nivel-fin-insignia' + (nivel.test ? ' desafio' : '');
+    if (nivel.test) insignia.appendChild(Iconos.crear('trofeo'));
+    else insignia.textContent = String(nivel.numero);
+
+    /* Las estrellas aparecen de a una, cada una con su sonido que sube:
+       es el momento de «lo hice», y va atado a lo que hizo, no a un
+       premio aparte. */
+    var fila = $('nivel-fin-estrellas');
+    Util.vaciar(fila);
+    fila.setAttribute('aria-label', u.estrellas + ' de 3 estrellas');
+    for (var i = 0; i < 3; i++) {
+      var e = Util.crear('span', i < u.estrellas ? 'ganada' : '');
+      e.style.animationDelay = (0.25 + i * 0.35) + 's';
+      e.appendChild(Iconos.crear('estrella'));
+      fila.appendChild(e);
+    }
+    for (var k = 0; k < u.estrellas; k++) {
+      (function (k) {
+        setTimeout(function () { if (!$('pantalla-nivel-fin').hidden) Sonido.tocar('acierto'); }, 350 + k * 350);
+      })(k);
+    }
+
+    var titulo, texto;
+    var bien = r.aciertos + ' de ' + r.total + ' bien.';
+    if (!u.paso) {
+      // «¡Casi!» sólo si estuvo cerca: con 1 de 10 no es casi, y un chico se da cuenta
+      titulo = r.total && r.aciertos / r.total >= 0.5 ? '¡Casi!' : '¡A practicar un poco más!';
+      texto = bien + (nivel.test
+        ? ' El desafío se pasa con ' + Math.ceil(r.total * 0.7) + '. Repasá lo de abajo y probá de nuevo.'
+        : ' Te faltó un poquito: probá otra vez, que las pistas te ayudan.');
+    } else if (u.termino) {
+      titulo = '¡Terminaste ' + u.juego.nombre + '!';
+      texto = bien + ' Pasaste los ' + nivelesDelMapa(u.juego).length + ' niveles.';
+    } else {
+      titulo = nivel.test ? '¡Desafío superado!' : '¡Nivel ' + nivel.numero + ' superado!';
+      texto = bien + (u.antes && u.estrellas > u.antes ? ' ¡Sacaste más estrellas que antes!'
+        : u.antes === 0 && u.siguiente ? ' Se abrió el nivel ' + u.siguiente.numero + '.' : '');
+    }
+    $('nivel-fin-titulo').textContent = titulo;
+    $('nivel-fin-texto').textContent = texto;
+
+    var rec = $('nivel-fin-recomendacion');
+    rec.hidden = !(u.paso && !u.siguiente);
+    if (!rec.hidden) pintarRecomendacion(rec, u.materia, u.juego, '¿Y ahora?');
+
+    var lista = $('nivel-fin-lista');
+    Util.vaciar(lista);
+    $('nivel-fin-repaso').hidden = !r.errores.length;
+    r.errores.forEach(function (item) { lista.appendChild(itemRepaso(u.materia.modulo.repaso(item))); });
+
+    pintarPremio($('nivel-fin-monedas'), u.premio);
+    var meta = $('nivel-fin-meta');
+    meta.hidden = !(u.delDia && u.delDia.metaCumplida);
+    if (!meta.hidden) {
+      meta.textContent = '🏆 ¡Cumpliste la meta de hoy!' + (Almacen.control().tienda ? ' +' + u.delDia.premio + ' monedas' : '');
+    }
+
+    var aMapa = '#/mapa/' + u.materia.id + '/' + u.juego.id;
+    var principal = $('btn-nivel-principal');
+    var otraVez = $('btn-nivel-otra-vez');
+    var alMapa = $('btn-nivel-mapa');
+    otraVez.hidden = !u.paso;
+    alMapa.hidden = false;
+    if (!u.paso) {
+      principal.textContent = 'Probar de nuevo';
+      principal.onclick = function () { Sonido.tocar('clic'); irA('#/nivel/' + u.materia.id + '/' + u.juego.id + '/' + nivel.numero); };
+    } else if (u.siguiente) {
+      principal.textContent = 'Siguiente nivel';
+      principal.onclick = function () { Sonido.tocar('clic'); irA(aMapa); };
+      alMapa.hidden = true;           // el siguiente nivel ya lleva al mapa
+    } else {
+      principal.textContent = 'Ver el mapa';
+      principal.onclick = function () { Sonido.tocar('clic'); irA(aMapa); };
+      alMapa.hidden = true;
+    }
+    otraVez.onclick = function () { Sonido.tocar('clic'); irA('#/nivel/' + u.materia.id + '/' + u.juego.id + '/' + nivel.numero); };
+    alMapa.onclick = function () { Sonido.tocar('clic'); irA(aMapa); };
+    Sonido.tocar(u.paso ? 'fin' : 'revelar');
+  }
+
+  /**
+   * Qué seguir después de terminar el mapa de un juego: el próximo juego
+   * de la materia que todavía no terminó (en el orden de edades, así que
+   * suele ser «el de un poco más grande»), y una lección que no hizo,
+   * mejor si es la que explica ese juego. Si terminó todos los de la
+   * materia, el primero sin terminar de otra.
+   */
+  function recomendacionDespuesDe(materia, juego) {
+    var visibles = juegosVisibles(materia);
+    var i = visibles.indexOf(juego);
+    var orden = visibles.slice(i + 1).concat(visibles.slice(0, Math.max(0, i)));
+    var proximo = null, deMateria = materia;
+    orden.some(function (j) {
+      if (j.mapa && !progresoDelMapa(materia, j).completo) { proximo = j; return true; }
+      return false;
+    });
+    if (!proximo) {
+      materiasVisibles().some(function (m) {
+        if (m === materia || !m.disponible) return false;
+        return juegosVisibles(m).some(function (j) {
+          if (j.mapa && !progresoDelMapa(m, j).completo) { proximo = j; deMateria = m; return true; }
+          return false;
+        });
+      });
+    }
+    /* Sólo lecciones de su edad (o de la del juego que se le recomienda):
+       al que terminó Contar a los cuatro años no se le ofrece «sumar
+       llevándose una», aunque sea la primera que le falta. */
+    var hastaEdad = Math.max(edadDelChico() || 12, proximo ? proximo.edadMin || 0 : 0);
+    var lecciones = leccionesVisibles(deMateria.id).filter(function (l) {
+      return !Almacen.leccionVista(l.id) && (l.edadMin || 0) <= hastaEdad;
+    });
+    var leccion = (proximo && lecciones.filter(function (l) { return l.juego === claveDeMapa(deMateria, proximo); })[0]) ||
+                  lecciones[0] || null;
+    return { juego: proximo, materia: deMateria, leccion: leccion };
+  }
+
+  function pintarRecomendacion(caja, materia, juego, titulo) {
+    var rec = recomendacionDespuesDe(materia, juego);
+    Util.vaciar(caja);
+    caja.appendChild(Util.crear('p', 'recomendacion-titulo', titulo));
+    if (!rec.juego && !rec.leccion) {
+      caja.appendChild(Util.crear('p', 'recomendacion-vacia', '¡Terminaste todos los juegos! Sos un bichito muy curioso.'));
+      return;
+    }
+    function opcion(href, color, icono, arriba, nombre, abajo) {
+      var a = Util.crear('a', 'recomendacion-opcion');
+      a.href = href;
+      a.style.setProperty('--rec-color', color);
+      a.appendChild(ponerIcono(Util.crear('span', 'recomendacion-icono'), icono));
+      var cuerpo = Util.crear('span', 'recomendacion-cuerpo');
+      cuerpo.appendChild(Util.crear('span', 'recomendacion-arriba', arriba));
+      cuerpo.appendChild(Util.crear('b', null, nombre));
+      cuerpo.appendChild(Util.crear('span', 'recomendacion-abajo', abajo));
+      a.appendChild(cuerpo);
+      a.appendChild(Util.crear('span', 'card-flecha', '›'));
+      return a;
+    }
+    if (rec.juego) {
+      var prog = progresoDelMapa(rec.materia, rec.juego);
+      caja.appendChild(opcion('#/mapa/' + rec.materia.id + '/' + rec.juego.id,
+        rec.juego.color, rec.juego.icono, 'Seguí mejorando con',
+        rec.juego.nombre,
+        (rec.materia !== materia ? rec.materia.nombre + ' · ' : '') +
+        (prog.pasados ? 'vas por el nivel ' + prog.actual : prog.total + ' niveles nuevos')));
+    }
+    if (rec.leccion) {
+      caja.appendChild(opcion('#/leccion/' + rec.leccion.id,
+        rec.materia.color, rec.leccion.icono || 'aprender', 'O aprendé algo nuevo',
+        rec.leccion.titulo, 'Una lección corta, con voz y un ejercicio'));
+    }
   }
 
   /* ---------------------- sección Aprender ---------------------- */
@@ -1242,7 +1678,10 @@
   /* ---------------------- configurar la partida ---------------------- */
   function pintarConfig(materia, juego) {
     tituloConIcono($('titulo-config'), juego.icono, juego.nombre);
-    $('subtitulo-config').textContent = juego.texto;
+    /* Esto es el modo libre: se elige todo a mano y se juega sin mapa.
+       El camino de niveles es la puerta de entrada; ésta, la de atrás. */
+    $('subtitulo-config').textContent = 'Modo libre: elegí vos qué jugar';
+    $('config-al-mapa').href = '#/mapa/' + materia.id + '/' + juego.id;
     pintarEnlaceLeccion(materia, juego);
 
     sel.materia = materia.id;
@@ -1545,7 +1984,7 @@
       materia: materia.id, juego: juego.id, tipo: 'leccion',
       detalle: 'Ejercicio de «' + leccion.titulo + '»',
       puntos: r.puntos, maximo: r.maximo,
-      aciertos: r.aciertos, total: r.total, estrellas: 0
+      aciertos: r.aciertos, total: r.total, estrellas: 0, segundos: r.segundos
     });
     Almacen.registrarErrores(materia.id, r.errores.map(function (item) {
       return {
@@ -1623,7 +2062,7 @@
     var delDia = Almacen.registrarPartida({
       materia: materia.id, juego: juego.id, detalle: detalle,
       puntos: r.puntos, maximo: r.maximo,
-      aciertos: r.aciertos, total: r.total, estrellas: estrellas
+      aciertos: r.aciertos, total: r.total, estrellas: estrellas, segundos: r.segundos
     });
     /* Una partida entera sin errores quiere decir que ya se lo sabe.
        Se pide un mínimo de preguntas para que no valga con una sola
@@ -1892,7 +2331,7 @@
       materia: 'repaso', juego: 'repaso', tipo: 'repaso',
       detalle: 'Repaso · ' + Util.plural(itemsDelRepaso.length, 'pregunta'),
       puntos: r.puntos, maximo: r.maximo,
-      aciertos: r.aciertos, total: r.total, estrellas: estrellas
+      aciertos: r.aciertos, total: r.total, estrellas: estrellas, segundos: r.segundos
     });
 
     pintarPremio($('premio-monedas'), premio);
@@ -2097,7 +2536,7 @@
       materia: 'examen', juego: 'examen', tipo: 'examen',
       detalle: 'Examen · ' + Util.plural(selExamen.juegos.length, 'juego'),
       puntos: r.puntos, maximo: r.maximo,
-      aciertos: r.aciertos, total: r.total, estrellas: 0
+      aciertos: r.aciertos, total: r.total, estrellas: 0, segundos: r.segundos
     });
     pintarBarraSuperior();
 
@@ -2849,7 +3288,7 @@
 
   var activoAntesDelPanel = null;   // el chico que jugaba antes de entrar al panel
   var pantallaActual = null;
-  var RUTAS_CON_TIEMPO = ['jugar', 'ejercicio', 'repasando', 'rindiendo', 'leccion'];
+  var RUTAS_CON_TIEMPO = ['jugar', 'nivel', 'ejercicio', 'repasando', 'rindiendo', 'leccion'];
   var TICK_TIEMPO = 30;             // segundos
   var OPCIONES_TIEMPO = [
     { n: 0, nombre: 'Sin límite', detalle: 'Cuando quiera' },
@@ -2865,7 +3304,7 @@
 
   /** La materia de la que es la pantalla pedida, si es de alguna. */
   function materiaDeLaRuta(partes) {
-    if (['materia', 'juego', 'lecciones'].indexOf(partes[0]) >= 0) return materiaPorId(partes[1]);
+    if (['materia', 'juego', 'lecciones', 'mapa', 'nivel'].indexOf(partes[0]) >= 0) return materiaPorId(partes[1]);
     if (partes[0] === 'jugar') return materiaPorId(sel.materia);
     if ((partes[0] === 'leccion' || partes[0] === 'ejercicio') && window.Lecciones) {
       var l = Lecciones.porId(partes[1]);
@@ -2957,12 +3396,25 @@
     if (est.racha > 1) partes.push(est.racha + ' días seguidos jugando');
     $('parental-sub').textContent = (yo ? yo.nombre + ' · ' : '') + partes.join(' · ');
 
-    pintarSemana();
-    pintarMateriasDelPanel(est);
-    pintarFallosDelPanel();
+    // Resumen
+    pintarTotales(est);
+    pintarActividad(periodoDelPanel);
+    pintarCuandoJuega();
     pintarJuntos();
-    pintarLimites();
+    // Aprendizaje
+    pintarMejora();
+    pintarMateriasDelPanel(est);
+    pintarMemoria();
+    pintarFallosDelPanel();
+    pintarAciertosDelPanel();
+    pintarLeccionesDelPanel();
+    // Juegos
+    pintarJuegosDelPanel();
+    pintarExamenesDelPanel();
     pintarPartidasDelPanel(est);
+    // Límites
+    pintarLimites();
+    mostrarPestana(pestanaDelPanel);
   }
 
   /* Con más de un chico, se elige de quién ver y ajustar. Al salir del
@@ -2987,12 +3439,125 @@
     });
   }
 
-  /** Cuatro números de la semana y las respuestas bien de cada día. */
-  function pintarSemana() {
-    var dias = Almacen.ultimosDias(7);
+  /* ---------------------- estadísticas del panel ---------------------- */
+
+  var periodoDelPanel = 7;           // la actividad: 7 o 30 días
+  var pestanaDelPanel = 'resumen';
+  var PESTANAS = ['resumen', 'aprendizaje', 'juegos', 'limites'];
+
+  function mostrarPestana(cual) {
+    pestanaDelPanel = cual;
+    PESTANAS.forEach(function (p) {
+      var activa = p === cual;
+      $('panel-' + p).hidden = !activa;
+      var b = $('pestana-' + p);
+      b.setAttribute('aria-selected', activa ? 'true' : 'false');
+      b.tabIndex = activa ? 0 : -1;
+    });
+  }
+
+  /** «2 h 15 min», «45 min», «menos de 1 min». */
+  function tiempoCorto(segundos) {
+    var min = Math.round(segundos / 60);
+    if (min < 1) return 'menos de 1 min';
+    if (min < 60) return min + ' min';
+    var h = Math.floor(min / 60), resto = min % 60;
+    return h + ' h' + (resto ? ' ' + resto + ' min' : '');
+  }
+
+  /** «hoy», «ayer», «hace 5 días». */
+  function haceCuanto(ms) {
+    var hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+    var dia = new Date(ms); dia.setHours(0, 0, 0, 0);
+    var dias = Math.round((hoy - dia) / 864e5);
+    return dias <= 0 ? 'hoy' : dias === 1 ? 'ayer' : 'hace ' + dias + ' días';
+  }
+
+  function cuadritos(caja, lista) {
+    Util.vaciar(caja);
+    lista.forEach(function (par) {
+      var d = Util.crear('div', 'stat');
+      d.appendChild(Util.crear('b', null, String(par[0])));
+      d.appendChild(Util.crear('span', null, par[1]));
+      caja.appendChild(d);
+    });
+  }
+
+  /**
+   * Un gráfico de barras. Cada dato: { nombre, largo, valor, cifra, hoy }.
+   * `largo` es cómo se lee en voz alta (el gráfico entero es una imagen
+   * con su descripción, para el lector de pantalla).
+   */
+  function barras(caja, datos, titulo, maximo) {
+    Util.vaciar(caja);
+    caja.classList.toggle('muchas', datos.length > 12);
+    // una columna por dato: la grilla del gráfico de la semana era de siete fijas
+    caja.style.gridTemplateColumns = 'repeat(' + datos.length + ', minmax(0, 1fr))';
+    var tope = maximo || Math.max.apply(null, datos.map(function (d) { return d.valor; })) || 1;
+    caja.setAttribute('aria-label', titulo + ': ' + datos.map(function (d) {
+      return (d.largo || d.nombre) + ' ' + d.cifra;
+    }).join(', '));
+    datos.forEach(function (d) {
+      var col = Util.crear('div', 'semana-dia' + (d.hoy ? ' hoy' : ''));
+      col.appendChild(Util.crear('span', 'semana-cifra', d.valor ? d.cifra : ''));
+      var pozo = Util.crear('div', 'semana-pozo');
+      var barra = Util.crear('i', 'semana-barra' + (d.valor ? '' : ' vacia'));
+      barra.style.height = (d.valor ? Math.max(6, d.valor / tope * 100) : 0) + '%';
+      pozo.appendChild(barra);
+      col.appendChild(pozo);
+      col.appendChild(Util.crear('span', 'semana-nombre', d.nombre));
+      caja.appendChild(col);
+    });
+  }
+
+  /** Los números de siempre: desde que empezó a jugar. */
+  function pintarTotales(est) {
+    var historial = Almacen.historial();
+    var diasActivos = Almacen.ultimosDias(365).filter(function (d) { return d.aciertos || d.segundos; }).length;
+
+    var niveles = 0, pasados = 0, terminados = 0;
+    MATERIAS.forEach(function (m) {
+      if (!m.disponible) return;
+      m.juegos.forEach(function (j) {
+        var prog = progresoDelMapa(m, j);
+        niveles += prog.total;
+        pasados += prog.pasados;
+        if (prog.completo) terminados++;
+      });
+    });
+    var totalLecciones = window.Lecciones ? Lecciones.LECCIONES.length : 0;
+    var examenes = historial.filter(function (p) { return p.tipo === 'examen' && p.total; });
+    var promedio = examenes.length
+      ? (examenes.reduce(function (s, p) { return s + Examen.nota(p.aciertos, p.total); }, 0) / examenes.length)
+      : null;
+
+    var lista = [
+      [tiempoCorto(Almacen.tiempoTotal()), 'jugando (60 días)'],
+      [est.partidas, 'partidas'],
+      [est.preguntas, 'preguntas'],
+      [est.preguntas ? est.precision + '%' : '—', 'de aciertos'],
+      [diasActivos, diasActivos === 1 ? 'día jugado' : 'días jugados'],
+      [Almacen.mejorRacha(), 'días seguidos, lo más'],
+      [pasados + '/' + niveles, 'niveles del mapa'],
+      [terminados, terminados === 1 ? 'juego terminado' : 'juegos terminados'],
+      [Almacen.estrellas(), 'estrellas'],
+      [Almacen.cuantasLecciones() + '/' + totalLecciones, 'lecciones'],
+      [promedio === null ? '—' : String(Math.round(promedio * 10) / 10).replace('.', ','), 'nota de exámenes'],
+      [Almacen.cuantosDominados(), 'juegos dominados']
+    ];
+    cuadritos($('parental-total'), lista);
+  }
+
+  /** La actividad de los últimos 7 o 30 días: cuatro números y dos gráficos. */
+  function pintarActividad(n) {
+    periodoDelPanel = n;
+    document.querySelectorAll('.chip-periodo').forEach(function (b) {
+      b.setAttribute('aria-pressed', String(b.getAttribute('data-dias') === String(n)));
+    });
+    var dias = Almacen.ultimosDias(n);
     var desde = new Date();
     desde.setHours(0, 0, 0, 0);
-    desde.setDate(desde.getDate() - 6);
+    desde.setDate(desde.getDate() - (n - 1));
     var aciertos = 0, total = 0;
     Almacen.historialDesde(desde.getTime()).forEach(function (p) {
       aciertos += p.aciertos;
@@ -3001,37 +3566,278 @@
     var jugados = dias.filter(function (d) { return d.aciertos || d.segundos; }).length;
     var bien = dias.reduce(function (s, d) { return s + d.aciertos; }, 0);
     var segundos = dias.reduce(function (s, d) { return s + d.segundos; }, 0);
-
-    var stats = $('parental-stats');
-    Util.vaciar(stats);
-    [
-      [jugados + '/7', 'días jugados'],
-      [String(bien), 'respuestas bien'],
+    cuadritos($('parental-stats'), [
+      [jugados + '/' + n, 'días jugados'],
+      [bien, 'respuestas bien'],
       [total ? Math.round(aciertos / total * 100) + '%' : '—', 'de aciertos'],
-      [textoDeTiempo(segundos).replace(' minutos', ' min').replace(' minuto', ' min'), 'jugando']
-    ].forEach(function (par) {
-      var d = Util.crear('div', 'stat');
-      d.appendChild(Util.crear('b', null, par[0]));
-      d.appendChild(Util.crear('span', null, par[1]));
-      stats.appendChild(d);
-    });
+      [tiempoCorto(segundos), 'jugando']
+    ]);
 
-    var grafico = $('parental-semana');
-    Util.vaciar(grafico);
-    var maximo = Math.max.apply(null, dias.map(function (d) { return d.aciertos; })) || 1;
-    grafico.setAttribute('aria-label', 'Respuestas bien por día: ' + dias.map(function (d) {
-      return DIAS[d.fecha.getDay()] + ' ' + d.aciertos;
-    }).join(', '));
-    dias.forEach(function (d, i) {
-      var col = Util.crear('div', 'semana-dia' + (i === dias.length - 1 ? ' hoy' : ''));
-      col.appendChild(Util.crear('span', 'semana-cifra', d.aciertos ? String(d.aciertos) : ''));
-      var pozo = Util.crear('div', 'semana-pozo');
-      var barra = Util.crear('i', 'semana-barra' + (d.aciertos ? '' : ' vacia'));
-      barra.style.height = (d.aciertos ? Math.max(6, d.aciertos / maximo * 100) : 0) + '%';
-      pozo.appendChild(barra);
-      col.appendChild(pozo);
-      col.appendChild(Util.crear('span', 'semana-nombre', i === dias.length - 1 ? 'Hoy' : DIAS[d.fecha.getDay()].slice(0, 3)));
-      grafico.appendChild(col);
+    /* Con 7 días va el nombre de cada día; con 30 no entran, y va la
+       fecha cada cinco. */
+    function nombre(d, i) {
+      if (i === dias.length - 1) return 'Hoy';
+      if (n <= 7) return DIAS[d.fecha.getDay()].slice(0, 3);
+      return (dias.length - 1 - i) % 5 === 0 ? d.fecha.getDate() + '/' + (d.fecha.getMonth() + 1) : '';
+    }
+    function largo(d) { return DIAS[d.fecha.getDay()] + ' ' + d.fecha.getDate() + '/' + (d.fecha.getMonth() + 1); }
+    barras($('parental-semana'), dias.map(function (d, i) {
+      return { nombre: nombre(d, i), largo: largo(d), valor: d.aciertos, cifra: String(d.aciertos), hoy: i === dias.length - 1 };
+    }), 'Respuestas bien por día');
+    barras($('parental-minutos'), dias.map(function (d, i) {
+      var min = Math.round(d.segundos / 60);
+      return { nombre: nombre(d, i), largo: largo(d), valor: min, cifra: min + '′', hoy: i === dias.length - 1 };
+    }), 'Minutos jugando por día');
+  }
+
+  /** En qué momento del día y en qué días de la semana juega. */
+  function pintarCuandoJuega() {
+    var caja = $('parental-cuando');
+    Util.vaciar(caja);
+    var historial = Almacen.historial();
+    if (!historial.length) {
+      caja.appendChild(Util.crear('p', 'vacio', 'Cuando juegue algunas partidas, acá se va a ver en qué horarios y qué días.'));
+      return;
+    }
+    var franjas = [['Mañana', 6, 12], ['Tarde', 12, 19], ['Noche', 19, 24], ['Madrugada', 0, 6]];
+    var porFranja = franjas.map(function () { return 0; });
+    var porDia = [0, 0, 0, 0, 0, 0, 0];
+    historial.forEach(function (p) {
+      var f = new Date(p.fecha);
+      var h = f.getHours();
+      franjas.forEach(function (fr, i) { if (h >= fr[1] && h < fr[2]) porFranja[i]++; });
+      porDia[f.getDay()]++;
+    });
+    function bloque(titulo, filas) {
+      var b = Util.crear('div', 'cuando-bloque');
+      b.appendChild(Util.crear('b', 'cuando-titulo', titulo));
+      var max = Math.max.apply(null, filas.map(function (f) { return f[1]; })) || 1;
+      filas.forEach(function (f) {
+        var fila = Util.crear('div', 'cuando-fila');
+        fila.appendChild(Util.crear('span', 'cuando-nombre', f[0]));
+        var riel = Util.crear('span', 'cuando-riel');
+        var lleno = Util.crear('i');
+        lleno.style.width = (f[1] / max * 100) + '%';
+        riel.appendChild(lleno);
+        fila.appendChild(riel);
+        fila.appendChild(Util.crear('span', 'cuando-cifra', Math.round(f[1] / historial.length * 100) + '%'));
+        b.appendChild(fila);
+      });
+      return b;
+    }
+    var filasFranja = franjas.map(function (fr, i) { return [fr[0], porFranja[i]]; })
+      .filter(function (f, i) { return i < 3 || f[1] > 0; });     // la madrugada, sólo si pasa
+    // la semana arranca el lunes
+    var filasDia = [1, 2, 3, 4, 5, 6, 0].map(function (d) {
+      return [DIAS[d].charAt(0).toUpperCase() + DIAS[d].slice(1, 3), porDia[d]];
+    });
+    caja.appendChild(bloque('Horario', filasFranja));
+    caja.appendChild(bloque('Días', filasDia));
+  }
+
+  /** El porcentaje de aciertos de cada una de las últimas ocho semanas. */
+  function pintarMejora() {
+    var historial = Almacen.historial();
+    var semanas = [];
+    var fin = new Date();
+    fin.setHours(24, 0, 0, 0);
+    for (var s = 7; s >= 0; s--) {
+      var hasta = fin.getTime() - s * 7 * 864e5;
+      var desde = hasta - 7 * 864e5;
+      var aciertos = 0, total = 0;
+      historial.forEach(function (p) {
+        if (p.fecha >= desde && p.fecha < hasta) { aciertos += p.aciertos; total += p.total; }
+      });
+      var inicio = new Date(desde);
+      semanas.push({
+        pct: total ? Math.round(aciertos / total * 100) : null,
+        nombre: s === 0 ? 'Esta' : inicio.getDate() + '/' + (inicio.getMonth() + 1)
+      });
+    }
+    barras($('parental-mejora'), semanas.map(function (w, i) {
+      return { nombre: w.nombre, largo: 'semana del ' + w.nombre, valor: w.pct || 0,
+               cifra: w.pct === null ? 'sin jugar' : w.pct + '%', hoy: i === semanas.length - 1 };
+    }), 'Porcentaje de aciertos por semana', 100);
+
+    var conDatos = semanas.filter(function (w) { return w.pct !== null; });
+    var texto;
+    if (conDatos.length < 2) {
+      texto = conDatos.length
+        ? 'Esta semana contesta bien el ' + conDatos[0].pct + '%. Con más semanas se va a ver cómo cambia.'
+        : 'Todavía no hay semanas jugadas para comparar.';
+    } else {
+      var primera = conDatos[0].pct, ultima = conDatos[conDatos.length - 1].pct;
+      texto = ultima - primera >= 5 ? 'Viene mejorando: pasó de ' + primera + '% a ' + ultima + '% de respuestas bien.'
+        : primera - ultima >= 5 ? 'Bajó de ' + primera + '% a ' + ultima + '%. Puede ser que esté probando cosas más difíciles.'
+        : 'Se mantiene parejo, alrededor del ' + ultima + '% de respuestas bien.';
+    }
+    $('parental-tendencia').textContent = texto;
+  }
+
+  /** Qué tan firme tiene lo que contestó: una barra en tres partes. */
+  function pintarMemoria() {
+    var caja = $('parental-memoria');
+    Util.vaciar(caja);
+    var m = Almacen.resumenDeMemoria();
+    var total = m.aprendiendo + m.afianzando + m.sabidas;
+    if (!total) {
+      caja.appendChild(Util.crear('p', 'vacio', 'Todavía no hay nada guardado en su memoria de la app.'));
+      return;
+    }
+    var partes = [
+      ['aprendiendo', 'Aprendiendo', m.aprendiendo, 'Lo falló hace poco o lo acertó una vez'],
+      ['afianzando', 'Afianzando', m.afianzando, 'Lo viene acertando, con días de por medio'],
+      ['sabidas', 'Ya lo sabe', m.sabidas, 'Lo acertó muchas veces; vuelve a las dos semanas']
+    ];
+    var barra = Util.crear('div', 'memoria-barra');
+    barra.setAttribute('role', 'img');
+    barra.setAttribute('aria-label', partes.map(function (p) { return p[1] + ' ' + p[2]; }).join(', '));
+    partes.forEach(function (p) {
+      if (!p[2]) return;
+      var tramo = Util.crear('i', 'memoria-' + p[0]);
+      tramo.style.flexGrow = String(p[2]);
+      barra.appendChild(tramo);
+    });
+    caja.appendChild(barra);
+    var leyenda = Util.crear('div', 'memoria-leyenda');
+    partes.forEach(function (p) {
+      var item = Util.crear('div', 'memoria-item');
+      item.appendChild(Util.crear('span', 'memoria-punto memoria-' + p[0]));
+      var texto = Util.crear('div');
+      texto.appendChild(Util.crear('b', null, p[2] + ' · ' + p[1]));
+      texto.appendChild(Util.crear('span', null, p[3]));
+      item.appendChild(texto);
+      leyenda.appendChild(item);
+    });
+    caja.appendChild(leyenda);
+    caja.appendChild(Util.crear('p', 'memoria-hoy', m.paraHoy
+      ? Util.plural(m.paraHoy, 'cosa') + ' para repasar hoy: aparecen en «Repasar hoy», en el inicio.'
+      : 'Hoy no tiene nada pendiente de repasar.'));
+  }
+
+  /** Lo que más veces contestó bien, con su nombre de verdad. */
+  function pintarAciertosDelPanel() {
+    var caja = $('parental-aciertos');
+    Util.vaciar(caja);
+    var lista = Almacen.masAcertados(12).map(function (a) {
+      var materia = materiaPorId(a.materia);
+      var item = materia && materia.modulo && materia.modulo.itemDeClave ? materia.modulo.itemDeClave(a.clave) : null;
+      return item ? { materia: materia, datos: materia.modulo.repaso(item), veces: a.veces } : null;
+    }).filter(Boolean).slice(0, 8);
+    if (!lista.length) {
+      caja.appendChild(Util.crear('p', 'vacio', 'Todavía no hay respuestas guardadas.'));
+      return;
+    }
+    lista.forEach(function (x) {
+      var el = itemRepaso({
+        imagen: x.datos.imagen, dibujo: x.datos.dibujo,
+        simbolo: '•', nombre: x.datos.nombre,
+        dato: x.materia.nombre + ' · acertó ' + Util.plural(x.veces, 'vez', 'veces')
+      });
+      var simbolo = el.querySelector('.item-simbolo');
+      if (simbolo) { simbolo.textContent = ''; ponerIcono(simbolo, x.materia.icono); }
+      caja.appendChild(el);
+    });
+  }
+
+  /** Todas las lecciones, con cuáles hizo y cuáles le toca repasar. */
+  function pintarLeccionesDelPanel() {
+    var caja = $('parental-lecciones');
+    Util.vaciar(caja);
+    var todas = window.Lecciones ? Lecciones.LECCIONES : [];
+    var paraRepasar = Almacen.leccionesParaRepasar();
+    var hechas = todas.filter(function (l) { return Almacen.leccionVista(l.id); }).length;
+    $('parental-resumen-lecciones').textContent = todas.length
+      ? hechas + ' de ' + todas.length + ' completadas' + (paraRepasar.length ? ' · ' + paraRepasar.length + ' para repasar' : '')
+      : '';
+    todas.forEach(function (l) {
+      var materia = materiaPorId(l.materia);
+      var hecha = Almacen.leccionVista(l.id);
+      var repasar = paraRepasar.indexOf(l.id) >= 0;
+      var fila = Util.crear('div', 'fila-materia fila-leccion' + (hecha ? ' hecha' : ''));
+      fila.appendChild(ponerIcono(Util.crear('span', 'fila-icono'), materia ? materia.icono : 'aprender'));
+      var cuerpo = Util.crear('div', 'fila-cuerpo');
+      cuerpo.appendChild(Util.crear('div', 'fila-nombre', l.titulo));
+      cuerpo.appendChild(Util.crear('div', 'ir-dato', (materia ? materia.nombre : '') +
+        (l.edadMin ? ' · desde los ' + l.edadMin : '')));
+      fila.appendChild(cuerpo);
+      fila.appendChild(Util.crear('span', 'estado-leccion' + (repasar ? ' repasar' : hecha ? ' hecha' : ''),
+        repasar ? 'Repasar' : hecha ? 'Completada' : 'Sin hacer'));
+      caja.appendChild(fila);
+    });
+  }
+
+  /**
+   * Juego por juego, agrupado por materia: por qué nivel del mapa va, sus
+   * estrellas, cuánto lo jugó, cuánto acierta y cuándo fue la última vez.
+   */
+  function pintarJuegosDelPanel() {
+    var caja = $('parental-juegos');
+    Util.vaciar(caja);
+    var historial = Almacen.historial();
+    MATERIAS.filter(function (m) { return m.disponible; }).forEach(function (m, i) {
+      var grupo = Util.crear('details', 'juegos-materia');
+      if (i === 0) grupo.open = true;
+      var resumen = Util.crear('summary');
+      resumen.appendChild(ponerIcono(Util.crear('span', 'fila-icono'), m.icono));
+      var pasados = 0, total = 0, estrellas = 0;
+      var filas = m.juegos.slice().sort(function (a, b) { return (a.edadMin || 0) - (b.edadMin || 0); }).map(function (j) {
+        var prog = progresoDelMapa(m, j);
+        pasados += prog.pasados; total += prog.total; estrellas += prog.estrellas;
+        var suyas = historial.filter(function (p) { return p.materia === m.id && p.juego === j.id; });
+        var aciertos = 0, preguntas = 0, segundos = 0;
+        suyas.forEach(function (p) { aciertos += p.aciertos; preguntas += p.total; segundos += p.segundos || 0; });
+
+        var fila = Util.crear('div', 'juego-panel');
+        var arriba = Util.crear('div', 'juego-panel-arriba');
+        arriba.appendChild(Util.crear('b', null, j.nombre));
+        arriba.appendChild(Util.crear('span', 'juego-panel-nivel',
+          prog.completo ? '¡Terminado!' : prog.pasados ? 'Nivel ' + prog.actual + ' de ' + prog.total : 'Sin empezar'));
+        fila.appendChild(arriba);
+        var riel = Util.crear('span', 'juego-panel-riel');
+        var lleno = Util.crear('i');
+        lleno.style.width = (prog.total ? prog.pasados / prog.total * 100 : 0) + '%';
+        lleno.style.background = j.color;
+        riel.appendChild(lleno);
+        fila.appendChild(riel);
+        var datos = [];
+        if (prog.estrellas) datos.push(prog.estrellas + '/' + prog.maximo + ' ★');
+        datos.push(suyas.length ? Util.plural(suyas.length, 'partida') : 'nunca jugado');
+        if (preguntas) datos.push(Math.round(aciertos / preguntas * 100) + '% bien');
+        if (segundos >= 60) datos.push(tiempoCorto(segundos));
+        if (suyas.length) datos.push('última vez ' + haceCuanto(suyas[suyas.length - 1].fecha));
+        fila.appendChild(Util.crear('span', 'ir-dato', datos.join(' · ')));
+        return fila;
+      });
+      var textoResumen = Util.crear('span', 'juegos-materia-resumen');
+      textoResumen.appendChild(Util.crear('b', null, m.nombre));
+      textoResumen.appendChild(Util.crear('span', null, pasados + '/' + total + ' niveles · ' + estrellas + ' ★'));
+      resumen.appendChild(textoResumen);
+      grupo.appendChild(resumen);
+      filas.forEach(function (f) { grupo.appendChild(f); });
+      caja.appendChild(grupo);
+    });
+  }
+
+  function pintarExamenesDelPanel() {
+    var caja = $('parental-examenes');
+    Util.vaciar(caja);
+    var examenes = Almacen.historial().filter(function (p) { return p.tipo === 'examen' && p.total; }).reverse();
+    if (!examenes.length) {
+      caja.appendChild(Util.crear('p', 'vacio', 'Todavía no rindió ningún examen. Están en Jugar → Examen.'));
+      return;
+    }
+    examenes.slice(0, 10).forEach(function (p) {
+      var nota = Examen.nota(p.aciertos, p.total);
+      var fila = Util.crear('div', 'fila-partida');
+      fila.appendChild(Util.crear('span', 'fila-icono nota-examen' + (nota >= 7 ? ' buena' : nota >= 4 ? '' : ' baja'), String(nota)));
+      var cuerpo = Util.crear('div', 'fila-cuerpo');
+      cuerpo.appendChild(Util.crear('div', 'fila-nombre', p.detalle || 'Examen'));
+      cuerpo.appendChild(Util.crear('div', 'ir-dato', fechaCorta(p.fecha) +
+        (p.segundos ? ' · ' + tiempoCorto(p.segundos) : '')));
+      fila.appendChild(cuerpo);
+      fila.appendChild(Util.crear('span', 'fila-dato', p.aciertos + '/' + p.total));
+      caja.appendChild(fila);
     });
   }
 
@@ -3058,7 +3864,19 @@
       relleno.style.background = m.color;
       barra.appendChild(relleno);
       cuerpo.appendChild(barra);
+      // los niveles del mapa de todos sus juegos, y el tiempo que le dedicó
+      var pasados = 0, total = 0;
+      m.juegos.forEach(function (j) {
+        var prog = progresoDelMapa(m, j);
+        pasados += prog.pasados;
+        total += prog.total;
+      });
+      var segundos = Almacen.historial().reduce(function (s, p) {
+        return p.materia === m.id ? s + (p.segundos || 0) : s;
+      }, 0);
       var detalle = [d ? Util.plural(d.partidas, 'partida') : 'Sin partidas'];
+      if (segundos >= 60) detalle.push(tiempoCorto(segundos));
+      detalle.push(pasados + '/' + total + ' niveles');
       if (lecciones.length) detalle.push(leidas + '/' + lecciones.length + ' lecciones');
       detalle.push(dominados + '/' + m.juegos.length + ' juegos dominados');
       cuerpo.appendChild(Util.crear('div', 'ir-dato', detalle.join(' · ')));
@@ -3310,7 +4128,7 @@
         estado = { fase: 'ejercicio' };
       }
       var abierta = Leccion.abrir(partes[1], {
-        alJugar: function (clave) { irA('#/juego/' + clave); },
+        alJugar: function (clave) { irA('#/mapa/' + clave); },
         alEjercitar: function (l) { irA('#/ejercicio/' + l.id); },
         alVolver: function (l) { irA('#/lecciones/' + l.materia); },
         nombreDelJuego: function (clave) {
@@ -3331,6 +4149,31 @@
       cortarPartida();
       mostrar('juego');
       return arrancarEjercicio(deLeccion);
+    }
+
+    if (partes[0] === 'mapa' && partes[1] && partes[2]) {
+      var mMapa = materiaPorId(partes[1]);
+      var jMapa = juegoPorId(mMapa, partes[2]);
+      if (!mMapa || !jMapa || !jMapa.mapa) return irA('#/juegos');
+      cortarPartida();
+      mostrar('camino');
+      pintarCamino(mMapa, jMapa);
+      return;
+    }
+
+    if (partes[0] === 'nivel' && partes[1] && partes[2] && partes[3]) {
+      var mNivel = materiaPorId(partes[1]);
+      var jNivel = juegoPorId(mNivel, partes[2]);
+      if (!mNivel || !jNivel || !jNivel.mapa) return irA('#/juegos');
+      cortarPartida();
+      mostrar('juego');
+      return jugarNivel(mNivel, jNivel, parseInt(partes[3], 10));
+    }
+
+    if (partes[0] === 'nivel-fin') {
+      if (!ultimoNivel) return irA('#/juegos');
+      mostrar('nivel-fin');
+      return pintarFinDeNivel();
     }
 
     if (partes[0] === 'materia' && partes[1]) {
@@ -3442,7 +4285,16 @@
       cortarPartida();
       return irA('#/juego/' + sel.materia + '/' + sel.juego);
     }
-    if (partes[0] === 'juego') return irA('#/materia/' + partes[1]);
+    // el modo libre y los niveles cuelgan del mapa; el mapa, de la materia
+    if (partes[0] === 'juego') return irA('#/mapa/' + partes[1] + '/' + partes[2]);
+    if (partes[0] === 'mapa') return irA('#/materia/' + partes[1]);
+    if (partes[0] === 'nivel') {
+      cortarPartida();
+      return irA('#/mapa/' + partes[1] + '/' + partes[2]);
+    }
+    if (partes[0] === 'nivel-fin' && ultimoNivel) {
+      return irA('#/mapa/' + ultimoNivel.materia.id + '/' + ultimoNivel.juego.id);
+    }
     if (partes[0] === 'materia' || partes[0] === 'examen') return irA('#/juegos');
     if (partes[0] === 'rindiendo' || partes[0] === 'nota') {
       cortarPartida();
@@ -3600,6 +4452,37 @@
     $('btn-descanso-inicio').addEventListener('click', function () { Sonido.tocar('clic'); irA('#/'); });
     $('btn-descanso-grande').addEventListener('click', function () { Sonido.tocar('clic'); irA('#/parental'); });
     contarTiempo();
+
+    /* las pestañas del panel parental; con las flechas se pasa de una a
+       otra, como en cualquier lista de pestañas */
+    PESTANAS.forEach(function (p, i) {
+      var b = $('pestana-' + p);
+      b.addEventListener('click', function () { Sonido.tocar('clic'); mostrarPestana(p); });
+      b.addEventListener('keydown', function (ev) {
+        var paso = ev.key === 'ArrowRight' ? 1 : ev.key === 'ArrowLeft' ? -1 : 0;
+        if (!paso) return;
+        ev.preventDefault();
+        var otra = PESTANAS[(i + paso + PESTANAS.length) % PESTANAS.length];
+        mostrarPestana(otra);
+        $('pestana-' + otra).focus();
+      });
+    });
+    document.querySelectorAll('.chip-periodo').forEach(function (b) {
+      b.addEventListener('click', function () {
+        Sonido.tocar('clic');
+        pintarActividad(parseInt(b.getAttribute('data-dias'), 10));
+      });
+    });
+
+    /* la hoja de un nivel del mapa: se cierra con su botón, tocando
+       afuera o con Escape */
+    $('btn-hoja-cerrar').addEventListener('click', function () { Sonido.tocar('clic'); cerrarHojaDeNivel(); });
+    $('hoja-nivel').addEventListener('click', function (ev) {
+      if (ev.target === $('hoja-nivel')) cerrarHojaDeNivel();
+    });
+    document.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Escape' && !$('hoja-nivel').hidden) cerrarHojaDeNivel();
+    });
 
     /* la mensualidad */
     $('btn-plan-suscribirme').addEventListener('click', function () {

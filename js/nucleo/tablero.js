@@ -189,6 +189,54 @@ window.Tablero = (function () {
     return sel.cantidad === 'todos' ? 'todas las preguntas' : sel.cantidad + ' preguntas';
   }
 
+  /* ---------------------- el mapa: piezas comunes ---------------------- */
+
+  /**
+   * Dónde van los desafíos en un mapa de `largo` niveles: cada cinco, y
+   * siempre el último. Si el último cae pegado a uno de los de cada cinco
+   * (el 15 de un mapa de 16), ése se saca: dos desafíos seguidos no.
+   */
+  function posicionesDeDesafio(largo) {
+    var lista = [];
+    for (var k = 5; k < largo; k += 5) if (largo - k >= 3) lista.push(k);
+    lista.push(largo);
+    return lista;
+  }
+
+  /** Reparte `n` lugares según los pesos, con uno por lo menos para cada uno. */
+  function repartir(n, pesos) {
+    var cupos = pesos.map(function () { return 1; });
+    var resto = n - pesos.length;
+    var suma = pesos.reduce(function (a, b) { return a + b; }, 0) || 1;
+    var ideales = pesos.map(function (p) { return p / suma * resto; });
+    cupos = cupos.map(function (c, i) { return c + Math.floor(ideales[i]); });
+    var faltan = n - cupos.reduce(function (a, b) { return a + b; }, 0);
+    // lo que falta va a los que más cerca quedaron del próximo entero
+    var orden = ideales.map(function (v, i) { return { i: i, r: v - Math.floor(v) }; })
+      .sort(function (a, b) { return b.r - a.r; });
+    for (var k = 0; k < faltan; k++) cupos[orden[k % orden.length].i]++;
+    return cupos;
+  }
+
+  /** Corta una lista en `partes` pedazos seguidos, lo más parejos posible. */
+  function partir(lista, partes) {
+    var salida = [], desde = 0;
+    for (var p = 0; p < partes; p++) {
+      var tam = Math.floor((lista.length - desde) / (partes - p));
+      salida.push(lista.slice(desde, desde + tam));
+      desde += tam;
+    }
+    return salida.filter(function (s) { return s.length; });
+  }
+
+  /** «rojo, azul y verde»; con muchos, los tres primeros y «…». */
+  function resumirNombres(nombres) {
+    var limpios = nombres.map(function (n) { return plano(n); });
+    if (limpios.length > 4) return limpios.slice(0, 3).join(', ') + '…';
+    if (limpios.length < 2) return limpios.join('');
+    return limpios.slice(0, -1).join(', ') + ' y ' + limpios[limpios.length - 1];
+  }
+
   /* ======================== 2. banco ======================== */
 
   /**
@@ -280,6 +328,149 @@ window.Tablero = (function () {
 
     function cuantasDe(nivel) { return Math.min(TOPE_NIVEL, nivel.pozo.length); }
 
+    /* ---------------------- el mapa de niveles ----------------------
+
+       El camino de niveles, como en los juegos de mapa: cada nivel
+       presenta unas pocas cosas nuevas (dos, tres, cuatro) y repasa lo
+       anterior, y cada cinco niveles hay un desafío con todo lo visto.
+
+       Sale de las etapas de arriba (los animales de casa, después los de
+       la granja…): el orden de lo que se enseña lo decide cada juego, y
+       el mapa sólo lo corta en pedazos del tamaño de un nivel. Cuántos
+       niveles tiene depende de cuánto hay para aprender: un juego de diez
+       palabras no puede tener veinte niveles sin repetirse, y uno de
+       cincuenta no entra en diez sin que cada nivel sea una montaña. */
+    var mapaArmado = null;
+
+    function nombreDe(it) {
+      if (def.repaso) return def.repaso(it).nombre;
+      return plano(it.r);
+    }
+
+    /* Cómo se nombra lo que trae un nivel. Casi siempre, como en el
+       repaso («el perro», «rima con gato»); pero cuando eso es la
+       pregunta entera («¿Con qué sentimos el gusto de la comida?») o es
+       igual para todos («Se escribe»), no dice nada, y va la respuesta. */
+    function nombresDe(lista) {
+      var nombres = lista.map(function (it) { return plano(nombreDe(it)); });
+      var repetidos = nombres.some(function (n, i) { return nombres.indexOf(n) !== i; });
+      var largos = nombres.some(function (n) { return n.length > 24; });
+      return repetidos || largos ? lista.map(function (it) { return plano(it.r); }) : nombres;
+    }
+
+    function armarMapa() {
+      if (mapaArmado) return mapaArmado;
+      var op = def.mapa || {};
+
+      // lo nuevo de cada etapa: cada nivel del banco incluye a los anteriores
+      var vistos = {};
+      var etapas = niveles.map(function (n) {
+        var nuevos = n.pozo.filter(function (it) {
+          if (vistos[it.id]) return false;
+          vistos[it.id] = true;
+          return true;
+        });
+        return { nombre: n.nombre, nuevos: nuevos };
+      }).filter(function (e) { return e.nuevos.length; });
+
+      var total = items.length;
+      var largo = op.niveles || (total <= 12 ? 10 : total <= 16 ? 12 : total <= 24 ? 14 : total <= 35 ? 16 : 18);
+      var tests = posicionesDeDesafio(largo);
+      var aprender = largo - tests.length;
+
+      /* Los niveles de aprender se reparten entre las etapas según cuánto
+         trae cada una, con uno por lo menos. */
+      var cupos = repartir(aprender, etapas.map(function (e) { return e.nuevos.length; }));
+      var TAMANO_MINIMO = op.minimo || 2;
+
+      var pasos = [];                       // los niveles de aprender, en orden
+      var presentados = [];                 // lo visto hasta cada nivel
+      etapas.forEach(function (etapa, k) {
+        var cupo = cupos[k];
+        var partes = Math.max(1, Math.min(cupo, Math.floor(etapa.nuevos.length / TAMANO_MINIMO)));
+        var trozos = partir(etapa.nuevos, partes);
+        trozos.forEach(function (trozo, j) {
+          presentados = presentados.concat(trozo);
+          pasos.push({
+            etapa: etapa.nombre,
+            nombre: trozos.length > 1 ? etapa.nombre + ' · ' + (j + 1) : etapa.nombre,
+            nuevos: trozo,
+            vistos: presentados.slice()
+          });
+        });
+        // si sobran niveles para esta etapa, son repasos de lo que trajo
+        for (var r = partes; r < cupo; r++) {
+          pasos.push({
+            etapa: etapa.nombre,
+            nombre: 'Repaso: ' + etapa.nombre.charAt(0).toLowerCase() + etapa.nombre.slice(1),
+            nuevos: [],
+            repasa: etapa.nuevos.slice(),
+            vistos: presentados.slice()
+          });
+        }
+      });
+
+      var lista = [];
+      var i = 0;
+      for (var numero = 1; numero <= largo; numero++) {
+        if (tests.indexOf(numero) >= 0 || i >= pasos.length) {
+          var hasta = lista.length ? lista[lista.length - 1].vistos : pasos[0].vistos;
+          var esFinal = numero === largo;
+          lista.push(nivelDeDesafio(numero, esFinal, hasta));
+        } else {
+          lista.push(nivelDeAprender(numero, pasos[i]));
+          i++;
+        }
+      }
+      mapaArmado = lista;
+      return lista;
+    }
+
+    function nivelDeAprender(numero, paso) {
+      var nombres = nombresDe(paso.nuevos.length ? paso.nuevos : paso.repasa);
+      return {
+        numero: numero,
+        nombre: paso.nombre,
+        etapa: paso.etapa,
+        detalle: paso.nuevos.length
+          ? 'Nuevo: ' + resumirNombres(nombres)
+          : 'Repasar: ' + resumirNombres(nombres),
+        test: false,
+        vistos: paso.vistos,
+        preguntas: function () {
+          /* Todo lo nuevo sale, y el resto del nivel es repaso de lo de
+             antes (cargado hacia lo que le cuesta). Un nivel de pocas cosas
+             las repite: el primero de todos tiene que durar algo. */
+          var cantidad = Math.min(8, Math.max(6, paso.nuevos.length + 3));
+          var base = paso.nuevos.length ? paso.nuevos : paso.repasa;
+          var viejos = paso.vistos.filter(function (it) { return base.indexOf(it) < 0; });
+          // lo nuevo sale entero; un repaso de una etapa grande, hasta completar el nivel
+          var salen = sortear(juego.materia, base, Math.min(base.length, cantidad), !paso.repasa);
+          if (viejos.length) {
+            salen = salen.concat(sortear(juego.materia, viejos, Math.max(0, cantidad - salen.length)));
+          }
+          if (salen.length < cantidad) {
+            salen = salen.concat(sortear(juego.materia, base, cantidad - salen.length));
+          }
+          return Util.mezclar(salen);
+        }
+      };
+    }
+
+    function nivelDeDesafio(numero, esFinal, hasta) {
+      return {
+        numero: numero,
+        nombre: esFinal ? 'Gran desafío' : 'Desafío',
+        etapa: null,
+        detalle: esFinal ? 'Todo lo del juego' : 'Todo lo que viste hasta acá',
+        test: true,
+        vistos: hasta,
+        preguntas: function () {
+          return sortear(juego.materia, hasta, Math.min(10, Math.max(6, hasta.length)), true);
+        }
+      };
+    }
+
     var juego = {
       id: def.id,
       nombre: def.nombre,
@@ -304,6 +495,7 @@ window.Tablero = (function () {
         }];
       },
       NIVELES: niveles,
+      mapa: armarMapa,
       /* El examen entra sin nivel elegido y se lleva el banco entero:
          mide todo lo que el juego sabe preguntar, no un pedazo. */
       examen: function () { return { sinPesar: true }; },
@@ -411,6 +603,7 @@ window.Tablero = (function () {
     cantidadesDeBanco: cantidadesDeBanco,
     resumenDeCantidad: resumenDeCantidad,
     banco: banco,
+    posicionesDeDesafio: posicionesDeDesafio,
     conJugar: conJugar,
     materia: materia
   };

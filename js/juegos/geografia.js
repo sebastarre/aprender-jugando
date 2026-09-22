@@ -72,11 +72,23 @@ window.Geografia = (function () {
 
   /** Los ítems de una partida, cada uno con el contexto que necesita. */
   function elegirPreguntas(sel, modo) {
-    var candidatos = Mapa.paisesDeZona(sel.zona);
+    var candidatos = Mapa.paisesDeZona(sel.zona).filter(function (p) {
+      // los niveles del mapa recortan la zona: unos países, una región, sin los diminutos
+      if (sel.paises && sel.paises.indexOf(p.id) < 0) return false;
+      if (sel.subs && sel.subs.indexOf(p.sub) < 0) return false;
+      if (sel.conts && sel.conts.indexOf(p.cont) < 0) return false;
+      if (sel.sinMini && p.mini) return false;
+      if (sel.soloMini && !p.mini) return false;
+      return true;
+    });
     var cantidad = sel.cantidad === 'todos'
       ? candidatos.length
       : Math.min(sel.cantidad, candidatos.length);
-    var ctx = { zona: sel.zona, candidatos: candidatos, modo: modo || sel.modo || 'mapa' };
+    var ctx = {
+      zona: sel.zona, candidatos: candidatos, modo: modo || sel.modo || 'mapa',
+      // el mapa se rehace si cambian los países que se pueden tocar, aunque la zona sea la misma
+      clave: sel.zona + '|' + candidatos.map(function (p) { return p.id; }).join(',')
+    };
 
     // Practicando, los países que viene fallando salen más seguido. En el
     // examen no: ahí se mide, y un sorteo cargado hacia lo flojo daría una
@@ -101,7 +113,7 @@ window.Geografia = (function () {
     Util.$('zona-mapa').hidden = false;
     Util.$('zona-opciones').hidden = true;
 
-    if (mapa && zonaDelMapa === ctx.zona) {
+    if (mapa && zonaDelMapa === (ctx.clave || ctx.zona)) {
       mapa.limpiarMarcas();
       mapa.reiniciar();
       return mapa;
@@ -112,7 +124,7 @@ window.Geografia = (function () {
       jugables: ctx.candidatos.map(function (p) { return p.id; }),
       onClic: function (id) { Motor.responder(id); }
     });
-    zonaDelMapa = ctx.zona;
+    zonaDelMapa = ctx.clave || ctx.zona;
 
     var pista = Util.$('pista-mapa');
     pista.textContent = ('ontouchstart' in window)
@@ -413,6 +425,59 @@ window.Geografia = (function () {
     return p > 0 ? BANCO_POR_ID[clave.slice(0, p)] || null : null;
   }
 
+  /* ---------------------- el camino de niveles del mapa ----------------------
+
+     Los tres juegos del mapa (países, capitales, banderas) recorren el
+     mundo en el mismo orden: primero casa (Argentina y sus vecinos),
+     después toda América, y de ahí a los otros continentes, de a una
+     región por nivel. Aprender los países de a vecinos es lo que hace
+     que se queden: Kenia es «al lado de Tanzania», no un nombre suelto.
+
+     En los niveles de una región sólo se pueden tocar esos países; el
+     resto del continente queda de fondo. Los diminutos (Andorra, Malta)
+     tienen su propio nivel: en el mapa de un celular son un puntito, y
+     mezclados con los grandes eran puro castigo. */
+  var CAMINO = [
+    ['América del Sur: los grandes', 'Argentina y sus vecinos',
+      { zona: 'america-sur', paises: ['AR', 'BR', 'CL', 'UY', 'PY', 'BO'] }],
+    ['América del Sur', 'Los doce países', { zona: 'america-sur' }],
+    ['América del Norte y Central', 'De Canadá a Panamá',
+      { zona: 'america-norte', subs: ['América del Norte', 'América Central'] }],
+    ['El Caribe', 'Cuba, Jamaica y las islas', { zona: 'america-norte', subs: ['Caribe'] }],
+    ['Desafío', 'Toda América', { zona: 'america' }, 'desafio'],
+    ['Europa del Oeste y del Sur', 'España, Francia, Italia…',
+      { zona: 'europa', subs: ['Europa Occidental', 'Europa del Sur'], sinMini: true }],
+    ['Europa del Norte', 'Los nórdicos y las islas', { zona: 'europa', subs: ['Europa del Norte'] }],
+    ['Europa Central y del Este', 'Alemania, Polonia, Grecia…',
+      { zona: 'europa', subs: ['Europa Central', 'Europa del Este', 'Europa Sudoriental'], sinMini: true }],
+    ['Los chiquitos de Europa', 'Andorra, Mónaco, Malta…', { zona: 'europa', soloMini: true }],
+    ['Desafío', 'Toda Europa', { zona: 'europa' }, 'desafio'],
+    ['África del Norte y del Oeste', 'Egipto, Marruecos, Nigeria…',
+      { zona: 'africa', subs: ['África del Norte', 'África Occidental'], sinMini: true }],
+    ['África del Este, Central y del Sur', 'Kenia, Congo, Sudáfrica…',
+      { zona: 'africa', subs: ['África Oriental', 'África Central', 'África Austral'], sinMini: true }],
+    ['Asia del Este y del Sur', 'China, India, Japón…',
+      { zona: 'asia', subs: ['Asia Oriental', 'Asia del Sur', 'Asia Central'], sinMini: true }],
+    ['Medio Oriente y Sudeste de Asia', 'Turquía, Arabia, Tailandia…',
+      { zona: 'asia', subs: ['Asia Occidental', 'Sudeste Asiático'], sinMini: true }],
+    ['Desafío', 'África y Asia, en el mundo', { zona: 'mundo', conts: ['africa', 'asia'], sinMini: true }, 'desafio'],
+    ['Oceanía', 'Australia y las islas', { zona: 'oceania' }],
+    ['El mundo', 'Todos, menos los diminutos', { zona: 'mundo', sinMini: true }],
+    ['Gran desafío', 'El mundo entero', { zona: 'mundo' }, 'desafio']
+  ];
+
+  function mapaDeZonas(juego, extra) {
+    return CAMINO.map(function (x, i) {
+      var test = x[3] === 'desafio';
+      return {
+        numero: i + 1, nombre: x[0], detalle: x[1], test: test,
+        preguntas: function () {
+          return juego.preguntas(Object.assign({ cantidad: test ? 10 : 8, sinPesar: test }, extra, x[2]));
+        }
+      };
+    });
+  }
+
   /* ---------------------- los juegos del mapa ---------------------- */
   var JUEGOS_DE_MAPA = [
     {
@@ -425,6 +490,7 @@ window.Geografia = (function () {
       edadMin: 8,
       edadMax: 12,
       opciones: function () { return [opcionesZona()]; },
+      mapa: function () { return mapaDeZonas(this); },
       cantidades: cantidadesDeZona,
       resumen: resumenZona,
 
@@ -455,6 +521,7 @@ window.Geografia = (function () {
       edadMin: 10,
       edadMax: 12,
       opciones: function () { return [opcionesZona()]; },
+      mapa: function () { return mapaDeZonas(this); },
       cantidades: cantidadesDeZona,
       resumen: resumenZona,
 
@@ -498,6 +565,11 @@ window.Geografia = (function () {
       },
       cantidades: cantidadesDeZona,
       resumen: resumenZona,
+      /* En el camino, las banderas se eligen entre cuatro: el juego es
+         desde los 7 años, y buscar el país en el mapa además de reconocer
+         la bandera son dos cosas a la vez. En el mapa se juega en el modo
+         libre. */
+      mapa: function () { return mapaDeZonas(this, { modo: 'quiz' }); },
 
       // en el examen las banderas siempre van sobre el mapa
       examen: function (comun) { return { zona: comun.zona, modo: 'mapa', sinPesar: true }; },

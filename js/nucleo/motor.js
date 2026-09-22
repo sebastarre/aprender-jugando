@@ -74,7 +74,8 @@ window.Motor = (function () {
       perfectos: 0,
       acertados: [],        // los ítems que respondió bien (para las monedas)
       errores: [],
-      bloqueado: false
+      bloqueado: false,
+      inicio: Date.now()    // para saber cuánto duró
     };
     document.body.classList.toggle('rindiendo', e.mudo);
     mostrarRonda();
@@ -226,7 +227,9 @@ window.Motor = (function () {
       maximo: total * PUNTOS_POR_INTENTO[0],
       precision: total ? Math.round(e.aciertos / total * 100) : 0,
       acertados: e.acertados.slice(),
-      errores: e.errores.slice()
+      errores: e.errores.slice(),
+      // con un tope: una partida dejada abierta una hora no es una hora jugando
+      segundos: Math.min(1800, Math.round((Date.now() - e.inicio) / 1000))
     };
     var alTerminar = e.cfg.alTerminar;
     e = null;

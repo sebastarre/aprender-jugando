@@ -53,6 +53,32 @@ window.Matematica = (function () {
   }
   var cantidadesFijas = T.cantidadesFijas;
 
+  /* ---------------------- el mapa de niveles ----------------------
+
+     En matemática las preguntas no son una lista: se generan. Así que el
+     camino de cada juego está escrito a mano, nivel por nivel, como
+     [nombre, de qué se trata, la selección, 'desafio'?]. La selección es
+     la misma que arma el modo libre, más unos parámetros finos que sólo
+     usa el mapa (desde y hasta, qué tablas, qué minutos del reloj…):
+     los niveles del modo libre son tres o cuatro saltos grandes, y un
+     mapa necesita escalones chicos.
+
+     Cada cinco niveles hay un desafío, con lo de los cuatro anteriores. */
+  function mapaDe(juego, lista) {
+    return lista.map(function (x, i) {
+      var test = x[3] === 'desafio';
+      return {
+        numero: i + 1,
+        nombre: x[0],
+        detalle: x[1],
+        test: test,
+        preguntas: function () {
+          return juego.preguntas(Object.assign({ cantidad: test ? 10 : 8 }, x[2]));
+        }
+      };
+    });
+  }
+
   /* Para el examen no hay pantalla de opciones: se elige por edad, para que
      un chico de 6 no rinda cuentas de tres cifras. */
   function nivelPorEdad(edad) {
@@ -131,13 +157,36 @@ window.Matematica = (function () {
     opciones: function () {
       return [{ id: 'rango', esNivel: true, titulo: 'Elegí el nivel', tipo: 'grilla', items: RANGOS }];
     },
+    /* De a uno o dos números nuevos por nivel, y cada nivel arranca un
+       poco más arriba: contar 6 cuando ya se sabe contar 5 es el paso
+       justo, y el que cuenta hasta 20 no necesita volver al 1. */
+    mapa: function () {
+      return mapaDe(CONTAR, [
+        ['Hasta 3', 'Uno, dos, tres', { desde: 1, hasta: 3 }],
+        ['Hasta 4', 'Uno más', { desde: 1, hasta: 4 }],
+        ['Hasta 5', 'Una mano entera', { desde: 2, hasta: 5 }],
+        ['Cuatro o cinco', 'Los que más se confunden', { desde: 3, hasta: 5 }],
+        ['Desafío', 'Hasta 5', { desde: 1, hasta: 5 }, 'desafio'],
+        ['Hasta 6', 'Cinco y uno más', { desde: 3, hasta: 6 }],
+        ['Hasta 7', 'Cinco y dos más', { desde: 4, hasta: 7 }],
+        ['Hasta 8', 'Cinco y tres más', { desde: 5, hasta: 8 }],
+        ['Hasta 10', 'Las dos manos', { desde: 6, hasta: 10 }],
+        ['Desafío', 'Hasta 10', { desde: 1, hasta: 10 }, 'desafio'],
+        ['Hasta 12', 'Diez y unos más', { desde: 9, hasta: 12 }],
+        ['Hasta 14', 'Contá de a cinco', { desde: 11, hasta: 14 }],
+        ['Hasta 16', 'Tres filas', { desde: 13, hasta: 16 }],
+        ['Hasta 20', 'De a muchos', { desde: 15, hasta: 20 }],
+        ['Gran desafío', 'Del 1 al 20', { desde: 1, hasta: 20 }, 'desafio']
+      ]);
+    },
     cantidades: cantidadesFijas,
     resumen: function (sel) { return deLista(RANGOS, sel.rango).nombre + ' · ' + sel.cantidad + ' preguntas'; },
     examen: function (comun, edad) {
       return { rango: !edad || edad <= 5 ? 'hasta5' : edad <= 7 ? 'hasta10' : 'hasta20', sinPesar: true };
     },
     preguntas: function (sel) {
-      var r = deLista(RANGOS, sel.rango);
+      // el mapa pide desde y hasta sueltos; el modo libre, uno de los tres rangos
+      var r = sel.hasta ? { desde: sel.desde || 1, hasta: sel.hasta } : deLista(RANGOS, sel.rango);
       var pozo = [];
       for (var n = r.desde; n <= r.hasta; n++) pozo.push(itemContar(n));
       return sortearDelPozo(pozo, sel.cantidad, sel.sinPesar);
@@ -242,6 +291,23 @@ window.Matematica = (function () {
         { id: 'todas', nombre: 'Todas', icono: 'nivel-3', detalle: 'Con óvalo, rombo, pentágono y hexágono' }
       ] }];
     },
+    /* Una o dos figuras nuevas por nivel, y siempre junto a la que más se
+       le parece: el óvalo con el círculo, el rombo con el cuadrado. Así se
+       aprende la diferencia y no sólo el nombre. */
+    mapa: function () {
+      return mapaDe(FIGURAS_JUEGO, [
+        ['Círculo y cuadrado', 'Redondo o con cuatro lados iguales', { grupo: 'basicas', solo: ['circulo', 'cuadrado'] }],
+        ['El triángulo', 'Tres lados, tres puntas', { grupo: 'basicas', solo: ['circulo', 'cuadrado', 'triangulo'] }],
+        ['El rectángulo', 'Un cuadrado estirado', { grupo: 'basicas', solo: ['cuadrado', 'rectangulo', 'triangulo'] }],
+        ['Las cuatro primeras', 'Todas juntas', { grupo: 'basicas' }],
+        ['Desafío', 'Las cuatro primeras', { grupo: 'basicas' }, 'desafio'],
+        ['El óvalo', 'Un círculo estirado', { grupo: 'todas', solo: ['circulo', 'ovalo', 'cuadrado'] }],
+        ['El rombo', 'Un cuadrado parado en una punta', { grupo: 'todas', solo: ['cuadrado', 'rombo', 'rectangulo', 'triangulo'] }],
+        ['Pentágono y hexágono', 'Cinco y seis lados', { grupo: 'todas', solo: ['pentagono', 'hexagono', 'triangulo', 'cuadrado'] }],
+        ['Las ocho figuras', 'Todas mezcladas', { grupo: 'todas' }],
+        ['Gran desafío', 'Las ocho figuras', { grupo: 'todas' }, 'desafio']
+      ]);
+    },
     cantidades: cantidadesFijas,
     resumen: function (sel) {
       return (sel.grupo === 'todas' ? 'Todas las figuras' : 'Figuras básicas') + ' · ' + sel.cantidad + ' preguntas';
@@ -249,7 +315,9 @@ window.Matematica = (function () {
     examen: function (comun, edad) { return { grupo: edad && edad >= 6 ? 'todas' : 'basicas', sinPesar: true }; },
     preguntas: function (sel) {
       var todas = sel.grupo === 'todas';
-      var pozo = FIGURAS.filter(function (f) { return todas || f.basica; })
+      var pozo = FIGURAS.filter(function (f) {
+        return sel.solo ? sel.solo.indexOf(f.id) >= 0 : (todas || f.basica);
+      })
         .map(function (f) { return itemFigura(f.id, todas); });
       return sortearDelPozo(pozo, sel.cantidad, sel.sinPesar);
     },
@@ -289,6 +357,29 @@ window.Matematica = (function () {
   function numerosParaComparar(nivel) {
     var vistos = {}, lista = [];
     function sumar(n) { if (!vistos[n]) { vistos[n] = true; lista.push(n); } }
+    var NUEVE = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+
+    /* Los escalones finos del mapa. Cada uno obliga a mirar una sola
+       cosa: con decenas distintas alcanza con la primera cifra; con la
+       misma decena, hay que mirar la segunda. */
+    if (nivel === 'mil-mezcla') nivel = Math.random() < 0.5 ? 'centenas' : 'hasta1000';
+    if (nivel === 'hasta20') {
+      while (lista.length < 4) sumar(entero(0, 20));
+      return lista;
+    }
+    if (nivel === 'decenas') {
+      Util.muestra(NUEVE, 4).forEach(function (d) { sumar(d * 10 + entero(0, 9)); });
+      return lista;
+    }
+    if (nivel === 'misma') {
+      var suDecena = entero(1, 9);
+      while (lista.length < 4) sumar(suDecena * 10 + entero(0, 9));
+      return lista;
+    }
+    if (nivel === 'centenas') {
+      Util.muestra(NUEVE, 4).forEach(function (c) { sumar(c * 100 + entero(0, 99)); });
+      return lista;
+    }
 
     if (nivel === 'hasta1000') {
       /* 347, 374, 437, 473: las mismas tres cifras en otro orden. Es la
@@ -335,6 +426,24 @@ window.Matematica = (function () {
     opciones: function () {
       return [{ id: 'nivel', esNivel: true, titulo: 'Elegí el nivel', tipo: 'grilla', items: RANGOS_COMPARAR }];
     },
+    /* Primero una sola pregunta («el más grande»), después la otra, y
+       recién ahí mezcladas: leer la consigna también se aprende. */
+    mapa: function () {
+      return mapaDe(COMPARAR, [
+        ['El más grande', 'Números hasta 10', { nivel: 'hasta10', modo: 'mayor' }],
+        ['El más chico', 'Números hasta 10', { nivel: 'hasta10', modo: 'menor' }],
+        ['¿Grande o chico?', 'Leé bien la pregunta', { nivel: 'hasta10' }],
+        ['Hasta 20', 'Aparecen los de dos cifras', { nivel: 'hasta20' }],
+        ['Desafío', 'Hasta 20', { nivel: 'hasta20' }, 'desafio'],
+        ['Decenas distintas', 'Mirá la primera cifra', { nivel: 'decenas' }],
+        ['La misma decena', 'Ahora mirá la segunda', { nivel: 'misma' }],
+        ['Hasta 100', 'Todo mezclado', { nivel: 'hasta100' }],
+        ['Tres cifras', 'Mirá las centenas', { nivel: 'centenas' }],
+        ['Desafío', 'Hasta 100 y más', { nivel: 'hasta100' }, 'desafio'],
+        ['Las mismas cifras', '347, 374, 437…', { nivel: 'hasta1000' }],
+        ['Gran desafío', 'Hasta 1000', { nivel: 'mil-mezcla' }, 'desafio']
+      ]);
+    },
     cantidades: cantidadesFijas,
     resumen: function (sel) { return deLista(RANGOS_COMPARAR, sel.nivel).nombre + ' · ' + sel.cantidad + ' preguntas'; },
     examen: function (comun, edad) {
@@ -343,7 +452,10 @@ window.Matematica = (function () {
     preguntas: function (sel) {
       var items = [];
       for (var i = 0; i < sel.cantidad; i++) {
-        items.push(itemComparar(Math.random() < 0.5 ? 'mayor' : 'menor', numerosParaComparar(sel.nivel)));
+        // el mapa puede pedir una sola de las dos preguntas
+        var modo = sel.modo === 'mayor' || sel.modo === 'menor' ? sel.modo
+                 : (Math.random() < 0.5 ? 'mayor' : 'menor');
+        items.push(itemComparar(modo, numerosParaComparar(sel.nivel)));
       }
       return items;
     },
@@ -500,6 +612,47 @@ window.Matematica = (function () {
     return { a: a, b: b, op: '−', resultado: a - b };
   }
 
+  /**
+   * Las cuentas de un nivel del mapa, con más control que los cuatro
+   * niveles del modo libre:
+   *   max      el resultado (en la suma) o el primer número (en la resta)
+   *   min      el primer número, como mínimo
+   *   dos      los dos números, como mínimo `min` (dos cifras de verdad)
+   *   llevar   'no': sin llevarse ni pedir prestado; 'si': justo eso
+   *   decenas  sólo decenas redondas (20 + 30)
+   */
+  function cuentaDeMapa(cfg, op) {
+    var min = cfg.min || 1, max = cfg.max;
+    for (var vuelta = 0; vuelta < 500; vuelta++) {
+      var a, b;
+      if (cfg.decenas) {
+        a = entero(1, 9) * 10;
+        b = entero(1, 9) * 10;
+        if (op === '+' && a + b > max) continue;
+        if (op === '−' && b >= a) continue;
+      } else if (op === '+') {
+        var menorB = cfg.dos ? min : 1;
+        if (max - min < menorB) return cuenta({ max: max, acarreo: true }, op);
+        a = entero(min, max - menorB);
+        b = entero(menorB, max - a);
+      } else {
+        /* Los dos números sorteados parejo y descartando los que no
+           sirven: así todas las restas posibles salen igual de seguido.
+           Sorteando primero uno y después el otro «entre lo que queda»,
+           los chicos salían mucho más (2 − 1 era una de cada cuatro). */
+        var menor = cfg.dos ? min : 1;
+        a = entero(Math.max(min, menor + 1), max);
+        b = entero(menor, max);
+        if (b >= a) continue;
+      }
+      var llevo = op === '+' ? unidades(a) + unidades(b) >= 10 : unidades(a) < unidades(b);
+      if (cfg.llevar === 'no' && llevo) continue;
+      if (cfg.llevar === 'si' && !llevo) continue;
+      return { a: a, b: b, op: op, resultado: op === '+' ? a + b : a - b };
+    }
+    return cuenta({ max: max, acarreo: true }, op);
+  }
+
   var CUENTAS = {
     id: 'cuentas',
     nombre: 'Sumas y restas',
@@ -531,13 +684,41 @@ window.Matematica = (function () {
     },
 
     examen: function (comun, edad) { return { nivel: nivelPorEdad(edad), operacion: 'ambas' }; },
+    /* El salto de «hasta 10» a «hasta 20» es en realidad cuatro saltos:
+       sumar sin pasar el 10, pasarlo, restar sin pedir y pedir prestado.
+       Cada uno es un nivel, y lo mismo después con dos y tres cifras. */
+    mapa: function () {
+      return mapaDe(CUENTAS, [
+        ['Sumas hasta 5', 'Juntar poquitos', { max: 5, operacion: 'suma' }],
+        ['Sumas hasta 10', 'Como los dedos', { max: 10, operacion: 'suma' }],
+        ['Restas hasta 5', 'Sacar poquitos', { max: 5, operacion: 'resta' }],
+        ['Restas hasta 10', 'Contar para atrás', { max: 10, operacion: 'resta' }],
+        ['Desafío', 'Sumas y restas hasta 10', { max: 10, operacion: 'ambas' }, 'desafio'],
+        ['Sumas hasta 20', 'Sin pasar el 10: 12 + 5', { max: 20, min: 10, llevar: 'no', operacion: 'suma' }],
+        ['Restas hasta 20', 'Sin pedir: 17 − 4', { max: 20, min: 10, llevar: 'no', operacion: 'resta' }],
+        ['Pasar el 10', '8 + 5, 7 + 6…', { max: 20, llevar: 'si', operacion: 'suma' }],
+        ['Restas pasando el 10', '13 − 5, 15 − 8…', { max: 20, min: 11, llevar: 'si', operacion: 'resta' }],
+        ['Desafío', 'Todo hasta 20', { max: 20, operacion: 'ambas' }, 'desafio'],
+        ['Decenas redondas', '20 + 30, 70 − 40', { max: 100, decenas: true, operacion: 'ambas' }],
+        ['Sumas hasta 100', 'Sin llevarse: 34 + 25', { max: 100, min: 10, dos: true, llevar: 'no', operacion: 'suma' }],
+        ['Restas hasta 100', 'Sin pedir: 68 − 23', { max: 100, min: 10, dos: true, llevar: 'no', operacion: 'resta' }],
+        ['Llevándote', '27 + 15', { max: 100, min: 10, dos: true, llevar: 'si', operacion: 'suma' }],
+        ['Desafío', 'Hasta 100', { max: 100, min: 10, operacion: 'ambas' }, 'desafio'],
+        ['Pidiendo prestado', '42 − 17', { max: 100, min: 10, dos: true, llevar: 'si', operacion: 'resta' }],
+        ['Sumas de tres cifras', '245 + 132', { max: 999, min: 100, dos: true, operacion: 'suma' }],
+        ['Restas de tres cifras', '586 − 243', { max: 999, min: 100, dos: true, operacion: 'resta' }],
+        ['Todo mezclado', 'Sumas y restas hasta 999', { max: 999, min: 10, operacion: 'ambas' }],
+        ['Gran desafío', 'Hasta 999', { max: 999, min: 10, operacion: 'ambas' }, 'desafio']
+      ]);
+    },
     preguntas: function (sel) {
-      var nivel = deLista(NIVELES, sel.nivel);
+      // el mapa trae su propia forma de cuenta; el modo libre, uno de los cuatro niveles
+      var nivel = sel.max ? null : deLista(NIVELES, sel.nivel);
       var modo = sel.operacion || 'ambas';
       var items = [];
       for (var i = 0; i < sel.cantidad; i++) {
         var op = modo === 'ambas' ? (Math.random() < 0.5 ? '+' : '−') : (modo === 'suma' ? '+' : '−');
-        var c = cuenta(nivel, op);
+        var c = nivel ? cuenta(nivel, op) : cuentaDeMapa(sel, op);
         c.id = c.a + c.op + c.b;
         items.push(c);
       }
@@ -608,13 +789,36 @@ window.Matematica = (function () {
     opciones: function () {
       return [{ id: 'nivel', esNivel: true, titulo: 'Elegí el nivel', tipo: 'grilla', items: NIVELES_SERIE }];
     },
+    /* Una regla nueva por nivel, y juntas recién cuando ya se conocen de
+       a una: descubrir «de a 3» es otra cosa si todavía no se sabe si es
+       de a 2, de a 3 o de a 5. */
+    mapa: function () {
+      var TODAS = ['+2', '+3', '+5', '+10', '-2', '-10', '+4', '+6', '+7', '+9', '-3', '-5', 'x2'];
+      return mapaDe(SERIE, [
+        ['De uno en uno', '1, 2, 3, 4…', { pasos: ['+1'] }],
+        ['De dos en dos', '2, 4, 6, 8…', { pasos: ['+2'] }],
+        ['Para atrás', '10, 9, 8, 7…', { pasos: ['-1'] }],
+        ['Tres reglas', 'De a 1, de a 2 y para atrás', { pasos: ['+1', '+2', '-1'] }],
+        ['Desafío', 'Las tres primeras reglas', { pasos: ['+1', '+2', '-1'] }, 'desafio'],
+        ['De diez en diez', '10, 20, 30…', { pasos: ['+10'] }],
+        ['De cinco en cinco', '5, 10, 15…', { pasos: ['+5'] }],
+        ['De tres en tres', '3, 6, 9…', { pasos: ['+3'] }],
+        ['Para atrás, de a mucho', 'De a 2 y de a 10', { pasos: ['-2', '-10'] }],
+        ['Desafío', 'De a 3, de a 5 y de a 10', { pasos: ['+3', '+5', '+10', '-2', '-10'] }, 'desafio'],
+        ['De a 4 y de a 6', 'Saltos más largos', { pasos: ['+4', '+6'] }],
+        ['De a 7 y de a 9', 'Los saltos raros', { pasos: ['+7', '+9'] }],
+        ['Para atrás, de a 3 y de a 5', '30, 27, 24…', { pasos: ['-3', '-5'] }],
+        ['Los dobles', '1, 2, 4, 8…', { pasos: ['x2'] }],
+        ['Gran desafío', 'Todas las reglas', { pasos: TODAS }, 'desafio']
+      ]);
+    },
     cantidades: cantidadesFijas,
     resumen: function (sel) { return 'Nivel ' + deLista(NIVELES_SERIE, sel.nivel).nombre.toLowerCase() + ' · ' + sel.cantidad + ' preguntas'; },
     examen: function (comun, edad) {
       return { nivel: !edad || edad <= 7 ? 'facil' : edad <= 9 ? 'medio' : 'dificil' };
     },
     preguntas: function (sel) {
-      var pasos = deLista(NIVELES_SERIE, sel.nivel).pasos;
+      var pasos = sel.pasos || deLista(NIVELES_SERIE, sel.nivel).pasos;
       var items = [];
       for (var i = 0; i < sel.cantidad; i++) {
         var paso = Util.alAzar(pasos);
@@ -735,6 +939,27 @@ window.Matematica = (function () {
     opciones: function () {
       return [{ id: 'paso', esNivel: true, titulo: 'Elegí el nivel', tipo: 'grilla', items: PASOS }];
     },
+    /* Un lugar nuevo de la aguja larga por nivel. «Menos cuarto» va solo
+       porque es el que más cuesta: la aguja está en el 9 y hay que decir
+       la hora de al lado. Al final, los de a 5 más engañosos: y cinco y
+       menos cinco, donde la aguja corta ya casi está en otro número. */
+    mapa: function () {
+      var DE_A_CINCO = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
+      return mapaDe(RELOJ, [
+        ['En punto', 'La aguja larga en el 12', { minutos: [0] }],
+        ['Y media', 'La aguja larga en el 6', { minutos: [30] }],
+        ['En punto o y media', '¿Dónde está la aguja larga?', { minutos: [0, 30] }],
+        ['Y cuarto', 'La aguja larga en el 3', { minutos: [15] }],
+        ['Desafío', 'En punto, y cuarto, y media', { minutos: [0, 15, 30] }, 'desafio'],
+        ['Menos cuarto', 'La aguja larga en el 9', { minutos: [45] }],
+        ['Todos los cuartos', 'En punto, y cuarto, y media, menos cuarto', { minutos: [0, 15, 30, 45] }],
+        ['De cinco en cinco', 'Y cinco, y diez, y veinte', { minutos: [5, 10, 20, 25] }],
+        ['La otra mitad', 'Y treinta y cinco, y cuarenta…', { minutos: [35, 40, 50, 55] }],
+        ['Desafío', 'Cualquier múltiplo de 5', { minutos: DE_A_CINCO }, 'desafio'],
+        ['Los engañosos', 'Cerca de la hora y de la media', { minutos: [5, 25, 35, 55] }],
+        ['Gran desafío', 'Cualquier hora', { minutos: DE_A_CINCO }, 'desafio']
+      ]);
+    },
     cantidades: cantidadesFijas,
     resumen: function (sel) {
       return deLista(PASOS, sel.paso).nombre + ' · ' + sel.cantidad + ' preguntas';
@@ -742,10 +967,16 @@ window.Matematica = (function () {
 
     examen: function (comun, edad) { return { paso: pasoPorEdad(edad), sinPesar: true }; },
     preguntas: function (sel) {
-      var paso = deLista(PASOS, sel.paso).paso;
+      // el mapa dice qué minutos entran; el modo libre, de a cuánto
+      var minutos = sel.minutos;
+      if (!minutos) {
+        var paso = deLista(PASOS, sel.paso).paso;
+        minutos = [];
+        for (var m = 0; m < 60; m += paso) minutos.push(m);
+      }
       var pozo = [];
       for (var hora = 1; hora <= 12; hora++) {
-        for (var minuto = 0; minuto < 60; minuto += paso) pozo.push(horaDelReloj(hora, minuto));
+        minutos.forEach(function (minuto) { pozo.push(horaDelReloj(hora, minuto)); });
       }
       return sortearDelPozo(pozo, sel.cantidad, sel.sinPesar);
     },
@@ -810,6 +1041,31 @@ window.Matematica = (function () {
       items.push({ id: 'mezcla', nombre: 'Todas mezcladas', icono: 'dado', detalle: 'Del 2 al 12' });
       return [{ id: 'tabla', esNivel: true, titulo: 'Elegí el nivel', tipo: 'grilla', items: items }];
     },
+    /* En el orden en que se aprenden, no en el de los números: la del 2,
+       la del 10 y la del 5 primero (son contar de a 2, de a 10, de a 5),
+       y la del 7, la del 8 y la del 9 al final. Los desafíos juntan todo
+       lo visto, y el último nivel antes del gran desafío repasa sólo las
+       que más cuestan. */
+    mapa: function () {
+      function tabla(t, detalle) { return ['Tabla del ' + t, detalle, { tablas: [t] }]; }
+      return mapaDe(TABLAS, [
+        tabla(2, 'Contar de a 2'),
+        tabla(10, 'Agregar un cero'),
+        tabla(5, 'Contar de a 5'),
+        tabla(3, 'Contar de a 3'),
+        ['Desafío', 'Las del 2, 3, 5 y 10', { tablas: [2, 3, 5, 10] }, 'desafio'],
+        tabla(4, 'El doble de la del 2'),
+        tabla(6, 'El doble de la del 3'),
+        tabla(7, 'La más rebelde'),
+        tabla(8, 'El doble de la del 4'),
+        ['Desafío', 'De la del 2 a la del 10', { tablas: [2, 3, 4, 5, 6, 7, 8, 10] }, 'desafio'],
+        tabla(9, 'Las cifras suman 9'),
+        tabla(11, 'Repetir el número'),
+        tabla(12, 'La del 10 y la del 2 juntas'),
+        ['Las difíciles', 'Las del 6, 7, 8, 9 y 12', { tablas: [6, 7, 8, 9, 12], sinFaciles: true }],
+        ['Gran desafío', 'Todas las tablas', { tablas: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] }, 'desafio']
+      ]);
+    },
     cantidades: cantidadesFijas,
     resumen: function (sel) {
       var nombre = sel.tabla === 'mezcla' ? 'Tablas mezcladas' : 'Tabla del ' + sel.tabla;
@@ -821,10 +1077,20 @@ window.Matematica = (function () {
       var mezcla = !sel.tabla || sel.tabla === 'mezcla';
       var desde = mezcla ? 2 : parseInt(sel.tabla, 10);
       var hasta = mezcla ? 12 : desde;
-      var pozo = [];
-      for (var a = desde; a <= hasta; a++) {
-        for (var b = 1; b <= 10; b++) pozo.push(cuentaTabla(a, b));
+      // el mapa pide tablas sueltas, que no siempre son seguidas
+      var tablas = sel.tablas;
+      if (!tablas) {
+        tablas = [];
+        for (var t = desde; t <= hasta; t++) tablas.push(t);
       }
+      var pozo = [];
+      tablas.forEach(function (a) {
+        for (var b = 1; b <= 10; b++) {
+          // por 1, por 2 y por 10 los sabe cualquiera: en «las difíciles» no van
+          if (sel.sinFaciles && (b < 3 || b === 10)) continue;
+          pozo.push(cuentaTabla(a, b));
+        }
+      });
       return sortearDelPozo(pozo, sel.cantidad, sel.sinPesar);
     },
     montar: function (it) {
@@ -900,14 +1166,35 @@ window.Matematica = (function () {
       return deLista(TAMANOS, sel.tamano).nombre + ' · ' + q + ' · ' + sel.cantidad + ' preguntas';
     },
     examen: function (comun, edad) { return { tamano: edad && edad >= 9 ? 'grandes' : 'chicos', modo: 'mezcla' }; },
+    /* Primero el doble (sumar el mismo número dos veces), después la
+       mitad, que es lo mismo al revés. Las decenas redondas van antes de
+       los números grandes porque son las que enseñan a hacerlo por
+       partes: el doble de 23 es el de 20 más el de 3. */
+    mapa: function () {
+      return mapaDe(DOBLES, [
+        ['Dobles hasta 5', 'El doble de 3 es 3 + 3', { desde: 1, hasta: 5, modo: 'doble' }],
+        ['Dobles hasta 10', 'El doble de 8', { desde: 1, hasta: 10, modo: 'doble' }],
+        ['Mitades hasta 10', 'Repartir en dos', { desde: 1, hasta: 5, modo: 'mitad' }],
+        ['Mitades hasta 20', 'La mitad de 14', { desde: 1, hasta: 10, modo: 'mitad' }],
+        ['Desafío', 'Dobles y mitades chicos', { desde: 1, hasta: 10, modo: 'mezcla' }, 'desafio'],
+        ['Dobles redondos', 'El doble de 20, de 30…', { bases: [10, 15, 20, 25, 30, 40, 50], modo: 'doble' }],
+        ['Dobles hasta 25', 'Por partes: 23 es 20 y 3', { desde: 11, hasta: 25, modo: 'doble' }],
+        ['Mitades hasta 50', 'La mitad de 36', { desde: 11, hasta: 25, modo: 'mitad' }],
+        ['Dobles hasta 50', 'El doble de 37', { desde: 26, hasta: 50, modo: 'doble' }],
+        ['Desafío', 'Dobles y mitades hasta 50', { desde: 11, hasta: 50, modo: 'mezcla' }, 'desafio'],
+        ['Mitades hasta 100', 'La mitad de 84', { desde: 26, hasta: 50, modo: 'mitad' }],
+        ['Gran desafío', 'Dobles y mitades', { desde: 1, hasta: 50, modo: 'mezcla' }, 'desafio']
+      ]);
+    },
     preguntas: function (sel) {
-      var hasta = deLista(TAMANOS, sel.tamano).hasta;
-      var desde = hasta === 10 ? 1 : 11;
+      // el mapa pide un rango suelto (o números justos); el modo libre, chicos o grandes
+      var hasta = sel.hasta || deLista(TAMANOS, sel.tamano).hasta;
+      var desde = sel.desde || (hasta === 10 ? 1 : 11);
       var modo = sel.modo || 'mezcla';
       var items = [];
       for (var i = 0; i < sel.cantidad; i++) {
         var m = modo === 'mezcla' ? (Math.random() < 0.5 ? 'doble' : 'mitad') : modo;
-        var base = entero(desde, hasta);
+        var base = sel.bases ? Util.alAzar(sel.bases) : entero(desde, hasta);
         items.push(itemDoble(m, m === 'doble' ? base : base * 2));
       }
       return items;
@@ -1003,15 +1290,39 @@ window.Matematica = (function () {
     cantidades: cantidadesFijas,
     resumen: function (sel) { return deLista(LARGOS, sel.largo).nombre + ' · ' + sel.cantidad + ' preguntas'; },
     examen: function (comun, edad) { return { largo: edad && edad >= 9 ? 'cuatro' : 'tres' }; },
+    /* Un lugar a la vez: en 352 primero se pregunta sólo por el 3 (vale
+       300), después sólo por el 5, y recién ahí por cualquiera. Cuando
+       se preguntan todos juntos de entrada, se contesta mirando el largo
+       del número y no el lugar de la cifra. */
+    mapa: function () {
+      return mapaDe(POSICION, [
+        ['Dos cifras: la decena', 'En 47, el 4 vale 40', { cifras: 2, lugares: ['d'] }],
+        ['Dos cifras', 'Decenas y unidades', { cifras: 2 }],
+        ['Tres cifras: la centena', 'En 352, el 3 vale 300', { cifras: 3, lugares: ['c'] }],
+        ['Tres cifras: la decena', 'En 352, el 5 vale 50', { cifras: 3, lugares: ['d'] }],
+        ['Desafío', 'Dos y tres cifras', { cifras: 3 }, 'desafio'],
+        ['Tres cifras', 'Cualquier lugar', { cifras: 3 }],
+        ['Cuatro cifras: el mil', 'En 4215, el 4 vale 4000', { cifras: 4, lugares: ['m'] }],
+        ['Cuatro cifras: el medio', 'Centenas y decenas', { cifras: 4, lugares: ['c', 'd'] }],
+        ['Cuatro cifras', 'Cualquier lugar', { cifras: 4 }],
+        ['Gran desafío', 'Hasta 9999', { cifras: 4 }, 'desafio']
+      ]);
+    },
     preguntas: function (sel) {
-      var cifras = deLista(LARGOS, sel.largo).cifras;
+      var cifras = sel.cifras || deLista(LARGOS, sel.largo).cifras;
+      var NOMBRES_LUGAR = ['u', 'd', 'c', 'm'];       // de derecha a izquierda
       var items = [];
       for (var i = 0; i < sel.cantidad; i++) {
         var numero = numeroSinRepetir(cifras);
         var texto = String(numero);
         // se pregunta por una cifra que no sea 0: el 0 no «vale» nada
         var lugares = [];
-        for (var p = 0; p < texto.length; p++) if (texto.charAt(p) !== '0') lugares.push(p);
+        for (var p = 0; p < texto.length; p++) {
+          if (texto.charAt(p) === '0') continue;
+          if (sel.lugares && sel.lugares.indexOf(NOMBRES_LUGAR[texto.length - 1 - p]) < 0) continue;
+          lugares.push(p);
+        }
+        if (!lugares.length) { i--; continue; }   // justo un 0 donde se preguntaba: otro número
         items.push(itemPosicion(numero, Util.alAzar(lugares)));
       }
       return items;
@@ -1042,7 +1353,7 @@ window.Matematica = (function () {
       });
     },
     deClave: function (resto) {
-      var m = /^(\d{3,4}):(\d)$/.exec(resto);
+      var m = /^(\d{2,4}):(\d)$/.exec(resto);
       if (!m) return null;
       var lugar = parseInt(m[2], 10);
       if (lugar >= m[1].length || m[1].charAt(lugar) === '0') return null;
@@ -1079,6 +1390,26 @@ window.Matematica = (function () {
       items.push({ id: 'mezcla', nombre: 'Todas mezcladas', icono: 'dado', detalle: 'Del 2 al 10' });
       return [{ id: 'divisor', esNivel: true, titulo: 'Elegí el nivel', tipo: 'grilla', items: items }];
     },
+    /* El mismo orden que las tablas, porque dividir es la tabla al revés:
+       el que ya sabe la del 5 puede dividir por 5. */
+    mapa: function () {
+      function por(d, detalle) { return ['Dividir por ' + d, detalle, { divisores: [d] }]; }
+      return mapaDe(DIVISION, [
+        por(2, 'La mitad'),
+        por(10, 'Sacar el cero'),
+        por(5, 'La tabla del 5 al revés'),
+        por(3, 'Repartir entre tres'),
+        ['Desafío', 'Por 2, 3, 5 y 10', { divisores: [2, 3, 5, 10] }, 'desafio'],
+        por(4, 'La mitad de la mitad'),
+        por(6, 'La tabla del 6 al revés'),
+        por(7, 'La tabla del 7 al revés'),
+        por(8, 'La tabla del 8 al revés'),
+        ['Desafío', 'Del 2 al 10', { divisores: [2, 3, 4, 5, 6, 7, 8, 10] }, 'desafio'],
+        por(9, 'La tabla del 9 al revés'),
+        ['Las difíciles', 'Por 6, 7, 8 y 9', { divisores: [6, 7, 8, 9] }],
+        ['Gran desafío', 'Todas las divisiones', { divisores: [2, 3, 4, 5, 6, 7, 8, 9, 10] }, 'desafio']
+      ]);
+    },
     cantidades: cantidadesFijas,
     resumen: function (sel) {
       return (sel.divisor === 'mezcla' ? 'Divisiones mezcladas' : 'Dividir por ' + sel.divisor) +
@@ -1089,10 +1420,15 @@ window.Matematica = (function () {
       var mezcla = !sel.divisor || sel.divisor === 'mezcla';
       var desde = mezcla ? 2 : parseInt(sel.divisor, 10);
       var hasta = mezcla ? 10 : desde;
-      var pozo = [];
-      for (var d = desde; d <= hasta; d++) {
-        for (var q = 1; q <= 10; q++) pozo.push(itemDivision(d * q, d));
+      var divisores = sel.divisores;
+      if (!divisores) {
+        divisores = [];
+        for (var k = desde; k <= hasta; k++) divisores.push(k);
       }
+      var pozo = [];
+      divisores.forEach(function (d) {
+        for (var q = 1; q <= 10; q++) pozo.push(itemDivision(d * q, d));
+      });
       return sortearDelPozo(pozo, sel.cantidad, sel.sinPesar);
     },
     montar: function (it) {
@@ -1207,8 +1543,28 @@ window.Matematica = (function () {
       return (sel.tipo === 'todas' ? 'Las cuatro cuentas' : 'Sumar y restar') + ' · ' + sel.cantidad + ' preguntas';
     },
     examen: function (comun, edad) { return { tipo: edad && edad >= 9 ? 'todas' : 'sumas' }; },
+    /* Un tipo de cuento por nivel, y después mezclados. Lo difícil de un
+       problema no es la cuenta sino darse cuenta de cuál es: por eso cada
+       dos o tres niveles nuevos viene uno de «¿qué cuenta va?». */
+    mapa: function () {
+      var TODAS = [0, 1, 2, 3, 4, 5, 6];
+      return mapaDe(PROBLEMAS, [
+        ['Juntar', 'Le regalan más', { plantillas: [0] }],
+        ['Quitar', 'Regaló algunas', { plantillas: [1] }],
+        ['El total', 'Dos cajas', { plantillas: [2] }],
+        ['¿Juntar o quitar?', '¿Qué cuenta va?', { plantillas: [0, 1, 2] }],
+        ['Desafío', 'Juntar y quitar', { plantillas: [0, 1, 2] }, 'desafio'],
+        ['¿Cuántos más?', 'Comparar dos cantidades', { plantillas: [3] }],
+        ['Sumar o restar', 'Los cuatro cuentos', { plantillas: [0, 1, 2, 3] }],
+        ['Grupos iguales', 'Paquetes y mesas: multiplicar', { plantillas: [4, 6] }],
+        ['Repartir', 'En partes iguales: dividir', { plantillas: [5] }],
+        ['Desafío', 'Las cuatro cuentas', { plantillas: TODAS }, 'desafio'],
+        ['¿Multiplicar o repartir?', '¿Qué cuenta va?', { plantillas: [4, 5, 6] }],
+        ['Gran desafío', 'Todos los cuentos', { plantillas: TODAS }, 'desafio']
+      ]);
+    },
     preguntas: function (sel) {
-      var plantillas = sel.tipo === 'todas' ? [0, 1, 2, 3, 4, 5, 6] : DE_SUMAR;
+      var plantillas = sel.plantillas || (sel.tipo === 'todas' ? [0, 1, 2, 3, 4, 5, 6] : DE_SUMAR);
       var items = [];
       for (var i = 0; i < sel.cantidad; i++) items.push(problemaNuevo(plantillas));
       return items;
@@ -1330,12 +1686,35 @@ window.Matematica = (function () {
     cantidades: cantidadesFijas,
     resumen: function (sel) { return deLista(TIPOS_FRACCION, sel.tipo).nombre + ' · ' + sel.cantidad + ' preguntas'; },
     examen: function (comun, edad) { return { tipo: edad && edad >= 10 ? 'todas' : 'faciles', sinPesar: true }; },
+    /* De a un tipo de parte: los medios y los cuartos juntos (el cuarto
+       es la mitad de la mitad), después los tercios, y más adelante
+       quintos, sextos y octavos. Los séptimos van últimos: no hay forma
+       de «verlos» partiendo por la mitad, hay que contar. */
+    mapa: function () {
+      function en(dens) { return { denominadores: dens }; }
+      return mapaDe(FRACCIONES, [
+        ['Medios y cuartos', 'La mitad y la mitad de la mitad', en([2, 4])],
+        ['Cuartos', '1/4, 2/4, 3/4', en([4])],
+        ['Tercios', 'En tres partes', en([3])],
+        ['Medios, tercios y cuartos', 'Contá las partes', en([2, 3, 4])],
+        ['Desafío', 'En 2, 3 o 4 partes', en([2, 3, 4]), 'desafio'],
+        ['Quintos', 'En cinco partes', en([5])],
+        ['Sextos', 'En seis partes', en([6])],
+        ['Octavos', 'En ocho partes', en([8])],
+        ['Hasta octavos', 'Todo mezclado', en([2, 3, 4, 5, 6, 8])],
+        ['Desafío', 'Hasta octavos', en([2, 3, 4, 5, 6, 8]), 'desafio'],
+        ['Séptimos', 'Los que hay que contar', en([7, 8])],
+        ['Gran desafío', 'Todas las fracciones', en([2, 3, 4, 5, 6, 7, 8]), 'desafio']
+      ]);
+    },
     preguntas: function (sel) {
-      var hasta = deLista(TIPOS_FRACCION, sel.tipo).hasta;
+      var hasta = sel.denominadores ? 0 : deLista(TIPOS_FRACCION, sel.tipo).hasta;
+      var denominadores = sel.denominadores || [];
+      for (var k = 2; k <= hasta; k++) denominadores.push(k);
       var pozo = [];
-      for (var d = 2; d <= hasta; d++) {
+      denominadores.forEach(function (d) {
         for (var n = 1; n < d; n++) pozo.push(itemFraccion(n, d, Math.random() < 0.5 ? 'torta' : 'barra'));
-      }
+      });
       return sortearDelPozo(pozo, sel.cantidad, sel.sinPesar);
     },
     montar: function (it) {

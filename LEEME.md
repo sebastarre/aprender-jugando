@@ -321,16 +321,75 @@ La racha se cuenta con los días anotados aparte (`dias`, en el perfil) y ya
 no con el historial, que guarda las últimas 300 partidas: un chico que jugaba
 mucho perdía los días viejos de la cuenta.
 
-## Los niveles recuerdan por dónde vas
+## El mapa de niveles
 
-- Un nivel terminado **con todas bien** lleva una tilde verde en su ficha.
-- Al entrar a un juego queda elegido **el primer nivel que falta**, no el 1:
-  el que ya va por la tabla del 7 no tiene que bajar la lista cada vez.
-- Al terminar una partida con el 80% bien aparece **«Pasar al nivel N»**, y
-  «Jugar de nuevo» pasa a segundo plano.
-- La pantalla de un juego ofrece **la lección que lo explica** («¿No sabés
-  cómo se hace?»): la lección ya terminaba ofreciendo el juego, y ahora el
-  camino va para los dos lados.
+Cada juego tiene su **camino de niveles**, como en los juegos de mapa: al tocar
+un juego se entra al mapa, y no a una pantalla de opciones. Son **656 niveles**
+en los 48 juegos, entre 10 y 20 por juego según cuánto hay para aprender.
+
+**Cómo se juega**
+
+- Los niveles se juegan en orden: pasar uno abre el siguiente.
+- Cada nivel da de **1 a 3 estrellas**; con una se pasa. Las de un nivel común
+  salen de los puntos (acertar al primer intento vale más que al tercero) y
+  con la mitad se pasa: el mapa es para avanzar, y para las tres estrellas
+  está el volver a jugarlo.
+- **Cada cinco niveles hay un desafío** (el trofeo): diez preguntas con todo lo
+  visto hasta ahí, **una sola oportunidad** por pregunta y sin pistas. Se pasa
+  con 7 de 10. El último nivel de cada juego es el gran desafío. A diferencia
+  del examen, dice si cada respuesta estuvo bien: es para chicos, y la
+  respuesta enseña aunque ya no sume.
+- Al pasar un nivel, las estrellas salen de a una con su sonido. «Siguiente
+  nivel» vuelve al mapa: la cara del chico camina hasta el nivel nuevo, que se
+  abre con un saltito, y su hoja sube sola para jugarlo.
+- Al **terminar un juego** se recomienda qué seguir: el próximo juego de la
+  materia que no terminó (en el orden de edades) y una lección que no hizo,
+  mejor si es la que explica ese juego. Sólo lecciones de su edad: al que
+  terminó Contar a los 4 no se le ofrece «sumar llevándose una».
+- En el mapa: la cara del chico sobre el nivel que le toca, el anillo que late,
+  las estrellas de cada nivel pasado, candados en los que faltan, el nombre de
+  cada etapa al costado («Y los de la granja») y la lección del juego arriba.
+
+**El modo libre** sigue estando (botón «Modo libre» en el mapa): es la pantalla
+de antes, donde se elige todo a mano y se juega sin mapa. Los ejercicios de las
+lecciones también la usan.
+
+**Cómo está armado cada mapa.** Todo juego tiene `mapa()`, que devuelve la
+lista de niveles (`{ numero, nombre, detalle, test, preguntas() }`).
+
+- **Los de lista fija** (Lengua, Ciencias, Inglés y tres de Geografía) lo arman
+  solos en `Tablero.banco` (`js/nucleo/tablero.js`) a partir de sus etapas: cada
+  nivel presenta de 2 a 4 cosas nuevas, en el orden del juego, y el resto de
+  las preguntas repasa lo anterior. Cuántos niveles: 10 hasta 12 cosas, 12
+  hasta 16, 14 hasta 24, 16 hasta 35 y 18 más allá. Si a una etapa le sobran
+  niveles, son repasos de esa etapa.
+- **Matemática** tiene cada camino escrito a mano en `js/juegos/matematica.js`,
+  porque sus preguntas se generan y los niveles del modo libre eran saltos
+  grandes. Por ejemplo:
+
+| Juego | Niveles | Cómo avanza |
+|---|---|---|
+| Contar | 15 | hasta 3, 4, 5… de a uno o dos números, hasta 20 |
+| Figuras | 10 | de a una figura, junto a la que más se le parece |
+| Mayor y menor | 12 | primero «el más grande», después «el más chico», después mezclado; decenas, la misma decena, centenas |
+| Sumas y restas | 20 | pasar el 10, llevarse y pedir prestado tienen cada uno su nivel; decenas redondas antes de dos cifras |
+| Qué número sigue | 15 | una regla nueva por nivel; los dobles al final |
+| La hora | 12 | en punto, y media, y cuarto, menos cuarto, de a 5, y los engañosos |
+| Tablas | 15 | en el orden en que se aprenden (2, 10, 5, 3…), no en el de los números |
+| Dobles y mitades | 12 | primero dobles, después mitades; las decenas redondas enseñan a hacerlo por partes |
+| Cuánto vale | 10 | un lugar a la vez: la decena, la centena, el mil |
+| Divisiones | 13 | el mismo orden que las tablas |
+| Problemas | 12 | un tipo de cuento por nivel y después «¿qué cuenta va?» |
+| Fracciones | 12 | medios y cuartos, tercios, quintos… los séptimos al final |
+
+- **Los del mapa del mundo** (países, capitales, banderas) comparten un camino
+  de 18 niveles por subregiones (`CAMINO`, en `js/juegos/geografia.js`):
+  Argentina y sus vecinos, toda América, Europa de a regiones, los diminutos
+  aparte, África, Asia, Oceanía y el mundo. En cada nivel sólo se pueden tocar
+  los países de esa región. Banderas se juega eligiendo entre cuatro.
+
+Las estrellas se guardan por chico en `mapas` (`js/nucleo/almacen.js`), y el
+dibujo del mapa está en `js/camino.js`.
 
 ## Una copia de todo
 
@@ -803,14 +862,34 @@ que se elige la primera vez que se entra. Es un panel para el grande:
 
 - **De quién.** Con más de un chico en el aparato, arriba se elige de quién ver
   y ajustar. Al cerrar el panel vuelve a quedar elegido el que estaba jugando.
-- **Esta semana.** Días jugados de 7, respuestas bien, porcentaje de aciertos,
-  tiempo jugando, y un gráfico con las respuestas bien de cada día.
-- **Por materia.** Precisión, partidas, lecciones completadas y juegos
-  dominados de cada una.
-- **Lo que le cuesta.** Lo que más falló, con su materia. Eso ya vuelve solo en
-  el repaso espaciado.
-- **Para hacer juntos.** De las últimas lecciones que completó, la propuesta
-  «contale a un grande» de su «¿por qué?», para que el grande la vea.
+
+Es mucho para mirar, así que va en **cuatro pestañas**:
+
+- **Resumen**
+  - *Desde que empezó*: tiempo jugando, partidas, preguntas, porcentaje de
+    aciertos, días jugados, la racha más larga, niveles del mapa, juegos
+    terminados, estrellas, lecciones, nota promedio de los exámenes y juegos
+    dominados.
+  - *Actividad* de los últimos **7 o 30 días**: cuatro números y dos gráficos
+    (respuestas bien y minutos jugando por día).
+  - *Cuándo juega*: a la mañana, a la tarde o a la noche, y qué días.
+  - *Para hacer juntos*: de las últimas lecciones que completó, la propuesta
+    «contale a un grande» de su «¿por qué?».
+- **Aprendizaje**
+  - *Cómo va mejorando*: el porcentaje de respuestas bien de cada una de las
+    últimas 8 semanas, con una frase que lo dice («pasó de 54% a 84%»).
+  - *Por materia*: precisión, partidas, tiempo, niveles del mapa, lecciones y
+    juegos dominados.
+  - *Su memoria*: todo lo que contestó alguna vez, según qué tan firme lo tiene
+    (aprendiendo, afianzando o ya lo sabe), sacado de las cajas del repaso
+    espaciado, y cuánto le toca repasar hoy.
+  - *Lo que le cuesta* y *lo que mejor le sale*, con su materia.
+  - *Lecciones*: las 17, completada, para repasar o sin hacer.
+- **Juegos**
+  - *Juego por juego*, agrupado por materia: en qué nivel del mapa va, sus
+    estrellas, partidas, porcentaje de aciertos, tiempo y cuándo jugó por
+    última vez.
+  - *Exámenes*, con la nota de cada uno, y las últimas partidas.
 - **Límites**, de cada chico:
   - **Tiempo por día** (sin límite, 15, 30, 45 o 60 minutos). Cuenta el tiempo
     con la app a la vista y un juego o una lección en pantalla. No corta nada a
@@ -821,8 +900,11 @@ que se elige la primera vez que se entra. Es un panel para el grande:
     examen ni el repaso, y no se abre ni con el enlace. Tiene que quedar una.
   - **Monedas y tienda.** Apagadas, las monedas se siguen juntando pero no se
     ven en ningún lado y la tienda no se abre.
-- Las últimas partidas, cambiar el PIN y borrar el progreso (los límites no se
-  borran: son del grande, no progreso).
+  - Cambiar el PIN y borrar el progreso (los límites no se borran: son del
+    grande, no progreso).
+
+Cada partida guarda cuánto duró (`segundos`, con un tope de media hora por si
+quedó abierta), y de ahí sale el tiempo por juego y por materia.
 
 El tiempo se guarda por día en el perfil (`tiempo`, los últimos 60 días) y los
 límites en `control` (`js/nucleo/almacen.js`).
