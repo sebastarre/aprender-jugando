@@ -380,8 +380,10 @@
           texto: 'Lecciones cortas con dibujos, leídas en voz alta, que terminan con un ejercicio.' },
         { donde: '#meta-hoy', titulo: 'La meta del día',
           texto: 'Cuántas respuestas correctas por día. Al cumplirla gana monedas; la elegís en Configuración.' },
-        { donde: '#menu-configuracion', titulo: 'Configuración y panel para padres',
-          texto: 'Sonido, voz y meta del día. Adentro está el panel para padres: estadísticas de todo, límites de tiempo y qué materias ve. Se protege con un PIN.' },
+        { donde: '#boton-padres', titulo: 'El rincón de los padres',
+          texto: 'Con el candado entrás al modo parental: estadísticas de todo, límites de tiempo y qué materias ve. Se protege con un PIN.' },
+        { donde: '#menu-configuracion', titulo: 'Configuración',
+          texto: 'Sonido, voz, la meta del día y los datos de cada chico.' },
         { donde: '.quien-juega', titulo: '¿Tiene hermanos?',
           texto: 'Cada chico tiene su propio perfil. Se suman acá y se cambia de uno a otro tocando la carita.' },
         { donde: null, titulo: '¡Listo!',
@@ -446,20 +448,18 @@
       genero: yo ? yo.genero || null : null,
       nombre: yo ? yo.nombre : '',
       edad: null,
-      avatar: yo ? yo.avatar : null,
       editando: yo ? yo.id : null
     };
     $('campo-nombre').value = (yo && yo.nombre !== 'Jugador') ? yo.nombre : '';
     $('error-nombre').hidden = true;
     pasoBienvenida('quien');
     pintarEdades();
-    pintarAvatares();
   }
 
   /* Los pasos dependen de quién contesta. El chico dice si es nene o
      nena en el primer paso; al grande se le pregunta aparte, después
      del nombre, y puede no contestar. */
-  var TODOS_LOS_PASOS = ['quien', 'nombre', 'genero', 'edad', 'avatar'];
+  var TODOS_LOS_PASOS = ['quien', 'nombre', 'genero', 'edad'];
   function pasosBienvenida() {
     return bienvenida.quien === 'adulto'
       ? TODOS_LOS_PASOS
@@ -494,9 +494,6 @@
       nombre ? '¿Cuántos años tiene ' + nombre + '?' : '¿Cuántos años tiene?');
     poner('bien-edad-sub', 'Con esto elegimos los juegos justos para vos.',
       'Con esto elegimos los juegos justos para su edad.');
-    poner('bien-avatar-titulo', 'Elegí tu monigote', 'Elegí su monigote');
-    poner('bien-avatar-sub', 'Va a ser tu carita en la app.',
-      'Va a ser su carita en la app. Después lo puede cambiar.');
   }
 
   function elegirQuien(quien) {
@@ -566,49 +563,21 @@
         caja.querySelectorAll('.boton-edad').forEach(function (o) {
           o.setAttribute('aria-pressed', o === b ? 'true' : 'false');
         });
-        setTimeout(function () { pasoBienvenida('avatar'); }, 180);
+        // la edad es la última pregunta: con eso ya está el perfil
+        setTimeout(terminarBienvenida, 220);
       });
       b.setAttribute('aria-pressed', 'false');
       caja.appendChild(b);
     });
   }
 
-  /** Los 12 de siempre, mas los que haya comprado en la tienda. */
-  function avataresDisponibles() {
-    var comprados = Catalogo.AVATARES
-      .filter(function (a) { return Almacen.tieneComprado(a.id); })
-      .map(function (a) { return a.emoji; });
-    return Almacen.AVATARES.concat(comprados);
-  }
-
-  function pintarAvatares() {
-    var caja = $('grilla-avatares');
-    Util.vaciar(caja);
-    avataresDisponibles().forEach(function (a, i) {
-      var b = Util.crear('button', 'boton-avatar', a);
-      b.type = 'button';
-      b.setAttribute('aria-label', 'Monigote ' + (i + 1));
-      b.setAttribute('aria-pressed', bienvenida.avatar === a ? 'true' : 'false');
-      b.addEventListener('click', function () {
-        bienvenida.avatar = a;
-        Sonido.tocar('clic');
-        caja.querySelectorAll('.boton-avatar').forEach(function (o) {
-          o.setAttribute('aria-pressed', o === b ? 'true' : 'false');
-        });
-      });
-      caja.appendChild(b);
-    });
-  }
-
   function terminarBienvenida() {
-    if (!bienvenida.avatar) bienvenida.avatar = Util.alAzar(Almacen.AVATARES);
     if (bienvenida.editando) {
       Almacen.actualizarPerfil(bienvenida.editando, {
-        nombre: bienvenida.nombre, avatar: bienvenida.avatar, edad: bienvenida.edad,
-        genero: bienvenida.genero
+        nombre: bienvenida.nombre, edad: bienvenida.edad, genero: bienvenida.genero
       });
     } else {
-      Almacen.crearPerfil(bienvenida.nombre, bienvenida.avatar, bienvenida.edad, bienvenida.genero);
+      Almacen.crearPerfil(bienvenida.nombre, null, bienvenida.edad, bienvenida.genero);
     }
     var grande = bienvenida.quien === 'adulto';
     Almacen.setQuienUsa(grande ? 'adulto' : 'chico');
@@ -718,10 +687,38 @@
      borren hermanos: el color termina siendo «el de Mora». */
   var COLORES_DE_CARA = ['#ffedd5', '#fce7f3', '#dcfce7', '#dbeafe', '#ede9fe', '#cffafe', '#fef3c7', '#ffe4e6'];
 
-  function colorDeCara(id) {
+  /* La letra va en un tono oscuro del mismo color de fondo, no en
+     negro: «la M de Mora» en bordó sobre rosa. Todos los pares dan más
+     de 6:1. */
+  var TINTAS_DE_CARA = ['#9a3412', '#9d174d', '#166534', '#1e40af', '#5b21b6', '#155e75', '#92400e', '#9f1239'];
+
+  function numeroDeCara(id) {
     var suma = 0;
     for (var i = 0; i < id.length; i++) suma = (suma * 31 + id.charCodeAt(i)) % 997;
-    return COLORES_DE_CARA[suma % COLORES_DE_CARA.length];
+    return suma % COLORES_DE_CARA.length;
+  }
+  function colorDeCara(id) { return COLORES_DE_CARA[numeroDeCara(id)]; }
+
+  /**
+   * La carita de un chico: su foto, o la primera letra de su nombre en
+   * su círculo de color. Antes era un monigote (un emoji de animal) que
+   * se elegía al armar el perfil; se sacaron, y la inicial es lo que
+   * cualquier chico reconoce como suyo sin tener que elegir nada.
+   */
+  function ponerCarita(caja, p) {
+    var i = numeroDeCara(p.id);
+    caja.style.background = COLORES_DE_CARA[i];
+    caja.style.color = TINTAS_DE_CARA[i];
+    caja.classList.add('carita');
+    if (p.foto) {
+      var img = Util.crear('img', 'carita-foto');
+      img.src = p.foto;
+      img.alt = '';
+      caja.appendChild(img);
+    } else {
+      caja.appendChild(Util.crear('span', 'carita-letra', String(p.nombre || '?').trim().charAt(0).toUpperCase()));
+    }
+    return caja;
   }
 
   function pintarJugadores() {
@@ -737,14 +734,7 @@
       var edad = p.edad ? p.edad + ' años' : '';
       b.setAttribute('aria-label', p.nombre + (edad ? ', ' + edad : '') +
                                    (esYo ? ', está jugando' : '. Tocá para jugar con este perfil'));
-      var cara = Util.crear('span', 'jugador-cara', p.foto ? '' : p.avatar);
-      cara.style.background = colorDeCara(p.id);
-      if (p.foto) {
-        var suFoto = Util.crear('img', 'jugador-foto');
-        suFoto.src = p.foto;
-        suFoto.alt = '';
-        cara.appendChild(suFoto);
-      }
+      var cara = ponerCarita(Util.crear('span', 'jugador-cara'), p);
       if (esYo) cara.appendChild(Util.crear('span', 'jugador-marca')).appendChild(Iconos.crear('tilde'));
       b.appendChild(cara);
       b.appendChild(Util.crear('span', 'jugador-nombre', p.nombre));
@@ -777,7 +767,6 @@
     $('error-nombre').hidden = true;
     pasoBienvenida('quien');
     pintarEdades();
-    pintarAvatares();
   }
 
   /** «¡Buen día!», «¡Buenas tardes!» o «¡Buenas noches!», según la hora. */
@@ -1391,7 +1380,8 @@
     return q >= 0.95 ? 3 : q >= 0.75 ? 2 : q >= 0.5 ? 1 : 0;
   }
 
-  /** La cara del chico para el mapa: su foto, o el monigote que eligió. */
+  /** La cara del chico para el mapa: su foto, o si no hay, la mascota,
+      que es la que va caminando de nivel en nivel. */
   function caraDelChico() {
     var caja = Util.crear('span', 'camino-yo-cara');
     var foto = Almacen.foto();
@@ -1401,8 +1391,8 @@
       img.alt = '';
       caja.appendChild(img);
     } else {
-      var yo = Almacen.activo();
-      caja.textContent = yo ? yo.avatar : '🙂';
+      caja.classList.add('con-mascota');
+      caja.appendChild(Mascota.crear(null, 'camino-yo-mascota'));
     }
     return caja;
   }
@@ -2820,7 +2810,9 @@
     ponerLaFoto($('perfil-avatar'), 'avatar-foto', foto);
     var emoji = $('perfil-avatar-emoji');
     emoji.hidden = !!foto;
-    emoji.textContent = yo.avatar;
+    emoji.textContent = String(yo.nombre || '?').trim().charAt(0).toUpperCase();
+    $('perfil-avatar').style.background = foto ? '' : colorDeCara(yo.id);
+    $('perfil-avatar').style.color = foto ? '' : TINTAS_DE_CARA[numeroDeCara(yo.id)];
     $('btn-sacar-foto').hidden = !foto;
     $('perfil-avatar').setAttribute('aria-label', foto ? 'Cambiar tu foto' : 'Poner una foto tuya');
     $('perfil-nombre').textContent = yo.nombre;
@@ -3006,13 +2998,7 @@
       var b = Util.crear('button', 'perfil-chip');
       b.type = 'button';
       b.setAttribute('aria-pressed', activo && p.id === activo.id ? 'true' : 'false');
-      var carita = Util.crear('span', 'perfil-chip-avatar', p.foto ? '' : p.avatar);
-      if (p.foto) {
-        var suFoto = Util.crear('img', 'perfil-chip-foto');
-        suFoto.src = p.foto;
-        suFoto.alt = '';
-        carita.appendChild(suFoto);
-      }
+      var carita = ponerCarita(Util.crear('span', 'perfil-chip-avatar'), p);
       b.appendChild(carita);
       var cuerpo = Util.crear('span', 'perfil-chip-cuerpo');
       cuerpo.appendChild(Util.crear('span', 'perfil-chip-nombre', p.nombre));
@@ -3031,7 +3017,6 @@
 
   /* ---------------------- personalización ---------------------- */
   function pintarPersonalizacion() {
-    pintarEleccionMonigote();
     pintarEleccionAnimal();
     pintarDisfraces();
     pintarCombos();
@@ -3047,45 +3032,6 @@
     $('nota-tienda').textContent = faltan
       ? 'Hay ' + Util.plural(faltan, 'color') + ' más para comprar en la tienda.'
       : 'Ya tenés los ' + total + ' colores. No queda ninguno por comprar.';
-  }
-
-  /**
-   * El monigote del chico: la carita que se ve en «¿Quién juega?», en
-   * el perfil y en el cartel del inicio cuando no hay foto puesta.
-   *
-   * Se elegía en la bienvenida y ahí quedaba: para cambiarlo había que
-   * borrar el perfil y hacerlo de nuevo. Es la misma grilla que la de
-   * la bienvenida, con los que vengan de fábrica más los comprados en
-   * la tienda.
-   */
-  function pintarEleccionMonigote() {
-    var caja = $('eleccion-monigote');
-    var yo = Almacen.activo();
-    Util.vaciar(caja);
-    if (!yo) return;
-
-    avataresDisponibles().forEach(function (a, i) {
-      var b = Util.crear('button', 'boton-avatar', a);
-      b.type = 'button';
-      b.setAttribute('aria-label', 'Monigote ' + (i + 1));
-      b.setAttribute('aria-pressed', yo.avatar === a ? 'true' : 'false');
-      b.addEventListener('click', function () {
-        Almacen.actualizarPerfil(yo.id, { avatar: a });
-        Sonido.despertar(); Sonido.tocar('clic');
-        caja.querySelectorAll('.boton-avatar').forEach(function (o) {
-          o.setAttribute('aria-pressed', o === b ? 'true' : 'false');
-        });
-        /* El inicio muestra la carita de cada chico: si no se repinta,
-           al volver sigue estando la de antes. */
-        pintarInicio();
-      });
-      caja.appendChild(b);
-    });
-
-    var foto = Almacen.foto();
-    $('nota-monigote').textContent = foto
-      ? 'Ahora se ve tu foto. El monigote vuelve si la sacás.'
-      : 'Es tu carita en «¿Quién juega?» y en tu perfil.';
   }
 
   /** Gato o perro. No se compra: es de quién es la mascota. */
@@ -3284,36 +3230,28 @@
       if (item.deco) muestra.style.background = item.deco;
       return muestra;
     });
-
-    pintarSeccionTienda($('tienda-avatares'), 'avatar', Catalogo.AVATARES, null, true);
   }
 
   /**
-   * Una sección de la tienda. `tipo` es lo que se equipa ('tema', 'fondo',
-   * 'avatar'); `vistaPrevia` devuelve el dibujito de cada tarjeta.
+   * Una sección de la tienda. `tipo` es lo que se equipa ('disfraz',
+   * 'fondo', 'color:…'); `vistaPrevia` devuelve el dibujito de cada tarjeta.
    */
-  function pintarSeccionTienda(caja, tipo, items, vistaPrevia, esAvatar) {
+  function pintarSeccionTienda(caja, tipo, items, vistaPrevia) {
     Util.vaciar(caja);
     items.forEach(function (item) {
-      var idCompra = tipo === 'avatar' ? item.id : tipo + ':' + item.id;
+      var idCompra = tipo + ':' + item.id;
       var tiene = item.precio === 0 || Almacen.tieneComprado(idCompra);
-      var puesto = esAvatar
-        ? (Almacen.activo() && Almacen.activo().avatar === item.emoji)
-        : Almacen.equipado(tipo) === item.id ||
+      var puesto = Almacen.equipado(tipo) === item.id ||
           // sin nada elegido está puesto el primero gratis de la lista
           (!Almacen.equipado(tipo) && item === items.filter(function (x) { return !x.precio; })[0]);
 
-      var b = Util.crear('button', 'card-tienda' + (esAvatar ? ' card-avatar' : ''));
+      var b = Util.crear('button', 'card-tienda');
       b.type = 'button';
       b.setAttribute('aria-pressed', puesto ? 'true' : 'false');
 
       if (vistaPrevia) b.appendChild(vistaPrevia(item));
-      else b.appendChild(Util.crear('span', 'avatar-muestra', item.icono));
-
-      if (!esAvatar) {
-        b.appendChild(Util.crear('b', 'tienda-nombre', item.nombre));
-        if (item.texto) b.appendChild(Util.crear('span', 'tienda-texto', item.texto));
-      }
+      b.appendChild(Util.crear('b', 'tienda-nombre', item.nombre));
+      if (item.texto) b.appendChild(Util.crear('span', 'tienda-texto', item.texto));
 
       var pie = Util.crear('span', 'tienda-pie');
       if (puesto) pie.appendChild(Util.crear('span', 'etiqueta-puesta', 'En uso'));
@@ -3327,7 +3265,7 @@
       b.appendChild(pie);
 
       b.addEventListener('click', function () {
-        manejarCompra(tipo, item, idCompra, tiene, esAvatar);
+        manejarCompra(tipo, item, idCompra, tiene);
       });
       caja.appendChild(b);
     });
@@ -3381,10 +3319,10 @@
     (opciones.soloAceptar || opciones.focoEnSi ? si : no).focus();
   }
 
-  function manejarCompra(tipo, item, idCompra, tiene, esAvatar) {
+  function manejarCompra(tipo, item, idCompra, tiene) {
     if (tiene) {
       Sonido.tocar('clic');
-      return ponerEnUso(tipo, item, esAvatar);
+      return ponerEnUso(tipo, item);
     }
 
     var faltan = item.precio - Almacen.monedas();
@@ -3407,11 +3345,11 @@
     }, function () {
       if (!Almacen.comprar(idCompra, item.precio)) return;
       Sonido.tocar('record');
-      ponerEnUso(tipo, item, esAvatar);
+      ponerEnUso(tipo, item);
     });
   }
 
-  /** La muestra que se ve en el cartel: la mascota, el color o el monigote. */
+  /** La muestra que se ve en el cartel: la mascota o el color. */
   function vistaDeCompra(tipo, item) {
     if (tipo === 'disfraz') {
       return '<span class="mascota-mini">' +
@@ -3421,19 +3359,13 @@
       return '<span class="muestra-color-grande" style="background:' +
              Util.escapar(item.muestra) + '"></span>';
     }
-    if (item.emoji) return '<span class="avatar-muestra">' + item.emoji + '</span>';
     return '';
   }
 
-  function ponerEnUso(tipo, item, esAvatar) {
-    if (esAvatar) {
-      var yo = Almacen.activo();
-      if (yo) Almacen.actualizarPerfil(yo.id, { avatar: item.emoji });
-    } else {
-      Almacen.equipar(tipo, item.id);
-      Temas.aplicar();
-      if (tipo === 'disfraz') Mascota.refrescar();
-    }
+  function ponerEnUso(tipo, item) {
+    Almacen.equipar(tipo, item.id);
+    Temas.aplicar();
+    if (tipo === 'disfraz') Mascota.refrescar();
     pintarBarraSuperior();
     pintarTienda();
   }
@@ -3722,7 +3654,7 @@
       var b = Util.crear('button', 'chico-panel');
       b.type = 'button';
       b.setAttribute('aria-pressed', yo && p.id === yo.id ? 'true' : 'false');
-      b.appendChild(Util.crear('span', 'chico-panel-avatar', p.avatar || '🙂'));
+      b.appendChild(ponerCarita(Util.crear('span', 'chico-panel-avatar'), p));
       b.appendChild(Util.crear('span', null, p.nombre));
       b.addEventListener('click', function () {
         Sonido.tocar('clic');
@@ -4637,7 +4569,6 @@
     $('campo-nombre').addEventListener('keydown', function (ev) {
       if (ev.key === 'Enter') $('btn-bien-nombre').click();
     });
-    $('btn-bien-listo').addEventListener('click', terminarBienvenida);
 
     /* la foto: la piden dos pantallas y el campo de archivo es uno solo */
     $('btn-foto').addEventListener('click', function () { pedirFoto(pintarInicio); });
@@ -4891,6 +4822,11 @@
   }
 
   /* ---------------------- arranque ---------------------- */
+  // los monigotes ya no están: lo que se pagó por ellos vuelve en monedas
+  Almacen.devolverCompras('avatar:', function (clave) {
+    var a = Catalogo.AVATARES.filter(function (x) { return x.id === clave; })[0];
+    return a ? a.precio : 0;
+  });
   Temas.aplicar();              // antes de pintar, para que no parpadee
   pintarBarraSuperior();
   pintarBotonSonido();

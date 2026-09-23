@@ -616,6 +616,29 @@ window.Almacen = (function () {
     return !!(mio().comprado && mio().comprado[id]);
   }
 
+  /* Devuelve las monedas de lo que se sacó de la tienda, a todos los
+     chicos del aparato, y lo borra de sus compras. Se llama al arrancar:
+     la segunda vez ya no encuentra nada que devolver. Se usó cuando se
+     sacaron los monigotes (septiembre de 2026): un chico que había
+     juntado 90 monedas para el mago no tenía por qué perderlas.
+     `precioDe(clave)` dice cuánto había costado cada cosa. */
+  function devolverCompras(prefijo, precioDe) {
+    var devuelto = 0;
+    Object.keys(datos.datos).forEach(function (id) {
+      var d = datos.datos[id];
+      if (!d || !d.comprado) return;
+      Object.keys(d.comprado).forEach(function (clave) {
+        if (clave.indexOf(prefijo) !== 0) return;
+        var precio = precioDe(clave) || 0;
+        d.monedas = (d.monedas || 0) + precio;
+        devuelto += precio;
+        delete d.comprado[clave];
+      });
+    });
+    if (devuelto) guardar();
+    return devuelto;
+  }
+
   /** Compra si alcanza la plata y no lo tenía. Devuelve si se pudo. */
   function comprar(id, precio) {
     if (tieneComprado(id)) return true;
@@ -1028,7 +1051,7 @@ window.Almacen = (function () {
     monedas: monedas, monedasTotales: monedasTotales,
     dominado: dominado, marcarDominado: marcarDominado, cuantosDominados: cuantosDominados,
     sumarMonedas: sumarMonedas, gastarMonedas: gastarMonedas,
-    comprar: comprar, tieneComprado: tieneComprado,
+    comprar: comprar, tieneComprado: tieneComprado, devolverCompras: devolverCompras,
     equipar: equipar, equipado: equipado,
     marcarLeccion: marcarLeccion, leccionVista: leccionVista, cuantasLecciones: cuantasLecciones,
     masFallados: masFallados, estadisticas: estadisticas, borrarProgreso: borrarProgreso,

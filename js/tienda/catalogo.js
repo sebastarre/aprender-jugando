@@ -257,7 +257,9 @@ window.Catalogo = (function () {
     return { id: id, nombre: d.nombre, precio: d.precio, disfraz: id };
   });
 
-  /* Monigotes que se suman a los 12 gratis del perfil. */
+  /* Los monigotes que se vendían para el perfil. Ya no están en la tienda
+     (el perfil muestra la foto o la inicial del nombre); la lista queda
+     sólo para saber cuánto devolverle a quien había comprado alguno. */
   var AVATARES = [
     { emoji: '🐲', precio: 50 }, { emoji: '🦕', precio: 50 },
     { emoji: '🦩', precio: 50 }, { emoji: '🐳', precio: 50 },

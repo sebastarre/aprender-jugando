@@ -169,13 +169,6 @@
         <div class="grilla-edades" id="grilla-edades"></div>
       </div>
 
-      <div class="paso-bienvenida" id="bien-paso-avatar" hidden>
-        <div class="bien-globo" data-mascota="festejo"></div>
-        <h1 class="titulo-grande" id="bien-avatar-titulo">Elegí tu monigote</h1>
-        <p class="subtitulo" id="bien-avatar-sub">Va a ser tu carita en la app.</p>
-        <div class="grilla-avatares" id="grilla-avatares"></div>
-        <button class="btn-gigante" id="btn-bien-listo" type="button">¡Empezar!</button>
-      </div>
     </div>
   </section>
 
@@ -187,6 +180,17 @@
        personalización, la configuración) vivía escondido en un menú
        desplegable del ícono de arriba a la derecha. -->
   <section class="pantalla" id="pantalla-inicio" hidden>
+    <!-- La puerta de los grandes. Arriba a la derecha, que es donde las
+         apps para chicos ponen el rincón de los padres (la izquierda es
+         de la flecha de volver en todas las otras pantallas), y chiquita
+         y sin color: tiene que encontrarla un grande que la busca, no
+         llamarle la atención a un chico. Adentro pide el PIN. -->
+    <div class="inicio-arriba">
+      <a class="boton-padres" id="boton-padres" href="#/parental" aria-label="Modo parental, para padres">
+        <span data-ico="candado" aria-hidden="true"></span>
+        <span>Padres</span>
+      </a>
+    </div>
     <!-- El cartel de color del inicio. Es lo que pinta la ranura de la
          tienda que antes pintaba la barra de arriba: ahora que la barra
          no está, la paleta se luce acá. Son dos enlaces distintos, no
@@ -741,13 +745,6 @@
     <h1 class="titulo-grande"><span data-ico="personalizacion" class="ico-titulo-caja" aria-hidden="true"></span>Personalización</h1>
     <p class="subtitulo">Elegí cómo se ve la app. Se cambia al toque.</p>
 
-    <!-- El monigote se elegía en la bienvenida y después no había
-         manera de cambiarlo. Va primero porque es la carita del chico;
-         la mascota es el bicho que lo acompaña. -->
-    <h2 class="etiqueta-grupo">Tu monigote</h2>
-    <p class="nota-ranura" id="nota-monigote">Es tu carita cuando no hay foto puesta.</p>
-    <div class="grilla-avatares" id="eleccion-monigote"></div>
-
     <h2 class="etiqueta-grupo">Tu mascota</h2>
     <div class="bloque-mascota">
       <div class="mascota-preview" id="mascota-preview" data-mascota="hola"></div>
@@ -782,9 +779,6 @@
 
     <h2 class="etiqueta-grupo">Fondos</h2>
     <div class="grilla-tienda" id="tienda-fondos"></div>
-
-    <h2 class="etiqueta-grupo">Monigotes</h2>
-    <div class="grilla-avatares-tienda" id="tienda-avatares"></div>
   </section>
 
   <!-- ============ MODO PARENTAL ============ -->

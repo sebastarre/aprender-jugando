@@ -599,7 +599,7 @@ progreso y para reponer el PIN en el modo parental.
 
 Con esas monedas se compran, en la **tienda** (el chip de arriba a la derecha,
 o el botón en Personalización): colores sueltos para cada parte de la app,
-disfraces para la mascota, fondos y monigotes extra para el perfil. **Todo es
+disfraces para la mascota y fondos. **Todo es
 cosmético a propósito**: no se compran pistas, ni intentos, ni juegos.
 
 Los colores funcionan pisando variables de CSS, así que agregar uno es agregar
@@ -1045,12 +1045,12 @@ ningún servidor.
 Lo primero que pregunta la app al armar un perfil es **quién está del otro
 lado**: «Soy mamá, papá o un adulto», «Soy un nene» o «Soy una nena».
 
-- **El chico** sigue como siempre: su nombre, su edad y su monigote, todo de
-  «vos». Ya dijo si es nene o nena en el primer paso. Son cuatro pasos.
+- **El chico** sigue como siempre: su nombre y su edad, todo de
+  «vos». Ya dijo si es nene o nena en el primer paso. Son tres pasos.
 - **El grande** arma el perfil del chico, y se le habla en tercera persona:
-  «¿Cómo se llama?», «¿Cuántos años tiene Mora?», «Elegí su monigote». Tiene
+  «¿Cómo se llama?», «¿Cuántos años tiene Mora?». Tiene
   un paso más, «¿Es nene o nena?», que se puede no contestar («Prefiero no
-  decirlo»). Son cinco pasos.
+  decirlo»). Son cuatro pasos.
 
 Si es nene o nena se guarda en el perfil (`genero`) y sirve **sólo** para
 escribirle «¡Estás listo!» o «¡Estás lista!» (la función `listo()` de
@@ -1077,6 +1077,27 @@ mascota, el texto, los puntitos de cuánto falta y los botones.
 - Se puede volver a ver desde **Configuración → «Ver cómo se usa la app»**.
 
 Los textos de cada paso están en `pasosDelTutorial()` de `js/app.js`.
+
+## La carita de cada chico y la puerta de los padres
+
+**Ya no hay monigotes.** Antes cada chico elegía un emoji de animal al armar
+su perfil (y se vendían más en la tienda). Ahora su carita es **su foto**, si
+un grande le puso una, o **la inicial de su nombre** en su círculo de color:
+la letra va en el tono oscuro del mismo color («la M de Mora» en bordó sobre
+rosa). Es `ponerCarita()` de `js/app.js`, y se usa en «¿Quién juega?», en el
+perfil, en los selectores de jugador y en el panel para padres. En el mapa de
+niveles, sin foto, el que camina de nivel en nivel es la **mascota**.
+
+Los que habían comprado monigotes con monedas no las pierden: al abrir la app,
+`Almacen.devolverCompras('avatar:', …)` les devuelve lo que pagaron, una sola
+vez.
+
+**El modo parental tiene su puerta en el inicio**: un botón chico con candado,
+«Padres», arriba a la derecha. Es donde las apps para chicos ponen el rincón de
+los grandes (la izquierda es de la flecha de volver en las otras pantallas), y
+va sin color para que la encuentre un grande que la busca sin llamarle la
+atención a un chico. Adentro pide el PIN, como siempre. Sigue estando también
+en Configuración. El tutorial de los grandes la señala.
 
 ## Borrar los datos
 
@@ -1190,7 +1211,7 @@ js/
   juegos/repaso.js         Modo repaso: rearma las preguntas que se fallaron
   aprender/contenido.js    El texto y los dibujos de las lecciones
   aprender/leccion.js      Visor de lecciones (los pasos, de a uno)
-  tienda/catalogo.js       Los colores de cada ranura, disfraces, fondos y monigotes
+  tienda/catalogo.js       Los colores de cada ranura, disfraces y fondos
   tienda/temas.js          Junta los colores puestos y los escribe en el CSS
   app.js                   Las dos secciones, las pantallas y la navegación
   tutorial.js              El recorrido guiado con la mascota (se puede saltar)
