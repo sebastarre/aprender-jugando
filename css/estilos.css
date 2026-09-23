@@ -257,7 +257,15 @@ body {
   box-shadow: 0 12px 28px -10px rgba(15, 23, 42, .55);
   animation: arranque-insignia .58s var(--rebote) both;
 }
-.arranque-globo { width: 64%; height: 64%; }
+.arranque-globo {
+  /* la mascota entera es alta y angosta: se ve de la cintura para
+     arriba, asomada desde el fondo del círculo */
+  width: 78%;
+  height: auto;
+  align-self: end;
+  margin-bottom: -38%;
+}
+.arranque-insignia { overflow: hidden; }
 @keyframes arranque-insignia {
   from { opacity: 0; transform: scale(.28) rotate(-20deg); }
   to   { opacity: 1; transform: none; }
@@ -2031,7 +2039,7 @@ body.en-bienvenida #fondo-bienvenida { display: block; }
   border-radius: 50%;
   background: rgba(255, 255, 255, .18);
 }
-.bien-marca-globo svg { width: 20px; height: 20px; }
+.bien-marca-globo img { width: 28px; height: 28px; border-radius: 8px; display: block; }
 
 .pantalla-bienvenida {
   display: flex;
@@ -3925,6 +3933,9 @@ body.jugando .marcador { display: none; }
   box-shadow: 0 4px 0 rgba(0, 0, 0, .2);
 }
 .plan-insignia svg { width: 38px; height: 38px; }
+.plan-insignia img { width: 100%; height: 100%; border-radius: inherit; display: block; }
+.plan-legales { text-align: center; margin: 22px 0 0; font-size: .92rem; font-weight: 700; }
+.plan-legales a { color: var(--tinta-suave); }
 .plan-marca { margin: 0; font-weight: 800; font-size: .95rem; letter-spacing: .02em; }
 .plan-titulo { margin: 2px 0 12px; font-size: clamp(1.6rem, 5.4vw, 2.2rem); font-weight: 800; line-height: 1.1; }
 
@@ -4867,3 +4878,164 @@ body.jugando .marcador { display: none; }
 .elegir-voz { margin: 4px 0 26px; }
 .elegir-voz .fila-opciones { flex-direction: column; gap: 10px; }
 .elegir-voz .opcion { width: 100%; text-align: left; justify-content: flex-start; }
+
+/* ============================================================
+   Bienvenida: ¿quién está usando la app?
+
+   Tres botones grandes: el del grande arriba y a lo ancho, con una
+   línea que explica qué va a pasar, y los de nene y nena abajo, de a
+   dos, con la carita grande: un chico de cuatro los reconoce sin leer.
+   ============================================================ */
+.grilla-quien {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 6px 0 4px;
+}
+.boton-quien {
+  --q-fondo: #eef4ff; --q-filo: #a9c6fa; --q-paso: #74a0f3;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 118px;
+  padding: 14px 10px;
+  border: 3px solid var(--q-filo);
+  border-radius: var(--radio);
+  background: linear-gradient(168deg, #fff 0%, var(--q-fondo) 70%);
+  box-shadow: 0 5px 0 var(--q-paso);
+  text-align: center;
+  transition: transform .14s var(--rebote), box-shadow .14s;
+}
+.boton-quien:hover { transform: translateY(-2px); box-shadow: 0 7px 0 var(--q-paso); }
+.boton-quien:active { transform: translateY(5px); box-shadow: 0 0 0 var(--q-paso); }
+.boton-quien-cara { font-size: 2.6rem; line-height: 1; }
+.boton-quien-texto { display: flex; flex-direction: column; gap: 2px; }
+.boton-quien-texto b { font-size: 1.15rem; font-weight: 800; line-height: 1.15; }
+.boton-quien-texto small { font-size: .88rem; color: var(--tinta-suave); line-height: 1.25; }
+
+.boton-quien-adulto {
+  grid-column: 1 / -1;
+  flex-direction: row;
+  justify-content: flex-start;
+  gap: 14px;
+  min-height: 0;
+  text-align: left;
+  --q-fondo: #efe6ff; --q-filo: #c0a3f5; --q-paso: #a077ef;
+}
+.boton-quien-nene { --q-fondo: #dff3ff; --q-filo: #8ccbf2; --q-paso: #4fb0ea; }
+.boton-quien-nena { --q-fondo: #ffe6f1; --q-filo: #f4a6c8; --q-paso: #ec7dab; }
+.boton-quien-nada {
+  grid-column: 1 / -1;
+  min-height: 56px;
+  --q-fondo: #f3f5fa; --q-filo: #d3dbea; --q-paso: #b9c4d8;
+}
+.boton-quien-nada .boton-quien-texto b { font-size: 1rem; }
+
+/* ============================================================
+   El tutorial
+
+   La capa tapa todo y oscurece, con un agujero recortado sobre lo que
+   se muestra (el recorte lo calcula js/tutorial.js). Encima, un aro
+   amarillo que viaja de una cosa a la otra con la curva de rebote. El
+   globo va abajo o arriba según dónde esté lo señalado, y al medio en
+   los pasos que no señalan nada.
+   ============================================================ */
+.tuto {
+  position: fixed;
+  inset: 0;
+  z-index: 95;
+}
+.tuto-sombra {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, .74);
+}
+.tuto-foco {
+  position: fixed;
+  border-radius: 26px;
+  box-shadow: 0 0 0 4px #fde047, 0 0 22px 4px rgba(253, 224, 71, .55);
+  transition: left .38s var(--rebote), top .38s var(--rebote),
+              width .38s var(--rebote), height .38s var(--rebote);
+  pointer-events: none;
+}
+.tuto.sin-foco .tuto-foco { display: none; }
+
+.tuto-globo {
+  position: fixed;
+  left: 50%;
+  width: min(440px, calc(100vw - 24px));
+  transform: translateX(-50%);
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 12px;
+  padding: 16px 16px 14px;
+  border: 3px solid #fff;
+  border-radius: var(--radio);
+  background: var(--tarjeta);
+  color: var(--tinta);
+  box-shadow: 0 6px 0 var(--sombra-clay), 0 20px 40px -12px rgba(15, 23, 42, .55);
+}
+.tuto-globo.al-medio { top: 50%; transform: translate(-50%, -50%); }
+.tuto-globo.entra { animation: tuto-entra .38s var(--rebote) both; }
+.tuto-globo.al-medio.entra { animation-name: tuto-entra-medio; }
+@keyframes tuto-entra {
+  from { opacity: 0; transform: translateX(-50%) translateY(14px) scale(.94); }
+  to   { opacity: 1; transform: translateX(-50%); }
+}
+@keyframes tuto-entra-medio {
+  from { opacity: 0; transform: translate(-50%, -46%) scale(.92); }
+  to   { opacity: 1; transform: translate(-50%, -50%); }
+}
+.tuto-cara { grid-row: 1 / 3; align-self: start; }
+.tuto-mascota { height: 92px; animation: saludar 3.4s ease-in-out infinite; transform-origin: 50% 95%; }
+.tuto-cuerpo { min-width: 0; }
+.tuto-titulo { margin: 0 0 2px; font-size: 1.3rem; font-weight: 800; line-height: 1.2; }
+.tuto-texto { margin: 0; font-size: 1rem; line-height: 1.4; color: var(--tinta); }
+.tuto-puntos { display: flex; gap: 6px; margin: 10px 0 0; }
+.tuto-puntos span { width: 8px; height: 8px; border-radius: 50%; background: var(--pista); transition: transform .2s, background .2s; }
+.tuto-puntos .hecho { background: var(--primario); }
+.tuto-puntos .ahora { background: var(--primario); transform: scale(1.4); }
+
+.tuto-botones {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+/* «Saltar» siempre a la vista, a la izquierda, con cara de botón y no de
+   letra chica: el que no quiere el tutorial lo tiene que encontrar sin
+   buscarlo. */
+.tuto-saltar, .tuto-atras {
+  font: inherit;
+  font-weight: 800;
+  font-size: .95rem;
+  min-height: 44px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 2.5px solid var(--borde);
+  background: var(--tarjeta);
+  color: var(--tinta-suave);
+  cursor: pointer;
+  box-shadow: 0 3px 0 var(--sombra-clay);
+}
+.tuto-saltar:active, .tuto-atras:active { transform: translateY(3px); box-shadow: none; }
+.tuto-seguir {
+  margin-left: auto;
+  font-size: 1.1rem;
+  padding: 11px 26px;
+  animation: none;
+}
+.tuto-saltar[hidden], .tuto-atras[hidden] { display: none; }
+
+/* el botón de Configuración para volver a verlo */
+.tarjeta-tutorial {
+  --examen-color: #7c3aed; --examen-fuerte: #5b21b6;
+  --examen-fondo: #ebe2ff; --examen-filo: #b18cf3; --examen-paso: #a97df2;
+  margin-top: 4px;
+}

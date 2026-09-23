@@ -1040,11 +1040,125 @@ límites en `control` (`js/nucleo/almacen.js`).
 Todo se guarda en el navegador (`localStorage`), en el dispositivo: no viaja a
 ningún servidor.
 
+## La bienvenida: ¿quién está usando la app?
+
+Lo primero que pregunta la app al armar un perfil es **quién está del otro
+lado**: «Soy mamá, papá o un adulto», «Soy un nene» o «Soy una nena».
+
+- **El chico** sigue como siempre: su nombre, su edad y su monigote, todo de
+  «vos». Ya dijo si es nene o nena en el primer paso. Son cuatro pasos.
+- **El grande** arma el perfil del chico, y se le habla en tercera persona:
+  «¿Cómo se llama?», «¿Cuántos años tiene Mora?», «Elegí su monigote». Tiene
+  un paso más, «¿Es nene o nena?», que se puede no contestar («Prefiero no
+  decirlo»). Son cinco pasos.
+
+Si es nene o nena se guarda en el perfil (`genero`) y sirve **sólo** para
+escribirle «¡Estás listo!» o «¡Estás lista!» (la función `listo()` de
+`js/app.js`). Sin respuesta queda «listo». Quién armó el perfil queda en los
+ajustes del aparato (`quienUsa`), y decide qué tutorial se ofrece después
+desde Configuración.
+
+## El tutorial
+
+`js/tutorial.js`. Al terminar de armar un perfil, la mascota pregunta
+«¿Te muestro cómo funciona?», con «Sí, mostrame» o «Ahora no». Si dice que sí,
+recorre el inicio cosa por cosa: la pantalla se oscurece, queda un agujero de
+luz con un aro amarillo sobre lo que se explica, y al lado un globo con la
+mascota, el texto, los puntitos de cuánto falta y los botones.
+
+- **Se puede saltar en cualquier paso**: «Saltar» está siempre a la vista, y
+  Escape hace lo mismo. Cambiar de pantalla también lo corta.
+- **Se lee en voz alta** si la voz está prendida: los chicos de cuatro y cinco
+  todavía no leen.
+- **Dos recorridos**: el del chico (8 pasos, de vos: su perfil, jugar,
+  aprender, la meta, la tienda, personalizar) y el del grande (8 pasos: además,
+  Configuración, el panel para padres con el PIN y los hermanos).
+- Los pasos cuyo lugar no está en pantalla se saltean solos.
+- Se puede volver a ver desde **Configuración → «Ver cómo se usa la app»**.
+
+Los textos de cada paso están en `pasosDelTutorial()` de `js/app.js`.
+
+## Borrar los datos
+
+En el panel para padres (detrás del PIN), «Borrar datos» tiene **«Borrar a
+este jugador»** (su perfil entero, con foto) y **«Borrar todos los datos de la
+app»** (todos los chicos, ajustes y PIN: queda como recién instalada). Los dos
+preguntan antes. Lo pide la política de privacidad: un adulto tiene que poder
+borrar los datos del chico cuando quiera, y como todo vive en el aparato,
+borrarlo ahí es borrarlo del todo.
+
+## Lanzamiento
+
+### Lo que ya está listo
+
+- **Ícono nuevo** con la mascota (el globo terráqueo era del nombre viejo), en
+  todos los tamaños y en la cortina de arranque, la bienvenida y la pantalla
+  de la mensualidad. Se regenera con `node herramientas/generar-iconos.js`.
+- **Política de privacidad** (`privacidad.html`) y **términos y suscripción**
+  (`terminos.html`), enlazados desde el panel para padres y desde la pantalla
+  de la mensualidad. Van guardados en el celular como el resto de la app.
+- **Tarjeta para compartir el link** (`assets/compartir.png` y las etiquetas
+  `og:` del `index.html`): lo que muestran WhatsApp y las redes.
+- **Manifiesto**: idioma `es-AR`, descripción nueva y atajos a Jugar y
+  Aprender (mantener apretado el ícono en Android).
+- **Favicon** propio (era un emoji de globo).
+- **Gráficos para la ficha de Play** en `herramientas/play/`: el ícono de
+  512×512 cuadrado y el gráfico destacado de 1024×500.
+- **Arreglo del service worker**: antes, cualquier página que se abría desde la
+  app instalada devolvía la app, así que la política de privacidad no se
+  podía leer.
+
+### Lo que tenés que hacer vos
+
+1. **Un correo de contacto.** Las páginas legales dicen que se escriba «al
+   correo que figura en la ficha de Google Play». Hace falta ponerlo ahí (Play
+   lo exige) y conviene escribirlo también en `privacidad.html` y
+   `terminos.html`, para la gente que llega por la web.
+2. **El dominio.** Para publicar en Play como app (TWA), Google verifica que la
+   app y la página son del mismo dueño con un archivo
+   `/.well-known/assetlinks.json` en la **raíz** del dominio. En
+   `sebastarre.github.io/aprender-jugando/` la raíz no es de este proyecto.
+   Dos salidas:
+   - **un dominio propio** (lo recomendable, por ejemplo `bichitocurioso.com.ar`
+     en nic.ar), configurado en GitHub Pages; o
+   - crear el repositorio `sebastarre.github.io` con la carpeta `.well-known`
+     y un archivo `.nojekyll` (sin él, GitHub Pages esconde las carpetas que
+     empiezan con punto).
+
+   Si cambia la dirección, hay que actualizar `og:url` y `og:image` en
+   `index.html`. El `id` del manifiesto **no** hay que tocarlo.
+3. **Empaquetar la app para Android** con Bubblewrap o PWABuilder, a partir de
+   `manifest.json`. Ahí se genera la huella SHA-256 que va en `assetlinks.json`.
+4. **Play Console**:
+   - la ficha: nombre, descripciones, el ícono y el gráfico de
+     `herramientas/play/`, y capturas de pantalla del celular;
+   - **Público objetivo**: menores de 13, lo que activa la política de
+     familias. La app no tiene publicidad, ni estadísticas, ni pide permisos;
+   - **Seguridad de los datos**: «no se recopilan datos» y «no se comparten
+     datos», porque todo queda en el aparato;
+   - el cuestionario de **clasificación del contenido**;
+   - la URL de la **política de privacidad**: `…/privacidad.html`;
+   - la **suscripción** `bichito_mensual`, con el precio de
+     `CONFIG.precioDeReferencia` (`js/nucleo/suscripcion.js`).
+5. **Después de publicar**: poner el link de la ficha en
+   `CONFIG.fichaDePlay` (`js/nucleo/suscripcion.js`), para que la web muestre
+   «Descargar de Google Play».
+
+### Recomendable, no obligatorio
+
+- **Validar la suscripción en un servidor.** Hoy la app confía en lo que le
+  dice Google en el aparato. Alcanza para arrancar, pero quien borre los datos
+  puede volver a empezar la prueba gratis.
+- **Grabar las lecciones con una voz generada**, para que suenen igual de
+  naturales en todos los teléfonos (ver «Qué voz», más arriba).
+
 ## Estructura
 
 ```
 index.html                 Todas las pantallas (se muestran de a una)
 manifest.json              Datos de la app instalable: nombre, ícono, colores
+privacidad.html            La política de privacidad (página suelta)
+terminos.html              Los términos de uso y de la suscripción
 sw.js                      Service worker: guarda la app para usarla sin internet
                            (generado — ver herramientas/generar-sw.js)
 css/estilos.css            Estilos
@@ -1079,6 +1193,7 @@ js/
   tienda/catalogo.js       Los colores de cada ranura, disfraces, fondos y monigotes
   tienda/temas.js          Junta los colores puestos y los escribe en el CSS
   app.js                   Las dos secciones, las pantallas y la navegación
+  tutorial.js              El recorrido guiado con la mascota (se puede saltar)
 assets/banderas/           Una imagen por país (ar.png, br.png, ...)
 herramientas/              Scripts para regenerar los datos (no hacen falta para jugar)
 .claude/                   Servidor local opcional para desarrollo

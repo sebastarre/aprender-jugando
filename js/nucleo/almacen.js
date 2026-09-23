@@ -225,13 +225,16 @@ window.Almacen = (function () {
     return true;
   }
 
-  function crearPerfil(nombre, avatar, edadAnios) {
+  /* `genero` es 'nene', 'nena' o null (no se sabe o no se quiso decir).
+     Sirve sólo para escribirle «listo» o «lista». */
+  function crearPerfil(nombre, avatar, edadAnios, genero) {
     var id = nuevoId();
     datos.perfiles.push({
       id: id,
       nombre: (nombre || 'Jugador').slice(0, 18),
       avatar: avatar || Util.alAzar(AVATARES),
       edad: edadAnios || null,
+      genero: genero || null,
       creado: Date.now()
     });
     datos.datos[id] = perfilVacio();
@@ -246,6 +249,7 @@ window.Almacen = (function () {
       if (cambios.nombre) p.nombre = cambios.nombre.slice(0, 18);
       if (cambios.avatar) p.avatar = cambios.avatar;
       if (cambios.edad) p.edad = cambios.edad;
+      if ('genero' in cambios) p.genero = cambios.genero || null;
     });
     guardar();
   }
@@ -916,6 +920,18 @@ window.Almacen = (function () {
     }
   }
 
+  /* Borra TODO lo de la app en este aparato: los chicos, sus partidas,
+     sus fotos, los ajustes y el PIN. Es lo que pide la política de
+     privacidad (que un adulto pueda borrar los datos del chico cuando
+     quiera) y lo que hace falta para darle el aparato a otra familia.
+     Después hay que recargar: lo que está en memoria es lo de antes. */
+  function borrarTodo() {
+    try {
+      localStorage.removeItem(CLAVE);
+      localStorage.removeItem(CLAVE_VIEJA);
+    } catch (e) { /* sin almacenamiento no hay nada que borrar */ }
+  }
+
   function borrarProgreso() {
     // lo que decidió el grande (límites, materias, tienda) no es progreso: se queda
     var control = mio().control;
@@ -936,6 +952,11 @@ window.Almacen = (function () {
      app elija sola. También es del aparato: las voces instaladas son de
      cada teléfono, y en otro esa voz puede no existir (entonces la app
      elige sola). */
+  /* Quién armó el último perfil en este aparato: 'adulto' o 'chico'.
+     Decide cuál tutorial se ofrece desde Configuración. */
+  function quienUsa() { return datos.ajustes.quienUsa || 'chico'; }
+  function setQuienUsa(q) { datos.ajustes.quienUsa = q === 'adulto' ? 'adulto' : 'chico'; guardar(); }
+
   function vozElegida() { return datos.ajustes.vozElegida || null; }
   function setVozElegida(nombre) { datos.ajustes.vozElegida = nombre || null; guardar(); }
 
@@ -993,7 +1014,7 @@ window.Almacen = (function () {
   return {
     AVATARES: AVATARES,
     perfiles: perfiles, activo: activo, usar: usar, crearPerfil: crearPerfil,
-    actualizarPerfil: actualizarPerfil, borrarPerfil: borrarPerfil,
+    actualizarPerfil: actualizarPerfil, borrarPerfil: borrarPerfil, borrarTodo: borrarTodo,
     foto: foto, guardarFoto: guardarFoto,
     necesitaBienvenida: necesitaBienvenida, edad: edad,
     record: record, anotar: anotar, estrellas: estrellas, sumarEstrellas: sumarEstrellas,
@@ -1026,6 +1047,7 @@ window.Almacen = (function () {
     mapaDe: mapaDe, estrellasDeNivel: estrellasDeNivel, anotarNivelDelMapa: anotarNivelDelMapa,
     vozActiva: vozActiva, setVoz: setVoz,
     vozElegida: vozElegida, setVozElegida: setVozElegida,
+    quienUsa: quienUsa, setQuienUsa: setQuienUsa,
     hayPin: hayPin, pinCorrecto: pinCorrecto, setPin: setPin
   };
 })();

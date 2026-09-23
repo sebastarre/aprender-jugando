@@ -4,87 +4,110 @@
 <meta charset="utf-8">
 <title>Ícono de Bichito Curioso</title>
 <style>
-  html, body { margin: 0; padding: 0; background: transparent; }
-  #lienzo { width: 512px; height: 512px; }
+  html, body { margin: 0; padding: 0; background: transparent; overflow: hidden; }
+  @font-face {
+    /* sin espacio en el nombre: dentro de un atributo de SVG, «Baloo 2»
+       sin comillas no es un nombre de fuente válido */
+    font-family: Baloo2;
+    src: url('../assets/fuentes/baloo2.woff2') format('woff2');
+    font-weight: 400 800;
+  }
 </style>
 </head>
 <body>
 <!-- Página que dibuja el ícono de la app. La usa herramientas/generar-iconos.js
      para sacarle una captura; también se puede abrir a mano para verla.
-     Parámetros: ?lado=192 cambia el tamaño, ?relleno=0.16 deja el margen seguro
-     que pide el ícono "maskable" de Android, ?recto=1 saca las esquinas
-     redondeadas (iOS las redondea solo). -->
+
+     El ícono es la mascota —el gato disfrazado de león— asomándose por el
+     borde de abajo sobre el degradado azul y violeta de la app. Antes era un
+     globo terráqueo, que venía de cuando la app se llamaba «Aprender
+     Jugando» y era sólo de geografía: con el nombre nuevo, lo que tiene que
+     reconocer un chico en la pantalla del celular es al bichito.
+
+     Parámetros:
+       ?lado=192       el tamaño
+       ?relleno=0.16   el margen seguro del ícono «maskable» de Android
+       ?recto=1        sin esquinas redondeadas (iOS las redondea solo)
+       ?compartir=1    la tarjeta de 1200×630 que se ve al compartir el link
+       ?ancho=&alto=   la tarjeta en otro tamaño (Google Play pide 1024×500) -->
 <div id="lienzo"></div>
-<script src="../js/datos/geografia.js"></script>
 <script>
 var params = new URLSearchParams(location.search);
+var COMPARTIR = params.get('compartir') === '1';
 var RELLENO = parseFloat(params.get('relleno') || '0');
 var RECTO = params.get('recto') === '1';
 var LADO = parseInt(params.get('lado') || '512', 10);
-var CENTRO = LADO / 2;
-var R = (LADO / 2) * (1 - RELLENO) * 0.86;
-var k = LADO / 512;                       // los grosores acompañan al tamaño
+var ANCHO = COMPARTIR ? 1200 : LADO;
+var ALTO = COMPARTIR ? 630 : LADO;
+/* ?ancho=1024&alto=500 dibuja la tarjeta en otro tamaño (el gráfico
+   destacado de Google Play), recortando arriba y abajo lo que sobre */
+var SALIDA_ANCHO = parseInt(params.get('ancho') || ANCHO, 10);
+var SALIDA_ALTO = parseInt(params.get('alto') || ALTO, 10);
 
-/* Proyección ortográfica (un globo de verdad) centrada en América. */
-var LON0 = -68 * Math.PI / 180;
-var LAT0 = 12 * Math.PI / 180;
-var sinLat0 = Math.sin(LAT0), cosLat0 = Math.cos(LAT0);
+/* La mascota mide 267×420. La cabeza (con la melena) va de x=5 a 262
+   y de y=0 a 215, con el centro en (133, 110). */
+var IMG = { ancho: 267, alto: 420, cabeza: 257, cx: 133, cy: 110 };
 
-function proyectar(lonGrados, latGrados) {
-  var lam = lonGrados * Math.PI / 180 - LON0;
-  var phi = latGrados * Math.PI / 180;
-  var cosPhi = Math.cos(phi), sinPhi = Math.sin(phi);
-  var cosC = sinLat0 * sinPhi + cosLat0 * cosPhi * Math.cos(lam);
-  var x = cosPhi * Math.sin(lam);
-  var y = cosLat0 * sinPhi - sinLat0 * cosPhi * Math.cos(lam);
-  if (cosC < 0) {                         // cara oculta: se apoya sobre el horizonte
-    var n = Math.hypot(x, y) || 1;
-    x /= n; y /= n;
-  }
-  return [CENTRO + x * R, CENTRO - y * R];
+var radio = (RECTO || RELLENO || COMPARTIR) ? 0 : LADO * 0.22;
+
+function mascota(anchoCabeza, cx, cy) {
+  var s = anchoCabeza / IMG.cabeza;
+  var x = cx - IMG.cx * s, y = cy - IMG.cy * s;
+  return '<image href="../assets/mascotas/gato-leon.webp" x="' + x.toFixed(1) + '" y="' + y.toFixed(1) +
+    '" width="' + (IMG.ancho * s).toFixed(1) + '" height="' + (IMG.alto * s).toFixed(1) + '"/>';
 }
 
-var tierras = '';
-Object.keys(window.GEO_MUNDO).forEach(function (clave) {
-  if (clave === '~010') return;           // la Antártida no aporta nada acá
-  window.GEO_MUNDO[clave].p.forEach(function (anillo) {
-    var d = '';
-    for (var i = 0; i < anillo.length; i++) {
-      var xy = proyectar(anillo[i][0], anillo[i][1]);
-      d += (d ? 'L' : 'M') + xy[0].toFixed(1) + ' ' + xy[1].toFixed(1);
-    }
-    if (d.length > 24) tierras += d + 'Z';
-  });
-});
+function destellos(lista, k) {
+  return lista.map(function (d) {
+    var x = d[0], y = d[1], r = d[2] * k;
+    return '<path d="M' + x + ' ' + (y - r) + ' Q' + x + ' ' + y + ' ' + (x + r) + ' ' + y +
+      ' Q' + x + ' ' + y + ' ' + x + ' ' + (y + r) + ' Q' + x + ' ' + y + ' ' + (x - r) + ' ' + y +
+      ' Q' + x + ' ' + y + ' ' + x + ' ' + (y - r) + 'Z" fill="#fde047"/>';
+  }).join('');
+}
 
-var radio = (RECTO || RELLENO) ? 0 : LADO * 0.22;
 var partes = [
-  '<svg width="' + LADO + '" height="' + LADO + '" viewBox="0 0 ' + LADO + ' ' + LADO + '" xmlns="http://www.w3.org/2000/svg">',
+  '<svg width="' + SALIDA_ANCHO + '" height="' + SALIDA_ALTO + '" viewBox="0 0 ' + ANCHO + ' ' + ALTO +
+    '" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">',
   '<defs>',
     '<linearGradient id="fondo" x1="0" y1="0" x2="1" y2="1">',
       '<stop offset="0" stop-color="#5b7cfa"/><stop offset="1" stop-color="#8b5cf6"/>',
     '</linearGradient>',
-    '<radialGradient id="brillo" cx="0.34" cy="0.3" r="0.75">',
-      '<stop offset="0" stop-color="#ffffff" stop-opacity=".5"/>',
+    '<radialGradient id="luz" cx="0.5" cy="0.45" r="0.5">',
+      '<stop offset="0" stop-color="#ffffff" stop-opacity=".55"/>',
       '<stop offset="1" stop-color="#ffffff" stop-opacity="0"/>',
     '</radialGradient>',
-    '<clipPath id="globo"><circle cx="' + CENTRO + '" cy="' + CENTRO + '" r="' + R + '"/></clipPath>',
+    '<clipPath id="recorte"><rect width="' + ANCHO + '" height="' + ALTO + '" rx="' + radio + '"/></clipPath>',
   '</defs>',
-  '<rect width="' + LADO + '" height="' + LADO + '" rx="' + radio + '" fill="url(#fondo)"/>',
-  '<circle cx="' + CENTRO + '" cy="' + CENTRO + '" r="' + (R + 13 * k) + '" fill="#ffffff" opacity=".95"/>',
-  '<circle cx="' + CENTRO + '" cy="' + CENTRO + '" r="' + R + '" fill="#bfe0f5"/>',
-  '<g clip-path="url(#globo)">',
-    '<path d="' + tierras + '" fill="#7cc05a" stroke="#57933b" stroke-width="' + (1.4 * k).toFixed(2) + '" stroke-linejoin="round"/>',
-  '</g>',
-  '<circle cx="' + CENTRO + '" cy="' + CENTRO + '" r="' + R + '" fill="url(#brillo)"/>',
-  '<circle cx="' + CENTRO + '" cy="' + CENTRO + '" r="' + R + '" fill="none" stroke="#2f4a8a" stroke-opacity=".22" stroke-width="' + (3 * k).toFixed(2) + '"/>',
-  '</svg>'
+  '<g clip-path="url(#recorte)">',
+  '<rect width="' + ANCHO + '" height="' + ALTO + '" fill="url(#fondo)"/>'
 ];
 
-var lienzo = document.getElementById('lienzo');
-lienzo.style.width = lienzo.style.height = LADO + 'px';
-lienzo.innerHTML = partes.join('');
-document.title = 'icono-listo-' + LADO;
+if (COMPARTIR) {
+  partes.push(
+    '<circle cx="300" cy="330" r="300" fill="url(#luz)"/>',
+    '<ellipse cx="300" cy="700" rx="420" ry="170" fill="#ffffff" opacity=".18"/>',
+    mascota(360, 300, 290),
+    destellos([[560, 120, 22], [110, 110, 16], [540, 470, 14]], 1),
+    '<text x="640" y="280" font-family="Baloo2, sans-serif" font-weight="800" font-size="104" fill="#ffffff">Bichito</text>',
+    '<text x="640" y="380" font-family="Baloo2, sans-serif" font-weight="800" font-size="104" fill="#fde047">Curioso</text>',
+    '<text x="644" y="450" font-family="Baloo2, sans-serif" font-weight="600" font-size="34" fill="#ffffff">Juegos y lecciones para chicos</text>',
+    '<text x="644" y="494" font-family="Baloo2, sans-serif" font-weight="600" font-size="34" fill="#ffffff" opacity=".9">de 4 a 12 años</text>'
+  );
+} else {
+  /* La cabeza ocupa el 78% del ícono (menos en el maskable, que Android
+     recorta en círculo) y el cuerpo se sale por abajo: se asoma. */
+  var util = 1 - RELLENO;
+  var k = LADO / 512;
+  partes.push(
+    '<circle cx="' + LADO / 2 + '" cy="' + LADO * 0.46 + '" r="' + LADO * 0.42 * util + '" fill="url(#luz)"/>',
+    mascota(LADO * 0.78 * util, LADO / 2, LADO * (0.5 - 0.06 * util)),
+    RELLENO ? '' : destellos([[LADO * 0.86, LADO * 0.16, 22], [LADO * 0.13, LADO * 0.2, 15]], k)
+  );
+}
+partes.push('</g></svg>');
+
+document.getElementById('lienzo').innerHTML = partes.join('');
 </script>
 </body>
 </html>

@@ -31,7 +31,13 @@ function recorrer(dir) {
   return salida;
 }
 
-const archivos = SUELTOS.concat(CARPETAS.flatMap(recorrer))
+/* Lo que está en el sitio pero no se usa adentro de la app: la tarjeta
+   que muestran las redes al compartir el link (450 KB que ningún chico
+   va a ver). */
+const AFUERA = ['assets/compartir.png'];
+
+const archivos = SUELTOS.concat(['privacidad.html', 'terminos.html'], CARPETAS.flatMap(recorrer))
+  .filter(f => !AFUERA.includes(f))
   .filter(f => fs.existsSync(path.join(RAIZ, f)))
   .sort();
 
@@ -85,7 +91,16 @@ self.addEventListener('fetch', (evento) => {
   evento.respondWith((async () => {
     // Abrir la app (sea "/", "/index.html" o con ?algo) siempre se resuelve
     // con la portada guardada: es lo que la hace arrancar sin internet.
+    // Las páginas sueltas (privacidad, términos) se abren tal cual: antes
+    // también se resolvían con la portada, y desde la app instalada no
+    // había forma de leer la política de privacidad.
     if (pedido.mode === 'navigate') {
+      const pagina = new URL(pedido.url).pathname.split('/').pop();
+      if (pagina && pagina !== 'index.html' && pagina.endsWith('.html')) {
+        const suelta = await caches.match(pedido, { ignoreSearch: true });
+        if (suelta) return suelta;
+        try { return await fetch(pedido); } catch (e) { /* sin red: va la portada */ }
+      }
       const portada = await caches.match('./index.html');
       if (portada) return portada;
     }

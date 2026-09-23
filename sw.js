@@ -2,7 +2,7 @@
    Guarda toda la app en el celular para que funcione sin internet. */
 'use strict';
 
-const VERSION = 'aprender-jugando-46954aca49';
+const VERSION = 'aprender-jugando-9f589f2bfa';
 const ARCHIVOS = [
   "./assets/banderas/ad.png",
   "./assets/banderas/ae.png",
@@ -261,7 +261,10 @@ const ARCHIVOS = [
   "./js/nucleo/voz.js",
   "./js/tienda/catalogo.js",
   "./js/tienda/temas.js",
-  "./manifest.json"
+  "./js/tutorial.js",
+  "./manifest.json",
+  "./privacidad.html",
+  "./terminos.html"
 ];
 
 /* Al instalarse guarda todo. Se hace de a tandas porque son muchos archivos
@@ -297,7 +300,16 @@ self.addEventListener('fetch', (evento) => {
   evento.respondWith((async () => {
     // Abrir la app (sea "/", "/index.html" o con ?algo) siempre se resuelve
     // con la portada guardada: es lo que la hace arrancar sin internet.
+    // Las páginas sueltas (privacidad, términos) se abren tal cual: antes
+    // también se resolvían con la portada, y desde la app instalada no
+    // había forma de leer la política de privacidad.
     if (pedido.mode === 'navigate') {
+      const pagina = new URL(pedido.url).pathname.split('/').pop();
+      if (pagina && pagina !== 'index.html' && pagina.endsWith('.html')) {
+        const suelta = await caches.match(pedido, { ignoreSearch: true });
+        if (suelta) return suelta;
+        try { return await fetch(pedido); } catch (e) { /* sin red: va la portada */ }
+      }
       const portada = await caches.match('./index.html');
       if (portada) return portada;
     }

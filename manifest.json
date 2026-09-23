@@ -1,8 +1,8 @@
 {
   "name": "Bichito Curioso",
   "short_name": "Bichito",
-  "description": "Para chicos de 4 a 12: cursitos cortos y juegos de matemática, lengua, ciencias, geografía e inglés.",
-  "lang": "es",
+  "description": "Juegos y lecciones cortas para chicos de 4 a 12 años: matemática, lengua, ciencias, geografía e inglés. Sin publicidad y sin cuentas.",
+  "lang": "es-AR",
   "dir": "ltr",
   "start_url": "./",
   "scope": "./",
@@ -12,6 +12,13 @@
   "background_color": "#1d4ed8",
   "theme_color": "#f3f7ff",
   "categories": ["education", "games", "kids"],
+  "prefer_related_applications": false,
+  "shortcuts": [
+    { "name": "Jugar", "short_name": "Jugar", "url": "./#/juegos",
+      "icons": [{ "src": "assets/icono-192.png", "sizes": "192x192", "type": "image/png" }] },
+    { "name": "Aprender", "short_name": "Aprender", "url": "./#/aprender",
+      "icons": [{ "src": "assets/icono-192.png", "sizes": "192x192", "type": "image/png" }] }
+  ],
   "icons": [
     {
       "src": "assets/icono-192.png",

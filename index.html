@@ -1,11 +1,26 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es-AR">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Bichito Curioso</title>
-<meta name="description" content="Para chicos: cursitos cortos para aprender y juegos para practicar. Geografía, matemática, lengua, ciencias e inglés.">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌎</text></svg>">
+<meta name="description" content="Juegos y lecciones cortas para chicos de 4 a 12 años: matemática, lengua, ciencias, geografía e inglés. Sin publicidad y sin cuentas.">
+
+<!-- Lo que muestran WhatsApp y las redes cuando alguien comparte el link.
+     Las direcciones tienen que ser completas (con https://): una relativa
+     no la entiende nadie que no sea el navegador. Si la app se muda a un
+     dominio propio, hay que cambiarlas acá. -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Bichito Curioso">
+<meta property="og:title" content="Bichito Curioso: juegos y lecciones para chicos">
+<meta property="og:description" content="Matemática, lengua, ciencias, geografía e inglés para chicos de 4 a 12 años. Sin publicidad y sin cuentas.">
+<meta property="og:url" content="https://sebastarre.github.io/aprender-jugando/">
+<meta property="og:image" content="https://sebastarre.github.io/aprender-jugando/assets/compartir.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="es_AR">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/png" href="assets/icono-192.png">
 
 <!-- App instalable (PWA): ícono propio, pantalla completa y sin internet -->
 <link rel="manifest" href="manifest.json">
@@ -33,12 +48,9 @@
 <div class="arranque" id="arranque" aria-hidden="true">
   <div class="arranque-caja">
     <span class="arranque-insignia">
-      <svg class="arranque-globo" viewBox="0 0 48 48" fill="none" stroke="currentColor"
-           stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="24" cy="24" r="18"/>
-        <path d="M24 6c4.6 5 6.9 11 6.9 18S28.6 37 24 42c-4.6-5-6.9-11-6.9-18S19.4 11 24 6Z"/>
-        <path d="M7.2 18h33.6M7.2 30h33.6"/>
-      </svg>
+      <!-- La mascota, que es la cara de la app. Antes era un globo
+           terráqueo, de cuando la app se llamaba «Aprender Jugando». -->
+      <img class="arranque-globo" src="assets/mascotas/gato-leon.webp" alt="" width="267" height="420">
     </span>
     <p class="arranque-nombre">
       <span class="arranque-palabra"><i style="--l:0">B</i><i style="--l:1">i</i><i style="--l:2">c</i><i style="--l:3">h</i><i style="--l:4">i</i><i style="--l:5">t</i><i style="--l:6">o</i></span>
@@ -82,43 +94,85 @@
   <section class="pantalla pantalla-bienvenida" id="pantalla-bienvenida" hidden>
     <p class="bien-marca">
       <span class="bien-marca-globo" aria-hidden="true">
-        <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3"
-             stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="24" cy="24" r="18"/>
-          <path d="M24 6c4.6 5 6.9 11 6.9 18S28.6 37 24 42c-4.6-5-6.9-11-6.9-18S19.4 11 24 6Z"/>
-          <path d="M7.2 18h33.6M7.2 30h33.6"/>
-        </svg>
+        <img src="assets/icono-192.png" alt="" width="28" height="28">
       </span>
       Bichito Curioso
     </p>
     <div class="tarjeta-bienvenida">
       <!-- En qué paso va. El dibujo es decorativo; lo que se lee es la
            etiqueta, que el JavaScript va cambiando. -->
-      <div class="bien-pasos" id="bien-pasos" role="img" aria-label="Paso 1 de 3">
-        <span></span><span></span><span></span>
-      </div>
-      <div class="paso-bienvenida" id="bien-paso-nombre">
+      <!-- Los puntitos los arma el JavaScript: son cuatro pasos si
+           contesta un chico y cinco si contesta un grande. -->
+      <div class="bien-pasos" id="bien-pasos" role="img" aria-label="Paso 1 de 4"></div>
+
+      <!-- Primero, quién está del otro lado. No es lo mismo un chico de
+           seis armándose su perfil que un papá armándoselo al hijo: al
+           grande se le habla de «su» nombre y «su» edad, y el tutorial
+           le muestra también el panel para padres. -->
+      <div class="paso-bienvenida" id="bien-paso-quien">
         <div class="bien-globo" data-mascota="hola"></div>
         <h1 class="titulo-grande">¡Hola!</h1>
-        <p class="subtitulo">Antes de empezar, contanos quién sos.</p>
-        <label class="etiqueta-campo" for="campo-nombre">¿Cómo te llamás?</label>
+        <p class="subtitulo">¿Quién está usando la app?</p>
+        <div class="grilla-quien">
+          <button class="boton-quien boton-quien-adulto" type="button" data-quien="adulto">
+            <span class="boton-quien-cara" aria-hidden="true">👨‍👩‍👧</span>
+            <span class="boton-quien-texto"><b>Soy mamá, papá o un adulto</b>
+              <small>Voy a armar el perfil de un chico o una chica</small></span>
+          </button>
+          <button class="boton-quien boton-quien-nene" type="button" data-quien="nene">
+            <span class="boton-quien-cara" aria-hidden="true">👦</span>
+            <span class="boton-quien-texto"><b>Soy un nene</b></span>
+          </button>
+          <button class="boton-quien boton-quien-nena" type="button" data-quien="nena">
+            <span class="boton-quien-cara" aria-hidden="true">👧</span>
+            <span class="boton-quien-texto"><b>Soy una nena</b></span>
+          </button>
+        </div>
+      </div>
+
+      <div class="paso-bienvenida" id="bien-paso-nombre" hidden>
+        <div class="bien-globo" data-mascota="hola"></div>
+        <h1 class="titulo-grande" id="bien-nombre-titulo">¡Hola!</h1>
+        <p class="subtitulo" id="bien-nombre-sub">Antes de empezar, contanos quién sos.</p>
+        <label class="etiqueta-campo" for="campo-nombre" id="bien-nombre-etiqueta">¿Cómo te llamás?</label>
         <input class="campo-texto" id="campo-nombre" type="text" maxlength="18"
                autocomplete="off" placeholder="Tu nombre">
         <p class="error-campo" id="error-nombre" hidden>Escribí tu nombre para seguir.</p>
         <button class="btn-gigante" id="btn-bien-nombre" type="button">Seguir</button>
       </div>
 
+      <!-- Sólo en el camino del grande: el chico ya lo dijo en el primer
+           paso. Se puede no contestar. -->
+      <div class="paso-bienvenida" id="bien-paso-genero" hidden>
+        <div class="bien-globo" data-mascota="piensa"></div>
+        <h1 class="titulo-grande" id="bien-genero-titulo">¿Es nene o nena?</h1>
+        <p class="subtitulo">Sólo para hablarle bien: «¡Estás listo!» o «¡Estás lista!».</p>
+        <div class="grilla-quien grilla-genero">
+          <button class="boton-quien boton-quien-nene" type="button" data-genero="nene">
+            <span class="boton-quien-cara" aria-hidden="true">👦</span>
+            <span class="boton-quien-texto"><b>Nene</b></span>
+          </button>
+          <button class="boton-quien boton-quien-nena" type="button" data-genero="nena">
+            <span class="boton-quien-cara" aria-hidden="true">👧</span>
+            <span class="boton-quien-texto"><b>Nena</b></span>
+          </button>
+          <button class="boton-quien boton-quien-nada" type="button" data-genero="">
+            <span class="boton-quien-texto"><b>Prefiero no decirlo</b></span>
+          </button>
+        </div>
+      </div>
+
       <div class="paso-bienvenida" id="bien-paso-edad" hidden>
         <div class="bien-globo" data-mascota="piensa"></div>
-        <h1 class="titulo-grande">¿Cuántos años tenés?</h1>
-        <p class="subtitulo">Con esto elegimos los juegos justos para vos.</p>
+        <h1 class="titulo-grande" id="bien-edad-titulo">¿Cuántos años tenés?</h1>
+        <p class="subtitulo" id="bien-edad-sub">Con esto elegimos los juegos justos para vos.</p>
         <div class="grilla-edades" id="grilla-edades"></div>
       </div>
 
       <div class="paso-bienvenida" id="bien-paso-avatar" hidden>
         <div class="bien-globo" data-mascota="festejo"></div>
-        <h1 class="titulo-grande">Elegí tu monigote</h1>
-        <p class="subtitulo">Va a ser tu carita en la app.</p>
+        <h1 class="titulo-grande" id="bien-avatar-titulo">Elegí tu monigote</h1>
+        <p class="subtitulo" id="bien-avatar-sub">Va a ser tu carita en la app.</p>
         <div class="grilla-avatares" id="grilla-avatares"></div>
         <button class="btn-gigante" id="btn-bien-listo" type="button">¡Empezar!</button>
       </div>
@@ -580,6 +634,16 @@
     <h1 class="titulo-grande"><span data-ico="configuracion" class="ico-titulo-caja" aria-hidden="true"></span>Configuración</h1>
     <p class="subtitulo">Los ajustes generales de la app.</p>
 
+    <!-- El tutorial, para verlo de nuevo cuando se quiera. -->
+    <button class="tarjeta-examen tarjeta-tutorial" id="btn-ver-tutorial" type="button">
+      <span class="examen-icono" data-ico="aprender" aria-hidden="true"></span>
+      <span class="examen-cuerpo">
+        <b>Ver cómo se usa la app</b>
+        <span>Un recorrido cortito con la mascota. Se puede saltar.</span>
+      </span>
+      <span class="examen-flecha" data-ico="flecha" aria-hidden="true"></span>
+    </button>
+
     <h2 class="etiqueta-grupo">Sonido</h2>
     <div class="fila-ajuste">
       <span class="ajuste-icono" data-ico="sonido" aria-hidden="true"></span>
@@ -846,6 +910,22 @@
           <button class="btn-secundario" id="btn-cambiar-pin">Cambiar PIN</button>
           <button class="btn-secundario peligro" id="btn-borrar-progreso">Borrar el progreso de este jugador</button>
         </div>
+
+        <!-- Borrar datos personales: lo pide la política de privacidad.
+             Están acá adentro, detrás del PIN, para que un chico no se
+             borre solo tocando cualquier cosa. -->
+        <h2 class="etiqueta-grupo">Borrar datos</h2>
+        <p class="nota-ranura">Todo vive en este aparato y en ningún otro lado: borrarlo acá es borrarlo del todo.</p>
+        <div class="acciones-perfil">
+          <button class="btn-secundario peligro" id="btn-borrar-jugador">Borrar a este jugador</button>
+          <button class="btn-secundario peligro" id="btn-borrar-todo">Borrar todos los datos de la app</button>
+        </div>
+
+        <h2 class="etiqueta-grupo">Legales</h2>
+        <div class="acciones-perfil">
+          <a class="btn-secundario" href="privacidad.html" target="_blank" rel="noopener">Política de privacidad</a>
+          <a class="btn-secundario" href="terminos.html" target="_blank" rel="noopener">Términos y suscripción</a>
+        </div>
       </div>
 
       <div class="acciones-perfil parental-cerrar">
@@ -873,14 +953,7 @@
        botón de pagar pide el PIN del modo parental. -->
   <section class="pantalla" id="pantalla-plan" hidden>
     <header class="plan-cabecera">
-      <span class="plan-insignia" aria-hidden="true">
-        <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.6"
-             stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="24" cy="24" r="18"/>
-          <path d="M24 6c4.6 5 6.9 11 6.9 18S28.6 37 24 42c-4.6-5-6.9-11-6.9-18S19.4 11 24 6Z"/>
-          <path d="M7.2 18h33.6M7.2 30h33.6"/>
-        </svg>
-      </span>
+      <span class="plan-insignia" aria-hidden="true"><img src="assets/icono-192.png" alt="" width="64" height="64"></span>
       <p class="plan-marca">Bichito Curioso</p>
       <h1 class="plan-titulo">Todo para aprender jugando</h1>
       <p class="plan-estado" id="plan-estado"></p>
@@ -954,6 +1027,10 @@
         <p>Los pagos los hace Google, y eso sólo funciona desde la app instalada con Google Play. En la página web todo sigue abierto.</p>
       </details>
     </div>
+    <p class="plan-legales">
+      <a href="terminos.html" target="_blank" rel="noopener">Términos y suscripción</a> ·
+      <a href="privacidad.html" target="_blank" rel="noopener">Política de privacidad</a>
+    </p>
   </section>
 
 </main>
@@ -1014,6 +1091,7 @@
 <script src="js/tienda/catalogo.js"></script>
 <script src="js/tienda/temas.js"></script>
 <script src="js/camino.js"></script>
+<script src="js/tutorial.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

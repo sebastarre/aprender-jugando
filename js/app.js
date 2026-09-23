@@ -233,9 +233,9 @@
          169px de ancho, así que no entra nada más largo. */
       titulo: 'Para chicos de ' + juego.edadMin,
       texto: avance.listo
-        ? '¡Ya estás listo!'
+        ? '¡Ya estás ' + listo() + '!'
         : 'Te ' + (avance.faltan === 1 ? 'falta ' : 'faltan ') +
-          Util.plural(avance.faltan, 'juego') + ' para estar listo'
+          Util.plural(avance.faltan, 'juego') + ' para estar ' + listo()
     };
   }
 
@@ -305,7 +305,7 @@
   var sel = { materia: null, juego: null, valores: {}, cantidad: 10 };
   var grupos = [];
   var ultimoResultado = null;
-  var bienvenida = { nombre: '', edad: null, avatar: null, editando: null };
+  var bienvenida = { quien: null, genero: null, nombre: '', edad: null, avatar: null, editando: null };
   var PANTALLAS = ['bienvenida', 'inicio', 'juegos', 'aprender', 'materia', 'lecciones', 'leccion',
                    'config', 'juego', 'fin', 'perfil', 'tienda', 'parental', 'descanso', 'plan',
                    'camino', 'nivel-fin',
@@ -316,6 +316,8 @@
     Voz.parar();
     // y los papelitos también: eran el festejo de la pantalla anterior
     Papelitos.limpiar();
+    // un tutorial señala cosas de la pantalla de antes: si se cambia, se corta
+    if (window.Tutorial && Tutorial.activo()) Tutorial.terminar(false);
     PANTALLAS.forEach(function (p) { $('pantalla-' + p).hidden = (p !== nombre); });
     pantallaActual = nombre;
     /* La única pantalla sin flecha de volver es el inicio, porque es el
@@ -341,10 +343,107 @@
     MATERIAS.forEach(function (m) { if (m.modulo && m.modulo.limpiar) m.modulo.limpiar(); });
   }
 
+  /** Deja la app como recién instalada y vuelve a la bienvenida. */
+  function borrarTodoYEmpezar() {
+    Almacen.borrarTodo();
+    location.hash = '#/';
+    location.reload();
+  }
+
+  /* «listo» o «lista», según lo que se contestó en la bienvenida. Sin
+     respuesta (el adulto eligió no decirlo, o el perfil es de antes)
+     queda «listo», que es como se dice en general. */
+  function listo() {
+    var yo = Almacen.activo();
+    return yo && yo.genero === 'nena' ? 'lista' : 'listo';
+  }
+
+  /* ---------------------- el tutorial ----------------------
+
+     Lo que dice la mascota en cada paso. Hay dos recorridos: uno para el
+     chico, de vos y cortito, y otro para el grande, que además le muestra
+     lo que es para él (Configuración, el panel para padres, los datos).
+     El tutorial en sí (el agujero de luz, el globo, Saltar) está en
+     js/tutorial.js; acá sólo se dice qué mostrar. */
+  function pasosDelTutorial(grande) {
+    var yo = Almacen.activo();
+    var nombre = yo ? yo.nombre : '';
+    if (grande) {
+      return [
+        { donde: null, titulo: '¡Bienvenidos a Bichito Curioso!',
+          texto: 'Te muestro en un minuto cómo funciona. Podés saltarlo cuando quieras.' },
+        { donde: '.portada', titulo: 'El perfil de ' + nombre,
+          texto: 'Su nombre, las estrellas y las monedas que va ganando. Tocándolo se ve su perfil y su foto.' },
+        { donde: '#menu-jugar', titulo: 'Jugar',
+          texto: 'Cinco materias con juegos para su edad. Cada juego es un camino de niveles, con un desafío cada cinco.' },
+        { donde: '#menu-aprender', titulo: 'Aprender',
+          texto: 'Lecciones cortas con dibujos, leídas en voz alta, que terminan con un ejercicio.' },
+        { donde: '#meta-hoy', titulo: 'La meta del día',
+          texto: 'Cuántas respuestas bien por día. Al cumplirla gana monedas; la elegís en Configuración.' },
+        { donde: '#menu-configuracion', titulo: 'Configuración y panel para padres',
+          texto: 'Sonido, voz y meta del día. Adentro está el panel para padres: estadísticas de todo, límites de tiempo y qué materias ve. Se protege con un PIN.' },
+        { donde: '.quien-juega', titulo: '¿Tiene hermanos?',
+          texto: 'Cada chico tiene su propio perfil. Se suman acá y se cambia de uno a otro tocando la carita.' },
+        { donde: null, titulo: '¡Listo!',
+          texto: 'Todo se guarda en este aparato: no hay cuentas ni publicidad. Este recorrido queda en Configuración.' }
+      ];
+    }
+    return [
+      { donde: null, titulo: '¡Hola, ' + nombre + '!',
+        texto: 'Soy tu bichito. Te muestro la app en un ratito. Si ya sabés, tocá «Saltar».' },
+      { donde: '.portada', titulo: 'Éste sos vos',
+        texto: 'Acá están tu nombre, tus estrellas y tus monedas. Las ganás jugando.' },
+      { donde: '#menu-jugar', titulo: '¡A jugar!',
+        texto: 'Elegís una materia y un juego. Cada juego es un camino: pasás los niveles de a uno y ganás estrellas.' },
+      { donde: '#menu-aprender', titulo: 'Aprender',
+        texto: 'Lecciones cortitas con dibujos. Te las leo en voz alta, y al final hay un ejercicio.' },
+      { donde: '#meta-hoy', titulo: 'Tu meta de hoy',
+        texto: 'Cuántas respuestas bien te faltan hoy. ¡Cuando la cumplís, ganás monedas!' },
+      { donde: '#portada-monedas', titulo: 'La tienda',
+        texto: 'Con las monedas comprás disfraces para mí y colores para la app.' },
+      { donde: '#menu-personalizacion', titulo: 'Personalizar',
+        texto: 'Acá me cambiás el disfraz y elegís los colores que más te gusten.' },
+      { donde: null, titulo: '¡Ya sabés todo!',
+        texto: 'Si te olvidás de algo, este recorrido está en Configuración. ¿Jugamos?' }
+    ];
+  }
+
+  function empezarTutorial(grande) {
+    var arrancar = function () {
+      Tutorial.empezar(pasosDelTutorial(grande), { fin: grande ? '¡Empezar!' : '¡A jugar!' });
+    };
+    if (pantallaActual !== 'inicio') {
+      irA('#/');
+      setTimeout(arrancar, 550);
+    } else {
+      arrancar();
+    }
+  }
+
+  /* Al terminar de armar un perfil. Es una pregunta, no un tutorial que
+     arranca solo: el que ya conoce la app (un hermano más grande, un
+     papá que la instaló en otro teléfono) tiene que poder decir que no. */
+  function ofrecerTutorial(grande) {
+    if (pantallaActual !== 'inicio') return;
+    var yo = Almacen.activo();
+    preguntar({
+      vista: '<span class="mascota-mini">' + Mascota.vista(Almacen.equipado('mascota'), Almacen.equipado('disfraz')) + '</span>',
+      titulo: grande ? '¿Te muestro cómo funciona?' : '¿Te muestro la app' + (yo ? ', ' + yo.nombre : '') + '?',
+      texto: grande
+        ? 'Un recorrido de un minuto por todo lo que hay. Se puede saltar en cualquier momento.'
+        : 'Es cortito, y lo podés saltar cuando quieras.',
+      si: 'Sí, mostrame',
+      no: 'Ahora no',
+      focoEnSi: true
+    }, function () { empezarTutorial(grande); });
+  }
+
   /* ---------------------- bienvenida ---------------------- */
   function empezarBienvenida() {
     var yo = Almacen.activo();
     bienvenida = {
+      quien: null,
+      genero: yo ? yo.genero || null : null,
       nombre: yo ? yo.nombre : '',
       edad: null,
       avatar: yo ? yo.avatar : null,
@@ -352,21 +451,66 @@
     };
     $('campo-nombre').value = (yo && yo.nombre !== 'Jugador') ? yo.nombre : '';
     $('error-nombre').hidden = true;
-    pasoBienvenida('nombre');
+    pasoBienvenida('quien');
     pintarEdades();
     pintarAvatares();
   }
 
-  var PASOS_BIENVENIDA = ['nombre', 'edad', 'avatar'];
+  /* Los pasos dependen de quién contesta. El chico dice si es nene o
+     nena en el primer paso; al grande se le pregunta aparte, después
+     del nombre, y puede no contestar. */
+  var TODOS_LOS_PASOS = ['quien', 'nombre', 'genero', 'edad', 'avatar'];
+  function pasosBienvenida() {
+    return bienvenida.quien === 'adulto'
+      ? TODOS_LOS_PASOS
+      : TODOS_LOS_PASOS.filter(function (p) { return p !== 'genero'; });
+  }
 
   function pasoBienvenida(cual) {
     bienvenida.paso = cual;
-    PASOS_BIENVENIDA.forEach(function (p) {
+    TODOS_LOS_PASOS.forEach(function (p) {
       $('bien-paso-' + p).hidden = (p !== cual);
     });
+    textosBienvenida();
     pintarPasos(cual);
     pintarFlechaBienvenida();
     if (cual === 'nombre') setTimeout(function () { $('campo-nombre').focus(); }, 120);
+  }
+
+  /* Al grande se le habla del chico en tercera persona: «¿Cómo se
+     llama?», «¿Cuántos años tiene?». Al chico, de vos. */
+  function textosBienvenida() {
+    var grande = bienvenida.quien === 'adulto';
+    var nombre = bienvenida.nombre || '';
+    function poner(id, chico, adulto) { $(id).textContent = grande ? adulto : chico; }
+    poner('bien-nombre-titulo', '¡Hola!', '¡Armemos su perfil!');
+    poner('bien-nombre-sub', 'Antes de empezar, contanos quién sos.',
+      'Cada chico tiene el suyo, con sus juegos, sus estrellas y sus monedas.');
+    poner('bien-nombre-etiqueta', '¿Cómo te llamás?', '¿Cómo se llama?');
+    $('campo-nombre').placeholder = grande ? 'Su nombre o apodo' : 'Tu nombre';
+    poner('error-nombre', 'Escribí tu nombre para seguir.', 'Escribí su nombre para seguir.');
+    poner('bien-genero-titulo', '¿Es nene o nena?', nombre ? '¿' + nombre + ' es nene o nena?' : '¿Es nene o nena?');
+    poner('bien-edad-titulo', '¿Cuántos años tenés?',
+      nombre ? '¿Cuántos años tiene ' + nombre + '?' : '¿Cuántos años tiene?');
+    poner('bien-edad-sub', 'Con esto elegimos los juegos justos para vos.',
+      'Con esto elegimos los juegos justos para su edad.');
+    poner('bien-avatar-titulo', 'Elegí tu monigote', 'Elegí su monigote');
+    poner('bien-avatar-sub', 'Va a ser tu carita en la app.',
+      'Va a ser su carita en la app. Después lo puede cambiar.');
+  }
+
+  function elegirQuien(quien) {
+    Sonido.despertar(); Sonido.tocar('clic');
+    bienvenida.quien = quien;
+    if (quien === 'nene' || quien === 'nena') bienvenida.genero = quien;
+    else bienvenida.genero = bienvenida.editando ? bienvenida.genero : null;
+    pasoBienvenida('nombre');
+  }
+
+  function elegirGenero(genero) {
+    Sonido.despertar(); Sonido.tocar('clic');
+    bienvenida.genero = genero || null;
+    setTimeout(function () { pasoBienvenida('edad'); }, 160);
   }
 
   /**
@@ -377,7 +521,7 @@
    * volver; la primera vez de todas no hay a dónde.
    */
   function puedeVolverEnBienvenida() {
-    if (PASOS_BIENVENIDA.indexOf(bienvenida.paso) > 0) return true;
+    if (pasosBienvenida().indexOf(bienvenida.paso) > 0) return true;
     return location.hash === '#/nuevo-jugador' && Almacen.perfiles().length > 0;
   }
 
@@ -387,8 +531,9 @@
   }
 
   function volverEnBienvenida() {
-    var i = PASOS_BIENVENIDA.indexOf(bienvenida.paso);
-    if (i > 0) return pasoBienvenida(PASOS_BIENVENIDA[i - 1]);
+    var pasos = pasosBienvenida();
+    var i = pasos.indexOf(bienvenida.paso);
+    if (i > 0) return pasoBienvenida(pasos[i - 1]);
     if (puedeVolverEnBienvenida()) irA('#/');
   }
 
@@ -396,10 +541,13 @@
      la mitad de la paciencia: sin esto, el que llena el nombre no tiene
      idea de si le quedan dos preguntas o veinte. */
   function pintarPasos(cual) {
-    var voy = PASOS_BIENVENIDA.indexOf(cual);
+    var pasos = pasosBienvenida();
+    var voy = pasos.indexOf(cual);
     var caja = $('bien-pasos');
-    caja.setAttribute('aria-label', 'Paso ' + (voy + 1) + ' de ' + PASOS_BIENVENIDA.length);
-    caja.querySelectorAll('span').forEach(function (p, i) {
+    caja.setAttribute('aria-label', 'Paso ' + (voy + 1) + ' de ' + pasos.length);
+    while (caja.children.length < pasos.length) caja.appendChild(document.createElement('span'));
+    while (caja.children.length > pasos.length) caja.removeChild(caja.lastChild);
+    Array.prototype.forEach.call(caja.children, function (p, i) {
       p.className = i < voy ? 'hecho' : (i === voy ? 'ahora' : '');
     });
   }
@@ -456,17 +604,22 @@
     if (!bienvenida.avatar) bienvenida.avatar = Util.alAzar(Almacen.AVATARES);
     if (bienvenida.editando) {
       Almacen.actualizarPerfil(bienvenida.editando, {
-        nombre: bienvenida.nombre, avatar: bienvenida.avatar, edad: bienvenida.edad
+        nombre: bienvenida.nombre, avatar: bienvenida.avatar, edad: bienvenida.edad,
+        genero: bienvenida.genero
       });
     } else {
-      Almacen.crearPerfil(bienvenida.nombre, bienvenida.avatar, bienvenida.edad);
+      Almacen.crearPerfil(bienvenida.nombre, bienvenida.avatar, bienvenida.edad, bienvenida.genero);
     }
+    var grande = bienvenida.quien === 'adulto';
+    Almacen.setQuienUsa(grande ? 'adulto' : 'chico');
     Sonido.tocar('record');
     pintarBarraSuperior();
     /* Al inicio, no a Aprender: lo primero que ve alguien que recién se
        hizo el perfil tiene que ser el menú con todo lo que hay, no una
-       de las cinco pantallas ya metido adentro. */
+       de las cinco pantallas ya metido adentro. Ya ahí, se ofrece el
+       tutorial: opcional, y salteable en cualquier momento. */
     irA('#/');
+    setTimeout(function () { ofrecerTutorial(grande); }, 650);
   }
 
   /* ---------------------- tarjetas ---------------------- */
@@ -619,10 +772,10 @@
 
   /** El alta de un chico nuevo: la misma bienvenida, pero empezando de cero. */
   function empezarJugadorNuevo() {
-    bienvenida = { nombre: '', edad: null, avatar: null, editando: null };
+    bienvenida = { quien: null, genero: null, nombre: '', edad: null, avatar: null, editando: null };
     $('campo-nombre').value = '';
     $('error-nombre').hidden = true;
-    pasoBienvenida('nombre');
+    pasoBienvenida('quien');
     pintarEdades();
     pintarAvatares();
   }
@@ -1015,14 +1168,14 @@
     } else {
       avance = listoPara(materia, siguiente);
       if (avance.listo) {
-        titulo = '¡Estás listo para los juegos de ' + siguiente + ' años!';
+        titulo = '¡Estás ' + listo() + ' para los juegos de ' + siguiente + ' años!';
         texto = 'Están más abajo, con la barra llena. Probalos cuando quieras.';
       } else {
         titulo = reciente ? 'Seguís en los juegos de ' + pasoDelChico(materia) + ' años'
                           : 'Estás en los juegos de ' + pasoDelChico(materia) + ' años';
         texto = 'Terminá una partida con todas bien en ' +
                 (avance.faltan === 1 ? 'el juego que te falta' : 'los ' + avance.faltan + ' juegos que te faltan') +
-                ' y te avisamos que ya estás listo para los de ' + siguiente + '.';
+                ' y te avisamos que ya estás ' + listo() + ' para los de ' + siguiente + '.';
       }
     }
 
@@ -1676,7 +1829,7 @@
       avance: avance,
       titulo: 'Para chicos de ' + suya,
       texto: avance.listo
-        ? '¡Ya estás listo!'
+        ? '¡Ya estás ' + listo() + '!'
         : 'Te ' + (avance.faltan === 1 ? 'falta ' : 'faltan ') +
           Util.plural(avance.faltan, 'lección', 'lecciones') + ' de tu edad'
     };
@@ -2236,7 +2389,7 @@
 
     if (recienListo) {
       caja.appendChild(Util.crear('b', 'desbloqueo-titulo',
-        '¡Ya estás listo para los juegos de ' + siguiente + ' años!'));
+        '¡Ya estás ' + listo() + ' para los juegos de ' + siguiente + ' años!'));
     }
 
     nuevos.forEach(function (clave) {
@@ -3206,6 +3359,7 @@
     $('dialogo-titulo').textContent = opciones.titulo || '';
     $('dialogo-texto').textContent = opciones.texto || '';
     si.textContent = opciones.si || 'Sí, comprar';
+    no.textContent = opciones.no || 'No';
     no.hidden = !!opciones.soloAceptar;
 
     function cerrar() {
@@ -3217,11 +3371,14 @@
       cerrar();
       if (alAceptar) alAceptar();
     };
-    no.onclick = cerrar;
+    no.onclick = function () {
+      cerrar();
+      if (opciones.alRechazar) opciones.alRechazar();
+    };
 
     caja.showModal();
     // el foco arranca en el botón seguro: que un toque de más no compre
-    (opciones.soloAceptar ? si : no).focus();
+    (opciones.soloAceptar || opciones.focoEnSi ? si : no).focus();
   }
 
   function manejarCompra(tipo, item, idCompra, tiene, esAvatar) {
@@ -4463,13 +4620,19 @@
     });
 
     /* bienvenida */
+    document.querySelectorAll('[data-quien]').forEach(function (b) {
+      b.addEventListener('click', function () { elegirQuien(b.getAttribute('data-quien')); });
+    });
+    document.querySelectorAll('[data-genero]').forEach(function (b) {
+      b.addEventListener('click', function () { elegirGenero(b.getAttribute('data-genero')); });
+    });
     $('btn-bien-nombre').addEventListener('click', function () {
       var nombre = $('campo-nombre').value.trim();
       if (!nombre) { $('error-nombre').hidden = false; return; }
       $('error-nombre').hidden = true;
       bienvenida.nombre = nombre;
       Sonido.despertar(); Sonido.tocar('clic');
-      pasoBienvenida('edad');
+      pasoBienvenida(bienvenida.quien === 'adulto' ? 'genero' : 'edad');
     });
     $('campo-nombre').addEventListener('keydown', function (ev) {
       if (ev.key === 'Enter') $('btn-bien-nombre').click();
@@ -4679,6 +4842,38 @@
         pintarBarraSuperior();
         abrirParental();
       });
+    });
+
+    $('btn-ver-tutorial').addEventListener('click', function () {
+      Sonido.despertar(); Sonido.tocar('clic');
+      empezarTutorial(Almacen.quienUsa() === 'adulto');
+    });
+
+    $('btn-borrar-jugador').addEventListener('click', function () {
+      var yo = Almacen.activo();
+      if (!yo) return;
+      var solo = Almacen.perfiles().length <= 1;
+      preguntar({
+        titulo: '¿Borrar a ' + yo.nombre + '?',
+        texto: solo
+          ? 'Es el único jugador: se borra todo lo de la app y se empieza de cero. Esto no se puede deshacer.'
+          : 'Se borra su perfil entero: nombre, foto, partidas, estrellas y monedas. Esto no se puede deshacer.',
+        si: 'Sí, borrarlo'
+      }, function () {
+        if (solo) return borrarTodoYEmpezar();
+        Almacen.borrarPerfil(yo.id);
+        pintarBarraSuperior();
+        abrirParental();
+      });
+    });
+
+    $('btn-borrar-todo').addEventListener('click', function () {
+      preguntar({
+        titulo: '¿Borrar todos los datos?',
+        texto: 'Se borran todos los jugadores, sus fotos, partidas y monedas, los ajustes y el PIN. ' +
+               'La app queda como recién instalada. Esto no se puede deshacer.',
+        si: 'Sí, borrar todo'
+      }, borrarTodoYEmpezar);
     });
 
     document.querySelectorAll('[data-zoom]').forEach(function (b) {

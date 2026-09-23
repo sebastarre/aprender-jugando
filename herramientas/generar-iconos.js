@@ -35,7 +35,15 @@ const ICONOS = [
   { archivo: 'icono-192.png', lado: 192, query: '' },
   { archivo: 'icono-512.png', lado: 512, query: '' },
   { archivo: 'icono-maskable-512.png', lado: 512, query: '&relleno=0.16' },
-  { archivo: 'icono-apple-180.png', lado: 180, query: '&recto=1' }
+  { archivo: 'icono-apple-180.png', lado: 180, query: '&recto=1' },
+  // la tarjeta que muestran WhatsApp y las redes al compartir el link
+  { archivo: 'compartir.png', ancho: 1200, alto: 630, query: '&compartir=1' },
+  /* Para la ficha de Google Play. No van en assets/ porque no son parte
+     del sitio: se suben a mano en Play Console. El ícono de Play va
+     cuadrado y sin transparencia, porque Google le pone las esquinas. */
+  { archivo: 'icono-play-512.png', lado: 512, query: '&recto=1', carpeta: 'play' },
+  { archivo: 'grafico-destacado.png', ancho: 1024, alto: 500,
+    query: '&compartir=1&ancho=1024&alto=500', carpeta: 'play' }
 ];
 
 const exe = navegador();
@@ -43,8 +51,11 @@ const perfil = path.join(os.tmpdir(), 'iconos-aprender-jugando');
 fs.mkdirSync(DESTINO, { recursive: true });
 
 for (const icono of ICONOS) {
-  const salida = path.join(DESTINO, icono.archivo);
-  const url = 'file:///' + PAGINA.replace(/\\/g, '/') + '?lado=' + icono.lado + icono.query;
+  const carpeta = icono.carpeta ? path.join(__dirname, icono.carpeta) : DESTINO;
+  fs.mkdirSync(carpeta, { recursive: true });
+  const salida = path.join(carpeta, icono.archivo);
+  const ancho = icono.ancho || icono.lado, alto = icono.alto || icono.lado;
+  const url = 'file:///' + PAGINA.replace(/\\/g, '/') + '?lado=' + (icono.lado || 512) + icono.query;
   execFileSync(exe, [
     '--headless=new',
     '--disable-gpu',
@@ -53,16 +64,17 @@ for (const icono of ICONOS) {
     '--force-device-scale-factor=1',
     '--user-data-dir=' + perfil,
     '--virtual-time-budget=6000',
-    '--window-size=' + icono.lado + ',' + icono.lado,
+    '--allow-file-access-from-files',
+    '--window-size=' + ancho + ',' + alto,
     '--screenshot=' + salida,
     url
   ], { stdio: 'ignore' });
 
   const b = fs.readFileSync(salida);
-  const ancho = b.readUInt32BE(16), alto = b.readUInt32BE(20);
-  if (ancho !== icono.lado || alto !== icono.lado) {
-    throw new Error(icono.archivo + ': salió ' + ancho + 'x' + alto + ' y esperaba ' + icono.lado);
+  const w = b.readUInt32BE(16), h = b.readUInt32BE(20);
+  if (w !== ancho || h !== alto) {
+    throw new Error(icono.archivo + ': salió ' + w + 'x' + h + ' y esperaba ' + ancho + 'x' + alto);
   }
-  console.log(icono.archivo + '  ' + ancho + 'x' + alto + '  ' + Math.round(b.length / 1024) + ' KB');
+  console.log(icono.archivo + '  ' + w + 'x' + h + '  ' + Math.round(b.length / 1024) + ' KB');
 }
-console.log('íconos generados en assets/');
+console.log('íconos generados en assets/ y herramientas/play/');
