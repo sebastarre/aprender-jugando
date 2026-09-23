@@ -724,6 +724,39 @@ Ahora el mismo texto lo dice la mascota desde un **globo de historieta**
 bajada, así que el lector de pantalla lee lo de siempre— pero la pantalla pasa
 de empezar con un cartel a empezar con un personaje.
 
+### Dibujo animado: fondo, letras y cosas que se mueven
+
+**El fondo de siempre es «Colinas»**: un cielo que aclara hacia abajo, un sol,
+dos nubes y dos lomas, todo hecho con degradados de CSS (cero imágenes). Usa
+los colores del fondo que el chico tenga puesto, así que con Frutilla las
+lomas salen rosas. Es un fondo gratis más de la tienda, el primero de la
+lista: el que no eligió ninguno ve éste, y «Liso» sigue estando para el
+que lo prefiera.
+
+**Las letras de los títulos llevan sombra dura** corrida para abajo, como
+las letras de los dibujos animados: parecen recortadas y pegadas. Los
+**íconos son más gordos** (trazo 2,4) y con el relleno más cargado, como
+dibujados con fibra. Las fichas y botones llevan un **contorno de 3px del
+color de la cosa** —el contorno de tinta de un dibujo, pero de color y no
+negro.
+
+**La mascota está parada adentro del botón Jugar** del inicio, asomándose
+por arriba: es lo primero que ve un chico al abrir la app, justo en el botón
+que tiene que tocar.
+
+**Lo que se mueve**, todo cortado con «reducir movimiento»:
+
+- cada pantalla entra con un saltito;
+- la respuesta acertada salta y la errada tiembla de costado (el «no» con la
+  cabeza);
+- los corazones laten y el que se pierde se sacude antes de apagarse;
+- en la portada la estrella titila, la llamita de la racha se mueve y por la
+  pastilla de las monedas pasa un reflejo;
+- los botones grandes respiran despacio, invitando a tocarlos;
+- al pasar el mouse por una ficha el dibujo se menea, y al apretarla se
+  aplasta un poquito;
+- la barra de avance de la partida es un tubo gordo que se llena con rebote.
+
 ### La pantalla de juegos de una materia
 
 Arriba, una **cabecera del color de la materia** (el mismo relieve que la

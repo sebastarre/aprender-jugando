@@ -517,7 +517,7 @@
        doce juegos en pantalla se veían como doce renglones iguales con
        un stickercito arriba. Ahora cada uno es de su color. */
     b.style.setProperty('--card-fondo', Util.aclarar(datos.color, .84));
-    b.style.setProperty('--card-filo',  Util.aclarar(datos.color, .62));
+    b.style.setProperty('--card-filo',  Util.aclarar(datos.color, .4));
     b.style.setProperty('--card-paso',  Util.aclarar(datos.color, .42));
     var icono = ponerIcono(Util.crear('span', 'card-icono'), datos.icono);
     b.appendChild(icono);
@@ -3096,7 +3096,8 @@
       var puesto = esAvatar
         ? (Almacen.activo() && Almacen.activo().avatar === item.emoji)
         : Almacen.equipado(tipo) === item.id ||
-          (!Almacen.equipado(tipo) && item.precio === 0);
+          // sin nada elegido está puesto el primero gratis de la lista
+          (!Almacen.equipado(tipo) && item === items.filter(function (x) { return !x.precio; })[0]);
 
       var b = Util.crear('button', 'card-tienda' + (esAvatar ? ' card-avatar' : ''));
       b.type = 'button';

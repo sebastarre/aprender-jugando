@@ -34,7 +34,8 @@ window.Temas = (function () {
     });
 
     // el fondo comprado le gana al que trae el color del fondo
-    var fondo = Catalogo.fondo(Almacen.equipado('fondo'));
+    // sin nada elegido va el primero de la lista (las colinas), no el liso
+    var fondo = Catalogo.fondo(Almacen.equipado('fondo') || Catalogo.FONDOS[0].id);
     var deco = (fondo && fondo.deco) || deDondeElDeco || null;
     if (deco) raiz.style.setProperty('--deco', deco);
     else raiz.style.removeProperty('--deco');

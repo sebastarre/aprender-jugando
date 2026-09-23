@@ -199,7 +199,28 @@ window.Catalogo = (function () {
 
   /* Los fondos decorados: sólo cambian el dibujo de atrás. Si hay uno
      equipado, le gana al que trae el color del fondo. */
+  /* El primero de la lista es el que se ve si el chico nunca eligió
+     ninguno. Era «Liso», y la app entera quedaba sobre un papel vacío:
+     media pantalla de celeste plano debajo de cada grilla. Ahora el de
+     siempre es «Colinas», un cielo que aclara hacia abajo, un sol y
+     dos lomas, y «Liso» sigue estando para el que lo prefiera.
+
+     Está hecho con los colores del fondo que el chico tenga puesto
+     (--papel, --seleccion, --pista), así que con el fondo Frutilla las
+     lomas salen rosas y con Selva, verdes. Las lomas quedan detrás de
+     las tarjetas, que son opacas, y el texto que cae directo sobre
+     ellas (el pie) sigue arriba de 5:1. */
   var FONDOS = [
+    { id: 'colinas', nombre: 'Colinas', icono: '⛰️', precio: 0,
+      texto: 'Un cielo con sol y dos lomas.',
+      deco: 'radial-gradient(circle at 88% 7%, rgba(253,224,71,.55) 0 34px, rgba(253,224,71,.18) 35px 62px, transparent 63px),' +
+            'radial-gradient(ellipse 34px 20px at 16% 12%, rgba(255,255,255,.95) 98%, transparent),' +
+            'radial-gradient(ellipse 26px 18px at 21% 10%, rgba(255,255,255,.95) 98%, transparent),' +
+            'radial-gradient(ellipse 30px 16px at 58% 20%, rgba(255,255,255,.85) 98%, transparent),' +
+            'radial-gradient(ellipse 22px 14px at 62% 18.5%, rgba(255,255,255,.85) 98%, transparent),' +
+            'radial-gradient(ellipse 75% 150px at 12% 100%, var(--pista) 0 98%, transparent 99%),' +
+            'radial-gradient(ellipse 80% 190px at 92% 100%, var(--seleccion) 0 98%, transparent 99%),' +
+            'linear-gradient(180deg, var(--seleccion) 0%, var(--papel) 48%)' },
     { id: 'del-tema', nombre: 'Liso', icono: '🖼️', precio: 0,
       texto: 'Sin dibujos: el color del fondo y nada más.', deco: null },
     { id: 'burbujas', nombre: 'Burbujas', icono: '🫧', precio: 100,

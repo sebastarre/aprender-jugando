@@ -106,11 +106,14 @@
   vertical-align: -.18em;
   fill: none;
   stroke: currentColor;
-  stroke-width: 2;
+  /* 2,4 y no 2: con trazo fino los dibujos se leían como los íconos de
+     un programa de oficina. Más gordos y con el relleno más cargado
+     parecen dibujados con fibra, que es como dibuja un chico. */
+  stroke-width: 2.4;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
-.ico-blando { fill: var(--ico-relleno); opacity: .2; stroke: none; }
+.ico-blando { fill: var(--ico-relleno); opacity: .32; stroke: none; }
 .ico-trazo  { fill: none; }
 
 * { box-sizing: border-box; }
@@ -165,9 +168,12 @@ body {
   padding: clamp(16px, 3vw, 34px) clamp(12px, 3vw, 28px) 40px;
 }
 
-.pantalla { animation: entrar .32s ease both; }
+/* Cada pantalla entra con un saltito (la curva de rebote se pasa de
+   largo y vuelve), no deslizando derecho: es la diferencia entre una
+   página que carga y un juguete que aparece. */
+.pantalla { animation: entrar .42s var(--rebote) both; }
 @keyframes entrar {
-  from { opacity: 0; transform: translateY(14px); }
+  from { opacity: 0; transform: translateY(22px) scale(.97); }
   to   { opacity: 1; transform: none; }
 }
 
@@ -827,7 +833,7 @@ body {
   font: inherit;
   color: inherit;
   padding: 18px 12px 16px;
-  border: 2.5px solid var(--card-filo, var(--borde));
+  border: 3px solid var(--card-filo, var(--borde));
   border-radius: var(--radio);
   /* de blanco arriba al pastel abajo: le da el brillo de algo de
      plástico en vez de una mancha de color plana */
@@ -4643,4 +4649,213 @@ body.jugando .marcador { display: none; }
   from { transform: translate(0, 0) rotate(0); opacity: 1; }
   80%  { opacity: 1; }
   to   { transform: translate(var(--corrida, 0), 118vh) rotate(var(--giro, 360deg)); opacity: 0; }
+}
+
+/* ============================================================
+   Dibujo animado
+
+   Todo lo de este bloque apunta a lo mismo: que la app se vea como un
+   dibujo animado y no como una app prolija con colores. Son detalles
+   chicos que juntos cambian la sensación: letras con sombra de cartel,
+   la mascota adentro del botón de jugar, cosas que titilan, saltan y
+   tiemblan. Nada de esto cambia qué hace cada pantalla.
+
+   Todas las animaciones quedan quietas con «reducir movimiento»: el
+   bloque de accesibilidad de más arriba las corta a todas.
+   ============================================================ */
+
+/* ---------- Letras de cartel ----------
+   Los títulos llevan una sombra dura corrida para abajo, del tono de
+   los rieles del fondo. Es el truco de las letras de los dibujos
+   animados y de las tapas de los libros para chicos: la palabra parece
+   recortada y pegada, con volumen, en vez de impresa. Dura y no
+   difusa: una sombra borrosa se lee como un efecto de Word. */
+.titulo-grande { text-shadow: 0 3px 0 var(--pista); letter-spacing: .005em; }
+.portada-nombre { text-shadow: 0 3px 0 rgba(0, 0, 0, .25); }
+/* sobre un cartel vivo con letra oscura la sombra va clara: un relieve
+   hacia arriba en vez de una sombra hacia abajo */
+.materia-cabecera-titulo,
+.camino-titulo { text-shadow: 0 2px 0 rgba(255, 255, 255, .32); }
+.card-titulo, .boton-menu-texto b { letter-spacing: .005em; }
+
+/* ---------- La mascota en el botón de jugar ----------
+   Parada adentro de la ficha, abajo a la derecha, y más alta que la
+   ficha: se asoma por arriba. El menú baja un poco para que la cabeza
+   no se pegue a la portada. Es el primer personaje que ve un chico al
+   abrir la app, y está justo en el botón que tiene que tocar. */
+.menu-inicio { padding-top: 26px; }
+#menu-jugar { position: relative; padding-right: 108px; }
+.boton-menu-bichito {
+  position: absolute;
+  right: 8px;
+  bottom: 6px;
+  height: 134px;
+  pointer-events: none;
+  animation: saludar 3.4s ease-in-out infinite;
+  transform-origin: 50% 95%;
+}
+.boton-menu-bichito .mascota-img { filter: drop-shadow(0 4px 4px rgba(15, 23, 42, .18)); }
+/* la ficha se hunde al apretarla; la mascota se hunde con ella */
+#menu-jugar:active .boton-menu-bichito { transform: translateY(2px); }
+
+/* ---------- Lo que titila en la portada ----------
+   La estrella brilla, la llamita de la racha se mueve y por la
+   pastilla de las monedas pasa un reflejo cada tanto: las tres cuentas
+   son lo que el chico ganó, y lo ganado brilla. */
+@keyframes titilar {
+  0%, 70%, 100% { transform: scale(1) rotate(0); }
+  78%           { transform: scale(1.28) rotate(-12deg); }
+  88%           { transform: scale(.94) rotate(6deg); }
+}
+@keyframes llamita {
+  from { transform: scaleY(1) rotate(-3deg); }
+  to   { transform: scaleY(1.12) rotate(3deg); }
+}
+.portada-estrellas .ico { animation: titilar 3.2s ease-in-out infinite; transform-origin: 50% 55%; }
+.portada-racha .ico { animation: llamita .7s ease-in-out infinite alternate; transform-origin: 50% 90%; }
+.portada-monedas { position: relative; overflow: hidden; }
+.portada-monedas::after {
+  content: '';
+  position: absolute;
+  top: -10px;
+  bottom: -10px;
+  left: -40px;
+  width: 22px;
+  background: rgba(255, 255, 255, .7);
+  transform: skewX(-20deg);
+  animation: reflejo 3.6s ease-in-out infinite 1s;
+  pointer-events: none;
+}
+@keyframes reflejo {
+  0%, 62% { left: -40px; }
+  86%, 100% { left: calc(100% + 30px); }
+}
+
+/* ---------- Las fichas se menean ----------
+   Al pasar el mouse el dibujo se sacude, como si dijera «¡a mí!».
+   En el celular no hay «pasar por arriba», así que ahí el guiño es al
+   apretar: el dibujo se aplasta un poquito y rebota. */
+@keyframes menear {
+  0%, 100% { transform: rotate(0); }
+  25%      { transform: rotate(-9deg) scale(1.06); }
+  60%      { transform: rotate(7deg) scale(1.06); }
+}
+@media (hover: hover) {
+  .card:hover:not(:disabled) .card-icono .ico,
+  .boton-menu:hover .boton-menu-icono .ico,
+  .tarjeta-examen:hover .examen-icono .ico { animation: menear .5s ease-in-out; }
+}
+.card:active:not(:disabled) .card-icono,
+.boton-menu:active .boton-menu-icono { scale: .92 1.06; }
+
+/* ---------- Las respuestas: salto o temblequeo ----------
+   Acertar hace saltar al botón; errar lo hace temblar de costado, que
+   es el «no» con la cabeza. Van con el sello de la esquina y con el
+   cartel de abajo: ninguno de los tres es la única pista. */
+@keyframes salto-acierto {
+  0%   { transform: none; }
+  30%  { transform: translateY(-10px) scale(1.07); }
+  55%  { transform: translateY(0) scale(.97, 1.03); }
+  75%  { transform: translateY(-3px) scale(1.02); }
+  100% { transform: none; }
+}
+@keyframes temblar {
+  0%, 100% { transform: none; }
+  15% { transform: translateX(-8px) rotate(-1.5deg); }
+  35% { transform: translateX(7px) rotate(1.5deg); }
+  55% { transform: translateX(-5px); }
+  75% { transform: translateX(3px); }
+}
+.btn-opcion.correcta { animation: salto-acierto .6s var(--rebote); }
+.btn-opcion.incorrecta { animation: temblar .45s ease-in-out; }
+
+/* El corazón que se pierde se sacude y se achica, en vez de apagarse
+   nomás: tiene que notarse, pero sin ser un castigo. */
+@keyframes corazon-se-va {
+  0%   { transform: scale(1); }
+  30%  { transform: scale(1.35) rotate(-14deg); }
+  60%  { transform: scale(1.1) rotate(10deg); }
+  100% { transform: scale(.8); }
+}
+.vidas span.gastada { animation: corazon-se-va .55s ease-out; }
+/* los que quedan laten despacito */
+@keyframes latir {
+  0%, 80%, 100% { transform: scale(1); }
+  88%           { transform: scale(1.16); }
+}
+.vidas span:not(.gastada) { animation: latir 2.4s ease-in-out infinite; }
+.vidas span:nth-child(2):not(.gastada) { animation-delay: .15s; }
+.vidas span:nth-child(3):not(.gastada) { animation-delay: .3s; }
+
+/* ---------- Los botones grandes son de caramelo ----------
+   Un brillo arriba por dentro —como la luz sobre un caramelo o un botón
+   de goma— y un respiro lento que invita a tocarlos. El brillo es un
+   filete de 3px en el borde de arriba, no una franja detrás del texto:
+   así la letra sigue sobre el color pleno y el contraste no cambia. */
+.btn-gigante {
+  box-shadow: 0 6px 0 var(--primario-osc), inset 0 3px 0 rgba(255, 255, 255, .35);
+}
+@keyframes respirar {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.035); }
+}
+.btn-gigante:not(:disabled):not(:active):not(:hover) { animation: respirar 2.6s ease-in-out infinite; }
+
+/* ---------- La meta de hoy, de color ----------
+   Era la última ficha blanca del inicio. Va en el verde de «bien»
+   cuando está cumplida y en amarillo mientras se está llenando. */
+.meta-hoy {
+  border-width: 2.5px;
+  border-color: #f7d77a;
+  background: linear-gradient(168deg, #fff 0%, #fff6d8 70%);
+  box-shadow: 0 5px 0 #eec14a;
+}
+.meta-hoy.cumplida {
+  border-color: #8fd6ad;
+  background: linear-gradient(168deg, #fff 0%, #ddf6e7 70%);
+  box-shadow: 0 5px 0 #56b97f;
+}
+.repaso-hoy {
+  border-color: #a9c6fa;
+  background: linear-gradient(168deg, #fff 0%, #dbe8ff 70%);
+  box-shadow: 0 5px 0 #74a0f3;
+}
+.meta-hoy-icono { border: 3px solid #fff; }
+
+/* ---------- Contorno de dibujo ----------
+   El filo de cada ficha es del mismo color que su dibujo, bastante
+   cargado y de 3px: el contorno de tinta de los dibujos animados, pero
+   del color de la cosa y no negro, que para una app de chicos queda
+   duro. Las fichas de juego lo sacan de su color en tarjeta(); los
+   botones del inicio lo traen escrito. */
+#menu-jugar           { --menu-filo: #7ea6f4; }
+#menu-aprender        { --menu-filo: #b18cf3; }
+#menu-personalizacion { --menu-filo: #ee8fb6; }
+#menu-configuracion   { --menu-filo: #6cc6be; }
+.boton-menu, .tarjeta-examen, .meta-hoy { border-width: 3px; }
+.tarjeta-examen { --examen-filo: #ee8fb6; }
+.tarjeta-repaso { --examen-filo: #7fcf9f; }
+
+/* ---------- La barra de avance de la partida ----------
+   Más gorda, con aro blanco y brillo arriba, y avanza con un rebote:
+   es lo que el chico mira para saber cuánto le falta, así que tiene
+   que parecer un tubo que se llena y no una línea. */
+.progreso-barra {
+  height: 20px;
+  border: 3px solid #fff;
+  box-shadow: 0 2px 0 var(--sombra-clay), inset 0 2px 3px rgba(15, 23, 42, .12);
+}
+.progreso-barra i {
+  box-shadow: inset 0 4px 0 rgba(255, 255, 255, .35);
+  transition: transform .5s var(--rebote);
+}
+.progreso-texto { font-weight: 800; font-size: 1.05rem; }
+
+/* ---------- El cartel de «estás en los juegos de N años» ----------
+   Es una meta, así que va en el amarillo de las metas, igual que la
+   meta de hoy del inicio. */
+#pantalla-materia .nivel {
+  border: 3px solid #f2cf6b;
+  background: linear-gradient(168deg, #fff 0%, #fff6d8 70%);
+  box-shadow: 0 5px 0 #eec14a;
 }
