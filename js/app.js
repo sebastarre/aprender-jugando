@@ -40,32 +40,57 @@
     return copia;
   }
 
+  /* Cada materia trae DOS colores, no uno, y no es por gusto.
+   *
+   *   color   el del círculo del dibujo. Lleva el dibujo en blanco
+   *           adentro, así que tiene que dar 3:1 contra el blanco, que
+   *           es el mínimo de un gráfico. Eso lo obliga a ser un tono
+   *           medio: más claro que eso y el dibujo se pierde.
+   *
+   *   alegre  el del cartel grande de la materia. Ahí no hay dibujo
+   *           blanco sino texto, y el texto pide 4,5:1. Antes el cartel
+   *           salía de oscurecer el `color` al 80%, y oscurecer un
+   *           naranja da marrón: Lengua abría con un cartel color
+   *           barro. Ahora es al revés —el cartel va del tono MÁS vivo
+   *           de la familia y la letra va oscura encima—, que es como
+   *           lo resuelven las apps del rubro y es lo que hace que la
+   *           pantalla se vea de caramelo en vez de de oficina.
+   *
+   *   tinta   la letra que va sobre `alegre`. Los cinco pares están
+   *           medidos de a uno: el peor da 5,3:1 (Matemática) y el
+   *           mejor 7,8:1 (Inglés).
+   */
   var MATERIAS = [
     {
       id: 'geografia', nombre: 'Geografía', icono: 'geografia',
       color: '#16a34a', suave: '#dcfce7',
+      alegre: '#22c55e', tinta: '#052e16',
       texto: 'Países, capitales y banderas',
       modulo: Geografia
     },
     {
       id: 'matematica', nombre: 'Matemática', icono: 'matematica',
       color: '#2563eb', suave: '#dbeafe',
+      alegre: '#60a5fa', tinta: '#0c2d5e',
       texto: 'Contar, cuentas, la hora y más',
       modulo: Matematica
     },
     {
       id: 'lengua', nombre: 'Lengua', icono: 'lengua',
-      color: '#c2740a', suave: '#fef3c7',
+      color: '#d97706', suave: '#fef3c7',
+      alegre: '#f59e0b', tinta: '#451a03',
       texto: 'Letras, palabras y ortografía', modulo: Lengua
     },
     {
       id: 'ciencias', nombre: 'Ciencias', icono: 'ciencias',
       color: '#8b5cf6', suave: '#ede9fe',
+      alegre: '#a78bfa', tinta: '#2e1065',
       texto: 'Animales, cuerpo, plantas y espacio', modulo: Ciencias
     },
     {
       id: 'ingles', nombre: 'Inglés', icono: 'ingles',
-      color: '#0f766e', suave: '#ccfbf1',
+      color: '#0d9488', suave: '#ccfbf1',
+      alegre: '#2dd4bf', tinta: '#042f2e',
       texto: 'Palabras y frases en inglés', modulo: Ingles
     }
   ];
@@ -289,6 +314,8 @@
   function mostrar(nombre) {
     // lo que se estaba leyendo era de la pantalla de antes
     Voz.parar();
+    // y los papelitos también: eran el festejo de la pantalla anterior
+    Papelitos.limpiar();
     PANTALLAS.forEach(function (p) { $('pantalla-' + p).hidden = (p !== nombre); });
     pantallaActual = nombre;
     /* La única pantalla sin flecha de volver es el inicio, porque es el
@@ -484,6 +511,14 @@
     b.style.setProperty('--card-suave', datos.suave);
     /* el escalón de abajo del círculo: el mismo color, más oscuro */
     b.style.setProperty('--card-borde', Util.oscurecer(datos.color));
+    /* Y la ficha entera, del mismo color pero lavado: relleno bien
+       pastel, filo que se nota y escalón un poco más cargado. Antes
+       todas las fichas eran blancas y lo único de color era el círculo:
+       doce juegos en pantalla se veían como doce renglones iguales con
+       un stickercito arriba. Ahora cada uno es de su color. */
+    b.style.setProperty('--card-fondo', Util.aclarar(datos.color, .84));
+    b.style.setProperty('--card-filo',  Util.aclarar(datos.color, .62));
+    b.style.setProperty('--card-paso',  Util.aclarar(datos.color, .42));
     var icono = ponerIcono(Util.crear('span', 'card-icono'), datos.icono);
     b.appendChild(icono);
     b.icono = icono;
@@ -1033,11 +1068,18 @@
     var juegos = juegosVisibles(materia);
 
     var cabecera = $('materia-cabecera');
-    /* un poco más oscuro que el color de la materia: el texto blanco
-       chico no llega a 4,5:1 sobre el naranja de Lengua ni el violeta
-       de Ciencias tal cual */
-    cabecera.style.setProperty('--materia-color', Util.oscurecer(materia.color, 0.8));
-    cabecera.style.setProperty('--materia-fuerte', Util.oscurecer(materia.color, 0.6));
+    /* El cartel va del tono vivo con la letra oscura encima (ver el
+       comentario de MATERIAS). El degradado aclara hacia ARRIBA y nunca
+       baja del tono vivo: si oscureciera hacia abajo, como cuando la
+       letra era blanca, el renglón de abajo perdería contraste justo
+       donde más lo necesita. */
+    cabecera.style.setProperty('--materia-color',  materia.alegre);
+    cabecera.style.setProperty('--materia-claro',  Util.aclarar(materia.alegre, 0.2));
+    cabecera.style.setProperty('--materia-fuerte', Util.oscurecer(materia.alegre, 0.74));
+    cabecera.style.setProperty('--materia-tinta',  materia.tinta);
+    /* el dibujo va adentro de un círculo blanco, así que usa el tono
+       medio, que es el que está medido contra el blanco */
+    cabecera.style.setProperty('--materia-glifo',  materia.color);
     var icono = $('materia-icono');
     Util.vaciar(icono);
     ponerIcono(icono, materia.icono);
@@ -1217,6 +1259,16 @@
     var cab = $('camino-cabecera');
     cab.style.setProperty('--camino-color', Util.oscurecer(juego.color, 0.82));
     cab.style.setProperty('--camino-oscuro', Util.oscurecer(juego.color, 0.6));
+    /* El cartel de arriba va del tono vivo con la letra oscura, igual
+       que el de una materia: oscurecer el color para que aguante letra
+       blanca convierte los naranjas en marrón y el juego abría con un
+       cartel color barro. Los tres tonos salen del mismo color y el par
+       cartel/letra da 4,8:1 en el peor de los quince colores de juego
+       que hay en la app. */
+    var cartel = Util.cartel(juego.color);
+    cab.style.setProperty('--cartel-vivo',  cartel.vivo);
+    cab.style.setProperty('--cartel-claro', cartel.claro);
+    cab.style.setProperty('--cartel-tinta', cartel.tinta);
     var icono = $('camino-icono');
     Util.vaciar(icono);
     ponerIcono(icono, juego.icono);
@@ -1411,6 +1463,17 @@
     tarjeta.style.setProperty('--camino-color', Util.oscurecer(u.juego.color, 0.9));
     tarjeta.style.setProperty('--camino-oscuro', Util.oscurecer(u.juego.color, 0.62));
     tarjeta.classList.toggle('paso', u.paso);
+
+    /* Papelitos cuando pasó el nivel. Salen después de que se
+       encendió la primera estrella, no junto con la pantalla: primero
+       se entiende que zafó y después se festeja. */
+    if (u.paso) {
+      setTimeout(function () {
+        if (!$('pantalla-nivel-fin').hidden) Papelitos.festejar();
+      }, 420);
+    } else {
+      Papelitos.limpiar();
+    }
 
     var insignia = $('nivel-fin-insignia');
     Util.vaciar(insignia);
@@ -2095,6 +2158,17 @@
     // eso lo cuentan las estrellas y el texto de abajo.
     Mascota.gesto($('mascota-fin'));
 
+    /* Las tres estrellas son la partida perfecta: ahí sí van papelitos.
+       Con dos o menos no, porque un festejo que sale siempre deja de
+       querer decir algo. */
+    if (estrellas >= 3) {
+      setTimeout(function () {
+        if (!$('pantalla-fin').hidden) Papelitos.festejar();
+      }, 420);
+    } else {
+      Papelitos.limpiar();
+    }
+
     var cont = $('estrellas-fin');
     Util.vaciar(cont);
     for (var i = 0; i < 3; i++) {
@@ -2341,6 +2415,17 @@
     // de cara según el resultado: las ilustraciones son fijas, así que
     // eso lo cuentan las estrellas y el texto de abajo.
     Mascota.gesto($('mascota-fin'));
+
+    /* Las tres estrellas son la partida perfecta: ahí sí van papelitos.
+       Con dos o menos no, porque un festejo que sale siempre deja de
+       querer decir algo. */
+    if (estrellas >= 3) {
+      setTimeout(function () {
+        if (!$('pantalla-fin').hidden) Papelitos.festejar();
+      }, 420);
+    } else {
+      Papelitos.limpiar();
+    }
 
     var cont = $('estrellas-fin');
     Util.vaciar(cont);

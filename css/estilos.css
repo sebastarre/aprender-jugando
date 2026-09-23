@@ -60,13 +60,14 @@
   --rosa-osc:     #be185d;
   --agua:         #a8cffa;
 
-  /* 20 y 14, no 26 y 16. Con 26px de radio en una tarjeta de 100px de
-     alto la curva se come el cuarto del ancho y todo queda con forma de
-     poroto: blando en vez de macizo. Las apps del rubro andan en 16-20
-     para tarjetas y 12-14 para lo chico; es un radio que se lee como
-     juguete de plástico duro y no como almohadón. */
-  --radio:   20px;
-  --radio-s: 14px;
+  /* 24 y 18. El tope sigue siendo la forma de poroto: con 30px de radio
+     en una tarjeta de 100px de alto la curva se come un tercio del
+     ancho y todo queda blando en vez de macizo. Pero 20/14 era el piso
+     del rango del rubro (16-20 para tarjetas) y en pantalla se leía
+     como una app de trámites bien hecha. Cuatro píxeles más arriba es
+     lo mismo pero más juguete. */
+  --radio:   24px;
+  --radio-s: 18px;
 
   /* Tres capas, que es lo que hace que una tarjeta parezca de plastilina
      y no un rectángulo: el escaloncito de abajo (el que se hunde al
@@ -599,48 +600,67 @@ body {
   align-items: center;
   gap: 16px;
   padding: 16px 18px;
-  border: 2px solid var(--borde);
+  border: 2.5px solid var(--menu-filo, var(--borde));
   border-radius: var(--radio);
-  background: var(--tarjeta);
-  box-shadow: 0 4px 0 var(--sombra-clay);
+  /* del color del destino, no blanco: cuatro renglones blancos con un
+     circulito de color eran un menú de opciones; cuatro carteles de
+     colores distintos son cuatro puertas */
+  background: linear-gradient(168deg, #fff 0%, var(--menu-fondo, var(--tarjeta)) 62%);
+  box-shadow: 0 5px 0 var(--menu-paso, var(--sombra-clay));
   color: inherit;
   text-decoration: none;
   transition: transform .14s, box-shadow .14s, border-color .14s;
 }
 .boton-menu:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 0 var(--sombra-clay);
+  box-shadow: 0 7px 0 var(--menu-paso, var(--sombra-clay));
   border-color: var(--menu-color);
 }
-.boton-menu:active { transform: translateY(4px); box-shadow: 0 0 0 var(--sombra-clay); }
+.boton-menu:active { transform: translateY(5px); box-shadow: 0 0 0 var(--menu-paso, var(--sombra-clay)); }
 
 .boton-menu-icono {
-  width: 62px;
-  height: 62px;
+  width: 70px;
+  height: 70px;
   flex: none;
   display: grid;
   place-items: center;
   border-radius: 50%;
   background: var(--menu-color);
   color: #fff;
-  box-shadow: 0 4px 0 var(--menu-fuerte);
+  border: 4px solid #fff;
+  box-shadow:
+    0 4px 0 var(--menu-fuerte),
+    0 7px 16px -7px var(--menu-fuerte);
   transition: box-shadow .14s, transform .14s;
 }
 .boton-menu:active .boton-menu-icono { box-shadow: 0 0 0 var(--menu-fuerte); transform: translateY(4px); }
-.boton-menu-icono .ico { width: 34px; height: 34px; stroke-width: 1.9; }
+.boton-menu-icono .ico { width: 36px; height: 36px; stroke-width: 1.9; }
 
 .boton-menu-texto { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
-.boton-menu-texto b { font-size: 1.35rem; font-weight: 800; line-height: 1.15; }
-.boton-menu-texto small { color: var(--tinta-suave); font-size: .88rem; line-height: 1.25; }
+.boton-menu-texto b { font-size: 1.45rem; font-weight: 800; line-height: 1.15; }
+.boton-menu-texto small { color: var(--tinta-suave); font-size: .92rem; line-height: 1.25; }
 
 /* Los colores de cada destino: jugar y aprender son los dos de la app
    (el azul de practicar y el violeta de leer); personalizar y
    configuración van en tonos propios para que se distingan de un
-   vistazo sin leer el cartel. */
-#menu-jugar          { --menu-color: #2563eb; --menu-fuerte: #1d4ed8; }
-#menu-aprender       { --menu-color: #7c3aed; --menu-fuerte: #5b21b6; }
-#menu-personalizacion{ --menu-color: #be185d; --menu-fuerte: #9d174d; }
-#menu-configuracion  { --menu-color: #0f766e; --menu-fuerte: #115e59; }
+   vistazo sin leer el cartel. Los cuatro tonos claros salen del mismo
+   color, lavado: el relleno de la tarjeta, su filo y su escalón. */
+#menu-jugar {
+  --menu-color: #2563eb; --menu-fuerte: #1d4ed8;
+  --menu-fondo: #dbe8ff; --menu-filo: #a9c6fa; --menu-paso: #74a0f3;
+}
+#menu-aprender {
+  --menu-color: #7c3aed; --menu-fuerte: #5b21b6;
+  --menu-fondo: #ebe2ff; --menu-filo: #cbb2f8; --menu-paso: #a97df2;
+}
+#menu-personalizacion {
+  --menu-color: #be185d; --menu-fuerte: #9d174d;
+  --menu-fondo: #ffe2ee; --menu-filo: #f7b0cd; --menu-paso: #ed7cab;
+}
+#menu-configuracion {
+  --menu-color: #0f766e; --menu-fuerte: #115e59;
+  --menu-fondo: #d7f2ef; --menu-filo: #9ad9d3; --menu-paso: #5cc0b8;
+}
 
 @media (min-width: 620px) {
   .menu-inicio { grid-template-columns: 1fr 1fr; }
@@ -784,8 +804,20 @@ body {
   gap: 14px;
 }
 
+/* Cada ficha va del color de su juego, no blanca.
+
+   Blancas todas iguales, lo único que distinguía una materia de otra
+   era el círculo de arriba: la pantalla se leía como una lista con
+   stickers pegados. Ahora la ficha entera es de la familia del juego
+   —relleno pastel, filo y escalón del mismo color, cargándose de a
+   poco— y el círculo pleno queda como el tono más fuerte de esa
+   familia. Los tres tonos los calcula `tarjeta()` con `Util.aclarar`,
+   así que un juego nuevo sigue trayendo un solo color escrito a mano.
+
+   El texto no corre riesgo: el relleno lleva 93% de blanco, así que la
+   tinta encima anda en 15:1 en todos los colores de la app. */
 .card {
-  --sombra-color: var(--sombra-clay);
+  --sombra-color: var(--card-paso, var(--sombra-clay));
   position: relative;
   display: flex;
   flex-direction: column;
@@ -795,9 +827,12 @@ body {
   font: inherit;
   color: inherit;
   padding: 18px 12px 16px;
-  border: 2px solid var(--borde);
+  border: 2.5px solid var(--card-filo, var(--borde));
   border-radius: var(--radio);
-  background: var(--tarjeta);
+  /* de blanco arriba al pastel abajo: le da el brillo de algo de
+     plástico en vez de una mancha de color plana */
+  background:
+    linear-gradient(168deg, #fff 0%, var(--card-fondo, var(--tarjeta)) 58%);
   box-shadow: var(--sombra);
   cursor: pointer;
   transition: transform .18s var(--rebote), box-shadow .18s ease, border-color .18s;
@@ -843,7 +878,15 @@ body {
      que es el mínimo para algo que es dibujo y no texto. */
   background: var(--card-color, var(--primario));
   color: #fff;
-  box-shadow: 0 4px 0 var(--card-borde, var(--sombra-clay));
+  /* El aro blanco es lo que lo convierte en calcomanía. Ahora que la
+     ficha es de color, un círculo pleno apoyado directamente sobre el
+     pastel se leía como una mancha más oscura del mismo tono; el aro
+     lo recorta y lo despega, como los stickers que vienen troquelados
+     con su borde blanco alrededor. */
+  border: 4px solid #fff;
+  box-shadow:
+    0 4px 0 var(--card-borde, var(--sombra-clay)),
+    0 6px 14px -6px var(--card-borde, rgba(29, 43, 74, .3));
   transition: box-shadow .18s ease, transform .18s var(--rebote);
 }
 .card:active:not(:disabled) .card-icono { box-shadow: 0 0 0 var(--card-borde, var(--sombra-clay)); transform: translateY(4px); }
@@ -859,6 +902,38 @@ body {
   gap: 2px;
 }
 .card-icono .ico { width: 44px; height: 44px; stroke-width: 1.9; }
+
+/* ------------------------------------------------------------
+   Los dibujos respiran
+
+   Una pantalla de fichas quietas es una lista. Que cada dibujo suba y
+   baje tres píxeles, cada uno con su tiempo, alcanza para que la
+   pantalla parezca viva sin que nada se mueva de lugar ni moleste para
+   leer: es el mismo truco de la mascota, más chico.
+
+   Se anima el dibujo de adentro y no el círculo, porque el círculo ya
+   se mueve cuando se aprieta la ficha y las dos animaciones se pisan.
+   Los seis tiempos distintos son para que no latan todos juntos, que
+   es lo que lo haría ver mecánico. Con «reducir movimiento» puesto, el
+   bloque de accesibilidad de más abajo los deja quietos.
+   ------------------------------------------------------------ */
+@keyframes flotar {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-3.5px); }
+}
+.card-icono .ico,
+.card-icono .card-dibujo,
+.boton-menu-icono .ico {
+  animation: flotar 3.2s ease-in-out infinite;
+}
+.grilla-cards > *:nth-child(6n+2) .card-icono .ico { animation-duration: 3.6s; animation-delay: -.5s; }
+.grilla-cards > *:nth-child(6n+3) .card-icono .ico { animation-duration: 2.9s; animation-delay: -1.1s; }
+.grilla-cards > *:nth-child(6n+4) .card-icono .ico { animation-duration: 3.4s; animation-delay: -1.7s; }
+.grilla-cards > *:nth-child(6n+5) .card-icono .ico { animation-duration: 3.1s; animation-delay: -.8s; }
+.grilla-cards > *:nth-child(6n+6) .card-icono .ico { animation-duration: 3.8s; animation-delay: -2.2s; }
+.menu-inicio > *:nth-child(2) .boton-menu-icono .ico { animation-duration: 3.7s; animation-delay: -.9s; }
+.menu-inicio > *:nth-child(3) .boton-menu-icono .ico { animation-duration: 3s;   animation-delay: -1.8s; }
+.menu-inicio > *:nth-child(4) .boton-menu-icono .ico { animation-duration: 3.4s; animation-delay: -2.6s; }
 /* 800, no 700: es el peso al que corren los títulos y los botones de
    las apps del rubro, y es lo que hace que un nombre se lea como el
    cartel de un juego y no como el ítem de una lista. */
@@ -1093,13 +1168,18 @@ body {
   gap: 18px;
   flex-wrap: wrap;
   background: var(--tarjeta);
-  border: 2px solid var(--borde);
+  /* Chapa gruesa y escaloncito, como todo lo demás: era el único bloque
+     de la pantalla de juego con filo fino y sombra difusa, así que al
+     lado de las respuestas con relieve parecía un papel pegado atrás. */
+  border: 3px solid var(--borde);
   border-radius: var(--radio);
-  padding: 16px 22px;
-  box-shadow: var(--sombra-suave);
+  padding: 18px 22px;
+  box-shadow: 0 5px 0 var(--sombra-clay), 0 12px 22px -12px rgba(29, 43, 74, .25);
   text-align: center;
 }
-.pregunta-texto { font-size: clamp(1.15rem, 3vw, 1.6rem); }
+/* La pregunta es lo que hay que leer: iba al mismo cuerpo que el texto
+   de una ficha y ahora va grande y gorda, arriba de todo. */
+.pregunta-texto { font-size: clamp(1.3rem, 3.4vw, 1.75rem); font-weight: 700; }
 .pregunta-texto b { color: var(--primario); }
 .pregunta-bandera {
   /* alto fijo: así el bloque no cambia de tamaño cuando la imagen termina
@@ -1213,21 +1293,49 @@ body {
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 14px;
 }
+/* Las respuestas son lo que más mira un chico en toda la app: son
+   cuatro botones y están en pantalla en cada pregunta de cada juego.
+   Eran cuatro rectángulos blancos idénticos con un número adentro, que
+   es exactamente el dibujo de un formulario.
+
+   Ahora cada una tiene su color y su escaloncito, como los botones de
+   un juguete. Los cuatro tonos —azul, violeta, rosa y ámbar— están
+   elegidos LEJOS del verde y del rojo a propósito: esos dos quedan
+   reservados para «acertaste» y «erraste» y no los usa nada más, así
+   que un botón de color nunca se puede leer como una respuesta ya
+   contestada. */
 .btn-opcion {
+  --op-fondo: var(--tarjeta);
+  --op-filo: var(--pista);
+  --op-paso: var(--sombra-clay);
+  position: relative;
   font: inherit;
   font-weight: 700;
   cursor: pointer;
-  background: var(--tarjeta);
-  border: 3px solid var(--pista);
-  border-radius: var(--radio-s);
+  background: linear-gradient(170deg, #fff 0%, var(--op-fondo) 72%);
+  border: 3px solid var(--op-filo);
+  border-radius: 20px;
   padding: 12px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8px;
   color: inherit;
-  transition: transform .12s, border-color .12s, background .12s;
+  box-shadow: 0 5px 0 var(--op-paso);
+  transition: transform .12s, border-color .12s, background .12s, box-shadow .12s;
 }
+/* Se hunde hasta apoyarse, igual que todo lo que se aprieta acá. */
+.btn-opcion:active:not(:disabled) {
+  transform: translateY(5px);
+  box-shadow: 0 0 0 var(--op-paso);
+}
+
+/* Los cuatro colores, rotando. Con dos o tres respuestas salen los dos
+   o tres primeros, que igual son distintos entre sí. */
+.zona-opciones .btn-opcion:nth-child(4n+1) { --op-fondo: #e4edff; --op-filo: #9fbdf8; --op-paso: #6f9cf2; }
+.zona-opciones .btn-opcion:nth-child(4n+2) { --op-fondo: #efe6ff; --op-filo: #c0a3f5; --op-paso: #a077ef; }
+.zona-opciones .btn-opcion:nth-child(4n+3) { --op-fondo: #ffe7f2; --op-filo: #f4a6c8; --op-paso: #ec7dab; }
+.zona-opciones .btn-opcion:nth-child(4n+4) { --op-fondo: #fff0d6; --op-filo: #f2c469; --op-paso: #e0a532; }
 .btn-opcion img {
   width: 100%;
   max-width: 180px;
@@ -1236,8 +1344,38 @@ body {
   box-shadow: 0 3px 10px rgba(29, 43, 74, .2);
 }
 .btn-opcion:hover:not(:disabled) { transform: translateY(-4px); border-color: var(--primario); }
-.btn-opcion.correcta { border-color: var(--exito); background: #e6f8ef; }
-.btn-opcion.incorrecta { border-color: var(--error); background: #fdeaec; }
+
+/* Acertaste / erraste. Van con más peso que los colores de reposo —por
+   eso llevan la clase repetida, para ganarle al nth-child— y además de
+   pintarse traen un sello: una tilde verde o una cruz roja en la
+   esquina. El color solo no alcanza: un chico que no distingue verde
+   de rojo tiene que poder ver cuál era. */
+.btn-opcion.correcta.correcta { border-color: var(--exito); background: #dcf5e8; --op-paso: #7ccfa5; }
+.btn-opcion.incorrecta.incorrecta { border-color: var(--error); background: #fde3e6; --op-paso: #f19aa3; }
+.btn-opcion.correcta::after,
+.btn-opcion.incorrecta::after {
+  position: absolute;
+  top: -12px;
+  right: -8px;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 3px solid #fff;
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 800;
+  line-height: 1;
+  box-shadow: 0 3px 8px -2px rgba(15, 23, 42, .4);
+  animation: sello-entra .3s var(--rebote) both;
+}
+.btn-opcion.correcta::after   { content: '✓'; background: var(--exito-osc); }
+.btn-opcion.incorrecta::after { content: '✕'; background: var(--error-osc); font-size: .95rem; }
+@keyframes sello-entra {
+  from { transform: scale(0) rotate(-30deg); opacity: 0; }
+  to   { transform: none; opacity: 1; }
+}
 .btn-opcion:disabled { cursor: default; }
 
 /* ---------------- Aviso flotante ---------------- */
@@ -1373,12 +1511,16 @@ body.jugando .pie { display: none; }
   .btn-gigante { width: 100%; }
   #mapa svg { max-height: 52vh; }
 
-  /* En un celular no entran la mascota, el nombre y las dos cuentas en
-     la misma fila, así que las cuentas bajan a un renglón propio. Sin
-     esto arrancan pegadas al borde izquierdo, debajo de la mascota;
-     con la sangría del ancho de la mascota quedan alineadas con el
-     nombre, como si fueran parte de la misma columna. */
-  .portada-cuentas { margin-left: 98px; }
+  /* En un celular no entran la carita, el nombre y las cuentas en la
+     misma fila, así que las cuentas bajan a un renglón propio, pegadas
+     a la derecha: así terminan alineadas con el borde de la ficha de
+     arriba en vez de con el borde izquierdo de la pantalla.
+
+     Antes era una sangría fija de 98px (el ancho de la carita). Con
+     tres pastillas —racha, estrellas y monedas— eso daba 244px de
+     contenido en 225 de lugar, y como el cartel recorta lo que se sale,
+     la flechita de las monedas quedaba cortada por la mitad. */
+  .portada-cuentas { width: 100%; justify-content: flex-end; }
 
   /* En dos columnas cada opción mide 170px: con el dibujo a 1.7rem y
      16px de padding a cada lado quedaban 99px para el texto y
@@ -2769,9 +2911,12 @@ body.en-bienvenida #fondo-bienvenida { display: block; }
    con la paleta menta puesta seguía saliendo rosa. Mismo molde que el
    resto y el color se lo pone el dibujo, que es donde no molesta. */
 .tarjeta-examen {
-  --sombra-color: var(--sombra-clay);
+  --sombra-color: var(--examen-paso, var(--sombra-clay));
   --examen-color: #be185d;
   --examen-fuerte: #9d174d;
+  --examen-fondo: #ffe2ee;
+  --examen-filo:  #f7b0cd;
+  --examen-paso:  #ed7cab;
   font: inherit;
   color: inherit;
   cursor: pointer;
@@ -2782,9 +2927,10 @@ body.en-bienvenida #fondo-bienvenida { display: block; }
   text-align: left;
   padding: 16px 18px;
   margin-bottom: 18px;
-  border: 2px solid var(--borde);
+  border: 2.5px solid var(--examen-filo);
   border-radius: var(--radio);
-  background: var(--tarjeta);
+  /* del color de lo que abre, igual que las fichas de juego */
+  background: linear-gradient(168deg, #fff 0%, var(--examen-fondo) 70%);
   box-shadow: var(--sombra);
   transition: transform .18s var(--rebote), box-shadow .18s ease, border-color .18s;
 }
@@ -2806,7 +2952,10 @@ body.en-bienvenida #fondo-bienvenida { display: block; }
 
 /* El repaso va en el color de "acertar": son dos cosas distintas y no
    tienen que confundirse de un vistazo. */
-.tarjeta-repaso { --examen-color: #15803d; --examen-fuerte: #14532d; }
+.tarjeta-repaso {
+  --examen-color: #15803d; --examen-fuerte: #14532d;
+  --examen-fondo: #dcf5e6; --examen-filo: #a2ddba; --examen-paso: #6cc691;
+}
 
 /* Mismo círculo pleno con escalón que las fichas de juego: si el examen
    se queda con un cuadradito pastel arriba de una grilla de círculos
@@ -2820,7 +2969,8 @@ body.en-bienvenida #fondo-bienvenida { display: block; }
   border-radius: 50%;
   background: var(--examen-color);
   color: #fff;
-  box-shadow: 0 4px 0 var(--examen-fuerte);
+  border: 4px solid #fff;
+  box-shadow: 0 4px 0 var(--examen-fuerte), 0 7px 16px -7px var(--examen-fuerte);
   transition: box-shadow .18s ease, transform .18s var(--rebote);
 }
 .tarjeta-examen:active .examen-icono { box-shadow: 0 0 0 var(--examen-fuerte); transform: translateY(4px); }
@@ -3020,6 +3170,81 @@ body.rindiendo .vidas { display: none; }
 @keyframes mascota-entra {
   from { transform: translateY(26px) scale(.6); opacity: 0; }
   to   { transform: none; opacity: 1; }
+}
+
+/* ------------------------------------------------------------
+   El cartel del bichito: la mascota y un globo de historieta
+
+   Las pantallas de elegir materia abrían con un título centrado y una
+   bajada gris debajo, las dos flotando sobre el papel. Es el encabezado
+   de una página web, y un chico de cinco no lee encabezados: mira si
+   hay alguien.
+
+   Ahora el mismo texto lo dice la mascota desde un globo. No se agregó
+   ni una palabra —son el mismo h1 y la misma bajada, así que el lector
+   de pantalla sigue leyendo lo de siempre— pero la pantalla pasa de
+   empezar con un cartel a empezar con un personaje.
+   ------------------------------------------------------------ */
+.cartel-bichito {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 22px;
+}
+.cartel-bichito-quien {
+  flex: none;
+  height: clamp(86px, 23vw, 112px);
+  animation: saludar 3.4s ease-in-out infinite;
+  transform-origin: 50% 95%;
+}
+
+/* El globo: una tarjeta con la punta mirando a la mascota. La punta es
+   un cuadradito girado 45° con el mismo filo y el mismo relleno, tapado
+   a medias por el globo, que es la manera de que el borde siga entero
+   alrededor de la pica sin dibujarla con SVG. */
+.cartel-bichito-globo {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  padding: 12px 16px;
+  border: 2.5px solid var(--borde);
+  border-radius: var(--radio);
+  background: var(--tarjeta);
+  box-shadow: 0 4px 0 var(--sombra-clay);
+}
+.cartel-bichito-globo::before {
+  content: '';
+  position: absolute;
+  left: -9px;
+  top: 50%;
+  width: 16px;
+  height: 16px;
+  margin-top: -8px;
+  transform: rotate(45deg);
+  border-left: 2.5px solid var(--borde);
+  border-bottom: 2.5px solid var(--borde);
+  border-bottom-left-radius: 4px;
+  background: var(--tarjeta);
+}
+/* Adentro del globo el título va alineado a la izquierda y más chico:
+   centrado y a 2,7rem era un cartel, no algo que alguien está diciendo. */
+.cartel-bichito-globo .titulo-grande {
+  margin: 0;
+  text-align: left;
+  font-size: clamp(1.35rem, 5.2vw, 1.8rem);
+}
+.cartel-bichito-globo .subtitulo {
+  margin: 2px 0 0;
+  text-align: left;
+  font-size: .95rem;
+  line-height: 1.3;
+}
+/* En una pantalla ancha el globo se estiraba hasta los 1100px con dos
+   renglones de texto adentro: un globo de historieta vacío. Se le pone
+   tope y queda del ancho de lo que dice. */
+@media (min-width: 720px) {
+  .cartel-bichito { max-width: 680px; }
+  .cartel-bichito-quien { height: 126px; }
 }
 
 /* ============================================================
@@ -3411,8 +3636,10 @@ body.jugando .marcador { display: none; }
   padding: 16px;
   margin: 6px 0 18px;
   border-radius: var(--radio);
-  color: #fff;
-  background: linear-gradient(170deg, var(--materia-color) 0%, var(--materia-color) 45%, var(--materia-fuerte) 135%);
+  color: var(--materia-tinta, #fff);
+  /* aclara hacia arriba: el punto más oscuro del cartel es el tono
+     vivo, que es contra el que está medida la letra */
+  background: linear-gradient(170deg, var(--materia-claro) 0%, var(--materia-color) 62%);
   box-shadow:
     0 5px 0 var(--materia-fuerte),
     0 14px 26px -10px rgba(15, 23, 42, .3),
@@ -3427,11 +3654,11 @@ body.jugando .marcador { display: none; }
 }
 .materia-cabecera::before {
   width: 168px; height: 168px; right: -56px; bottom: -94px;
-  background: rgba(255, 255, 255, .07);
+  background: rgba(255, 255, 255, .22);
 }
 .materia-cabecera::after {
   width: 72px; height: 72px; right: 78px; top: -42px;
-  border: 10px solid rgba(255, 255, 255, .07);
+  border: 10px solid rgba(255, 255, 255, .22);
 }
 .materia-cabecera > * { position: relative; z-index: 1; }
 
@@ -3443,9 +3670,9 @@ body.jugando .marcador { display: none; }
   place-items: center;
   border-radius: 50%;
   background: #fff;
-  color: var(--materia-color);
+  color: var(--materia-glifo, var(--materia-color));
   font-size: 2rem;
-  box-shadow: 0 4px 0 rgba(0, 0, 0, .2);
+  box-shadow: 0 4px 0 rgba(0, 0, 0, .18);
 }
 .materia-cabecera-icono .ico { width: 34px; height: 34px; stroke-width: 1.9; }
 .materia-cabecera-datos { flex: 1 1 140px; min-width: 0; }
@@ -3464,16 +3691,20 @@ body.jugando .marcador { display: none; }
   min-height: 44px;
   padding: 8px 16px;
   border-radius: 999px;
-  background: rgba(0, 0, 0, .16);
-  border: 1.5px solid rgba(255, 255, 255, .5);
-  box-shadow: 0 3px 0 rgba(0, 0, 0, .2);
-  color: #fff;
+  /* Pastilla blanca con la letra oscura. Antes era negro al 16% con
+     letra blanca encima: sobre un color vivo eso daba 2,6:1. Blanca
+     además se lee como un botón apoyado sobre el cartel y no como una
+     mancha más oscura del mismo cartel. */
+  background: #fff;
+  border: none;
+  box-shadow: 0 3px 0 rgba(0, 0, 0, .22);
+  color: var(--materia-tinta, var(--tinta));
   font-weight: 800;
   font-size: .92rem;
   text-decoration: none;
   transition: transform .14s, background .14s, box-shadow .14s;
 }
-.materia-aprender:hover { background: rgba(0, 0, 0, .26); }
+.materia-aprender:hover { background: #f4f8ff; }
 .materia-aprender:active { transform: translateY(3px); box-shadow: 0 0 0 rgba(0, 0, 0, .2); }
 .materia-aprender .ico { width: 1.15em; height: 1.15em; }
 
@@ -3866,19 +4097,19 @@ body.jugando .marcador { display: none; }
   padding: 16px;
   margin: 6px 0 12px;
   border-radius: var(--radio);
-  color: #fff;
-  background: linear-gradient(170deg, var(--camino-color) 0%, var(--camino-color) 45%, var(--camino-oscuro) 135%);
+  color: var(--cartel-tinta, #fff);
+  background: linear-gradient(170deg, var(--cartel-claro) 0%, var(--cartel-vivo) 62%);
   box-shadow:
-    0 5px 0 var(--camino-oscuro),
+    0 5px 0 var(--camino-color),
     0 14px 26px -10px rgba(15, 23, 42, .3),
-    inset 0 1.5px 0 rgba(255, 255, 255, .22);
+    inset 0 1.5px 0 rgba(255, 255, 255, .3);
 }
 .camino-cabecera::after {
   content: "";
   position: absolute;
   width: 170px; height: 170px; right: -56px; bottom: -100px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, .08);
+  background: rgba(255, 255, 255, .25);
   pointer-events: none;
 }
 .camino-cabecera-icono {
@@ -3896,16 +4127,17 @@ body.jugando .marcador { display: none; }
 .camino-progreso { margin: 4px 0 8px; font-weight: 700; font-size: .95rem; }
 .camino-barra {
   display: block;
-  height: 12px;
+  height: 14px;
   border-radius: 999px;
-  background: rgba(0, 0, 0, .22);
+  background: rgba(255, 255, 255, .75);
+  box-shadow: inset 0 2px 3px rgba(0, 0, 0, .12);
   overflow: hidden;
 }
 .camino-barra i {
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: #fde047;
+  background: var(--camino-color, #fde047);
   transform-origin: left;
   transition: transform .8s var(--rebote);
 }
@@ -3926,7 +4158,10 @@ body.jugando .marcador { display: none; }
   margin: 0;
   padding: 0;
   transform: translate(-50%, -50%);
-  border: none;
+  /* Aro blanco, igual que el dibujo de una ficha: sobre el papel claro
+     un círculo pleno se lee como un agujero y con el aro se lee como
+     una chapita apoyada. Los desafíos lo cambian por el suyo dorado. */
+  border: 5px solid #fff;
   border-radius: 50%;
   font: inherit;
   cursor: pointer;
@@ -3968,7 +4203,7 @@ body.jugando .marcador { display: none; }
 }
 
 /* los desafíos: más grandes, con un filo dorado */
-.camino-nivel.desafio { width: 84px; height: 84px; border: 4px solid #fbbf24; }
+.camino-nivel.desafio { width: 84px; height: 84px; border: 5px solid #fbbf24; }
 .camino-nivel.desafio .camino-cara .ico { width: 38px; height: 38px; }
 .camino-nivel.desafio.cerrado { border-color: #d8dfec; }
 .camino-nivel.final { width: 92px; height: 92px; }
@@ -4127,7 +4362,8 @@ body.jugando .marcador { display: none; }
   color: #fff;
   font-size: 2.6rem;
   font-weight: 800;
-  box-shadow: 0 7px 0 var(--camino-oscuro);
+  border: 6px solid #fff;
+  box-shadow: 0 7px 0 var(--camino-oscuro), 0 12px 24px -10px var(--camino-oscuro);
 }
 .nivel-fin-insignia .ico { width: 46px; height: 46px; stroke-width: 2.2; }
 .nivel-fin-insignia.desafio { background: #f59e0b; box-shadow: 0 7px 0 #b45309; }
@@ -4378,3 +4614,33 @@ body.jugando .marcador { display: none; }
 /* la fila de los nombres ocupa lo mismo aunque el día no lleve nombre:
    si no, esas barras bajaban más que las otras y se pisaban con las fechas */
 .semana-nombre { min-height: 1.3em; }
+
+/* ============================================================
+   Los papelitos del festejo
+
+   La capa va fija sobre todo y NO recibe toques: un chico tiene que
+   poder apretar «Seguir» mientras todavía están cayendo. Los tira
+   js/nucleo/papelitos.js, que le sortea a cada uno la posición, el
+   color, el tamaño, la demora, el giro y cuánto se corre de costado.
+
+   Caen desde arriba de la pantalla, así que arrancan en -12vh: si
+   arrancaran en 0 se verían aparecer de la nada en el borde.
+   ============================================================ */
+.papelitos {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  overflow: hidden;
+  pointer-events: none;
+}
+.papelitos i {
+  position: absolute;
+  top: -12vh;
+  display: block;
+  animation: papelito linear both;
+}
+@keyframes papelito {
+  from { transform: translate(0, 0) rotate(0); opacity: 1; }
+  80%  { opacity: 1; }
+  to   { transform: translate(var(--corrida, 0), 118vh) rotate(var(--giro, 360deg)); opacity: 0; }
+}

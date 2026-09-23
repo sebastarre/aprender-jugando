@@ -100,6 +100,82 @@ window.Util = (function () {
     }).join('');
   }
 
+  /**
+   * El mismo color pero lavado hacia el blanco, para los fondos.
+   *
+   * Es el gemelo de `oscurecer`: uno baja hacia el negro para el
+   * escaloncito y el otro sube hacia el blanco para el relleno. Con los
+   * dos, un juego sigue trayendo un solo color escrito a mano y de ahí
+   * salen el círculo pleno, el fondo pastel de la ficha, su filo y su
+   * escalón, todos de la misma familia.
+   *
+   * `cuanto` es cuánto blanco se le mete: .86 es un pastel bien suave
+   * (la ficha entera), .70 un filo que se nota, .52 un escalón.
+   */
+  function aclarar(hex, cuanto) {
+    var c = String(hex).replace('#', '');
+    if (c.length !== 6) return hex;
+    var f = cuanto == null ? 0.86 : cuanto;
+    var p = [0, 2, 4].map(function (i) {
+      var v = parseInt(c.substr(i, 2), 16);
+      return Math.round(v + (255 - v) * f);
+    });
+    return '#' + p.map(function (x) {
+      return Math.max(0, Math.min(255, x)).toString(16).padStart(2, '0');
+    }).join('');
+  }
+
+  /* La claridad de un color como la mide la norma de accesibilidad, y
+     la relación de contraste entre dos. Es la cuenta de WCAG tal cual:
+     se deshace la corrección gamma de cada canal, se pesan según lo que
+     ve el ojo (el verde mucho, el azul poco) y se comparan las dos
+     claridades con el más 0,05 que evita dividir por cero. */
+  function claridad(hex) {
+    var c = String(hex).replace('#', '');
+    var p = [0, 2, 4].map(function (i) {
+      var v = parseInt(c.substr(i, 2), 16) / 255;
+      return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+    });
+    return 0.2126 * p[0] + 0.7152 * p[1] + 0.0722 * p[2];
+  }
+
+  function contraste(a, b) {
+    var la = claridad(a), lb = claridad(b);
+    return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
+  }
+
+  /**
+   * Los tres tonos del cartel grande de un juego, sacados de su color.
+   *
+   * El problema: el cartel lleva texto, y el texto pide 4,5:1. Durante
+   * mucho tiempo se resolvía oscureciendo el color hasta que aguantara
+   * letra blanca, pero oscurecer un naranja da marrón y los juegos de
+   * Lengua abrían con un cartel color barro. Al revés funciona mejor:
+   * el cartel va del tono VIVO y la letra va oscura encima.
+   *
+   * Cuánto aclarar no se puede poner a ojo igual para los quince
+   * colores de juego que hay: un índigo aguanta mucho menos que un
+   * amarillo. Así que se prueba de a poco, del más saturado al más
+   * lavado, y se corta en el primero que llega a 4,6:1 contra su propia
+   * letra. Cada color queda lo más vivo que su letra le permite.
+   *
+   *   vivo   el fondo del cartel
+   *   claro  el arranque del degradado, arriba (nunca es el más oscuro:
+   *          si el cartel se oscureciera hacia abajo, el renglón de
+   *          abajo perdería justo el contraste que se midió)
+   *   tinta  la letra
+   */
+  function cartel(hex) {
+    var tinta = oscurecer(hex, 0.26);
+    for (var f = 0.06; f <= 0.5; f += 0.02) {
+      var vivo = aclarar(hex, f);
+      if (contraste(vivo, tinta) >= 4.6) {
+        return { vivo: vivo, claro: aclarar(hex, Math.min(f + 0.18, 0.62)), tinta: tinta };
+      }
+    }
+    return { vivo: aclarar(hex, 0.5), claro: aclarar(hex, 0.66), tinta: tinta };
+  }
+
   /** Ruta al archivo de bandera de un país (código ISO de 2 letras). */
   function bandera(id) {
     return 'assets/banderas/' + String(id).toLowerCase() + '.png';
@@ -118,7 +194,9 @@ window.Util = (function () {
   return {
     mezclar: mezclar, muestra: muestra, muestraPesada: muestraPesada,
     alAzar: alAzar, unaDe: unaDe,
-    limitar: limitar, $: $, crear: crear, vaciar: vaciar, oscurecer: oscurecer,
+    limitar: limitar, $: $, crear: crear, vaciar: vaciar,
+    oscurecer: oscurecer, aclarar: aclarar,
+    contraste: contraste, cartel: cartel,
     escapar: escapar, bandera: bandera, esperar: esperar, plural: plural
   };
 })();

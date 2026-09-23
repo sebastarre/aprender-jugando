@@ -515,7 +515,7 @@ window.Geografia = (function () {
       id: 'capitales',
       nombre: 'Capitales',
       icono: 'capitales',
-      color: '#c2740a',
+      color: '#d97706',
       suave: '#fef3c7',
       texto: 'De qué país es cada capital',
       edadMin: 10,

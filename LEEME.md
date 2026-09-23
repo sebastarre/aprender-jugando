@@ -646,17 +646,89 @@ dibuje el celular está bien.
 
 **El volumen es de plastilina** (lo que en diseño llaman *claymorphism*, y que
 es el estilo que corresponde a una app educativa infantil): bordes gruesos,
-esquinas de 26px y tres capas de sombra — el escaloncito de abajo, una sombra
+esquinas de 24px y tres capas de sombra — el escaloncito de abajo, una sombra
 difusa que despega la tarjeta del fondo, y una luz interna arriba. Al apretar
 se hunde hasta apoyarse. Todo lo que se mueve usa la misma curva de rebote
 (`--rebote`), que es la que da sensación de juguete en vez de formulario.
+
+### El color vive en las cosas, no sólo en los dibujitos
+
+Durante mucho tiempo todas las fichas de la app eran blancas y lo único de
+color era el círculo del dibujo. Bien hecho, pero de lejos una pantalla con
+doce juegos se leía como doce renglones iguales con un sticker pegado arriba:
+una app de trámites con buena tipografía.
+
+Ahora **cada ficha es del color de su juego**. El color sigue escribiéndose
+una sola vez por juego y de ahí salen los otros cuatro tonos, con
+`Util.aclarar` y `Util.oscurecer`: el relleno pastel, el filo, el escalón de
+abajo y el círculo pleno del dibujo. Un juego nuevo no tiene que traer una
+paleta, sigue trayendo un color.
+
+El círculo del dibujo lleva un **aro blanco**. Es lo que lo convierte en
+calcomanía: apoyado directamente sobre el pastel se leía como una mancha más
+oscura del mismo tono. El mismo aro llevan los nodos del mapa de niveles y la
+insignia del final.
+
+Los **dibujos respiran**: cada ícono sube y baja tres píxeles, cada uno con su
+tiempo, para que la pantalla no parezca una lista quieta. Con «reducir
+movimiento» puesto en el sistema, todo queda quieto.
+
+### Los carteles grandes van del tono vivo con la letra oscura
+
+Un cartel grande (el de una materia, el de un juego en el mapa) lleva texto
+encima, y el texto pide 4,5:1. La forma vieja de conseguirlo era oscurecer el
+color hasta que aguantara letra blanca — y oscurecer un naranja da marrón, así
+que Lengua abría con un cartel color barro y Contar con uno color ladrillo.
+
+Al revés funciona mejor: **el cartel va del tono más vivo y la letra va oscura
+encima**. Las cinco materias tienen su par medido a mano (`alegre` y `tinta` en
+`MATERIAS`, de 5,3:1 a 7,8:1). Los cincuenta y pico de juegos lo sacan solos
+con `Util.cartel(color)`, que prueba tonos del más saturado al más lavado y
+corta en el primero que llega a 4,6:1 contra su propia letra: cada color queda
+lo más vivo que su letra le permite. El degradado del cartel **aclara hacia
+arriba**, nunca hacia abajo, para que el punto más oscuro sea justo el tono
+contra el que se midió.
+
+### Las respuestas son cuatro botones de colores
+
+Es lo que más mira un chico en toda la app: están en pantalla en cada pregunta
+de cada juego, y eran cuatro rectángulos blancos idénticos con un número
+adentro. Ahora cada una tiene su color y su escaloncito. Los cuatro tonos
+—azul, violeta, rosa y ámbar— están elegidos **lejos del verde y del rojo** a
+propósito: esos dos quedan reservados para «acertaste» y «erraste», así que un
+botón de color nunca se puede leer como una respuesta ya contestada.
+
+Cuando se contesta, además de pintarse, la respuesta trae un **sello**: tilde
+verde o cruz roja en la esquina. El color solo no alcanza para un chico que no
+distingue verde de rojo.
+
+### Papelitos al pasar un nivel
+
+`js/nucleo/papelitos.js`. Veinticuatro papelitos de colores que caen, giran y
+se van en poco más de dos segundos. Salen al **pasar un nivel** del mapa y al
+sacar **las tres estrellas** de una partida suelta; con dos o menos no, porque
+un festejo que sale siempre deja de querer decir algo.
+
+Van en una capa fija que **no recibe toques**: se puede apretar «Siguiente
+nivel» mientras todavía están cayendo. Con «reducir movimiento» puesto no se
+dibuja ninguno.
+
+### La mascota presenta las pantallas
+
+«¿A qué querés jugar?» y «¿Qué querés aprender?» abrían con un título centrado
+y una bajada gris, las dos flotando sobre el papel: el encabezado de una página
+web. Un chico de cinco no lee encabezados, mira si hay alguien.
+
+Ahora el mismo texto lo dice la mascota desde un **globo de historieta**
+(`.cartel-bichito`). No se agregó ni una palabra —son el mismo `h1` y la misma
+bajada, así que el lector de pantalla lee lo de siempre— pero la pantalla pasa
+de empezar con un cartel a empezar con un personaje.
 
 ### La pantalla de juegos de una materia
 
 Arriba, una **cabecera del color de la materia** (el mismo relieve que la
 portada del inicio) con su dibujo, cuántos juegos tiene y un botón a sus
-lecciones. El color va un poco oscurecido: tal cual, el blanco chico no
-llegaba a 4,5:1 sobre el naranja de Lengua ni el violeta de Ciencias.
+lecciones, en el tono vivo con la letra oscura.
 
 Abajo, **un juego por fila**: dibujo, nombre, bajada y lo que lleva hecho
 («2/5 niveles hechos», o «Empezá por el nivel 1»), con una flechita que dice
@@ -933,6 +1005,7 @@ js/
   nucleo/motor.js          El motor de partidas, común a todas las materias
   nucleo/mezcla.js         Partidas con preguntas de varias materias mezcladas
   nucleo/pizarra.js        La pizarra de abajo de las respuestas, para hacer cuentas a mano
+  nucleo/papelitos.js      Los papelitos de colores que caen al pasar un nivel
   nucleo/tablero.js        Lo común a los juegos de tarjetas: la botonera, el
                            sorteo, y banco() para armar un juego de una lista
   nucleo/pwa.js            Registra el service worker y el cartel de "Instalar"

@@ -254,8 +254,17 @@
 
   <!-- ============ JUGAR: materias ============ -->
   <section class="pantalla" id="pantalla-juegos" hidden>
-    <h1 class="titulo-grande">¿A qué querés jugar?</h1>
-    <p class="subtitulo" id="saludo-juegos">Elegí una materia y practicá jugando.</p>
+    <!-- El bichito presenta la pantalla. El título y la bajada son los
+         mismos de antes; lo que cambia es que ahora los dice alguien,
+         desde un globo de historieta, en vez de estar centrados y
+         sueltos arriba de la grilla. -->
+    <div class="cartel-bichito">
+      <div class="cartel-bichito-quien" data-mascota="hola" aria-hidden="true"></div>
+      <div class="cartel-bichito-globo">
+        <h1 class="titulo-grande">¿A qué querés jugar?</h1>
+        <p class="subtitulo" id="saludo-juegos">Elegí una materia y practicá jugando.</p>
+      </div>
+    </div>
 
 
 
@@ -283,8 +292,13 @@
 
   <!-- ============ APRENDER: materias ============ -->
   <section class="pantalla" id="pantalla-aprender" hidden>
-    <h1 class="titulo-grande">¿Qué querés aprender?</h1>
-    <p class="subtitulo" id="saludo-aprender">Explicaciones cortas, con dibujos y ejemplos.</p>
+    <div class="cartel-bichito">
+      <div class="cartel-bichito-quien" data-mascota="hola" aria-hidden="true"></div>
+      <div class="cartel-bichito-globo">
+        <h1 class="titulo-grande">¿Qué querés aprender?</h1>
+        <p class="subtitulo" id="saludo-aprender">Explicaciones cortas, con dibujos y ejemplos.</p>
+      </div>
+    </div>
     <div class="grilla-cards" id="grilla-materias-aprender"></div>
   </section>
 
@@ -973,6 +987,7 @@
 <script src="js/nucleo/mezcla.js"></script>
 <script src="js/nucleo/tablero.js"></script>
 <script src="js/nucleo/pizarra.js"></script>
+<script src="js/nucleo/papelitos.js"></script>
 <script src="js/nucleo/pwa.js"></script>
 <script src="js/nucleo/suscripcion.js"></script>
 <script src="js/nucleo/arranque.js"></script>

@@ -417,7 +417,7 @@ window.Lengua = (function () {
     id: 'ortografia',
     nombre: 'Ortografía',
     icono: 'ortografia',
-    color: '#c2740a',
+    color: '#d97706',
     suave: '#fef3c7',
     texto: 'B o V, C, S o Z, con H o sin H',
     edadMin: 8,
