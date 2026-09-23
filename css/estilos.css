@@ -4859,3 +4859,11 @@ body.jugando .marcador { display: none; }
   background: linear-gradient(168deg, #fff 0%, #fff6d8 70%);
   box-shadow: 0 5px 0 #eec14a;
 }
+
+/* ---------- Qué voz lee ----------
+   Debajo del interruptor de la voz, pegada a él: es parte del mismo
+   ajuste. En una columna, porque los nombres traen el país y si es
+   natural, y en dos columnas se partían en tres renglones. */
+.elegir-voz { margin: 4px 0 26px; }
+.elegir-voz .fila-opciones { flex-direction: column; gap: 10px; }
+.elegir-voz .opcion { width: 100%; text-align: left; justify-content: flex-start; }

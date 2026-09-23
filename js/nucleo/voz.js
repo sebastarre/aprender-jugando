@@ -31,22 +31,146 @@ window.Voz = (function () {
   /* El orden es de preferencia. Para castellano, primero el de acá y
      después los latinoamericanos, que suenan más cerca que el de España. */
   var PREFERIDAS = {
-    es: ['es-ar', 'es-419', 'es-us', 'es-mx', 'es-co', 'es-cl', 'es-es', 'es'],
+    es: ['es-ar', 'es-uy', 'es-419', 'es-us', 'es-mx', 'es-co', 'es-cl', 'es-es', 'es'],
     en: ['en-us', 'en-gb', 'en']
   };
 
-  function vozPara(idioma) {
-    var lista = PREFERIDAS[idioma] || PREFERIDAS.es;
-    for (var i = 0; i < lista.length; i++) {
-      var candidatas = voces.filter(function (v) {
-        return String(v.lang).toLowerCase().replace('_', '-').indexOf(lista[i]) === 0;
-      });
-      if (candidatas.length) {
-        // las del aparato andan sin internet, que es como se usa la app
-        return candidatas.filter(function (v) { return v.localService; })[0] || candidatas[0];
-      }
-    }
+  /* ------------------------------------------------------------
+     Cuál voz elegir
+
+     Antes se usaba la primera voz en castellano que apareciera, y en
+     Windows la primera suele ser «Raúl»: un varón robótico y grave que,
+     leyendo una lección para chicos, sonaba tétrico. Ahora cada voz del
+     aparato recibe un puntaje y gana la más alta:
+
+       natural   las voces «Natural», «Neural», «Online», «Premium»,
+                 «Mejorada», las de Google y Siri, y en general las que
+                 no son del aparato. Son las que suenan a persona y no a
+                 contestador. Pesan más que todo lo demás.
+       mujer     a los chicos chicos les llegan mejor las voces de mujer,
+                 que es lo que usan casi todas las apps y dibujos para
+                 esta edad. El nombre no siempre lo dice, así que se
+                 reconocen los nombres de las voces que traen Windows,
+                 Edge, Chrome, Android, iPhone y Mac; un varón reconocido
+                 resta.
+       acento    Argentina primero, después el resto de Latinoamérica y
+                 España al final. Cuenta, pero menos que las dos de arriba:
+                 una voz natural de mujer mexicana es mejor que un robot
+                 argentino.
+       internet  las naturales casi siempre necesitan conexión. Sin
+                 internet se descartan, y si una falla a mitad de camino
+                 queda anotada como rota y se repite todo con otra.
+
+     El padre puede elegir otra en Configuración; lo elegido gana sobre
+     el puntaje mientras esa voz exista en el aparato.
+     ------------------------------------------------------------ */
+  var NATURAL = /natural|neural|online|premium|enhanced|mejorada|google|siri/i;
+
+  var MUJERES = ('elena dalia paloma sabina helena laura elvira salome salomé catalina ' +
+    'camila valentina paulina monica mónica marisol luciana isabela lupe penelope ' +
+    'penélope conchita lucia lucía ximena renata beatriz francisca karla andrea ' +
+    'belkys estrella irene abril arabella elsa lia marta nuria sofia sofía tania ' +
+    'teresa vera yolanda carlota candela maria maría ana carmen emilia luisa silvia ' +
+    'soledad alba julieta susana tatiana angelica esperanza ' +
+    'aria jenny ava emma michelle samantha zira susan hazel libby sonia karen moira ' +
+    'tessa serena allison joanna kendra kimberly salli ivy amy olivia catherine ' +
+    'natasha clara fiona victoria jane nancy sara sarah female mujer').split(' ');
+
+  var VARONES = ('raul raúl tomas tomás jorge pablo alvaro álvaro gonzalo diego juan ' +
+    'carlos andres andrés lorenzo emilio gerardo federico mateo alonso enrique miguel ' +
+    'arnau dario darío elias saul saúl sergio cecilio jose josé luis manuel rodrigo ' +
+    'victor víctor yago alex mark david guy christopher eric ryan daniel fred tom ' +
+    'oliver george james brian joey justin matthew rishi male hombre').split(' ');
+
+  var rotas = {};   // voces de internet que fallaron en esta sesión
+
+  function palabras(nombre) {
+    return String(nombre).toLowerCase().split(/[^a-záéíóúñü]+/);
+  }
+
+  /** true si es voz de mujer, false si es de varón, null si no se sabe. */
+  function esMujer(v) {
+    var p = palabras(v.name);
+    if (p.some(function (x) { return VARONES.indexOf(x) >= 0; })) return false;
+    // las de Google en castellano son todas de mujer y no lo dicen
+    if (/^google/i.test(v.name) && /^es/i.test(v.lang)) return true;
+    if (p.some(function (x) { return MUJERES.indexOf(x) >= 0; })) return true;
     return null;
+  }
+
+  function esNatural(v) { return NATURAL.test(v.name) || !v.localService; }
+
+  function idiomaDe(v) { return String(v.lang).toLowerCase().replace('_', '-'); }
+
+  function puntaje(v, idioma) {
+    var lista = PREFERIDAS[idioma] || PREFERIDAS.es;
+    var lang = idiomaDe(v);
+    var lugar = -1;
+    for (var i = 0; i < lista.length; i++) {
+      if (lang.indexOf(lista[i]) === 0) { lugar = i; break; }
+    }
+    if (lugar < 0 || rotas[v.name]) return -Infinity;
+    if (navigator.onLine === false && !v.localService) return -Infinity;
+
+    var p = (lista.length - lugar) * 4;              // el acento: de 4 a 36
+    if (esNatural(v)) p += 100;
+    var mujer = esMujer(v);
+    if (mujer === true) p += 60;
+    if (mujer === false) p -= 60;
+    if (v.localService) p += 2;                      // desempate: anda sin red
+    return p;
+  }
+
+  /** Las voces de un idioma, de la mejor a la peor. */
+  function ordenadas(idioma) {
+    return voces
+      .map(function (v) { return { v: v, p: puntaje(v, idioma) }; })
+      .filter(function (x) { return x.p > -Infinity; })
+      .sort(function (a, b) { return b.p - a.p; })
+      .map(function (x) { return x.v; });
+  }
+
+  function vozPara(idioma) {
+    var lista = ordenadas(idioma);
+    if (idioma === 'es' && window.Almacen && Almacen.vozElegida) {
+      var nombre = Almacen.vozElegida();
+      var esa = nombre && lista.filter(function (v) { return v.name === nombre; })[0];
+      if (esa) return esa;
+    }
+    return lista[0] || null;
+  }
+
+  /* Para Configuración: cada voz en castellano con un nombre que se
+     entienda. Los nombres crudos son cosas como «Microsoft Elena Online
+     (Natural) - Spanish (Argentina)» o, en Android, «es-us-x-sfb-local». */
+  var PAISES = {
+    ar: 'Argentina', uy: 'Uruguay', cl: 'Chile', mx: 'México', us: 'Estados Unidos',
+    co: 'Colombia', pe: 'Perú', ve: 'Venezuela', es: 'España', '419': 'Latinoamérica',
+    bo: 'Bolivia', py: 'Paraguay', ec: 'Ecuador', cr: 'Costa Rica', pr: 'Puerto Rico'
+  };
+
+  function nombreLindo(v, n) {
+    var crudo = String(v.name);
+    if (/^[a-z]{2,3}[-_][a-z0-9]{2,3}[-_]x[-_]/i.test(crudo) || /-language$/i.test(crudo)) return 'Voz ' + n;
+    if (/^google/i.test(crudo)) return 'Google';
+    var limpio = crudo.split(' - ')[0]
+      .replace(/microsoft|online|\(natural\)|desktop|premium|enhanced|mejorada/gi, '')
+      .replace(/\s+/g, ' ').trim();
+    return limpio || ('Voz ' + n);
+  }
+
+  function opciones() {
+    cargarVoces();
+    return ordenadas('es').map(function (v, i) {
+      return {
+        id: v.name,
+        nombre: nombreLindo(v, i + 1),
+        pais: PAISES[idiomaDe(v).split('-')[1]] || '',
+        natural: esNatural(v),
+        mujer: esMujer(v),
+        conRed: !v.localService
+      };
+    });
   }
 
   function hay() { return !!sintesis; }
@@ -147,7 +271,22 @@ window.Voz = (function () {
       u.lang = voz ? voz.lang : (f.idioma === 'en' ? 'en-US' : 'es-AR');
       // un poco más despacio que lo normal: la escuchan chicos
       u.rate = f.idioma === 'en' ? 0.85 : 0.95;
-      u.pitch = 1.05;
+      /* A las voces naturales no se les toca el tono: subidas de tono
+         desafinan, como una grabación acelerada. A las robóticas un
+         poquito más agudo las hace sonar menos serias. */
+      u.pitch = voz && esNatural(voz) ? 1 : 1.08;
+      /* Si una voz de internet falla (se cortó la conexión, el servidor
+         no contestó), se anota como rota y se dice todo de nuevo con la
+         siguiente. Cortar a propósito también dispara el error, pero con
+         otro código y con el turno ya cambiado. */
+      u.onerror = function (ev) {
+        var motivo = ev && ev.error;
+        if (mio !== turno || motivo === 'interrupted' || motivo === 'canceled') return;
+        if (voz && !voz.localService && !rotas[voz.name]) {
+          rotas[voz.name] = true;
+          decir(html, opciones);
+        }
+      };
       if (i === frases.length - 1) {
         u.onend = function () {
           if (mio === turno && opciones.alTerminar) opciones.alTerminar();
@@ -181,6 +320,7 @@ window.Voz = (function () {
     decir: decir,
     parar: parar,
     leyendo: leyendo,
+    opciones: opciones,
     tramos: tramos        // para las pruebas
   };
 })();

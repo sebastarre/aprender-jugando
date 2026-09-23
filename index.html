@@ -599,6 +599,13 @@
       <button class="interruptor" id="ajuste-voz" type="button" aria-label="Leer en voz alta"
               role="switch" aria-checked="true"><span></span></button>
     </div>
+    <!-- Qué voz lee. Las voces son las que trae el aparato, así que la
+         lista cambia de un teléfono a otro. Tocar una la elige y la hace
+         hablar: elegir una voz sin escucharla no sirve de nada. -->
+    <div class="elegir-voz" id="elegir-voz" hidden>
+      <p class="nota-ranura">¿Qué voz lee? Tocá una para escucharla.</p>
+      <div class="fila-opciones" id="lista-voces"></div>
+    </div>
 
     <h2 class="etiqueta-grupo">Meta del día</h2>
     <p class="nota-ranura">Cuántas respuestas bien por día. Al cumplirla gana       <span id="premio-meta">5</span> monedas. Es de cada chico.</p>

@@ -265,6 +265,29 @@ inglés, así *red* no suena como la red de pescar. Se apaga en Configuración �
 «Leer en voz alta»; si el aparato no tiene voz en castellano, ese interruptor
 queda apagado y lo dice.
 
+**Qué voz.** Antes se usaba la primera voz en castellano del aparato, y en
+Windows la primera suele ser «Raúl», un varón robótico que sonaba tétrico.
+Ahora cada voz recibe un puntaje y gana la más alta: pesa más que sea
+**natural** (las «Natural», «Online», Google, Siri, «Mejorada»), después que sea
+**de mujer** (se reconoce por el nombre: Elena, Dalia, Sabina, Paulina, Mónica…;
+un varón conocido resta) y por último el **acento** (Argentina primero, España
+al final). En Edge gana «Elena», natural y argentina; en Chrome, la de Google;
+en un Windows pelado, «Sabina». En inglés pasa lo mismo: Zira en vez de Mark.
+
+Las naturales casi siempre necesitan internet. Sin conexión se saltean, y si
+una falla a mitad de una frase queda anotada como rota y se repite todo con la
+siguiente. A las naturales no se les sube el tono (desafinan); a las robóticas
+un poquito, para que suenen menos serias.
+
+En Configuración, debajo del interruptor, está la lista de voces del aparato
+para **elegir otra**: tocar una la elige y dice una frase de prueba. «Automática»
+deja que la app elija sola. Lo elegido es del aparato, como el sonido.
+
+La voz depende de lo que traiga cada teléfono. Para que suene igual de bien en
+todos habría que grabar las lecciones con una voz generada y guardarlas como
+audio (el texto de las lecciones es fijo, así que se puede); las preguntas de
+los juegos se arman al azar y seguirían con la voz del aparato.
+
 **El ejercicio.** Al terminar de leer no dice «¡Listo!»: dice «¡Ahora te toca a
 vos!» y arma cinco preguntas de un juego, del nivel que mejor ejercita lo que
 se acaba de explicar. La de multiplicar termina con la tabla del 2, la de las

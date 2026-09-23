@@ -932,6 +932,12 @@ window.Almacen = (function () {
      de cada chico, igual que el sonido. */
   function vozActiva() { return datos.ajustes.voz !== false; }
   function setVoz(v) { datos.ajustes.voz = !!v; guardar(); }
+  /* Cuál voz: el nombre de la que eligió el padre, o null para que la
+     app elija sola. También es del aparato: las voces instaladas son de
+     cada teléfono, y en otro esa voz puede no existir (entonces la app
+     elige sola). */
+  function vozElegida() { return datos.ajustes.vozElegida || null; }
+  function setVozElegida(nombre) { datos.ajustes.vozElegida = nombre || null; guardar(); }
 
   function hayPin() { return !!datos.ajustes.pin; }
   function pinCorrecto(pin) { return datos.ajustes.pin === String(pin); }
@@ -1019,6 +1025,7 @@ window.Almacen = (function () {
     plan: plan, guardarPlan: guardarPlan,
     mapaDe: mapaDe, estrellasDeNivel: estrellasDeNivel, anotarNivelDelMapa: anotarNivelDelMapa,
     vozActiva: vozActiva, setVoz: setVoz,
+    vozElegida: vozElegida, setVozElegida: setVozElegida,
     hayPin: hayPin, pinCorrecto: pinCorrecto, setPin: setPin
   };
 })();

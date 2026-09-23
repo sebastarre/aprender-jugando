@@ -2778,6 +2778,57 @@
     $('dato-voz').textContent = hay
       ? 'Las lecciones y las preguntas de sus ejercicios se escuchan.'
       : 'Este aparato no tiene una voz en castellano instalada.';
+    pintarVoces();
+  }
+
+  var FRASE_DE_PRUEBA = '¡Hola! Soy la voz de Bichito Curioso. ¿Jugamos a aprender?';
+
+  /* La lista de voces para elegir. Arriba de todo «Automática», que es
+     la que elige la app sola (la más natural, de mujer y con acento de
+     acá si hay); después cada voz en castellano del aparato, de la
+     mejor a la peor. Tocar una la elige y dice la frase de prueba. */
+  function pintarVoces() {
+    var bloque = $('elegir-voz');
+    var caja = $('lista-voces');
+    if (!bloque || !caja) return;
+    var voces = Voz.hay() ? Voz.opciones() : [];
+    bloque.hidden = !voces.length || !Almacen.vozActiva();
+    if (bloque.hidden) return;
+
+    var elegida = Almacen.vozElegida();
+    if (elegida && !voces.some(function (v) { return v.id === elegida; })) elegida = null;
+    Util.vaciar(caja);
+
+    function opcion(id, icono, nombre, detalle) {
+      var b = botonOpcion(icono, nombre, detalle);
+      b.setAttribute('aria-pressed', (id || null) === elegida ? 'true' : 'false');
+      b.addEventListener('click', function () {
+        Almacen.setVozElegida(id);
+        marcarElegido(caja, b);
+        elegida = id;
+        Voz.decir(FRASE_DE_PRUEBA);
+      });
+      caja.appendChild(b);
+    }
+
+    var mejor = voces[0];
+    opcion(null, 'estrella', 'Automática', 'La más linda que haya: ahora, ' + mejor.nombre);
+    voces.forEach(function (v) {
+      var datos = [];
+      if (v.pais) datos.push(v.pais);
+      if (v.mujer === true) datos.push('mujer');
+      if (v.mujer === false) datos.push('varón');
+      if (v.natural) datos.push('natural');
+      if (v.conRed) datos.push('con internet');
+      opcion(v.id, 'voz', v.nombre, datos.join(' · '));
+    });
+  }
+  /* En Chrome las voces llegan un rato después de cargar la página: si
+     la lista se pintó antes, se vuelve a pintar cuando llegan. */
+  if (window.speechSynthesis && speechSynthesis.addEventListener) {
+    speechSynthesis.addEventListener('voiceschanged', function () {
+      if (pantallaActual === 'configuracion') pintarInterruptorVoz();
+    });
   }
 
   function guardarDatos() {
@@ -4498,6 +4549,7 @@
     $('ajuste-voz').addEventListener('click', function () {
       Almacen.setVoz(!Almacen.vozActiva());
       if (!Almacen.vozActiva()) Voz.parar();
+      pintarVoces();
       pintarInterruptorVoz();
       Sonido.despertar(); Sonido.tocar('clic');
     });
