@@ -379,7 +379,7 @@
         { donde: '#menu-aprender', titulo: 'Aprender',
           texto: 'Lecciones cortas con dibujos, leídas en voz alta, que terminan con un ejercicio.' },
         { donde: '#meta-hoy', titulo: 'La meta del día',
-          texto: 'Cuántas respuestas bien por día. Al cumplirla gana monedas; la elegís en Configuración.' },
+          texto: 'Cuántas respuestas correctas por día. Al cumplirla gana monedas; la elegís en Configuración.' },
         { donde: '#menu-configuracion', titulo: 'Configuración y panel para padres',
           texto: 'Sonido, voz y meta del día. Adentro está el panel para padres: estadísticas de todo, límites de tiempo y qué materias ve. Se protege con un PIN.' },
         { donde: '.quien-juega', titulo: '¿Tiene hermanos?',
@@ -398,7 +398,7 @@
       { donde: '#menu-aprender', titulo: 'Aprender',
         texto: 'Lecciones cortitas con dibujos. Te las leo en voz alta, y al final hay un ejercicio.' },
       { donde: '#meta-hoy', titulo: 'Tu meta de hoy',
-        texto: 'Cuántas respuestas bien te faltan hoy. ¡Cuando la cumplís, ganás monedas!' },
+        texto: 'Cuántas respuestas correctas te faltan hoy. ¡Cuando la cumplís, ganás monedas!' },
       { donde: '#portada-monedas', titulo: 'La tienda',
         texto: 'Con las monedas comprás disfraces para mí y colores para la app.' },
       { donde: '#menu-personalizacion', titulo: 'Personalizar',
@@ -912,8 +912,8 @@
     barra.setAttribute('aria-valuenow', String(Math.min(llevo, meta)));
     barra.querySelector('i').style.transform = 'scaleX(' + Math.min(1, llevo / meta) + ')';
     $('meta-hoy-texto').textContent = cumplida
-      ? Util.plural(llevo, 'respuesta bien', 'respuestas bien') + ' hoy. Mañana, otra.'
-      : llevo + ' de ' + meta + ' respuestas bien' +
+      ? Util.plural(llevo, 'respuesta correcta', 'respuestas correctas') + ' hoy. Mañana, otra.'
+      : llevo + ' de ' + meta + ' respuestas correctas' +
         (llevo ? '' : ' · ¡Jugá una partida!');
   }
 
@@ -955,9 +955,9 @@
   }
 
   var METAS = [
-    { n: 5, nombre: 'Un ratito', detalle: '5 respuestas bien' },
-    { n: 10, nombre: 'Una partida', detalle: '10 respuestas bien' },
-    { n: 20, nombre: 'Dos partidas', detalle: '20 respuestas bien' },
+    { n: 5, nombre: 'Un ratito', detalle: '5 respuestas correctas' },
+    { n: 10, nombre: 'Una partida', detalle: '10 respuestas correctas' },
+    { n: 20, nombre: 'Dos partidas', detalle: '20 respuestas correctas' },
     { n: 0, nombre: 'Sin meta', detalle: 'Jugar cuando quiera' }
   ];
 
@@ -1000,7 +1000,7 @@
     function pintarNumero() {
       propia.querySelector('.opcion-icono').textContent = String(personal);
       $('meta-personal-numero').textContent = String(personal);
-      $('meta-personal-texto').textContent = (personal === 1 ? 'respuesta bien' : 'respuestas bien') + ' por día';
+      $('meta-personal-texto').textContent = (personal === 1 ? 'respuesta correcta' : 'respuestas correctas') + ' por día';
       $('meta-menos').disabled = personal <= META_MINIMA;
       $('meta-mas').disabled = personal >= META_MAXIMA;
     }
@@ -1173,7 +1173,7 @@
       } else {
         titulo = reciente ? 'Seguís en los juegos de ' + pasoDelChico(materia) + ' años'
                           : 'Estás en los juegos de ' + pasoDelChico(materia) + ' años';
-        texto = 'Terminá una partida con todas bien en ' +
+        texto = 'Terminá una partida con todas correctas en ' +
                 (avance.faltan === 1 ? 'el juego que te falta' : 'los ' + avance.faltan + ' juegos que te faltan') +
                 ' y te avisamos que ya estás ' + listo() + ' para los de ' + siguiente + '.';
       }
@@ -1653,7 +1653,7 @@
     }
 
     var titulo, texto;
-    var bien = r.aciertos + ' de ' + r.total + ' bien.';
+    var bien = r.aciertos + ' de ' + r.total + (r.total === 1 ? ' correcta.' : ' correctas.');
     if (!u.paso) {
       // «¡Casi!» sólo si estuvo cerca: con 1 de 10 no es casi, y un chico se da cuenta
       titulo = r.total && r.aciertos / r.total >= 0.5 ? '¡Casi!' : '¡A practicar un poco más!';
@@ -2398,7 +2398,7 @@
       fila.appendChild(Util.crear('span', 'desbloqueo-icono', '🏅'));
       var cuerpo = Util.crear('div');
       cuerpo.appendChild(Util.crear('b', null, '¡Dominaste ' + enc.juego.nombre + '!'));
-      cuerpo.appendChild(Util.crear('div', 'ir-dato', 'Una partida con todas bien'));
+      cuerpo.appendChild(Util.crear('div', 'ir-dato', 'Una partida con todas correctas'));
       fila.appendChild(cuerpo);
       caja.appendChild(fila);
     });
@@ -2786,7 +2786,7 @@
     var stats = $('nota-stats');
     Util.vaciar(stats);
     [
-      [r.aciertos + '/' + r.total, 'respuestas bien'],
+      [r.aciertos + '/' + r.total, 'respuestas correctas'],
       [r.precision + '%', 'de aciertos'],
       [String(selExamen.juegos.length), 'juegos que entraron']
     ].forEach(function (par) {
@@ -3862,7 +3862,7 @@
     var segundos = dias.reduce(function (s, d) { return s + d.segundos; }, 0);
     cuadritos($('parental-stats'), [
       [jugados + '/' + n, 'días jugados'],
-      [bien, 'respuestas bien'],
+      [bien, 'respuestas correctas'],
       [total ? Math.round(aciertos / total * 100) + '%' : '—', 'de aciertos'],
       [tiempoCorto(segundos), 'jugando']
     ]);
@@ -3877,7 +3877,7 @@
     function largo(d) { return DIAS[d.fecha.getDay()] + ' ' + d.fecha.getDate() + '/' + (d.fecha.getMonth() + 1); }
     barras($('parental-semana'), dias.map(function (d, i) {
       return { nombre: nombre(d, i), largo: largo(d), valor: d.aciertos, cifra: String(d.aciertos), hoy: i === dias.length - 1 };
-    }), 'Respuestas bien por día');
+    }), 'Respuestas correctas por día');
     barras($('parental-minutos'), dias.map(function (d, i) {
       var min = Math.round(d.segundos / 60);
       return { nombre: nombre(d, i), largo: largo(d), valor: min, cifra: min + '′', hoy: i === dias.length - 1 };
@@ -3957,13 +3957,13 @@
     var texto;
     if (conDatos.length < 2) {
       texto = conDatos.length
-        ? 'Esta semana contesta bien el ' + conDatos[0].pct + '%. Con más semanas se va a ver cómo cambia.'
+        ? 'Esta semana, el ' + conDatos[0].pct + '% de sus respuestas son correctas. Con más semanas se va a ver cómo cambia.'
         : 'Todavía no hay semanas jugadas para comparar.';
     } else {
       var primera = conDatos[0].pct, ultima = conDatos[conDatos.length - 1].pct;
-      texto = ultima - primera >= 5 ? 'Viene mejorando: pasó de ' + primera + '% a ' + ultima + '% de respuestas bien.'
+      texto = ultima - primera >= 5 ? 'Viene mejorando: pasó de ' + primera + '% a ' + ultima + '% de respuestas correctas.'
         : primera - ultima >= 5 ? 'Bajó de ' + primera + '% a ' + ultima + '%. Puede ser que esté probando cosas más difíciles.'
-        : 'Se mantiene parejo, alrededor del ' + ultima + '% de respuestas bien.';
+        : 'Se mantiene parejo, alrededor del ' + ultima + '% de respuestas correctas.';
     }
     $('parental-tendencia').textContent = texto;
   }
@@ -4097,7 +4097,7 @@
         var datos = [];
         if (prog.estrellas) datos.push(prog.estrellas + '/' + prog.maximo + ' ★');
         datos.push(suyas.length ? Util.plural(suyas.length, 'partida') : 'nunca jugado');
-        if (preguntas) datos.push(Math.round(aciertos / preguntas * 100) + '% bien');
+        if (preguntas) datos.push(Math.round(aciertos / preguntas * 100) + '% correctas');
         if (segundos >= 60) datos.push(tiempoCorto(segundos));
         if (suyas.length) datos.push('última vez ' + haceCuanto(suyas[suyas.length - 1].fecha));
         fila.appendChild(Util.crear('span', 'ir-dato', datos.join(' · ')));
