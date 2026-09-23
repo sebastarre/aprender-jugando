@@ -116,6 +116,20 @@
 .ico-blando { fill: var(--ico-relleno); opacity: .32; stroke: none; }
 .ico-trazo  { fill: none; }
 
+/* La cajita sin clase donde js/nucleo/iconos.js mete un dibujo (el
+   <span data-ico="goma"> de los botones de la pizarra, el de la voz de
+   las lecciones…). Como caja de texto medía lo que un renglón, más
+   alta que el dibujo, y el dibujo quedaba apoyado arriba: 2px por
+   encima del centro del botón. Ahora mide justo lo que el dibujo. */
+span[data-ico]:not([class]) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+  vertical-align: middle;
+}
+span[data-ico]:not([class]) > .ico { vertical-align: 0; }
+
 * { box-sizing: border-box; }
 
 html, body {
@@ -931,9 +945,12 @@ body {
    es lo que lo haría ver mecánico. Con «reducir movimiento» puesto, el
    bloque de accesibilidad de más abajo los deja quietos.
    ------------------------------------------------------------ */
+/* Sube y baja alrededor del centro, no desde el centro para arriba:
+   si no, el dibujo pasaba la mitad del tiempo por encima y en promedio
+   se veía corrido hacia arriba dentro de su círculo. */
 @keyframes flotar {
-  0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(-3.5px); }
+  0%, 100% { transform: translateY(1.75px); }
+  50%      { transform: translateY(-1.75px); }
 }
 .card-icono .ico,
 .card-icono .card-dibujo,
@@ -3102,7 +3119,9 @@ body.rindiendo .vidas { display: none; }
 .btn-icono   { display: grid; place-items: center; }
 .btn-icono .ico { width: 22px; height: 22px; }
 
-.examen-icono { display: inline-flex; }
+/* grid y no inline-flex: con inline-flex el dibujo quedaba pegado a la
+   izquierda del círculo (10px corrido), porque nada lo centraba de costado */
+.examen-icono { display: grid; place-items: center; }
 .examen-icono .ico { width: 34px; height: 34px; stroke-width: 1.9; }
 .examen-flecha { display: inline-flex; }
 .examen-flecha .ico { width: 22px; height: 22px; }
