@@ -1090,9 +1090,9 @@ ningún código.
    ejemplo [Resend](https://resend.com), que tiene un plan gratis.
 5. **SQL Editor**: pegar y correr `herramientas/supabase.sql`. Es la función
    del botón «Borrar la cuenta».
-6. **Project Settings → API**: copiar la **Project URL** y la clave
-   **anon public** en `CONFIG` de `js/nucleo/cuenta.js`. La «anon» es pública a
-   propósito; **nunca** pongas la «service_role».
+6. **Project Settings → API Keys**: copiar la **Project URL** y la clave
+   **publishable** (`sb_publishable_…`) en `CONFIG` de `js/nucleo/cuenta.js`.
+   Es pública a propósito; **nunca** pongas la «secret» ni la «service_role».
 7. `node herramientas/generar-sw.js`, commit y push.
 
 Para borrar la cuenta de alguien que ya no tiene la app (la política de

@@ -30,12 +30,13 @@ window.Cuenta = (function () {
   'use strict';
 
   /* ---------------- lo que se configura ----------------
-     Los dos datos están en Supabase → Project Settings → API. La clave
-     es la «anon public»: es pública a propósito (va adentro de la app y
-     cualquiera la puede ver). NUNCA poner acá la «service_role». */
+     Los dos datos están en Supabase → Project Settings → API Keys. La
+     clave es la «publishable» (sb_publishable_…): es pública a propósito
+     (va adentro de la app y cualquiera la puede ver). NUNCA poner acá la
+     «secret» ni la «service_role». */
   var CONFIG = {
     url: 'https://zgxlpssbmvpqehcqvxsn.supabase.co',
-    clavePublica: ''     // la «anon public key»
+    clavePublica: 'sb_publishable_PDK4CNGHiDLYY6kQrZnDew_Sy5LXmuh'
   };
 
   var CLAVE = 'bichitoCurioso.sesion';
