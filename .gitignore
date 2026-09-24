@@ -9,3 +9,7 @@ herramientas/cache/
 Thumbs.db
 desktop.ini
 .DS_Store
+
+# La configuración de los servidores MCP del asistente (Supabase):
+# es para trabajar, no parte del sitio, y el repo se publica entero.
+.mcp.json
