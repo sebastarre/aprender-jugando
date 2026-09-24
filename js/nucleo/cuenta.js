@@ -34,7 +34,7 @@ window.Cuenta = (function () {
      es la «anon public»: es pública a propósito (va adentro de la app y
      cualquiera la puede ver). NUNCA poner acá la «service_role». */
   var CONFIG = {
-    url: '',             // por ejemplo 'https://abcdefghijkl.supabase.co'
+    url: 'https://zgxlpssbmvpqehcqvxsn.supabase.co',
     clavePublica: ''     // la «anon public key»
   };
 
