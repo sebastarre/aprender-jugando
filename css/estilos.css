@@ -5104,3 +5104,20 @@ body.jugando .marcador { display: none; }
 .boton-padres:hover { color: var(--tinta); border-color: var(--pista); transform: translateY(-1px); }
 .boton-padres:active { transform: translateY(3px); box-shadow: none; }
 .boton-padres .ico { width: 20px; height: 20px; }
+
+/* ============================================================
+   La cuenta: el mail y el código
+   ============================================================ */
+.campo-codigo {
+  font-size: 1.8rem;
+  font-weight: 800;
+  letter-spacing: .35em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.cuenta-otros { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 16px; margin-top: 10px; }
+.cuenta-otros .btn-texto:disabled { opacity: .55; cursor: default; }
+.cuenta-legal { margin: 14px 0 0; font-size: .88rem; color: var(--tinta-suave); text-align: center; line-height: 1.4; }
+.cuenta-legal a { color: var(--primario-osc); font-weight: 700; }
+.btn-gigante:disabled { opacity: .7; cursor: default; animation: none; }
+#caja-recuperar .campo-codigo { width: 100%; max-width: 260px; }

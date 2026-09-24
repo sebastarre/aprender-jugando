@@ -1040,6 +1040,65 @@ límites en `control` (`js/nucleo/almacen.js`).
 Todo se guarda en el navegador (`localStorage`), en el dispositivo: no viaja a
 ningún servidor.
 
+## La cuenta: entrar con el mail de un grande
+
+`js/nucleo/cuenta.js`. Antes de todo, una sola vez por aparato, un grande
+entra con **su mail**: le llega un **código de 6 números** y lo escribe en la
+app. No hay contraseña. Es **una cuenta para toda la familia**: todos los
+chicos del aparato van bajo ese mail. Los perfiles y el progreso **siguen
+guardados en el teléfono**, como siempre; en el servidor queda sólo el mail.
+
+La cuenta sirve para:
+
+- **Recuperar el PIN de los padres.** «Olvidé el PIN» manda un código al mail
+  de la cuenta; con el código bien escrito se borra el PIN y se elige uno
+  nuevo. Antes ese botón borraba el PIN sin pedir nada, así que cualquier chico
+  que lo tocara entraba al panel.
+- **Aceptar los términos**: la pantalla del mail dice que al seguir se aceptan
+  los términos y la política de privacidad, con los enlaces.
+
+En el panel para padres, «La cuenta» muestra el mail y tiene **«Cerrar
+sesión»** (los chicos quedan en el aparato; hay que volver a entrar) y **«Borrar
+la cuenta»** (borra el mail del servidor y todos los datos del aparato; Google
+Play exige que una app con cuentas lo permita desde adentro).
+
+La sesión se guarda en su propia clave (`bichitoCurioso.sesion`), aparte de los
+datos: nunca viaja en «Guardar una copia».
+
+### Mientras no esté configurada, está apagada
+
+Con `CONFIG.url` y `CONFIG.clavePublica` vacíos (en `js/nucleo/cuenta.js`) la
+app **no pide mail** y anda como antes. Es a propósito: publicar la pantalla
+del mail sin el servidor dejaría a todo el mundo trabado sin poder recibir
+ningún código.
+
+### Cómo ponerla en marcha (lo hace el dueño de la app)
+
+1. **Crear el proyecto** en [supabase.com](https://supabase.com) (gratis).
+   Elegí la región **São Paulo** (la más cerca de Argentina).
+2. **Authentication → Sign In / Providers → Email**: que esté prendido.
+3. **Authentication → Emails → Templates**: en **«Magic Link»** y en
+   **«Confirm signup»**, cambiar el texto para que mande el **código** y no un
+   link. Por ejemplo:
+   - Asunto: `Tu código de Bichito Curioso`
+   - Cuerpo: `<h2>Tu código es {{ .Token }}</h2><p>Escribilo en la app. Vence en una hora.</p><p>Si no lo pediste, ignorá este mail.</p>`
+
+   `{{ .Token }}` es el código de 6 números.
+4. **Mails de verdad**: el envío que trae Supabase de fábrica sirve para
+   probar, pero manda muy pocos mails por hora. Para lanzar hay que conectar
+   un servicio de envío en **Authentication → Emails → SMTP Settings**; por
+   ejemplo [Resend](https://resend.com), que tiene un plan gratis.
+5. **SQL Editor**: pegar y correr `herramientas/supabase.sql`. Es la función
+   del botón «Borrar la cuenta».
+6. **Project Settings → API**: copiar la **Project URL** y la clave
+   **anon public** en `CONFIG` de `js/nucleo/cuenta.js`. La «anon» es pública a
+   propósito; **nunca** pongas la «service_role».
+7. `node herramientas/generar-sw.js`, commit y push.
+
+Para borrar la cuenta de alguien que ya no tiene la app (la política de
+privacidad dice que se puede pedir por mail): Supabase → Authentication →
+Users → buscar el mail → Delete user.
+
 ## La bienvenida: ¿quién está usando la app?
 
 Lo primero que pregunta la app al armar un perfil es **quién está del otro
@@ -1155,13 +1214,17 @@ borrarlo ahí es borrarlo del todo.
      `herramientas/play/`, y capturas de pantalla del celular;
    - **Público objetivo**: menores de 13, lo que activa la política de
      familias. La app no tiene publicidad, ni estadísticas, ni pide permisos;
-   - **Seguridad de los datos**: «no se recopilan datos» y «no se comparten
-     datos», porque todo queda en el aparato;
+   - **Seguridad de los datos**: se recopila **la dirección de mail** (del
+     adulto), para **administrar la cuenta**; no se comparte, viaja cifrada y
+     se puede pedir que se borre (desde la app o por mail). Nada más: lo de
+     los chicos queda en el aparato;
    - el cuestionario de **clasificación del contenido**;
    - la URL de la **política de privacidad**: `…/privacidad.html`;
    - la **suscripción** `bichito_mensual`, con el precio de
      `CONFIG.precioDeReferencia` (`js/nucleo/suscripcion.js`).
-5. **Después de publicar**: poner el link de la ficha en
+5. **La cuenta con mail**: seguir «Cómo ponerla en marcha» de la sección «La
+   cuenta». Sin eso la app no pide mail.
+6. **Después de publicar**: poner el link de la ficha en
    `CONFIG.fichaDePlay` (`js/nucleo/suscripcion.js`), para que la web muestre
    «Descargar de Google Play».
 
@@ -1197,6 +1260,7 @@ js/
   nucleo/mezcla.js         Partidas con preguntas de varias materias mezcladas
   nucleo/pizarra.js        La pizarra de abajo de las respuestas, para hacer cuentas a mano
   nucleo/papelitos.js      Los papelitos de colores que caen al pasar un nivel
+  nucleo/cuenta.js         La cuenta de la familia: entrar con mail y código (Supabase)
   nucleo/tablero.js        Lo común a los juegos de tarjetas: la botonera, el
                            sorteo, y banco() para armar un juego de una lista
   nucleo/pwa.js            Registra el service worker y el cartel de "Instalar"

@@ -91,6 +91,50 @@
 
 
   <!-- ============ BIENVENIDA (primera vez) ============ -->
+  <!-- ============ LA CUENTA: entrar con el mail de un grande ============
+       Va antes que todo, una sola vez por aparato. Toda la familia usa el
+       mismo mail; sirve para recuperar el PIN de los padres. La maneja
+       js/nucleo/cuenta.js, y sólo aparece si Supabase está configurado. -->
+  <section class="pantalla pantalla-bienvenida" id="pantalla-cuenta" hidden>
+    <p class="bien-marca">
+      <span class="bien-marca-globo" aria-hidden="true">
+        <img src="assets/icono-192.png" alt="" width="28" height="28">
+      </span>
+      Bichito Curioso
+    </p>
+    <div class="tarjeta-bienvenida">
+      <div class="paso-bienvenida" id="cuenta-paso-mail">
+        <div class="bien-globo" data-mascota="hola"></div>
+        <h1 class="titulo-grande">¡Hola! Esto lo hace un grande</h1>
+        <p class="subtitulo">Entrá con tu mail. Es uno solo para toda la familia, y si un día te olvidás el PIN de los padres, te mandamos ahí un código para recuperarlo.</p>
+        <label class="etiqueta-campo" for="campo-mail">Tu mail</label>
+        <input class="campo-texto" id="campo-mail" type="email" inputmode="email"
+               autocomplete="email" autocapitalize="off" spellcheck="false" placeholder="nombre@gmail.com">
+        <p class="error-campo" id="error-mail" role="alert" hidden></p>
+        <button class="btn-gigante" id="btn-mandar-codigo" type="button">Mandame el código</button>
+        <p class="cuenta-legal">Al seguir aceptás los <a href="terminos.html" target="_blank" rel="noopener">términos</a>
+          y la <a href="privacidad.html" target="_blank" rel="noopener">política de privacidad</a>.
+          No mandamos publicidad ni compartimos tu mail.</p>
+      </div>
+
+      <div class="paso-bienvenida" id="cuenta-paso-codigo" hidden>
+        <div class="bien-globo" data-mascota="piensa"></div>
+        <h1 class="titulo-grande">Revisá tu mail</h1>
+        <p class="subtitulo" id="cuenta-codigo-texto">Te mandamos un código de 6 números.</p>
+        <label class="etiqueta-campo" for="campo-codigo">El código</label>
+        <input class="campo-texto campo-codigo" id="campo-codigo" type="text" inputmode="numeric"
+               autocomplete="one-time-code" maxlength="6" placeholder="123456">
+        <p class="error-campo" id="error-codigo" role="alert" hidden></p>
+        <button class="btn-gigante" id="btn-verificar-codigo" type="button">Entrar</button>
+        <div class="cuenta-otros">
+          <button class="btn-texto" id="btn-reenviar-codigo" type="button">Mandar otro código</button>
+          <button class="btn-texto" id="btn-cambiar-mail" type="button">Usar otro mail</button>
+        </div>
+        <p class="cuenta-legal">Si no aparece, fijate en «Spam» o «Promociones».</p>
+      </div>
+    </div>
+  </section>
+
   <section class="pantalla pantalla-bienvenida" id="pantalla-bienvenida" hidden>
     <p class="bien-marca">
       <span class="bien-marca-globo" aria-hidden="true">
@@ -101,8 +145,8 @@
     <div class="tarjeta-bienvenida">
       <!-- En qué paso va. El dibujo es decorativo; lo que se lee es la
            etiqueta, que el JavaScript va cambiando. -->
-      <!-- Los puntitos los arma el JavaScript: son cuatro pasos si
-           contesta un chico y cinco si contesta un grande. -->
+      <!-- Los puntitos los arma el JavaScript: son tres pasos si
+           contesta un chico y cuatro si contesta un grande. -->
       <div class="bien-pasos" id="bien-pasos" role="img" aria-label="Paso 1 de 4"></div>
 
       <!-- Primero, quién está del otro lado. No es lo mismo un chico de
@@ -794,6 +838,20 @@
       <button class="btn-texto" id="btn-olvide-pin" hidden>Olvidé el PIN</button>
     </div>
 
+    <!-- Recuperar el PIN: un código al mail de la cuenta. Sin él, un chico
+         que tocaba «Olvidé el PIN» entraba al panel de los grandes. -->
+    <div class="tarjeta-pin" id="caja-recuperar" hidden>
+      <p class="subtitulo" id="recuperar-texto">Te mandamos un código de 6 números al mail de la cuenta.</p>
+      <input class="campo-pin campo-codigo" id="campo-codigo-pin" type="text" inputmode="numeric"
+             maxlength="6" autocomplete="one-time-code" aria-label="Código de 6 números" placeholder="123456">
+      <p class="error-pin" id="error-codigo-pin" role="alert" hidden></p>
+      <button class="btn-gigante" id="btn-verificar-pin" type="button">Verificar</button>
+      <div class="cuenta-otros">
+        <button class="btn-texto" id="btn-reenviar-pin" type="button">Mandar otro código</button>
+        <button class="btn-texto" id="btn-cancelar-recuperar" type="button">Volver</button>
+      </div>
+    </div>
+
     <div id="caja-parental" hidden>
       <!-- de quién son los datos, si hay más de un chico en el aparato -->
       <div class="parental-chicos" id="parental-chicos" role="group" aria-label="De quién ver los datos"></div>
@@ -903,6 +961,16 @@
         <div class="acciones-perfil">
           <button class="btn-secundario" id="btn-cambiar-pin">Cambiar PIN</button>
           <button class="btn-secundario peligro" id="btn-borrar-progreso">Borrar el progreso de este jugador</button>
+        </div>
+
+        <!-- La cuenta de la familia. Sólo aparece si está prendida. -->
+        <div id="bloque-cuenta" hidden>
+          <h2 class="etiqueta-grupo">La cuenta</h2>
+          <p class="nota-ranura" id="cuenta-mail-texto"></p>
+          <div class="acciones-perfil">
+            <button class="btn-secundario" id="btn-cerrar-sesion" type="button">Cerrar sesión</button>
+            <button class="btn-secundario peligro" id="btn-borrar-cuenta" type="button">Borrar la cuenta</button>
+          </div>
         </div>
 
         <!-- Borrar datos personales: lo pide la política de privacidad.
@@ -1060,6 +1128,7 @@
 <script src="js/nucleo/iconos.js"></script>
 <script src="js/nucleo/mascota.js"></script>
 <script src="js/nucleo/almacen.js"></script>
+<script src="js/nucleo/cuenta.js"></script>
 <script src="js/nucleo/foto.js"></script>
 <script src="js/nucleo/sonido.js"></script>
 <script src="js/nucleo/voz.js"></script>

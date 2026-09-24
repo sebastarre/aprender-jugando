@@ -308,7 +308,7 @@
   var bienvenida = { quien: null, genero: null, nombre: '', edad: null, avatar: null, editando: null };
   var PANTALLAS = ['bienvenida', 'inicio', 'juegos', 'aprender', 'materia', 'lecciones', 'leccion',
                    'config', 'juego', 'fin', 'perfil', 'tienda', 'parental', 'descanso', 'plan',
-                   'camino', 'nivel-fin',
+                   'camino', 'nivel-fin', 'cuenta',
                    'examen', 'nota', 'configuracion', 'personalizacion'];
 
   function mostrar(nombre) {
@@ -323,9 +323,9 @@
     /* La única pantalla sin flecha de volver es el inicio, porque es el
        fondo de todo; la bienvenida tampoco, porque todavía no hay a
        dónde volver. */
-    $('btn-atras').hidden = (nombre === 'inicio' || nombre === 'bienvenida');
+    $('btn-atras').hidden = (nombre === 'inicio' || nombre === 'bienvenida' || nombre === 'cuenta');
     document.body.classList.toggle('jugando', nombre === 'juego');
-    document.body.classList.toggle('en-bienvenida', nombre === 'bienvenida');
+    document.body.classList.toggle('en-bienvenida', nombre === 'bienvenida' || nombre === 'cuenta');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -346,6 +346,7 @@
   /** Deja la app como recién instalada y vuelve a la bienvenida. */
   function borrarTodoYEmpezar() {
     Almacen.borrarTodo();
+    Cuenta.cerrarSesion();
     location.hash = '#/';
     location.reload();
   }
@@ -387,7 +388,7 @@
         { donde: '.quien-juega', titulo: '¿Tiene hermanos?',
           texto: 'Cada chico tiene su propio perfil. Se suman acá y se cambia de uno a otro tocando la carita.' },
         { donde: null, titulo: '¡Listo!',
-          texto: 'Todo se guarda en este aparato: no hay cuentas ni publicidad. Este recorrido queda en Configuración.' }
+          texto: 'Lo de los chicos se guarda en este aparato y no hay publicidad. Este recorrido queda en Configuración.' }
       ];
     }
     return [
@@ -3574,10 +3575,151 @@
       textoDeTiempo(Almacen.segundosDeHoy()) + '. Mañana seguimos.';
   }
 
+  /* ---------------------- la cuenta ----------------------
+
+     Entrar: el mail, después el código. El botón de «Mandar otro código»
+     espera un minuto entre pedido y pedido, que es lo que deja Supabase:
+     antes de eso contestaría con un error. */
+  var cuentaMail = '';
+  var esperaDelCodigo = 0;
+  var relojDelCodigo = null;
+
+  function pasoCuenta(cual) {
+    $('cuenta-paso-mail').hidden = cual !== 'mail';
+    $('cuenta-paso-codigo').hidden = cual !== 'codigo';
+    $('error-mail').hidden = true;
+    $('error-codigo').hidden = true;
+    if (cual === 'mail') {
+      setTimeout(function () { $('campo-mail').focus(); }, 120);
+    } else {
+      $('cuenta-codigo-texto').textContent =
+        'Te mandamos un código de 6 números a ' + Cuenta.mailTapado(cuentaMail) + '. Escribilo acá.';
+      $('campo-codigo').value = '';
+      setTimeout(function () { $('campo-codigo').focus(); }, 120);
+    }
+  }
+
+  function ocupado(boton, si, texto) {
+    boton.disabled = si;
+    if (texto) boton.textContent = texto;
+  }
+
+  /* El minuto de espera, en los dos botones de «Mandar otro código». */
+  function arrancarEspera() {
+    esperaDelCodigo = 60;
+    clearInterval(relojDelCodigo);
+    function pintar() {
+      ['btn-reenviar-codigo', 'btn-reenviar-pin'].forEach(function (id) {
+        var b = $(id);
+        b.disabled = esperaDelCodigo > 0;
+        b.textContent = esperaDelCodigo > 0
+          ? 'Mandar otro código (' + esperaDelCodigo + ')'
+          : 'Mandar otro código';
+      });
+    }
+    pintar();
+    relojDelCodigo = setInterval(function () {
+      esperaDelCodigo--;
+      pintar();
+      if (esperaDelCodigo <= 0) clearInterval(relojDelCodigo);
+    }, 1000);
+  }
+
+  function mandarCodigo() {
+    var mail = $('campo-mail').value.trim().toLowerCase();
+    var error = $('error-mail');
+    if (!Cuenta.mailValido(mail)) {
+      error.textContent = 'Escribí un mail completo, como nombre@gmail.com.';
+      error.hidden = false;
+      return;
+    }
+    var b = $('btn-mandar-codigo');
+    ocupado(b, true, 'Mandando…');
+    Sonido.despertar();
+    Cuenta.pedirCodigo(mail).then(function () {
+      cuentaMail = mail;
+      ocupado(b, false, 'Mandame el código');
+      arrancarEspera();
+      pasoCuenta('codigo');
+    }, function (e) {
+      ocupado(b, false, 'Mandame el código');
+      error.textContent = e.message;
+      error.hidden = false;
+    });
+  }
+
+  function verificarCodigo() {
+    var b = $('btn-verificar-codigo');
+    var error = $('error-codigo');
+    error.hidden = true;
+    ocupado(b, true, 'Revisando…');
+    Cuenta.verificarCodigo(cuentaMail, $('campo-codigo').value).then(function () {
+      ocupado(b, false, 'Entrar');
+      Sonido.tocar('record');
+      irA(Almacen.necesitaBienvenida() ? '#/bienvenida' : '#/');
+    }, function (e) {
+      ocupado(b, false, 'Entrar');
+      error.textContent = e.message;
+      error.hidden = false;
+      $('campo-codigo').select();
+    });
+  }
+
+  /* Recuperar el PIN: se manda un código al mail de la cuenta y, si el
+     que lo escribe acierta, el PIN se borra y se elige uno nuevo ahí
+     mismo. Sin la cuenta prendida queda lo de antes (borrar el PIN
+     preguntando nada más), que es lo único que se puede hacer sin
+     servidor. */
+  function empezarRecupero() {
+    var s = Cuenta.sesion();
+    $('caja-pin').hidden = true;
+    $('caja-recuperar').hidden = false;
+    $('error-codigo-pin').hidden = true;
+    $('campo-codigo-pin').value = '';
+    $('recuperar-texto').textContent = 'Te estamos mandando un código de 6 números a ' +
+      Cuenta.mailTapado(s.email) + '…';
+    Cuenta.pedirCodigo(s.email).then(function () {
+      $('recuperar-texto').textContent = 'Te mandamos un código de 6 números a ' +
+        Cuenta.mailTapado(s.email) + '. Escribilo para elegir un PIN nuevo.';
+      arrancarEspera();
+      $('campo-codigo-pin').focus();
+    }, function (e) {
+      $('recuperar-texto').textContent = 'No se pudo mandar el código.';
+      $('error-codigo-pin').textContent = e.message;
+      $('error-codigo-pin').hidden = false;
+    });
+  }
+
+  function verificarRecupero() {
+    var s = Cuenta.sesion();
+    var b = $('btn-verificar-pin');
+    var error = $('error-codigo-pin');
+    error.hidden = true;
+    ocupado(b, true, 'Revisando…');
+    Cuenta.verificarCodigo(s.email, $('campo-codigo-pin').value).then(function () {
+      ocupado(b, false, 'Verificar');
+      Almacen.setPin(null);
+      Sonido.tocar('acierto');
+      pintarParental();
+      $('texto-pin').textContent = '¡Listo! Ahora elegí un PIN nuevo de 4 números.';
+    }, function (e) {
+      ocupado(b, false, 'Verificar');
+      error.textContent = e.message;
+      error.hidden = false;
+    });
+  }
+
+  function pintarCuentaDelPanel() {
+    var s = Cuenta.sesion();
+    $('bloque-cuenta').hidden = !s;
+    if (s) $('cuenta-mail-texto').textContent = 'Entraron con ' + s.email + '. Es la misma para todos los chicos de este aparato.';
+  }
+
   /* ---------------------- modo parental ---------------------- */
   function pintarParental() {
     if (!activoAntesDelPanel && Almacen.activo()) activoAntesDelPanel = Almacen.activo().id;
     $('caja-parental').hidden = true;
+    $('caja-recuperar').hidden = true;
     $('caja-pin').hidden = false;
     $('error-pin').hidden = true;
     $('campo-pin').value = '';
@@ -3611,7 +3753,9 @@
 
   function abrirParental() {
     $('caja-pin').hidden = true;
+    $('caja-recuperar').hidden = true;
     $('caja-parental').hidden = false;
+    pintarCuentaDelPanel();
 
     var yo = Almacen.activo();
     var est = Almacen.estadisticas();
@@ -4284,6 +4428,17 @@
       activoAntesDelPanel = null;
     }
 
+    /* Con la cuenta prendida y nadie adentro, lo primero de todo es
+       entrar con el mail de un grande. Las páginas legales son aparte
+       (otros archivos), así que se pueden leer antes de aceptarlas. */
+    if (Cuenta.hayQueEntrar() && partes[0] !== 'cuenta') return irA('#/cuenta');
+    if (partes[0] === 'cuenta') {
+      if (!Cuenta.hayQueEntrar()) return irA('#/');
+      cortarPartida();
+      pasoCuenta('mail');
+      return mostrar('cuenta');
+    }
+
     // sin perfil o sin edad, lo primero es la bienvenida
     if (Almacen.necesitaBienvenida() && partes[0] !== 'bienvenida') {
       return irA('#/bienvenida');
@@ -4748,6 +4903,7 @@
       if (ev.key === 'Enter') intentarPin();
     });
     $('btn-olvide-pin').addEventListener('click', function () {
+      if (Cuenta.sesion()) return empezarRecupero();
       preguntar({
         titulo: '¿Empezamos de nuevo?',
         texto: 'Para poder entrar hay que borrar el PIN actual y crear uno nuevo.',
@@ -4757,6 +4913,60 @@
         pintarParental();
       });
     });
+    $('btn-verificar-pin').addEventListener('click', verificarRecupero);
+    $('campo-codigo-pin').addEventListener('keydown', function (ev) {
+      if (ev.key === 'Enter') verificarRecupero();
+    });
+    $('btn-reenviar-pin').addEventListener('click', empezarRecupero);
+    $('btn-cancelar-recuperar').addEventListener('click', pintarParental);
+
+    /* la cuenta */
+    $('btn-mandar-codigo').addEventListener('click', mandarCodigo);
+    $('campo-mail').addEventListener('keydown', function (ev) {
+      if (ev.key === 'Enter') mandarCodigo();
+    });
+    $('btn-verificar-codigo').addEventListener('click', verificarCodigo);
+    $('campo-codigo').addEventListener('keydown', function (ev) {
+      if (ev.key === 'Enter') verificarCodigo();
+    });
+    // pegar el código del mail: con los 6 números ya está, sin tocar Entrar
+    $('campo-codigo').addEventListener('input', function () {
+      var solo = this.value.replace(/\D/g, '').slice(0, 6);
+      if (solo !== this.value) this.value = solo;
+      if (solo.length === 6) verificarCodigo();
+    });
+    $('btn-reenviar-codigo').addEventListener('click', function () {
+      Cuenta.pedirCodigo(cuentaMail).then(arrancarEspera, function (e) {
+        $('error-codigo').textContent = e.message;
+        $('error-codigo').hidden = false;
+      });
+    });
+    $('btn-cambiar-mail').addEventListener('click', function () { pasoCuenta('mail'); });
+
+    $('btn-cerrar-sesion').addEventListener('click', function () {
+      preguntar({
+        titulo: '¿Cerrar sesión?',
+        texto: 'Los chicos y todo su progreso quedan en este aparato. Para volver a usar la app hay que entrar de nuevo con el mail.',
+        si: 'Sí, cerrar sesión'
+      }, function () {
+        Cuenta.cerrarSesion();
+        irA('#/cuenta');
+      });
+    });
+    $('btn-borrar-cuenta').addEventListener('click', function () {
+      var s = Cuenta.sesion();
+      preguntar({
+        titulo: '¿Borrar la cuenta?',
+        texto: 'Se borra la cuenta de ' + (s ? s.email : '') + ' y también todos los datos de la app en este aparato: ' +
+               'los chicos, su progreso y el PIN. Esto no se puede deshacer.',
+        si: 'Sí, borrar todo'
+      }, function () {
+        Cuenta.borrarCuenta().then(borrarTodoYEmpezar, function (e) {
+          preguntar({ titulo: 'No se pudo borrar la cuenta', texto: e.message, si: 'Entendido', soloAceptar: true });
+        });
+      });
+    });
+
     $('btn-cambiar-pin').addEventListener('click', function () {
       Almacen.setPin(null);
       pintarParental();
