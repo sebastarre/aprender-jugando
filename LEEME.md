@@ -1065,10 +1065,26 @@ Play exige que una app con cuentas lo permita desde adentro).
 La sesión se guarda en su propia clave (`bichitoCurioso.sesion`), aparte de los
 datos: nunca viaja en «Guardar una copia».
 
-### Mientras no esté configurada, está apagada
+### Por ahora está apagada
 
-Con `CONFIG.url` y `CONFIG.clavePublica` vacíos (en `js/nucleo/cuenta.js`) la
-app **no pide mail** y anda como antes. Es a propósito: publicar la pantalla
+**Hoy la cuenta está apagada** (`CONFIG.prendida: false` en
+`js/nucleo/cuenta.js`): la app **no pide mail** y anda como antes. El proyecto
+de Supabase ya existe y la dirección y la clave pública están cargadas, pero
+falta el servicio de envío de mails: el que trae Supabase de fábrica sólo le
+manda mails al dueño del proyecto, 2 por hora, y con un link en vez del código.
+Para prenderla: los pasos 3 y 4 de abajo (plantillas y SMTP) y después
+`prendida: true`.
+
+Mientras esté apagada, «Olvidé el PIN» hace lo de antes: borra el PIN
+preguntando nada más, porque sin servidor no hay a dónde mandar un código.
+
+Con `prendida: false`, o sin la dirección o la clave, la app **no pide mail**.
+
+Al prenderla hay que volver a poner en `privacidad.html` y `terminos.html` las
+partes de la cuenta (que el mail del adulto se guarda en Supabase, para qué se
+usa y cómo se borra). Se sacaron al apagarla y están en el historial de git:
+`git show a5f543d -- privacidad.html terminos.html`. Y en la ficha de Play,
+declarar el mail en «Seguridad de los datos». Es a propósito: publicar la pantalla
 del mail sin el servidor dejaría a todo el mundo trabado sin poder recibir
 ningún código.
 
@@ -1214,10 +1230,10 @@ borrarlo ahí es borrarlo del todo.
      `herramientas/play/`, y capturas de pantalla del celular;
    - **Público objetivo**: menores de 13, lo que activa la política de
      familias. La app no tiene publicidad, ni estadísticas, ni pide permisos;
-   - **Seguridad de los datos**: se recopila **la dirección de mail** (del
-     adulto), para **administrar la cuenta**; no se comparte, viaja cifrada y
-     se puede pedir que se borre (desde la app o por mail). Nada más: lo de
-     los chicos queda en el aparato;
+   - **Seguridad de los datos**: mientras la cuenta con mail esté apagada,
+     «no se recopilan datos» y «no se comparten datos», porque todo queda en
+     el aparato. Si se prende, hay que declarar **la dirección de mail** del
+     adulto, para **administrar la cuenta**;
    - el cuestionario de **clasificación del contenido**;
    - la URL de la **política de privacidad**: `…/privacidad.html`;
    - la **suscripción** `bichito_mensual`, con el precio de

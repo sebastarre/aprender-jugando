@@ -17,8 +17,8 @@
    (supabase.com): la app le habla directo a su servidor con fetch, sin
    librerías, así que no suma nada que bajar.
 
-   Mientras CONFIG esté vacío, la cuenta está APAGADA y la app anda como
-   antes, sin pedir mail. Es a propósito: publicar esto sin el servidor
+   Mientras CONFIG.prendida sea false (o falten la dirección o la clave),
+   la cuenta está APAGADA y la app anda como antes, sin pedir mail. Es a propósito: publicar esto sin el servidor
    configurado dejaría a todo el mundo afuera, trabado en una pantalla
    que no puede mandar ningún código.
 
@@ -35,13 +35,21 @@ window.Cuenta = (function () {
      (va adentro de la app y cualquiera la puede ver). NUNCA poner acá la
      «secret» ni la «service_role». */
   var CONFIG = {
+    /* APAGADA por ahora (septiembre de 2026). El proyecto de Supabase
+       está listo, pero todavía no tiene un servicio de envío de mails
+       propio (SMTP): con el que trae Supabase de fábrica, los mails sólo
+       le llegan al dueño del proyecto, 2 por hora, y con un link en vez
+       del código. Con la cuenta prendida así, nadie podía entrar a la app.
+       Para prenderla: conectar el SMTP, cambiar las plantillas de mail
+       (ver el LEEME, sección «La cuenta») y poner esto en true. */
+    prendida: false,
     url: 'https://zgxlpssbmvpqehcqvxsn.supabase.co',
     clavePublica: 'sb_publishable_PDK4CNGHiDLYY6kQrZnDew_Sy5LXmuh'
   };
 
   var CLAVE = 'bichitoCurioso.sesion';
 
-  function configurada() { return !!(CONFIG.url && CONFIG.clavePublica); }
+  function configurada() { return !!(CONFIG.prendida && CONFIG.url && CONFIG.clavePublica); }
 
   /* ---------------- la sesión guardada ---------------- */
   function leer() {
