@@ -6,9 +6,9 @@
 <style>
   html, body { margin: 0; padding: 0; background: transparent; overflow: hidden; }
   @font-face {
-    /* sin espacio en el nombre: dentro de un atributo de SVG, «Baloo 2»
-       sin comillas no es un nombre de fuente válido */
-    font-family: Baloo2;
+    /* el mismo nombre que en la app; en los atributos del SVG va entre
+       comillas simples, porque sin comillas «Baloo 2» no es un nombre válido */
+    font-family: 'Baloo 2';
     src: url('../assets/fuentes/baloo2.woff2') format('woff2');
     font-weight: 400 800;
   }
@@ -19,10 +19,10 @@
      para sacarle una captura; también se puede abrir a mano para verla.
 
      El ícono es la mascota —el gato disfrazado de león— asomándose por el
-     borde de abajo sobre el degradado azul y violeta de la app. Antes era un
-     globo terráqueo, que venía de cuando la app se llamaba «Aprender
-     Jugando» y era sólo de geografía: con el nombre nuevo, lo que tiene que
-     reconocer un chico en la pantalla del celular es al bichito.
+     borde de abajo, con un sol girasol atrás, sobre el cielo plano de la
+     portada: es la misma escena de la tarjeta del inicio, así que lo que el
+     chico toca en el celular y lo primero que ve adentro son lo mismo. Sin
+     degradados ni destellos, como el resto de la app (ver DESIGN.md).
 
      Parámetros:
        ?lado=192       el tamaño
@@ -57,52 +57,37 @@ function mascota(anchoCabeza, cx, cy) {
     '" width="' + (IMG.ancho * s).toFixed(1) + '" height="' + (IMG.alto * s).toFixed(1) + '"/>';
 }
 
-function destellos(lista, k) {
-  return lista.map(function (d) {
-    var x = d[0], y = d[1], r = d[2] * k;
-    return '<path d="M' + x + ' ' + (y - r) + ' Q' + x + ' ' + y + ' ' + (x + r) + ' ' + y +
-      ' Q' + x + ' ' + y + ' ' + x + ' ' + (y + r) + ' Q' + x + ' ' + y + ' ' + (x - r) + ' ' + y +
-      ' Q' + x + ' ' + y + ' ' + x + ' ' + (y - r) + 'Z" fill="#fde047"/>';
-  }).join('');
-}
+// los colores de la portada: el cielo y el sol (DESIGN.md, «cielo» y «girasol»)
+var CIELO = '#1E90E0', SOL = '#FFC93C';
 
 var partes = [
   '<svg width="' + SALIDA_ANCHO + '" height="' + SALIDA_ALTO + '" viewBox="0 0 ' + ANCHO + ' ' + ALTO +
     '" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">',
   '<defs>',
-    '<linearGradient id="fondo" x1="0" y1="0" x2="1" y2="1">',
-      '<stop offset="0" stop-color="#5b7cfa"/><stop offset="1" stop-color="#8b5cf6"/>',
-    '</linearGradient>',
-    '<radialGradient id="luz" cx="0.5" cy="0.45" r="0.5">',
-      '<stop offset="0" stop-color="#ffffff" stop-opacity=".55"/>',
-      '<stop offset="1" stop-color="#ffffff" stop-opacity="0"/>',
-    '</radialGradient>',
     '<clipPath id="recorte"><rect width="' + ANCHO + '" height="' + ALTO + '" rx="' + radio + '"/></clipPath>',
   '</defs>',
   '<g clip-path="url(#recorte)">',
-  '<rect width="' + ANCHO + '" height="' + ALTO + '" fill="url(#fondo)"/>'
+  '<rect width="' + ANCHO + '" height="' + ALTO + '" fill="' + CIELO + '"/>'
 ];
 
 if (COMPARTIR) {
   partes.push(
-    '<circle cx="300" cy="330" r="300" fill="url(#luz)"/>',
-    '<ellipse cx="300" cy="700" rx="420" ry="170" fill="#ffffff" opacity=".18"/>',
+    '<circle cx="300" cy="250" r="230" fill="' + SOL + '"/>',
     mascota(360, 300, 290),
-    destellos([[560, 120, 22], [110, 110, 16], [540, 470, 14]], 1),
-    '<text x="640" y="280" font-family="Baloo2, sans-serif" font-weight="800" font-size="104" fill="#ffffff">Bichito</text>',
-    '<text x="640" y="380" font-family="Baloo2, sans-serif" font-weight="800" font-size="104" fill="#fde047">Curioso</text>',
-    '<text x="644" y="450" font-family="Baloo2, sans-serif" font-weight="600" font-size="34" fill="#ffffff">Juegos y lecciones para chicos</text>',
-    '<text x="644" y="494" font-family="Baloo2, sans-serif" font-weight="600" font-size="34" fill="#ffffff" opacity=".9">de 4 a 12 años</text>'
+    '<text x="640" y="280" font-family="\'Baloo 2\', sans-serif" font-weight="800" font-size="104" fill="#ffffff">Bichito</text>',
+    '<text x="640" y="380" font-family="\'Baloo 2\', sans-serif" font-weight="800" font-size="104" fill="#ffffff">Curioso</text>',
+    '<text x="644" y="450" font-family="\'Baloo 2\', sans-serif" font-weight="600" font-size="34" fill="#ffffff">Juegos y lecciones para chicos</text>',
+    '<text x="644" y="494" font-family="\'Baloo 2\', sans-serif" font-weight="600" font-size="34" fill="#ffffff" opacity=".9">de 4 a 12 años</text>'
   );
 } else {
   /* La cabeza ocupa el 78% del ícono (menos en el maskable, que Android
      recorta en círculo) y el cuerpo se sale por abajo: se asoma. */
   var util = 1 - RELLENO;
-  var k = LADO / 512;
   partes.push(
-    '<circle cx="' + LADO / 2 + '" cy="' + LADO * 0.46 + '" r="' + LADO * 0.42 * util + '" fill="url(#luz)"/>',
-    mascota(LADO * 0.78 * util, LADO / 2, LADO * (0.5 - 0.06 * util)),
-    RELLENO ? '' : destellos([[LADO * 0.86, LADO * 0.16, 22], [LADO * 0.13, LADO * 0.2, 15]], k)
+    /* el sol asomado arriba a la derecha, atrás de la melena: la misma
+       escena de la tarjeta del inicio */
+    '<circle cx="' + LADO * (0.5 + 0.24 * util) + '" cy="' + LADO * (0.5 - 0.26 * util) + '" r="' + LADO * 0.3 * util + '" fill="' + SOL + '"/>',
+    mascota(LADO * 0.78 * util, LADO / 2, LADO * (0.5 - 0.06 * util))
   );
 }
 partes.push('</g></svg>');

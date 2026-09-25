@@ -15,7 +15,7 @@
     font-weight: 400 800;
     font-display: swap;
   }
-  :root { --tinta: #0f172a; --suave: #475569; --papel: #f3f7ff; --borde: #dde5f5; --azul: #1d4ed8; }
+  :root { --tinta: #27304A; --suave: #5B6478; --papel: #ffffff; --borde: #E3E8F0; --azul: #0F5796; }
   * { box-sizing: border-box; }
   body {
     margin: 0;
@@ -24,17 +24,18 @@
     font: 17px/1.6 'Baloo 2', 'Trebuchet MS', system-ui, sans-serif;
   }
   main { max-width: 720px; margin: 0 auto; padding: 24px 16px 60px; }
-  .marca { display: flex; align-items: center; gap: 12px; text-decoration: none; color: inherit; font-weight: 800; font-size: 1.2rem; }
-  .marca img { width: 48px; height: 48px; border-radius: 12px; }
-  h1 { font-size: clamp(1.8rem, 6vw, 2.4rem); line-height: 1.15; margin: 22px 0 4px; }
-  h2 { font-size: 1.3rem; margin: 30px 0 6px; }
+  .marca { display: flex; align-items: center; gap: 12px; text-decoration: none; color: inherit; font-weight: 800; font-size: 1.15rem; }
+  .marca img { width: 48px; height: 48px; }
+  h1 { font-size: clamp(1.7rem, 5vw, 2.3rem); line-height: 1.1; margin: 22px 0 4px; }
+  h2 { font-size: 1.25rem; line-height: 1.2; margin: 30px 0 6px; }
   .fecha { color: var(--suave); margin: 0 0 20px; }
   .resumen {
-    background: #fff; border: 2px solid var(--borde); border-radius: 18px;
-    padding: 14px 18px; box-shadow: 0 4px 0 #c9d6ee;
+    background: #fff; border: 2px solid var(--borde); border-radius: 22px;
+    padding: 14px 18px;
   }
   .resumen ul { margin: 6px 0 0; padding-left: 20px; }
-  a { color: var(--azul); }
+  a { color: var(--azul); text-underline-offset: .2em; text-decoration-thickness: 2px; }
+  ::selection { background: #DDEEFC; }
   li { margin: 4px 0; }
 </style>
 </head>

@@ -1167,8 +1167,13 @@ borrarlo ahí es borrarlo del todo.
 ### Lo que ya está listo
 
 - **Ícono nuevo** con la mascota (el globo terráqueo era del nombre viejo), en
-  todos los tamaños y en la cortina de arranque, la bienvenida y la pantalla
-  de la mensualidad. Se regenera con `node herramientas/generar-iconos.js`.
+  todos los tamaños y en la bienvenida y la pantalla de la mensualidad. Es la
+  escena de la tarjeta del inicio: la mascota sobre el cielo plano de la
+  portada, con el sol girasol asomado arriba a la derecha (sin degradados).
+  Se dibuja en `herramientas/icono.html` y se regenera con
+  `node herramientas/generar-iconos.js`, que también saca la tarjeta para
+  compartir y los gráficos de Play. Los que ya lo tienen en Google Play hay
+  que subirlos a mano en Play Console.
 - **Política de privacidad** (`privacidad.html`) y **términos y suscripción**
   (`terminos.html`), enlazados desde el panel para padres y desde la pantalla
   de la mensualidad. Van guardados en el celular como el resto de la app.

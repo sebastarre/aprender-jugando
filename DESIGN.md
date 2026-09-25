@@ -39,6 +39,11 @@ typography:
     fontWeight: 800
     lineHeight: 1.1
     letterSpacing: "-0.01em"
+  section:
+    fontFamily: "Baloo 2, Trebuchet MS, Segoe UI, system-ui, sans-serif"
+    fontSize: "1.25rem"
+    fontWeight: 800
+    lineHeight: 1.2
   title:
     fontFamily: "Baloo 2, Trebuchet MS, Segoe UI, system-ui, sans-serif"
     fontSize: "1.15rem"
@@ -146,6 +151,7 @@ Blanco y azul marino de base; el color vive en objetos chicos y saturados, y cad
 ### Secondary
 - **Los primarios de juguete** (coral, girasol, verde, lila, más el cielo): los de los dibujos, las materias y las puertas del inicio. Coral es Matemática y la puerta de Jugar; girasol, Lengua, las estrellas, las monedas y las metas; verde, Ciencias; lila, Inglés y la puerta de Aprender; cielo, Geografía. No los pisa ningún tema: una estrella es amarilla aunque el chico se compre todo en verde.
 - **Oro y fuego**: el trazo de las estrellas y las monedas (oro) y la llama de la racha (fuego).
+- **Los colores de los juegos**: cada juego trae un color propio, escrito en su módulo (js/juegos/*.js), con su versión suave. Pinta sólo lo de ese juego: su círculo en la lista, los niveles de su camino, su cartel y su recomendación. Es identidad del juego, no de la interfaz, igual que los colores que son la pregunta misma («¿de qué color es?», las figuras, el reloj). Todos dan 3:1 o más contra el blanco del dibujo que llevan encima.
 
 ### Tertiary
 - **Acertar y errar** (exito / exito-osc / exito-suave y error / error-osc / error-suave): sólo para respuestas, sellos y avisos. Nunca los usa otra cosa, así que un color de reposo no se lee como una respuesta ya contestada.
@@ -176,6 +182,7 @@ Blanco y azul marino de base; el color vive en objetos chicos y saturados, y cad
 ### Hierarchy
 - **Display** (800, clamp(2.3rem, 10vw, 3.2rem), 1): el nombre de la app en la cortina de arranque. Sólo ahí.
 - **Headline** (800, clamp(1.7rem, 5vw, 2.3rem), 1.1): el título de cada pantalla y la frase del próximo paso (que llega a 2,7rem en pantalla ancha).
+- **Section** (800, 1.25rem, 1.2): el título de una sección adentro de la pantalla («Para hoy», «Cómo vas en cada materia»), escrito como frase y del color del texto.
 - **Title** (800, 1.15rem, 1.15): el nombre de una materia, un juego, una lección o una puerta (1,4rem).
 - **Body** (400, 1.0625rem, 1.45): bajadas, explicaciones, el texto de una lección (máximo 62ch).
 - **Label** (800, 0.8rem, 0.03em, mayúsculas): sólo la banda de los recuadros de números de los resultados y del perfil.

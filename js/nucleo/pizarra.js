@@ -23,7 +23,7 @@ window.Pizarra = (function () {
   var actual = null;          // el trazo que se está haciendo
   var dedo = null;            // qué dedo o lápiz lo está haciendo
   var herramienta = 'lapiz';
-  var color = '#0f172a';
+  var color = '#27304A';
   var ancho = 0, alto = 0;
 
   function iniciar() {
