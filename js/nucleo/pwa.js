@@ -30,7 +30,17 @@
     var ahora = Date.now();
     if (!registro || ahora - ultimaBusqueda < ESPERA) return;
     ultimaBusqueda = ahora;
-    try { registro.update(); } catch (error) { /* sin conexión, será la próxima */ }
+    actualizar(registro);
+  }
+
+  /* update() devuelve una promesa que se rechaza sin conexión (que es un
+     uso normal de la app): el try no la atajaba y quedaba un error en la
+     consola cada vez que la app volvía a la pantalla. */
+  function actualizar(reg) {
+    try {
+      var promesa = reg.update();
+      if (promesa && promesa.catch) promesa.catch(function () { /* sin conexión, será la próxima */ });
+    } catch (error) { /* navegadores viejos: tampoco pasa nada */ }
   }
 
   /* Recargar en medio de una partida sería robarle la ronda al chico:
@@ -50,7 +60,7 @@
       navigator.serviceWorker.register('sw.js').then(function (reg) {
         registro = reg;
         ultimaBusqueda = Date.now();
-        reg.update();
+        actualizar(reg);
       }).catch(function () {
         /* sin service worker la app funciona, pero sólo con conexión */
       });

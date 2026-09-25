@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Los dibujos de Bichito Curioso</title>
+<!-- Muestrario de js/nucleo/dibujos.js: todos los dibujos, a dos tamaños,
+     sobre blanco y sobre color. Sirve para revisarlos al agregar uno. -->
+<style>
+  @font-face { font-family: 'Baloo 2'; src: url('../assets/fuentes/baloo2.woff2') format('woff2'); font-weight: 400 800; }
+  body { margin: 0; padding: 24px; font-family: 'Baloo 2', sans-serif; color: #27304A; background: #fff; }
+  h1 { margin: 0 0 16px; }
+  .grilla { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 16px; }
+  figure { margin: 0; padding: 12px; border: 2px solid #E5E9F0; border-radius: 20px; text-align: center; }
+  figure.color { background: #1673C4; color: #fff; border-color: #1673C4; }
+  figure svg { width: 110px; height: 110px; display: block; margin: 0 auto 6px; }
+  figure.chico svg { width: 56px; height: 56px; }
+  figcaption { font-weight: 700; }
+</style>
+</head>
+<body>
+<h1>Los dibujos</h1>
+<div class="grilla" id="grilla"></div>
+<script src="../js/nucleo/dibujos.js"></script>
+<script>
+  var nombres = ['geografia', 'matematica', 'lengua', 'ciencias', 'ingles', 'jugar', 'aprender',
+                 'repaso', 'meta', 'tienda', 'personalizar', 'ajustes', 'candado', 'nene', 'nena', 'adulto'];
+  var g = document.getElementById('grilla');
+  nombres.forEach(function (n, i) {
+    ['', 'color', 'chico'].forEach(function (clase) {
+      var f = document.createElement('figure');
+      if (clase) f.className = clase;
+      f.innerHTML = Dibujos.svg(n) + '<figcaption>' + n + '</figcaption>';
+      g.appendChild(f);
+    });
+  });
+</script>
+</body>
+</html>

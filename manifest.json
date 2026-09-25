@@ -9,8 +9,8 @@
   "id": "/aprender-jugando",
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#1d4ed8",
-  "theme_color": "#f3f7ff",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
   "categories": ["education", "games", "kids"],
   "prefer_related_applications": false,
   "shortcuts": [

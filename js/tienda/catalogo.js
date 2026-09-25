@@ -46,8 +46,11 @@ window.Catalogo = (function () {
       nombre: 'La portada',
       texto: 'El cartel grande del inicio, con tu mascota y tu nombre.',
       colores: [
-        { id: 'azul', nombre: 'Azul', precio: 0, muestra: '#1d4ed8',
-          vars: { 'barra': '#1d4ed8', 'barra-fuerte': '#1e3a8a', 'sobre-barra': '#ffffff', 'marca-acento': '#fcd34d' } },
+        /* El de fábrica es el cielo de los dibujos. La letra blanca
+           encima da 3,4:1, que alcanza porque todo lo que va escrito en la
+           portada es grande y gordo (1,2rem o más, en negrita). */
+        { id: 'azul', nombre: 'Cielo', precio: 0, muestra: '#1E90E0',
+          vars: { 'barra': '#1E90E0', 'barra-fuerte': '#1672B8', 'sobre-barra': '#ffffff', 'marca-acento': '#FFC93C' } },
         { id: 'frutilla', nombre: 'Frutilla', precio: 0, muestra: '#9d174d',
           vars: { 'barra': '#9d174d', 'barra-fuerte': '#6d132f', 'sobre-barra': '#ffffff', 'marca-acento': '#fbcfe8' } },
         { id: 'naranja', nombre: 'Naranja', precio: 0, muestra: '#9a3412',
@@ -90,10 +93,12 @@ window.Catalogo = (function () {
          en el escalón de cada tarjeta. Se nota más, no menos, porque
          ahora tiene contra qué recortarse. */
       colores: [
-        { id: 'azul', nombre: 'Cielo', precio: 0, muestra: '#dfeafe',
-          vars: { 'papel': '#f3f7ff', 'tarjeta': '#ffffff', 'borde': '#dde5f5',
-                  'sombra-clay': '#c9d6ee', 'pista': '#b6c8e8',
-                  'seleccion': '#dbe8ff', 'agua': '#a8cffa' } },
+        /* El de fábrica es blanco, como el de Pok Pok y Duolingo: el
+           color lo ponen los dibujos, las materias y la portada. */
+        { id: 'azul', nombre: 'Blanco', precio: 0, muestra: '#F4F7FB',
+          vars: { 'papel': '#ffffff', 'tarjeta': '#ffffff', 'borde': '#E3E8F0',
+                  'sombra-clay': '#CFD7E3', 'pista': '#C9D3E1',
+                  'seleccion': '#DDEEFC', 'agua': '#A8D8F5' } },
         { id: 'frutilla', nombre: 'Frutilla', precio: 0, muestra: '#ffe3f1',
           vars: { 'papel': '#fff5fa', 'tarjeta': '#ffffff', 'borde': '#f8dde9',
                   'sombra-clay': '#f2c6db', 'pista': '#eeb0cd',
@@ -129,9 +134,9 @@ window.Catalogo = (function () {
       nombre: 'Los botones',
       texto: 'El color de los botones grandes y de lo que está elegido.',
       colores: [
-        { id: 'azul', nombre: 'Azul', precio: 0, muestra: '#2563eb',
-          vars: { 'primario': '#2563eb', 'primario-osc': '#1d4ed8', 'sobre-primario': '#ffffff',
-                  'violeta': '#7c3aed', 'rosa': '#ec4899', 'rosa-osc': '#be185d' } },
+        { id: 'azul', nombre: 'Azul', precio: 0, muestra: '#1673C4',
+          vars: { 'primario': '#1673C4', 'primario-osc': '#0F5796', 'sobre-primario': '#ffffff',
+                  'violeta': '#7B5AE0', 'rosa': '#ec4899', 'rosa-osc': '#be185d' } },
         { id: 'frutilla', nombre: 'Frutilla', precio: 0, muestra: '#db2777',
           vars: { 'primario': '#db2777', 'primario-osc': '#9d174d', 'sobre-primario': '#ffffff',
                   'violeta': '#8b5cf6', 'rosa': '#f59e0b', 'rosa-osc': '#b45309' } },
@@ -159,8 +164,8 @@ window.Catalogo = (function () {
       nombre: 'Las letras',
       texto: 'El color del texto. Todos son oscuros, para que se lea.',
       colores: [
-        { id: 'azul', nombre: 'Tinta', precio: 0, muestra: '#0f172a',
-          vars: { 'tinta': '#0f172a', 'tinta-suave': '#475569' } },
+        { id: 'azul', nombre: 'Tinta', precio: 0, muestra: '#27304A',
+          vars: { 'tinta': '#27304A', 'tinta-suave': '#5B6478' } },
         { id: 'frutilla', nombre: 'Frutilla', precio: 0, muestra: '#4a0725',
           vars: { 'tinta': '#4a0725', 'tinta-suave': '#8a3d61' } },
         { id: 'naranja', nombre: 'Chocolate', precio: 0, muestra: '#431407',
@@ -200,17 +205,13 @@ window.Catalogo = (function () {
   /* Los fondos decorados: sólo cambian el dibujo de atrás. Si hay uno
      equipado, le gana al que trae el color del fondo. */
   /* El primero de la lista es el que se ve si el chico nunca eligió
-     ninguno. Era «Liso», y la app entera quedaba sobre un papel vacío:
-     media pantalla de celeste plano debajo de cada grilla. Ahora el de
-     siempre es «Colinas», un cielo que aclara hacia abajo, un sol y
-     dos lomas, y «Liso» sigue estando para el que lo prefiera.
-
-     Está hecho con los colores del fondo que el chico tenga puesto
-     (--papel, --seleccion, --pista), así que con el fondo Frutilla las
-     lomas salen rosas y con Selva, verdes. Las lomas quedan detrás de
-     las tarjetas, que son opacas, y el texto que cae directo sobre
-     ellas (el pie) sigue arriba de 5:1. */
+     ninguno: el liso, que con el rediseño es blanco, como las apps de la
+     vara. Las colinas (un cielo con sol, nubes y dos lomas, hecho con los
+     colores del fondo puesto) siguen siendo gratis para el que las
+     quiera. Los dibujos se pueden comprar aparte. */
   var FONDOS = [
+    { id: 'del-tema', nombre: 'Liso', icono: '🖼️', precio: 0,
+      texto: 'Sin dibujos: el color del fondo y nada más.', deco: null },
     { id: 'colinas', nombre: 'Colinas', icono: '⛰️', precio: 0,
       texto: 'Un cielo con sol y dos lomas.',
       deco: 'radial-gradient(circle at 88% 7%, rgba(253,224,71,.55) 0 34px, rgba(253,224,71,.18) 35px 62px, transparent 63px),' +
@@ -221,8 +222,6 @@ window.Catalogo = (function () {
             'radial-gradient(ellipse 75% 150px at 12% 100%, var(--pista) 0 98%, transparent 99%),' +
             'radial-gradient(ellipse 80% 190px at 92% 100%, var(--seleccion) 0 98%, transparent 99%),' +
             'linear-gradient(180deg, var(--seleccion) 0%, var(--papel) 48%)' },
-    { id: 'del-tema', nombre: 'Liso', icono: '🖼️', precio: 0,
-      texto: 'Sin dibujos: el color del fondo y nada más.', deco: null },
     { id: 'burbujas', nombre: 'Burbujas', icono: '🫧', precio: 100,
       texto: 'Pompas flotando.',
       deco: 'radial-gradient(9rem 9rem at 12% 18%, rgba(120,180,255,.30) 0%, transparent 70%),' +

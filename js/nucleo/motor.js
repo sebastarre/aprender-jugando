@@ -187,7 +187,8 @@ window.Motor = (function () {
        explicación. Sin esto, los intentos 2 y 3 eran sólo otra chance de
        tocar un botón, y con cuatro opciones se acertaba por descarte. */
     var pista = e.cfg.pista ? e.cfg.pista(item, e.intento, respuesta) : '';
-    if (pista) aviso((propio ? propio + ' ' : '') + '💡 ' + pista, 'pista');
+    // la lamparita la dibuja el cartel (.aviso.pista), no va escrita
+    if (pista) aviso((propio ? propio + ' ' : '') + pista, 'pista');
     else aviso((propio ? propio + ' ' : '¡Casi! ') + cola, 'mal');
 
     luego(function () { if (e) e.bloqueado = false; }, ESPERA_FALLO);

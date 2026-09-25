@@ -597,7 +597,7 @@ Cuando le pasaba eso a alguien, tocar comprar no hacía absolutamente nada y
 no había forma de darse cuenta de por qué. Lo mismo vale para borrar el
 progreso y para reponer el PIN en el modo parental.
 
-Con esas monedas se compran, en la **tienda** (el chip de arriba a la derecha,
+Con esas monedas se compran, en la **tienda** (las monedas de la barra del inicio,
 o el botón en Personalización): colores sueltos para cada parte de la app,
 disfraces para la mascota y fondos. **Todo es
 cosmético a propósito**: no se compran pistas, ni intentos, ni juegos.
@@ -611,8 +611,8 @@ Cada una de las cuatro ranuras pisa su propio grupo de variables, y por eso
 un solo color cambia varias cosas a la vez:
 
 - **La portada** — `--barra`, más `--barra-fuerte` (el escalón de abajo),
-  `--sobre-barra` (el texto que va encima) y `--marca-acento`. Es el cartel de
-  color del inicio, con la mascota, el nombre y las dos cuentas. Se sigue
+  `--sobre-barra` (el texto que va encima) y `--marca-acento` (el sol de atrás
+  de la mascota). Es la tarjeta del próximo paso del inicio. Se sigue
   llamando `--barra` porque antes pintaba la barra fija de arriba de todo, y la
   clave con la que se guarda la compra es ésa: renombrarla le borraría la
   compra a quien ya la tenga paga. Es el único bloque de color pleno que queda
@@ -640,61 +640,69 @@ contraste mínimo. El naranja es el ejemplo, con 4.67:1 en marrón oscuro contra
 
 ## Cómo se ve
 
-Tres decisiones sostienen el aspecto de la app. Las tres apuntan a lo mismo:
-que un chico la quiera abrir y que un padre la vea seria.
+El sistema entero —colores, letra, formas, componentes y reglas— está escrito
+en `DESIGN.md`. Lo corto:
+
+**Juguetes sobre papel blanco.** El fondo es blanco y liso, la letra es azul
+marino (#27304A) y el color lo ponen las cosas: el dibujo de cada materia, la
+tarjeta grande del inicio, el círculo de cada juego. Son cinco primarios planos
+de juguete —cielo, coral, girasol, verde y violeta—, sin degradados. Las varas
+las eligió el dueño: **Pok Pok** para los de 4 a 7 (calma, objetos dibujados,
+casi sin palabras) y **Duolingo** para los de 8 a 12 (botones con escalón,
+barras gordas, un próximo paso por pantalla).
+
+**Dos registros según la edad.** `pintarRegistro()` (js/app.js) le pone a
+`<html>` la clase `registro-chico` (menos de 8 años, o todavía sin perfil) o
+`registro-grande`. El de los chicos sube la letra base de 16 a 17px —y con ella
+todo lo que está en rem—, redondea más, hace más hondo el escalón, agranda los
+dibujos y saca las bajadas («5 materias», «12 juegos»). El de los grandes
+muestra esos datos y el nivel en el próximo paso («Seguí con «Contar», nivel 2
+de 15»). Va en `<html>` y no en `<body>` justamente por las medidas en rem.
+
+**Lo que se aprieta tiene escalón.** Un borde de 4px abajo (5px para los
+chicos), un tono más oscuro, que desaparece al apretar: el botón se hunde hasta
+apoyarse. Lo que no se aprieta —la tarjeta del próximo paso, las cabeceras de
+color, la pregunta, los globos— es plano. Así se sabe qué se toca sin probar.
+
+**Los dibujos son propios**, en `js/nucleo/dibujos.js`: trazo marino grueso,
+como la mascota, y rellenos planos, sin ids (se pueden repetir en la misma
+pantalla). Hay uno por materia y uno por cada lugar grande: jugar, aprender, la
+meta, el repaso, la tienda, los ajustes, el candado y las caritas de la
+bienvenida. Se ponen con `data-dibujo="geografia"` o con
+`Dibujos.poner(el, 'geografia')`, y `herramientas/dibujos.html` los muestra
+todos juntos para revisarlos al agregar uno. **Los íconos chicos** siguen en
+`js/nucleo/iconos.js` (grilla de 24, trazo redondeado, dos tonos). En la
+interfaz no hay emoji: los que quedan son contenido (las cosas que se cuentan
+en un juego, los disfraces de la tienda).
 
 **La tipografía es Baloo 2**, redonda y gordita, y está **embebida** en
 `assets/fuentes/` (32 KB, una sola fuente variable que cubre de 400 a 800).
 No se pide a Google a propósito: la app tiene que verse igual sin internet.
 Para actualizarla, `node herramientas/bajar-fuente.js`. Licencia OFL 1.1.
 
-**Las tarjetas van en fila**: el ícono grande a la izquierda y el texto al
-lado, con una línea corta debajo del título. Antes iba todo apilado —ícono,
-título, una oración entera, el récord— y cada tarjeta medía 200 píxeles: tres
-juegos llenaban la pantalla y las tres se veían iguales. Ahora miden 96 y lo
-primero que se ve de cada una es su dibujo, que es lo que un chico reconoce
-sin leer. Los textos son de tres o cuatro palabras: la explicación larga la
-sigue teniendo la pantalla de configurar la partida.
+**Una columna de teléfono**, también en la tableta y en la compu: 720px de
+ancho máximo (820 en las grillas de materias y en la tienda). El juego usa todo
+el ancho por el mapa.
 
-**Los íconos son propios**, dibujados en `js/nucleo/iconos.js`: grilla de 24,
-trazo redondeado y grueso, dos tonos, y el color lo toman del texto de al lado.
-Antes eran emoji, y el problema del emoji no es que sea feo: lo dibuja el
-sistema operativo, así que el mismo 🌎 sale distinto en Android, en iPhone y en
-Windows, no se le puede cambiar el color ni el grosor, y la app termina
-viéndose distinta en cada teléfono.
+### El inicio: un solo próximo paso
 
-Siguen siendo emoji los que son **contenido y no interfaz**: los avatares que
-elige el chico y los de la tienda. Ahí son personajes, no botones, y que los
-dibuje el celular está bien.
+Arriba, una barra como la de Duolingo: la carita del chico (lleva al perfil),
+la racha, las estrellas, las monedas —la única cuenta que se toca: lleva a la
+tienda— y el candado de los padres, a la derecha (en un celular angosto queda
+el candado solo).
 
-**El volumen es de plastilina** (lo que en diseño llaman *claymorphism*, y que
-es el estilo que corresponde a una app educativa infantil): bordes gruesos,
-esquinas de 24px y tres capas de sombra — el escaloncito de abajo, una sombra
-difusa que despega la tarjeta del fondo, y una luz interna arriba. Al apretar
-se hunde hasta apoyarse. Todo lo que se mueve usa la misma curva de rebote
-(`--rebote`), que es la que da sensación de juguete en vez de formulario.
+En el medio, lo que manda: la **tarjeta del próximo paso**, del color de la
+portada que el chico eligió en la tienda. La mascota está parada al lado del
+dibujo de la materia, con un sol atrás; el saludo lo dice ella en un globito
+(«¡Buenas tardes, Sebas!»), y al lado va la frase grande y su botón. La frase
+la arma `pasoDelInicio()`: el juego que venía jugando, en el nivel que le toca;
+si ese camino ya lo terminó, el que se le recomienda después; si nunca jugó, el
+más avanzado de su edad que todavía no terminó.
 
-### El color vive en las cosas, no sólo en los dibujitos
-
-Durante mucho tiempo todas las fichas de la app eran blancas y lo único de
-color era el círculo del dibujo. Bien hecho, pero de lejos una pantalla con
-doce juegos se leía como doce renglones iguales con un sticker pegado arriba:
-una app de trámites con buena tipografía.
-
-Ahora **cada ficha es del color de su juego**. El color sigue escribiéndose
-una sola vez por juego y de ahí salen los otros cuatro tonos, con
-`Util.aclarar` y `Util.oscurecer`: el relleno pastel, el filo, el escalón de
-abajo y el círculo pleno del dibujo. Un juego nuevo no tiene que traer una
-paleta, sigue trayendo un color.
-
-El círculo del dibujo lleva un **aro blanco**. Es lo que lo convierte en
-calcomanía: apoyado directamente sobre el pastel se leía como una mancha más
-oscura del mismo tono. El mismo aro llevan los nodos del mapa de niveles y la
-insignia del final.
-
-Los **dibujos respiran**: cada ícono sube y baja tres píxeles, cada uno con su
-tiempo, para que la pantalla no parezca una lista quieta. Con «reducir
-movimiento» puesto en el sistema, todo queda quieto.
+Abajo, **las dos puertas** (Jugar y Aprender), cada una con su dibujo sobre una
+mancha de color; **Para hoy** (la meta, el repaso y la prueba gratis, que se
+esconde entera si no hay ninguna de las tres); y chico lo que se usa menos: la
+mascota y los ajustes.
 
 ### Los carteles grandes van del tono vivo con la letra oscura
 
@@ -705,25 +713,22 @@ que Lengua abría con un cartel color barro y Contar con uno color ladrillo.
 
 Al revés funciona mejor: **el cartel va del tono más vivo y la letra va oscura
 encima**. Las cinco materias tienen su par medido a mano (`alegre` y `tinta` en
-`MATERIAS`, de 5,3:1 a 7,8:1). Los cincuenta y pico de juegos lo sacan solos
+`MATERIAS`, de 6,1:1 a 7,8:1). Los cincuenta y pico de juegos lo sacan solos
 con `Util.cartel(color)`, que prueba tonos del más saturado al más lavado y
-corta en el primero que llega a 4,6:1 contra su propia letra: cada color queda
-lo más vivo que su letra le permite. El degradado del cartel **aclara hacia
-arriba**, nunca hacia abajo, para que el punto más oscuro sea justo el tono
-contra el que se midió.
+corta en el primero que llega a 4,6:1 contra su propia letra. El cartel es
+plano y el dibujo va en un círculo blanco, para que no se pierda contra su
+propio color.
 
-### Las respuestas son cuatro botones de colores
+### Las respuestas
 
-Es lo que más mira un chico en toda la app: están en pantalla en cada pregunta
-de cada juego, y eran cuatro rectángulos blancos idénticos con un número
-adentro. Ahora cada una tiene su color y su escaloncito. Los cuatro tonos
-—azul, violeta, rosa y ámbar— están elegidos **lejos del verde y del rojo** a
-propósito: esos dos quedan reservados para «acertaste» y «erraste», así que un
-botón de color nunca se puede leer como una respuesta ya contestada.
-
-Cuando se contesta, además de pintarse, la respuesta trae un **sello**: tilde
-verde o cruz roja en la esquina. El color solo no alcanza para un chico que no
-distingue verde de rojo.
+Fichas blancas iguales, con la respuesta grande. Antes eran de cuatro colores
+distintos y la pantalla de juego era la más ruidosa de la app; ahora lo único
+de color es lo que pasó. Al contestar, la respuesta se pinta —relleno suave,
+filo y escalón verde o rojo— y lleva un **sello dibujado** en la esquina
+(tilde o cruz): el color solo no alcanza para un chico que no distingue verde
+de rojo. Debajo, una banda del mismo color dice qué pasó, con su dibujito
+adelante: tilde, cruz, una lamparita para la pista (crema, porque es ayuda y
+no reto) y un ojo para el «era ésta».
 
 ### Papelitos al pasar un nivel
 
@@ -738,59 +743,32 @@ dibuja ninguno.
 
 ### La mascota presenta las pantallas
 
-«¿A qué querés jugar?» y «¿Qué querés aprender?» abrían con un título centrado
-y una bajada gris, las dos flotando sobre el papel: el encabezado de una página
-web. Un chico de cinco no lee encabezados, mira si hay alguien.
+«¿A qué querés jugar?» y «¿Qué querés aprender?» abren con la mascota diciendo
+el título desde un **globo de historieta** (`.cartel-bichito`). Son el mismo
+`h1` y la misma bajada, así que el lector de pantalla lee lo de siempre, pero
+la pantalla empieza con un personaje y no con un encabezado. La mascota
+también saluda en el inicio, festeja al final de una partida y aparece al
+terminar una lección.
 
-Ahora el mismo texto lo dice la mascota desde un **globo de historieta**
-(`.cartel-bichito`). No se agregó ni una palabra —son el mismo `h1` y la misma
-bajada, así que el lector de pantalla lee lo de siempre— pero la pantalla pasa
-de empezar con un cartel a empezar con un personaje.
+### Lo que se mueve
 
-### Dibujo animado: fondo, letras y cosas que se mueven
+Poco y con sentido. La **cortina de arranque** —la mascota que aparece sobre
+su sol y el nombre armándose letra por letra— es el único momento de autor.
+Después, sólo lo que le responde al chico: el botón que se hunde, la respuesta
+acertada que salta y la errada que tiembla, el corazón que se apaga, las
+estrellas que salen al terminar, el nivel que se abre y el anillo que respira
+en el nivel que toca. Nada titila, flota ni respira por su cuenta. Con
+«reducir movimiento» puesto, todo queda quieto.
 
-**El fondo de siempre es «Colinas»**: un cielo que aclara hacia abajo, un sol,
-dos nubes y dos lomas, todo hecho con degradados de CSS (cero imágenes). Usa
-los colores del fondo que el chico tenga puesto, así que con Frutilla las
-lomas salen rosas. Es un fondo gratis más de la tienda, el primero de la
-lista: el que no eligió ninguno ve éste, y «Liso» sigue estando para el
-que lo prefiera.
+### Las pantallas de una materia
 
-**Las letras de los títulos llevan sombra dura** corrida para abajo, como
-las letras de los dibujos animados: parecen recortadas y pegadas. Los
-**íconos son más gordos** (trazo 2,4) y con el relleno más cargado, como
-dibujados con fibra. Las fichas y botones llevan un **contorno de 3px del
-color de la cosa** —el contorno de tinta de un dibujo, pero de color y no
-negro.
-
-**La mascota está parada adentro del botón Jugar** del inicio, asomándose
-por arriba: es lo primero que ve un chico al abrir la app, justo en el botón
-que tiene que tocar.
-
-**Lo que se mueve**, todo cortado con «reducir movimiento»:
-
-- cada pantalla entra con un saltito;
-- la respuesta acertada salta y la errada tiembla de costado (el «no» con la
-  cabeza);
-- los corazones laten y el que se pierde se sacude antes de apagarse;
-- en la portada la estrella titila, la llamita de la racha se mueve y por la
-  pastilla de las monedas pasa un reflejo;
-- los botones grandes respiran despacio, invitando a tocarlos;
-- al pasar el mouse por una ficha el dibujo se menea, y al apretarla se
-  aplasta un poquito;
-- la barra de avance de la partida es un tubo gordo que se llena con rebote.
-
-### La pantalla de juegos de una materia
-
-Arriba, una **cabecera del color de la materia** (el mismo relieve que la
-portada del inicio) con su dibujo, cuántos juegos tiene y un botón a sus
-lecciones, en el tono vivo con la letra oscura.
-
-Abajo, **un juego por fila**: dibujo, nombre, bajada y lo que lleva hecho
-(«2/5 niveles hechos», o «Empezá por el nivel 1»), con una flechita que dice
-que se toca. Antes era una grilla de fichas blancas iguales que dejaba un
-hueco con juegos impares y mostraba el récord como único dato. El cartel de
-edad sólo aparece si todavía quedan juegos de más grandes.
+Arriba, una **cabecera del color de la materia** con su dibujo, cuántos juegos
+tiene y un botón a sus lecciones. Abajo, **un juego por fila**: su círculo,
+nombre, bajada y lo que lleva hecho («2/5 niveles», o «15 niveles · empezá por
+el 1»), con una flechita que dice que se toca. Las lecciones van igual, con el
+dibujo de la materia en el título y sus pastillas (minutos, leída, toca
+repasarla) con su dibujito. El cartel de edad sólo aparece si todavía quedan
+juegos de más grandes.
 
 ## La mascota
 
@@ -872,10 +850,11 @@ tiene los cuatro colores de esa familia.
 
 ## La paleta de casa
 
-La paleta base es azul (#2563eb) + amarillo (#f59e0b) + rosa (#ec4899), con la
-portada en azul pleno (#1d4ed8) sobre un fondo casi blanco. Sale de una
-paleta de referencia para apps de aprendizaje infantil, y está elegida para que
-el texto llegue a 4.5:1 de contraste en todos lados.
+La de fábrica es la del rediseño (ver `DESIGN.md`): papel blanco, letra azul
+marino (#27304A), botones azules (#1673C4) y la portada en cielo (#1E90E0) con
+el sol girasol (#FFC93C) atrás de la mascota. Todos los pares de texto y fondo
+llegan a 4,5:1; el blanco sobre el cielo da 3,4:1 y por eso en la portada sólo
+va letra grande y gorda.
 
 Además de esa, hay otras dos paletas gratis que se eligen en
 **Personalización**: Recreo (rosa y violeta) y Mandarina (naranja y azul). Las
@@ -1262,11 +1241,14 @@ terminos.html              Los términos de uso y de la suscripción
 sw.js                      Service worker: guarda la app para usarla sin internet
                            (generado — ver herramientas/generar-sw.js)
 css/estilos.css            Estilos
+PRODUCT.md                 Para quién es la app y qué la distingue (lo lee el diseño)
+DESIGN.md                  El sistema de diseño: colores, letra, formas y reglas
 js/
   datos/paises.js          194 países: nombre, capital, continente, coordenadas
   datos/geografia.js       Contornos de los países para dibujar el mapa
   nucleo/util.js           Utilidades chicas (mezclar, crear elementos, etc.)
   nucleo/iconos.js         Los íconos de la app, dibujados en SVG
+  nucleo/dibujos.js        Los dibujos grandes: uno por materia y por lugar del inicio
   nucleo/mascota.js        La mascota: qué animal y qué disfraz están puestos
   nucleo/almacen.js        Perfiles, récords, historial y errores en localStorage
   nucleo/foto.js           Achica y recorta la foto que el chico elige de la galería
@@ -1297,6 +1279,7 @@ js/
   tutorial.js              El recorrido guiado con la mascota (se puede saltar)
 assets/banderas/           Una imagen por país (ar.png, br.png, ...)
 herramientas/              Scripts para regenerar los datos (no hacen falta para jugar)
+herramientas/dibujos.html  Muestrario de todos los dibujos, para revisarlos
 .claude/                   Servidor local opcional para desarrollo
 ```
 
@@ -1308,7 +1291,7 @@ pantalla se vuelve con la flecha, que es lo único que quedó de la barra.
 
 | Dirección | Qué muestra |
 |---|---|
-| `#/` | El menú de inicio: la portada y los cuatro destinos |
+| `#/` | El inicio: el próximo paso, las dos puertas y lo de hoy |
 | `#/aprender` · `#/juegos` | Las dos secciones |
 | `#/lecciones/matematica` | Las lecciones de una materia |
 | `#/leccion/sumar-llevando` | Una lección |

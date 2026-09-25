@@ -34,7 +34,7 @@ window.Temas = (function () {
     });
 
     // el fondo comprado le gana al que trae el color del fondo
-    // sin nada elegido va el primero de la lista (las colinas), no el liso
+    // sin nada elegido va el primero de la lista: el liso
     var fondo = Catalogo.fondo(Almacen.equipado('fondo') || Catalogo.FONDOS[0].id);
     var deco = (fondo && fondo.deco) || deDondeElDeco || null;
     if (deco) raiz.style.setProperty('--deco', deco);
@@ -49,7 +49,7 @@ window.Temas = (function () {
     var meta = document.querySelector('meta[name="theme-color"]');
     if (meta) {
       var fondo = puesto('fondo');
-      meta.setAttribute('content', (fondo && fondo.vars.papel) || '#f3f7ff');
+      meta.setAttribute('content', (fondo && fondo.vars.papel) || '#ffffff');
     }
   }
 

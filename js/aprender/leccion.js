@@ -116,7 +116,7 @@ window.Leccion = (function () {
 
     if (datos.truco) {
       var truco = Util.crear('div', 'paso-truco');
-      truco.appendChild(Util.crear('span', 'truco-icono', '💡'));
+      truco.appendChild(Iconos.crear('lamparita', 'truco-icono'));
       truco.appendChild(Util.crear('span', null, datos.truco));
       tarjeta.appendChild(truco);
     }
@@ -138,7 +138,7 @@ window.Leccion = (function () {
     Util.vaciar(caja);
 
     var tarjeta = Util.crear('div', 'paso-tarjeta paso-final paso-ejercicio');
-    tarjeta.appendChild(Util.crear('div', 'final-icono', '✏️'));
+    tarjeta.appendChild(Mascota.crear('hola', 'final-mascota'));
     tarjeta.appendChild(Util.crear('h2', 'paso-titulo', '¡Ahora te toca a vos!'));
     tarjeta.appendChild(Util.crear('p', 'paso-texto', ej.consigna));
     tarjeta.appendChild(Util.crear('p', 'ejercicio-regla',
@@ -213,7 +213,7 @@ window.Leccion = (function () {
     Util.vaciar(caja);
 
     var tarjeta = Util.crear('div', 'paso-tarjeta paso-final paso-reflexion');
-    tarjeta.appendChild(Util.crear('div', 'final-icono', '🤔'));
+    tarjeta.appendChild(Mascota.crear('piensa', 'final-mascota'));
     tarjeta.appendChild(Util.crear('h2', 'paso-titulo', '¿Por qué?'));
     tarjeta.appendChild(Util.crear('p', 'paso-texto reflexion-pregunta', ref.pregunta));
     tarjeta.appendChild(opcionesDe(ref.razones, function (i, elegida, opciones) {
@@ -225,7 +225,7 @@ window.Leccion = (function () {
 
       var respuesta = (bien ? '¡Eso! ' : 'No es por eso. ') + ref.porque;
       tarjeta.appendChild(cartelDeRespuesta({ bien: bien, texto: respuesta }));
-      if (ref.grande) tarjeta.appendChild(Util.crear('p', 'reflexion-grande', '🗣️ ' + ref.grande));
+      if (ref.grande) tarjeta.appendChild(Util.crear('p', 'reflexion-grande', ref.grande));
       tarjeta.appendChild(boton('btn-gigante', 'Ver cómo me fue', function () {
         resultado.reflexionada = true;
         pintar();
@@ -246,7 +246,7 @@ window.Leccion = (function () {
 
     var tarjeta = Util.crear('div', 'paso-tarjeta paso-final paso-resultado' +
                                     (r.aprobado ? ' aprobado' : ''));
-    tarjeta.appendChild(Util.crear('div', 'final-icono', r.aprobado ? '🎓' : '💪'));
+    tarjeta.appendChild(Mascota.crear('hola', 'final-mascota'));
     tarjeta.appendChild(Util.crear('h2', 'paso-titulo',
       r.aprobado ? '¡Completaste la lección!' : '¡Casi!'));
 
@@ -308,7 +308,7 @@ window.Leccion = (function () {
     Util.vaciar(caja);
 
     var tarjeta = Util.crear('div', 'paso-tarjeta paso-final');
-    tarjeta.appendChild(Util.crear('div', 'final-icono', '🎓'));
+    tarjeta.appendChild(Mascota.crear('hola', 'final-mascota'));
     tarjeta.appendChild(Util.crear('h2', 'paso-titulo', '¡Listo!'));
     tarjeta.appendChild(Util.crear('p', 'paso-texto',
       'Ya sabés ' + leccion.titulo.toLowerCase() + '. La mejor manera de que no se te olvide es usarlo.'));

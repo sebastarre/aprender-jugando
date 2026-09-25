@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es-AR">
+<html lang="es-AR" class="registro-chico">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -24,7 +24,7 @@
 
 <!-- App instalable (PWA): ícono propio, pantalla completa y sin internet -->
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#f3f7ff">
+<meta name="theme-color" content="#ffffff">
 <link rel="apple-touch-icon" href="assets/icono-apple-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -34,6 +34,14 @@
 <link rel="stylesheet" href="css/estilos.css">
 </head>
 <body>
+<!--
+THESIS: Bichito Curioso se para al lado de Pok Pok (4 a 7) y Duolingo (8 a 12): papel blanco, un solo próximo paso por pantalla, dibujos propios; rechaza la grilla de fichas pastel iguales.
+OWN-WORLD: blanco, tinta azul marino #27304A, primarios planos de juguete (cielo, coral, girasol, verde, violeta) sin degradés; dibujos de trazo marino grueso como la mascota; botones con escalón de 4px; Baloo 2.
+STORY: el chico ve quién es, qué sigue y lo toca; el grande encuentra el candado.
+FIRST VIEWPORT: barra con carita, cuentas y candado; tarjeta grande del color del chico con el bichito y «Seguí con Contar, nivel 4» y el botón Jugar; debajo, dos puertas ilustradas: Jugar y Aprender.
+FORM: el estándar del rubro, elegido por el dueño (Pok Pok para 4 a 7, Duolingo para 8 a 12); semilla f16ec689.
+FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
+-->
 
 
 <!-- ============ La cortina de arranque ============
@@ -159,16 +167,16 @@
         <p class="subtitulo">¿Quién está usando la app?</p>
         <div class="grilla-quien">
           <button class="boton-quien boton-quien-adulto" type="button" data-quien="adulto">
-            <span class="boton-quien-cara" aria-hidden="true">👨‍👩‍👧</span>
+            <span class="boton-quien-cara" data-dibujo="adulto"></span>
             <span class="boton-quien-texto"><b>Soy mamá, papá o un adulto</b>
               <small>Voy a armar el perfil de un chico o una chica</small></span>
           </button>
           <button class="boton-quien boton-quien-nene" type="button" data-quien="nene">
-            <span class="boton-quien-cara" aria-hidden="true">👦</span>
+            <span class="boton-quien-cara" data-dibujo="nene"></span>
             <span class="boton-quien-texto"><b>Soy un nene</b></span>
           </button>
           <button class="boton-quien boton-quien-nena" type="button" data-quien="nena">
-            <span class="boton-quien-cara" aria-hidden="true">👧</span>
+            <span class="boton-quien-cara" data-dibujo="nena"></span>
             <span class="boton-quien-texto"><b>Soy una nena</b></span>
           </button>
         </div>
@@ -193,11 +201,11 @@
         <p class="subtitulo">Sólo para hablarle bien: «¡Estás listo!» o «¡Estás lista!».</p>
         <div class="grilla-quien grilla-genero">
           <button class="boton-quien boton-quien-nene" type="button" data-genero="nene">
-            <span class="boton-quien-cara" aria-hidden="true">👦</span>
+            <span class="boton-quien-cara" data-dibujo="nene"></span>
             <span class="boton-quien-texto"><b>Nene</b></span>
           </button>
           <button class="boton-quien boton-quien-nena" type="button" data-genero="nena">
-            <span class="boton-quien-cara" aria-hidden="true">👧</span>
+            <span class="boton-quien-cara" data-dibujo="nena"></span>
             <span class="boton-quien-texto"><b>Nena</b></span>
           </button>
           <button class="boton-quien boton-quien-nada" type="button" data-genero="">
@@ -224,119 +232,115 @@
        personalización, la configuración) vivía escondido en un menú
        desplegable del ícono de arriba a la derecha. -->
   <section class="pantalla" id="pantalla-inicio" hidden>
-    <!-- La puerta de los grandes. Arriba a la derecha, que es donde las
-         apps para chicos ponen el rincón de los padres (la izquierda es
-         de la flecha de volver en todas las otras pantallas), y chiquita
-         y sin color: tiene que encontrarla un grande que la busca, no
-         llamarle la atención a un chico. Adentro pide el PIN. -->
-    <div class="inicio-arriba">
-      <a class="boton-padres" id="boton-padres" href="#/parental" aria-label="Modo parental, para padres">
-        <span data-ico="candado" aria-hidden="true"></span>
-        <span>Padres</span>
+    <!-- La barra de arriba, como la de Duolingo: quién sos a la izquierda,
+         lo que juntaste en el medio y el candado de los grandes a la
+         derecha. La carita lleva al perfil (ahí se pone la foto) y las
+         monedas a la tienda, que es lo que uno espera al tocarlas. -->
+    <header class="barra-inicio">
+      <a class="yo" id="yo" href="#/perfil" aria-label="Tu perfil">
+        <span class="yo-cara" id="yo-cara"></span>
       </a>
-    </div>
-    <!-- El cartel de color del inicio. Es lo que pinta la ranura de la
-         tienda que antes pintaba la barra de arriba: ahora que la barra
-         no está, la paleta se luce acá. Son dos enlaces distintos, no
-         uno: el nombre lleva al perfil y las monedas a la tienda, que
-         es lo que uno espera al tocar un contador de monedas. -->
-    <div class="portada">
-      <!-- La ficha son dos cosas que se tocan y van juntas: la foto,
-           que abre la galería, y el resto, que lleva al perfil. Por eso
-           el botón no está adentro del enlace: un botón adentro de un
-           enlace no se puede tocar en serio en ningún navegador. -->
-      <div class="portada-quien">
-        <button class="portada-foto" id="btn-foto" type="button">
-          <span class="portada-silueta" id="portada-silueta" data-ico="silueta" aria-hidden="true"></span>
-          <span class="portada-camara" data-ico="camara" aria-hidden="true"></span>
-        </button>
-        <a class="portada-yo" href="#/perfil">
-          <span class="portada-datos">
-            <span class="portada-hola" id="inicio-saludo">¡Hola!</span>
-            <span class="portada-linea">
-              <strong class="portada-nombre" id="inicio-nombre">Jugador</strong>
-              <span class="portada-edad" id="inicio-edad" hidden></span>
-            </span>
-          </span>
-          <!-- La flechita es lo que dice que esto se toca. Sin ella el
-               cartel entero se leía como un encabezado pintado. -->
-          <span class="portada-entrar" data-ico="derecha" aria-hidden="true"></span>
-        </a>
-      </div>
-      <div class="portada-cuentas">
-        <span class="portada-cuenta portada-racha" id="portada-racha" hidden></span>
-        <span class="portada-cuenta portada-estrellas" id="portada-estrellas"></span>
-        <a class="portada-cuenta portada-monedas" href="#/tienda"
+      <div class="cuentas" role="group" aria-label="Lo que juntaste">
+        <span class="cuenta cuenta-racha" id="portada-racha" hidden></span>
+        <span class="cuenta cuenta-estrellas" id="portada-estrellas"></span>
+        <a class="cuenta cuenta-monedas" href="#/tienda"
            aria-label="Tus monedas · ir a la tienda" id="portada-monedas"></a>
       </div>
-    </div>
+      <!-- La puerta de los grandes: chiquita y sin color, para que la
+           encuentre un grande que la busca sin llamarle la atención a un
+           chico. Adentro pide el PIN. -->
+      <a class="boton-padres" id="boton-padres" href="#/parental" aria-label="Modo parental, para padres">
+        <span data-ico="candado" aria-hidden="true"></span>
+        <span class="boton-padres-texto">Padres</span>
+      </a>
+    </header>
 
-    <nav class="menu-inicio" aria-label="Menú principal">
-      <a class="boton-menu" id="menu-jugar" href="#/juegos">
-        <span class="boton-menu-icono" data-ico="jugar" aria-hidden="true"></span>
-        <span class="boton-menu-texto">
-          <b>Jugar</b>
-          <small id="menu-jugar-detalle">Practicá lo que aprendiste</small>
-        </span>
-        <!-- La mascota parada adentro del botón de jugar, asomándose por
-             arriba: es la invitación. Decorativa, el botón ya dice Jugar. -->
-        <span class="boton-menu-bichito" data-mascota="hola" aria-hidden="true"></span>
+    <!-- El próximo paso. Una sola cosa manda en el inicio: qué seguir
+         jugando, con un botón que lo empieza de un toque. Va del color que
+         el chico eligió para su portada en la tienda. El saludo lo dice la
+         mascota, en un globito. -->
+    <section class="seguir" id="seguir" aria-labelledby="seguir-que">
+      <div class="seguir-cuerpo">
+        <p class="seguir-titulo" id="seguir-titulo">¡Hola!</p>
+        <h1 class="seguir-que" id="seguir-que">¿Jugamos?</h1>
+        <a class="seguir-boton" id="seguir-boton" href="#/juegos">
+          <span data-ico="empezar" aria-hidden="true"></span>
+          <span id="seguir-boton-texto">Jugar</span>
+        </a>
+      </div>
+      <div class="seguir-escena" aria-hidden="true">
+        <span class="seguir-sol"></span>
+        <span class="seguir-materia" id="seguir-materia"></span>
+        <div class="seguir-bichito" data-mascota="hola"></div>
+      </div>
+    </section>
+
+    <!-- Las dos puertas grandes: jugar y aprender. Cada una con su dibujo,
+         que es lo que reconoce un chico que todavía no lee. -->
+    <nav class="puertas" aria-label="Menú principal">
+      <a class="puerta" id="menu-jugar" href="#/juegos">
+        <span class="puerta-dibujo" data-dibujo="jugar"></span>
+        <b class="puerta-nombre">Jugar</b>
+        <small class="puerta-dato" id="menu-jugar-detalle">Juegos para practicar</small>
       </a>
-      <a class="boton-menu" id="menu-aprender" href="#/aprender">
-        <span class="boton-menu-icono" data-ico="aprender" aria-hidden="true"></span>
-        <span class="boton-menu-texto">
-          <b>Aprender</b>
-          <small id="menu-aprender-detalle">Cursitos cortos con dibujos</small>
-        </span>
-      </a>
-      <a class="boton-menu" id="menu-personalizacion" href="#/personalizacion">
-        <span class="boton-menu-icono" data-ico="personalizacion" aria-hidden="true"></span>
-        <span class="boton-menu-texto">
-          <b>Personalizar</b>
-          <small>Tu mascota y los colores</small>
-        </span>
-      </a>
-      <a class="boton-menu" id="menu-configuracion" href="#/configuracion">
-        <span class="boton-menu-icono" data-ico="configuracion" aria-hidden="true"></span>
-        <span class="boton-menu-texto">
-          <b>Configuración</b>
-          <small>Sonido, tus datos y quién juega</small>
-        </span>
+      <a class="puerta" id="menu-aprender" href="#/aprender">
+        <span class="puerta-dibujo" data-dibujo="aprender"></span>
+        <b class="puerta-nombre">Aprender</b>
+        <small class="puerta-dato" id="menu-aprender-detalle">Lecciones con dibujos</small>
       </a>
     </nav>
 
-    <!-- La meta de hoy: cuántas respuestas bien lleva, contra las que pide.
-         No hay reto si no la cumple ni cartel de «perdiste la racha»: es
-         para saber si ya jugó hoy, no para que la app lo haga sentir mal. -->
-    <!-- Repasar hoy: lo que le costó y lo que ya sabía y le toca volver a
-         ver (repaso espaciado: 1, 3, 7 y 14 días). Sólo aparece si hay algo. -->
-    <a class="meta-hoy repaso-hoy" id="repaso-hoy" href="#/repasando" hidden>
-      <span class="meta-hoy-icono" data-ico="repaso" aria-hidden="true"></span>
-      <span class="meta-hoy-cuerpo">
-        <b class="meta-hoy-titulo">Repasar hoy</b>
-        <span class="meta-hoy-texto" id="repaso-hoy-texto"></span>
-      </span>
-    </a>
+    <!-- Lo de hoy: la meta, el repaso y la prueba gratis. La sección
+         entera se esconde si no hay ninguna de las tres. -->
+    <section class="hoy" id="hoy" aria-labelledby="titulo-hoy">
+      <h2 class="etiqueta-grupo" id="titulo-hoy">Para hoy</h2>
+      <!-- La meta de hoy: cuántas respuestas bien lleva, contra las que pide.
+           No hay reto si no la cumple ni cartel de «perdiste la racha»: es
+           para saber si ya jugó hoy, no para que la app lo haga sentir mal. -->
+      <!-- Repasar hoy: lo que le costó y lo que ya sabía y le toca volver a
+           ver (repaso espaciado: 1, 3, 7 y 14 días). Sólo aparece si hay algo. -->
+      <a class="meta-hoy repaso-hoy" id="repaso-hoy" href="#/repasando" hidden>
+        <span class="meta-hoy-dibujo" data-dibujo="repaso"></span>
+        <span class="meta-hoy-cuerpo">
+          <b class="meta-hoy-titulo">Repasar hoy</b>
+          <span class="meta-hoy-texto" id="repaso-hoy-texto"></span>
+        </span>
+      </a>
 
-    <!-- La prueba gratis: cuántos días quedan, o que ya terminó. Sólo
-         aparece donde se cobra (la app de Google Play) y sin plan pago. -->
-    <a class="meta-hoy plan-hoy" id="plan-hoy" href="#/plan" hidden>
-      <span class="meta-hoy-icono" data-ico="estrella" aria-hidden="true"></span>
-      <span class="meta-hoy-cuerpo">
-        <b class="meta-hoy-titulo" id="plan-hoy-titulo">Prueba gratis</b>
-        <span class="meta-hoy-texto" id="plan-hoy-texto"></span>
-      </span>
-    </a>
+      <!-- La prueba gratis: cuántos días quedan, o que ya terminó. Sólo
+           aparece donde se cobra (la app de Google Play) y sin plan pago. -->
+      <a class="meta-hoy plan-hoy" id="plan-hoy" href="#/plan" hidden>
+        <span class="meta-hoy-dibujo" data-dibujo="tienda"></span>
+        <span class="meta-hoy-cuerpo">
+          <b class="meta-hoy-titulo" id="plan-hoy-titulo">Prueba gratis</b>
+          <span class="meta-hoy-texto" id="plan-hoy-texto"></span>
+        </span>
+      </a>
 
-    <a class="meta-hoy" id="meta-hoy" href="#/juegos" hidden>
-      <span class="meta-hoy-icono" data-ico="trofeo" aria-hidden="true"></span>
-      <span class="meta-hoy-cuerpo">
-        <b class="meta-hoy-titulo" id="meta-hoy-titulo">Meta de hoy</b>
-        <span class="nivel-barra meta-hoy-barra" id="meta-hoy-barra" role="progressbar"
-              aria-valuemin="0"><i></i></span>
-        <span class="meta-hoy-texto" id="meta-hoy-texto"></span>
-      </span>
-    </a>
+      <a class="meta-hoy" id="meta-hoy" href="#/juegos" hidden>
+        <span class="meta-hoy-dibujo" data-dibujo="meta"></span>
+        <span class="meta-hoy-cuerpo">
+          <b class="meta-hoy-titulo" id="meta-hoy-titulo">Meta de hoy</b>
+          <span class="nivel-barra meta-hoy-barra" id="meta-hoy-barra" role="progressbar"
+                aria-valuemin="0"><i></i></span>
+          <span class="meta-hoy-texto" id="meta-hoy-texto"></span>
+        </span>
+      </a>
+
+    </section>
+
+    <!-- Lo que se usa menos va chico: personalizar a la mascota y los
+         ajustes. -->
+    <nav class="atajos" aria-label="Más cosas">
+      <a class="atajo" id="menu-personalizacion" href="#/personalizacion">
+        <span class="atajo-dibujo" data-dibujo="personalizar"></span>
+        <span>Mi bichito</span>
+      </a>
+      <a class="atajo" id="menu-configuracion" href="#/configuracion">
+        <span class="atajo-dibujo" data-dibujo="ajustes"></span>
+        <span>Ajustes</span>
+      </a>
+    </nav>
 
     <!-- Quién juega: una carita por chico y un botón para sumar otro.
          Antes esto vivía en Configuración, que es el último lugar donde
@@ -371,28 +375,30 @@
       </div>
     </div>
 
-
-
-    <!-- Aparece sólo cuando hay errores juntados como para armar una ronda. -->
-    <button class="tarjeta-examen tarjeta-repaso" id="btn-repaso" type="button" hidden>
-      <span class="examen-icono" data-ico="repaso" aria-hidden="true"></span>
-      <span class="examen-cuerpo">
-        <b>Repasar hoy</b>
-        <span id="repaso-detalle">Las preguntas que te costaron</span>
-      </span>
-      <span class="examen-flecha" data-ico="flecha" aria-hidden="true"></span>
-    </button>
-
-    <button class="tarjeta-examen" id="btn-examen" type="button" hidden>
-      <span class="examen-icono" data-ico="examen" aria-hidden="true"></span>
-      <span class="examen-cuerpo">
-        <b>Rendir un examen</b>
-        <span>Un intento por pregunta y una nota al final</span>
-      </span>
-      <span class="examen-flecha" data-ico="flecha" aria-hidden="true"></span>
-    </button>
-
     <div class="grilla-cards" id="grilla-materias"></div>
+
+    <!-- El repaso y el examen van después de las materias: lo primero que
+         busca un chico es a qué jugar. El repaso aparece sólo cuando hay
+         errores juntados como para armar una ronda. -->
+    <div class="mas-formas">
+      <button class="tarjeta-examen tarjeta-repaso" id="btn-repaso" type="button" hidden>
+        <span class="examen-icono" data-ico="repaso" aria-hidden="true"></span>
+        <span class="examen-cuerpo">
+          <b>Repasar hoy</b>
+          <span id="repaso-detalle">Las preguntas que te costaron</span>
+        </span>
+        <span class="examen-flecha" data-ico="flecha" aria-hidden="true"></span>
+      </button>
+
+      <button class="tarjeta-examen" id="btn-examen" type="button" hidden>
+        <span class="examen-icono" data-ico="examen" aria-hidden="true"></span>
+        <span class="examen-cuerpo">
+          <b>Rendir un examen</b>
+          <span>Un intento por pregunta y una nota al final</span>
+        </span>
+        <span class="examen-flecha" data-ico="flecha" aria-hidden="true"></span>
+      </button>
+    </div>
   </section>
 
   <!-- ============ APRENDER: materias ============ -->
@@ -428,7 +434,7 @@
   <section class="pantalla" id="pantalla-lecciones" hidden>
     <h1 class="titulo-grande" id="titulo-lecciones"></h1>
     <p class="subtitulo" id="subtitulo-lecciones"></p>
-    <div class="grilla-cards" id="grilla-lecciones"></div>
+    <div class="grilla-cards grilla-filas" id="grilla-lecciones"></div>
   </section>
 
   <!-- ============ UNA LECCIÓN ============ -->
@@ -446,7 +452,7 @@
     </div>
     <div id="leccion-cuerpo"></div>
     <div class="leccion-botones">
-      <button class="btn-secundario" id="btn-leccion-atras" type="button" hidden>← Anterior</button>
+      <button class="btn-secundario" id="btn-leccion-atras" type="button" hidden><span data-ico="atras" aria-hidden="true"></span> Anterior</button>
       <button class="btn-gigante" id="btn-leccion-siguiente" type="button">Siguiente</button>
     </div>
   </section>
@@ -553,9 +559,9 @@
     <div class="zona-mapa" id="zona-mapa">
       <div id="mapa"></div>
       <div class="controles-mapa">
-        <button class="btn-mapa" data-zoom="mas" aria-label="Acercar">+</button>
-        <button class="btn-mapa" data-zoom="menos" aria-label="Alejar">−</button>
-        <button class="btn-mapa" data-zoom="reset" aria-label="Ver todo">⛶</button>
+        <button class="btn-mapa" data-zoom="mas" aria-label="Acercar"><span data-ico="mas" aria-hidden="true"></span></button>
+        <button class="btn-mapa" data-zoom="menos" aria-label="Alejar"><span data-ico="menos" aria-hidden="true"></span></button>
+        <button class="btn-mapa" data-zoom="reset" aria-label="Ver todo"><span data-ico="encuadre" aria-hidden="true"></span></button>
       </div>
       <div class="pista-mapa" id="pista-mapa">Arrastrá para mover · rueda para acercar</div>
     </div>
@@ -679,7 +685,7 @@
 
   <!-- ============ CONFIGURACIÓN ============ -->
   <section class="pantalla" id="pantalla-configuracion" hidden>
-    <h1 class="titulo-grande"><span data-ico="configuracion" class="ico-titulo-caja" aria-hidden="true"></span>Configuración</h1>
+    <h1 class="titulo-grande titulo-con-dibujo"><span class="dibujo-titulo" data-dibujo="ajustes"></span>Configuración</h1>
     <p class="subtitulo">Los ajustes generales de la app.</p>
 
     <!-- El tutorial, para verlo de nuevo cuando se quiera. -->
@@ -786,7 +792,7 @@
 
   <!-- ============ PERSONALIZACIÓN ============ -->
   <section class="pantalla" id="pantalla-personalizacion" hidden>
-    <h1 class="titulo-grande"><span data-ico="personalizacion" class="ico-titulo-caja" aria-hidden="true"></span>Personalización</h1>
+    <h1 class="titulo-grande titulo-con-dibujo"><span class="dibujo-titulo" data-dibujo="personalizar"></span>Personalización</h1>
     <p class="subtitulo">Elegí cómo se ve la app. Se cambia al toque.</p>
 
     <h2 class="etiqueta-grupo">Tu mascota</h2>
@@ -810,7 +816,7 @@
 
   <!-- ============ TIENDA ============ -->
   <section class="pantalla" id="pantalla-tienda" hidden>
-    <h1 class="titulo-grande"><span data-ico="tienda" class="ico-titulo-caja" aria-hidden="true"></span>Tienda</h1>
+    <h1 class="titulo-grande titulo-con-dibujo"><span class="dibujo-titulo" data-dibujo="tienda"></span>Tienda</h1>
     <p class="subtitulo" id="tienda-saldo"></p>
     <p class="vacio tienda-nota">Todo lo de acá es para que la app se vea como
       vos quieras. Nada te ayuda a ganar: eso se gana jugando.</p>
@@ -827,7 +833,7 @@
 
   <!-- ============ MODO PARENTAL ============ -->
   <section class="pantalla" id="pantalla-parental" hidden>
-    <h1 class="titulo-grande"><span data-ico="candado" class="ico-titulo-caja" aria-hidden="true"></span>Modo parental</h1>
+    <h1 class="titulo-grande titulo-con-dibujo"><span class="dibujo-titulo" data-dibujo="candado"></span>Modo parental</h1>
 
     <div class="tarjeta-pin" id="caja-pin">
       <p class="subtitulo" id="texto-pin">Ingresá el PIN para ver el detalle.</p>
@@ -999,7 +1005,7 @@
   <!-- ============ DESCANSO: se terminó el tiempo del día ============ -->
   <section class="pantalla" id="pantalla-descanso" hidden>
     <div class="tarjeta-descanso">
-      <div class="descanso-icono" aria-hidden="true">🌙</div>
+      <div class="descanso-icono" data-ico="luna" aria-hidden="true"></div>
       <h1 class="titulo-grande">¡Por hoy alcanza!</h1>
       <p class="subtitulo" id="descanso-texto"></p>
       <div class="botones-fin">
@@ -1126,6 +1132,7 @@
 <script src="js/datos/geografia.js"></script>
 <script src="js/nucleo/util.js"></script>
 <script src="js/nucleo/iconos.js"></script>
+<script src="js/nucleo/dibujos.js"></script>
 <script src="js/nucleo/mascota.js"></script>
 <script src="js/nucleo/almacen.js"></script>
 <script src="js/nucleo/cuenta.js"></script>

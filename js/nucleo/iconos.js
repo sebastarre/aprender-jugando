@@ -107,6 +107,28 @@ window.Iconos = (function () {
           '<circle cx="15.8" cy="11.5" r="1.15" fill="currentColor" stroke="none"/>',
           '<circle cx="17.9" cy="13.5" r="1.15" fill="currentColor" stroke="none"/>']
     },
+    /* La lamparita de los trucos de las lecciones (antes, un emoji). */
+    lamparita: {
+      b: ['<path d="M12 2.8a6.3 6.3 0 0 0-3.7 11.4c.7.5 1.1 1.3 1.1 2.1v.7h5.2v-.7c0-.8.4-1.6 1.1-2.1A6.3 6.3 0 0 0 12 2.8Z"/>'],
+      t: ['<path d="M12 2.8a6.3 6.3 0 0 0-3.7 11.4c.7.5 1.1 1.3 1.1 2.1v.7h5.2v-.7c0-.8.4-1.6 1.1-2.1A6.3 6.3 0 0 0 12 2.8Z"/>',
+          '<path d="M9.4 20.3h5.2"/>']
+    },
+    /* La luna del descanso: se terminó el tiempo de hoy. */
+    luna: {
+      b: ['<path d="M19.5 14.6A7.8 7.8 0 0 1 9.4 4.5a7.8 7.8 0 1 0 10.1 10.1Z"/>'],
+      t: ['<path d="M19.5 14.6A7.8 7.8 0 0 1 9.4 4.5a7.8 7.8 0 1 0 10.1 10.1Z"/>']
+    },
+    /* Las cuatro esquinas de «ver el mapa entero». */
+    encuadre: {
+      b: [],
+      t: ['<path d="M4.5 9V6a1.5 1.5 0 0 1 1.5-1.5h3M15 4.5h3A1.5 1.5 0 0 1 19.5 6v3M19.5 15v3a1.5 1.5 0 0 1-1.5 1.5h-3M9 19.5H6A1.5 1.5 0 0 1 4.5 18v-3"/>']
+    },
+    /* El triángulo de «empezar», con las puntas redondeadas: el botón
+       grande del inicio. Va lleno, así que se lee aunque sea chico. */
+    empezar: {
+      b: ['<path d="M8 5.6v12.8a1.2 1.2 0 0 0 1.8 1l10-6.4a1.2 1.2 0 0 0 0-2l-10-6.4A1.2 1.2 0 0 0 8 5.6Z"/>'],
+      t: ['<path d="M8 5.6v12.8a1.2 1.2 0 0 0 1.8 1l10-6.4a1.2 1.2 0 0 0 0-2l-10-6.4A1.2 1.2 0 0 0 8 5.6Z"/>']
+    },
     examen: {
       b: ['<rect x="4.5" y="3.5" width="15" height="17" rx="3"/>'],
       t: ['<rect x="4.5" y="3.5" width="15" height="17" rx="3"/>',

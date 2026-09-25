@@ -57,40 +57,49 @@
    *           pantalla se vea de caramelo en vez de de oficina.
    *
    *   tinta   la letra que va sobre `alegre`. Los cinco pares están
-   *           medidos de a uno: el peor da 5,3:1 (Matemática) y el
-   *           mejor 7,8:1 (Inglés).
+   *           medidos de a uno: el peor da 6,1:1 (Inglés) y el mejor
+   *           7,7:1 (Lengua).
+   *
+   *   dibujo  el dibujo de la materia en js/nucleo/dibujos.js: el globo,
+   *           las formas, los bloques de letras, la lupa y el globito
+   *           que dice «Hi!». Es lo que se ve en su ficha y en su cartel.
+   *
+   * Los colores son los primarios de juguete del rediseño (cielo, coral,
+   * girasol, verde y violeta), los mismos de los dibujos. Lengua es la
+   * única cuyo `color` no aguanta un dibujo blanco encima (el amarillo da
+   * 2,4:1): donde lleva círculo, el dibujo va en tinta (ver tarjeta()).
    */
   var MATERIAS = [
     {
-      id: 'geografia', nombre: 'Geografía', icono: 'geografia',
-      color: '#16a34a', suave: '#dcfce7',
-      alegre: '#22c55e', tinta: '#052e16',
+      id: 'geografia', nombre: 'Geografía', icono: 'geografia', dibujo: 'geografia',
+      color: '#1E90E0', suave: '#DDF0FC',
+      alegre: '#5DB8F2', tinta: '#0B2F4E',
       texto: 'Países, capitales y banderas',
       modulo: Geografia
     },
     {
-      id: 'matematica', nombre: 'Matemática', icono: 'matematica',
-      color: '#2563eb', suave: '#dbeafe',
-      alegre: '#60a5fa', tinta: '#0c2d5e',
+      id: 'matematica', nombre: 'Matemática', icono: 'matematica', dibujo: 'matematica',
+      color: '#E5533D', suave: '#FDE3DE',
+      alegre: '#FF8A70', tinta: '#4A140A',
       texto: 'Contar, cuentas, la hora y más',
       modulo: Matematica
     },
     {
-      id: 'lengua', nombre: 'Lengua', icono: 'lengua',
-      color: '#d97706', suave: '#fef3c7',
-      alegre: '#f59e0b', tinta: '#451a03',
+      id: 'lengua', nombre: 'Lengua', icono: 'lengua', dibujo: 'lengua',
+      color: '#D98E00', suave: '#FFF1C7',
+      alegre: '#FFC93C', tinta: '#4A3300',
       texto: 'Letras, palabras y ortografía', modulo: Lengua
     },
     {
-      id: 'ciencias', nombre: 'Ciencias', icono: 'ciencias',
-      color: '#8b5cf6', suave: '#ede9fe',
-      alegre: '#a78bfa', tinta: '#2e1065',
+      id: 'ciencias', nombre: 'Ciencias', icono: 'ciencias', dibujo: 'ciencias',
+      color: '#2E9E4F', suave: '#DDF4E4',
+      alegre: '#63CC7E', tinta: '#0D3A1B',
       texto: 'Animales, cuerpo, plantas y espacio', modulo: Ciencias
     },
     {
-      id: 'ingles', nombre: 'Inglés', icono: 'ingles',
-      color: '#0d9488', suave: '#ccfbf1',
-      alegre: '#2dd4bf', tinta: '#042f2e',
+      id: 'ingles', nombre: 'Inglés', icono: 'ingles', dibujo: 'ingles',
+      color: '#7B5AE0', suave: '#ECE6FD',
+      alegre: '#A58CF5', tinta: '#23104F',
       texto: 'Palabras y frases en inglés', modulo: Ingles
     }
   ];
@@ -311,7 +320,24 @@
                    'camino', 'nivel-fin', 'cuenta',
                    'examen', 'nota', 'configuracion', 'personalizacion'];
 
+  /* Los dos registros del diseño, según la edad del chico que juega: de
+     4 a 7 todo más grande, con más dibujo y menos texto (la vara es Pok
+     Pok); de 8 a 12, más compacto y con más datos (la vara es Duolingo).
+     Sin perfil todavía (la bienvenida), el de los chicos. Van en <html>
+     y no en <body> porque el de los chicos agranda la letra base, y las
+     medidas en rem se toman de ahí. */
+  function esRegistroChico() {
+    var edad = edadDelChico();
+    return !edad || edad < 8;
+  }
+  function pintarRegistro() {
+    var chico = esRegistroChico();
+    document.documentElement.classList.toggle('registro-chico', chico);
+    document.documentElement.classList.toggle('registro-grande', !chico);
+  }
+
   function mostrar(nombre) {
+    pintarRegistro();
     // lo que se estaba leyendo era de la pantalla de antes
     Voz.parar();
     // y los papelitos también: eran el festejo de la pantalla anterior
@@ -373,8 +399,10 @@
       return [
         { donde: null, titulo: '¡Bienvenidos a Bichito Curioso!',
           texto: 'Te muestro en un minuto cómo funciona. Podés saltarlo cuando quieras.' },
-        { donde: '.portada', titulo: 'El perfil de ' + nombre,
-          texto: 'Su nombre, las estrellas y las monedas que va ganando. Tocándolo se ve su perfil y su foto.' },
+        { donde: '.barra-inicio', titulo: 'El perfil de ' + nombre,
+          texto: 'Su carita, la racha, las estrellas y las monedas que va ganando. Tocando la carita se ve su perfil y se le pone foto.' },
+        { donde: '#seguir', titulo: 'Lo que sigue',
+          texto: 'Acá siempre está el próximo paso: el juego que venía jugando, en el nivel que le toca. Un toque y a jugar.' },
         { donde: '#menu-jugar', titulo: 'Jugar',
           texto: 'Cinco materias con juegos para su edad. Cada juego es un camino de niveles, con un desafío cada cinco.' },
         { donde: '#menu-aprender', titulo: 'Aprender',
@@ -394,8 +422,10 @@
     return [
       { donde: null, titulo: '¡Hola, ' + nombre + '!',
         texto: 'Soy tu bichito. Te muestro la app en un ratito. Si ya sabés, tocá «Saltar».' },
-      { donde: '.portada', titulo: 'Éste sos vos',
-        texto: 'Acá están tu nombre, tus estrellas y tus monedas. Las ganás jugando.' },
+      { donde: '.barra-inicio', titulo: 'Éste sos vos',
+        texto: 'Tu carita, tus estrellas y tus monedas. Las ganás jugando.' },
+      { donde: '#seguir', titulo: '¡Tocá acá para jugar!',
+        texto: 'Este botón te lleva directo a lo que sigue.' },
       { donde: '#menu-jugar', titulo: '¡A jugar!',
         texto: 'Elegís una materia y un juego. Cada juego es un camino: pasás los niveles de a uno y ganás estrellas.' },
       { donde: '#menu-aprender', titulo: 'Aprender',
@@ -630,19 +660,26 @@
   function tarjeta(datos, alTocar) {
     var b = Util.crear('button', 'card');
     b.type = 'button';
+    /* La ficha es blanca; el color va en el dibujo: el círculo pleno
+       del juego (con su escalón un tono más oscuro) o la mancha pálida
+       de la materia. El filo toma el color al pasar el mouse. */
     b.style.setProperty('--card-color', datos.color);
-    b.style.setProperty('--card-suave', datos.suave);
-    /* el escalón de abajo del círculo: el mismo color, más oscuro */
+    b.style.setProperty('--card-suave', datos.suave || Util.aclarar(datos.color, .84));
     b.style.setProperty('--card-borde', Util.oscurecer(datos.color));
-    /* Y la ficha entera, del mismo color pero lavado: relleno bien
-       pastel, filo que se nota y escalón un poco más cargado. Antes
-       todas las fichas eran blancas y lo único de color era el círculo:
-       doce juegos en pantalla se veían como doce renglones iguales con
-       un stickercito arriba. Ahora cada uno es de su color. */
-    b.style.setProperty('--card-fondo', Util.aclarar(datos.color, .84));
-    b.style.setProperty('--card-filo',  Util.aclarar(datos.color, .4));
-    b.style.setProperty('--card-paso',  Util.aclarar(datos.color, .42));
-    var icono = ponerIcono(Util.crear('span', 'card-icono'), datos.icono);
+    /* El dibujo del círculo va en blanco, salvo sobre los colores claros
+       (el amarillo de Lengua), donde el blanco no llega a 3:1 y va en
+       tinta. */
+    b.style.setProperty('--card-glifo', Util.contraste(datos.color, '#ffffff') >= 3 ? '#ffffff' : Dibujos.TINTA);
+    var icono;
+    if (datos.dibujo && Dibujos.hay(datos.dibujo)) {
+      /* Las materias no llevan un ícono en un círculo: llevan su dibujo
+         entero, apoyado en una mancha de su color, como los objetos de
+         Pok Pok. Es lo que reconoce de lejos un chico que no lee. */
+      b.classList.add('card-con-dibujo');
+      icono = Dibujos.poner(Util.crear('span', 'card-dibujo'), datos.dibujo);
+    } else {
+      icono = ponerIcono(Util.crear('span', 'card-icono'), datos.icono);
+    }
     b.appendChild(icono);
     b.icono = icono;
 
@@ -671,11 +708,10 @@
      tienda y las estrellas no llevan a ningún lado, así que las monedas
      terminan en una flechita: son dos cosas distintas y antes se veían
      iguales. */
-  function cuentaDePortada(caja, icono, cuanto, conFlecha) {
+  function cuentaDePortada(caja, icono, cuanto) {
     Util.vaciar(caja);
     caja.appendChild(Iconos.crear(icono));
-    caja.appendChild(Util.crear('span', null, String(cuanto)));
-    if (conFlecha) caja.appendChild(Iconos.crear('derecha', 'portada-flechita'));
+    caja.appendChild(Util.crear('span', 'cuenta-numero', String(cuanto)));
   }
 
   /**
@@ -778,54 +814,120 @@
     return '¡Buenas noches!';
   }
 
+  /* «¡Buen día, Sebas!»: el saludo de la hora con el nombre adentro. */
+  function saludoConNombre(yo) {
+    var hola = saludoDeLaHora();
+    return yo && yo.nombre ? hola.replace(/!$/, ', ' + yo.nombre + '!') : hola;
+  }
+
+  /**
+   * El próximo paso del inicio: lo que va en la tarjeta grande.
+   *
+   * Es el juego que estaba jugando, en el nivel que le toca. Si ese
+   * camino ya lo terminó, el que le recomienda la app después de un
+   * juego terminado. Si nunca jugó, el primer juego de su edad,
+   * empezando por Matemática (contar es lo que sabe hacer cualquier
+   * chico de cuatro). Devuelve el texto, el botón y adónde lleva.
+   */
+  function pasoDelInicio() {
+    var h = Almacen.historial();
+    for (var i = h.length - 1; i >= 0; i--) {
+      var e = h[i];
+      // sólo los niveles del camino: ni exámenes, ni repasos, ni lecciones
+      if (e.tipo && e.tipo !== 'mapa') continue;
+      var m = materiaPorId(e.materia);
+      if (!m || !m.disponible || materiaOculta(m)) continue;
+      var j = juegoPorId(m, e.juego);
+      if (!j || !j.mapa) continue;
+      var prog = progresoDelMapa(m, j);
+      if (!prog.completo) return pasoDeJuego(m, j, prog, true);
+      var rec = recomendacionDespuesDe(m, j);
+      if (rec.juego) return pasoDeJuego(rec.materia, rec.juego, progresoDelMapa(rec.materia, rec.juego), false);
+      break;
+    }
+    var edad = edadDelChico();
+    var orden = ['matematica', 'lengua', 'geografia', 'ciencias', 'ingles'];
+    for (var k = 0; k < orden.length; k++) {
+      var mm = materiaPorId(orden[k]);
+      if (!mm || !mm.disponible || materiaOculta(mm)) continue;
+      var suyos = juegosVisibles(mm).filter(function (jj) {
+        return jj.mapa && (!edad || (jj.edadMin || 0) <= edad) && !progresoDelMapa(mm, jj).completo;
+      });
+      if (suyos.length) {
+        var jj = suyos[suyos.length - 1];
+        // el más grande de los de su edad que todavía no terminó
+        return pasoDeJuego(mm, jj, progresoDelMapa(mm, jj), false);
+      }
+    }
+    return { texto: '¿A qué jugamos hoy?', boton: 'Elegir juego', href: '#/juegos', dibujo: 'jugar' };
+  }
+
+  function pasoDeJuego(materia, juego, prog, siguiendo) {
+    var nivel = prog.actual || 1;
+    var chico = esRegistroChico();
+    // el nombre entre comillas: «Probá Qué número sigue» se leía como una frase rota
+    var nombre = '«' + juego.nombre + '»';
+    var texto;
+    if (siguiendo) {
+      texto = 'Seguí con ' + nombre + (chico ? '' : ', nivel ' + nivel + ' de ' + prog.total);
+    } else if (prog.pasados) {
+      texto = 'Seguí con ' + nombre + (chico ? '' : ', nivel ' + nivel);
+    } else {
+      texto = 'Probá ' + nombre + (chico ? '' : ', de ' + materia.nombre);
+    }
+    return {
+      texto: texto,
+      boton: prog.pasados || siguiendo ? 'Seguir' : 'Jugar',
+      href: '#/nivel/' + materia.id + '/' + juego.id + '/' + nivel,
+      dibujo: materia.dibujo
+    };
+  }
+
   function pintarInicio() {
     var yo = Almacen.activo();
-    $('inicio-saludo').textContent = saludoDeLaHora();
-    $('inicio-nombre').textContent = yo ? yo.nombre : 'Jugador';
-    var edad = $('inicio-edad');
-    edad.hidden = !(yo && yo.edad);
-    edad.textContent = yo && yo.edad ? yo.edad + ' años' : '';
+
+    var cara = $('yo-cara');
+    Util.vaciar(cara);
+    if (yo) ponerCarita(cara, yo);
+
+    var paso = pasoDelInicio();
+    $('seguir-titulo').textContent = saludoConNombre(yo);
+    $('seguir-que').textContent = paso.texto;
+    $('seguir-boton').href = paso.href;
+    $('seguir-boton-texto').textContent = paso.boton;
+    Dibujos.poner($('seguir-materia'), paso.dibujo);
+
     pintarJugadores();
-    pintarFotoDePortada();
     pintarRachaYMeta();
     pintarRepasoHoy();
     pintarPlanDelInicio();
+    // «Para hoy» se esconde entera si no hay meta, ni repaso, ni prueba
+    $('hoy').hidden = ['meta-hoy', 'repaso-hoy', 'plan-hoy'].every(function (id) { return $(id).hidden; });
 
     cuentaDePortada($('portada-estrellas'), 'estrella', Almacen.estrellas());
-    cuentaDePortada($('portada-monedas'), 'moneda', Almacen.monedas(), true);
+    $('portada-estrellas').setAttribute('aria-label', Util.plural(Almacen.estrellas(), 'estrella'));
+    cuentaDePortada($('portada-monedas'), 'moneda', Almacen.monedas());
+    $('portada-monedas').setAttribute('aria-label', Util.plural(Almacen.monedas(), 'moneda') + ' · ir a la tienda');
     $('portada-monedas').hidden = !Almacen.control().tienda;
 
-    /* La bajada de cada botón dice qué hay adentro, no qué es: "3
-       materias" sirve más que "practicá lo que aprendiste", que es lo
-       mismo que ya dice el título. */
+    /* La bajada de cada puerta dice qué hay adentro, no qué es. */
     var conJuegos = materiasVisibles().filter(function (m) { return m.disponible; }).length;
-    $('menu-jugar-detalle').textContent =
-      Util.plural(conJuegos, 'materia') + ' para practicar';
-
+    $('menu-jugar-detalle').textContent = Util.plural(conJuegos, 'materia');
     var conLecciones = materiasVisibles().filter(function (m) {
       return leccionesVisibles(m.id).length;
     }).length;
     $('menu-aprender-detalle').textContent = conLecciones
-      ? Util.plural(conLecciones, 'materia') + ' con cursitos'
-      : 'Explicaciones cortas, con dibujos';
+      ? Util.plural(conLecciones, 'materia') + ' con lecciones'
+      : 'Lecciones con dibujos';
 
     Mascota.refrescar();
   }
 
   /* ---------------------- la foto del jugador ----------------------
 
-     La carita del cartel del inicio es la foto que el chico eligió de
-     la galería. Mientras no haya ninguna va una silueta: una silueta
-     vacía se lee como «acá va tu cara» mejor que cualquier dibujo, que
-     parecería que ya está puesto lo que tiene que estar.
-
-     La foto no sale del aparato. Ver js/nucleo/foto.js. */
-  function pintarFotoDePortada() {
-    var foto = Almacen.foto();
-    ponerLaFoto($('btn-foto'), 'portada-foto-img', foto);
-    $('portada-silueta').hidden = !!foto;
-    $('btn-foto').setAttribute('aria-label', foto ? 'Cambiar tu foto' : 'Poner una foto tuya');
-  }
+     La foto se pone y se cambia desde el perfil (la carita grande). En
+     el inicio se ve en la carita de la barra de arriba, o la inicial si
+     no hay. La foto no sale del aparato. Ver js/nucleo/foto.js. */
 
   /* Mete (o saca) la foto adentro de un botón redondo. La imagen se arma
      acá y no está escrita en el index porque una <img> sin foto es una
@@ -941,7 +1043,15 @@
     var caja = $('meta-cumplida');
     caja.hidden = !(delDia && delDia.metaCumplida);
     if (caja.hidden) return;
-    caja.textContent = '🏆 ¡Cumpliste la meta de hoy!' + (Almacen.control().tienda ? ' +' + delDia.premio + ' monedas' : '');
+    textoMetaCumplida(caja, delDia.premio);
+  }
+
+  /* «¡Cumpliste la meta de hoy!», con su trofeo dibujado adelante. */
+  function textoMetaCumplida(caja, premio) {
+    Util.vaciar(caja);
+    caja.appendChild(Iconos.crear('trofeo'));
+    caja.appendChild(Util.crear('span', null, '¡Cumpliste la meta de hoy!' +
+      (Almacen.control().tienda ? ' +' + premio + ' monedas' : '')));
   }
 
   var METAS = [
@@ -1223,9 +1333,7 @@
     /* el dibujo va adentro de un círculo blanco, así que usa el tono
        medio, que es el que está medido contra el blanco */
     cabecera.style.setProperty('--materia-glifo',  materia.color);
-    var icono = $('materia-icono');
-    Util.vaciar(icono);
-    ponerIcono(icono, materia.icono);
+    Dibujos.poner($('materia-icono'), materia.dibujo);
     $('titulo-materia').textContent = materia.nombre;
     $('subtitulo-materia').textContent = Util.plural(juegos.length, 'juego') + ' para practicar';
 
@@ -1309,10 +1417,24 @@
       }
     }
 
-    var flecha = Util.crear('span', 'card-flecha', '›');
-    flecha.setAttribute('aria-hidden', 'true');
-    b.appendChild(flecha);
+    b.appendChild(flechita());
     return b;
+  }
+
+  /** La flechita de «se toca» al final de una fila. */
+  function flechita() {
+    var flecha = Util.crear('span', 'card-flecha');
+    flecha.setAttribute('aria-hidden', 'true');
+    flecha.appendChild(Iconos.crear('derecha'));
+    return flecha;
+  }
+
+  /** Una pastillita con su dibujito: «3 min», «Leída», «Toca repasarla». */
+  function pastilla(clase, icono, texto) {
+    var p = Util.crear('span', clase);
+    p.appendChild(Iconos.crear(icono));
+    p.appendChild(Util.crear('span', null, texto));
+    return p;
   }
 
   /**
@@ -1675,7 +1797,7 @@
     var meta = $('nivel-fin-meta');
     meta.hidden = !(u.delDia && u.delDia.metaCumplida);
     if (!meta.hidden) {
-      meta.textContent = '🏆 ¡Cumpliste la meta de hoy!' + (Almacen.control().tienda ? ' +' + u.delDia.premio + ' monedas' : '');
+      textoMetaCumplida(meta, u.delDia.premio);
     }
 
     var aMapa = '#/mapa/' + u.materia.id + '/' + u.juego.id;
@@ -1756,7 +1878,7 @@
       cuerpo.appendChild(Util.crear('b', null, nombre));
       cuerpo.appendChild(Util.crear('span', 'recomendacion-abajo', abajo));
       a.appendChild(cuerpo);
-      a.appendChild(Util.crear('span', 'card-flecha', '›'));
+      a.appendChild(flechita());
       return a;
     }
     if (rec.juego) {
@@ -1827,7 +1949,12 @@
   }
 
   function pintarLecciones(materia) {
-    tituloConIcono($('titulo-lecciones'), 'aprender', materia.nombre);
+    // el título lleva el dibujo de la materia, el mismo de su ficha
+    var titulo = $('titulo-lecciones');
+    Util.vaciar(titulo);
+    titulo.classList.add('titulo-con-dibujo');
+    titulo.appendChild(Dibujos.poner(Util.crear('span', 'dibujo-titulo'), materia.dibujo));
+    titulo.appendChild(Util.crear('span', null, materia.nombre));
 
     var sub = $('subtitulo-lecciones');
     Util.vaciar(sub);
@@ -1850,6 +1977,14 @@
         icono: l.icono, nombre: l.titulo, texto: l.resumen,
         color: materia.color, suave: materia.suave
       }, function () { irA('#/leccion/' + l.id); });
+      /* En filas, como los juegos: el dibujo a la izquierda y el título
+         con su bajada al lado. En dos columnas, «Sumar llevándose una»
+         se partía en tres renglones y cada ficha medía media pantalla. */
+      b.classList.add('card-fila');
+      var titulo = b.cuerpo.querySelector('.card-titulo');
+      var linea = Util.crear('span', 'card-fila-linea');
+      b.cuerpo.insertBefore(linea, titulo);
+      linea.appendChild(titulo);
 
       /* Igual que los juegos: la de más grandes se puede leer igual, y
          lo único que cambia es que la ficha avisa para quién es y
@@ -1858,7 +1993,7 @@
         b.classList.add('mas-grande');
         var cinta = Util.crear('span', 'card-edad', consejo.titulo);
         if (consejo.listo) cinta.classList.add('card-edad-listo');
-        b.icono.appendChild(cinta);
+        linea.appendChild(cinta);
         var caja = Util.crear('div', 'card-consejo');
         if (consejo.listo) {
           caja.classList.add('card-consejo-listo');
@@ -1872,12 +2007,13 @@
       }
 
       var pie = Util.crear('div', 'card-pie');
-      pie.appendChild(Util.crear('span', 'card-minutos', '⏱️ ' + l.minutos + ' min'));
-      if (vista) pie.appendChild(Util.crear('span', 'card-leida', l.ejercicio ? '✅ Completada' : '✅ Leída'));
+      pie.appendChild(pastilla('card-minutos', 'reloj', l.minutos + ' min'));
+      if (vista) pie.appendChild(pastilla('card-leida', 'tilde', l.ejercicio ? 'Completada' : 'Leída'));
       if (Almacen.leccionesParaRepasar().indexOf(l.id) >= 0) {
-        pie.appendChild(Util.crear('span', 'card-repasar', '🔁 Toca repasarla'));
+        pie.appendChild(pastilla('card-repasar', 'repaso', 'Toca repasarla'));
       }
       b.cuerpo.appendChild(pie);
+      b.appendChild(flechita());
       cont.appendChild(b);
     });
   }
@@ -2386,7 +2522,7 @@
     nuevos.forEach(function (clave) {
       var enc = porClave(clave);
       var fila = Util.crear('div', 'desbloqueo-item');
-      fila.appendChild(Util.crear('span', 'desbloqueo-icono', '🏅'));
+      fila.appendChild(ponerIcono(Util.crear('span', 'desbloqueo-icono'), 'trofeo'));
       var cuerpo = Util.crear('div');
       cuerpo.appendChild(Util.crear('b', null, '¡Dominaste ' + enc.juego.nombre + '!'));
       cuerpo.appendChild(Util.crear('div', 'ir-dato', 'Una partida con todas correctas'));
@@ -2579,7 +2715,7 @@
       cont.appendChild(e);
     }
 
-    $('titulo-fin').textContent = r.aciertos === r.total ? '¡Te las sacaste todas! 🔁' : 'Repaso terminado';
+    $('titulo-fin').textContent = r.aciertos === r.total ? '¡Te las sacaste todas!' : 'Repaso terminado';
     $('subtitulo-fin').textContent = r.aciertos
       ? 'Sacaste ' + Util.plural(r.aciertos, 'cosa', 'cosas') + ' de tu lista de repaso.'
       : 'No salió ninguna esta vez. Quedan para el próximo repaso.';
@@ -2821,7 +2957,7 @@
     if (yo.edad) partes.push(yo.edad + ' años');
     partes.push(est.partidas === 0 ? 'todavía sin partidas'
                                    : Util.plural(est.partidas, 'partida jugada', 'partidas jugadas'));
-    if (est.racha > 1) partes.push('🔥 ' + est.racha + ' días seguidos');
+    if (est.racha > 1) partes.push(est.racha + ' días seguidos');
     $('perfil-desde').textContent = partes.join(' · ');
 
     var stats = $('perfil-stats');
@@ -4171,7 +4307,7 @@
         riel.appendChild(lleno);
         fila.appendChild(riel);
         var datos = [];
-        if (prog.estrellas) datos.push(prog.estrellas + '/' + prog.maximo + ' ★');
+        if (prog.estrellas) datos.push(prog.estrellas + ' de ' + prog.maximo + ' estrellas');
         datos.push(suyas.length ? Util.plural(suyas.length, 'partida') : 'nunca jugado');
         if (preguntas) datos.push(Math.round(aciertos / preguntas * 100) + '% correctas');
         if (segundos >= 60) datos.push(tiempoCorto(segundos));
@@ -4181,7 +4317,7 @@
       });
       var textoResumen = Util.crear('span', 'juegos-materia-resumen');
       textoResumen.appendChild(Util.crear('b', null, m.nombre));
-      textoResumen.appendChild(Util.crear('span', null, pasados + '/' + total + ' niveles · ' + estrellas + ' ★'));
+      textoResumen.appendChild(Util.crear('span', null, pasados + '/' + total + ' niveles · ' + Util.plural(estrellas, 'estrella')));
       resumen.appendChild(textoResumen);
       grupo.appendChild(resumen);
       filas.forEach(function (f) { grupo.appendChild(f); });
@@ -4379,9 +4515,9 @@
       var materia = materiaPorId(p.materia);
       var fila = Util.crear('div', 'fila-partida');
       // exámenes y repasos se distinguen de las partidas sueltas
-      var icono = p.tipo === 'examen' ? '📝'
-                : p.tipo === 'repaso' ? '🔁'
-                : p.tipo === 'leccion' ? '🎓'
+      var icono = p.tipo === 'examen' ? 'examen'
+                : p.tipo === 'repaso' ? 'repaso'
+                : p.tipo === 'leccion' ? 'aprender'
                 : (materia ? materia.icono : '•');
       fila.appendChild(ponerIcono(Util.crear('span', 'fila-icono'), icono));
       var cuerpo = Util.crear('div', 'fila-cuerpo');
@@ -4726,7 +4862,6 @@
     });
 
     /* la foto: la piden dos pantallas y el campo de archivo es uno solo */
-    $('btn-foto').addEventListener('click', function () { pedirFoto(pintarInicio); });
     $('perfil-avatar').addEventListener('click', function () { pedirFoto(pintarPerfil); });
     $('campo-foto').addEventListener('change', function () {
       var archivo = this.files && this.files[0];
