@@ -14,6 +14,7 @@
          esCorrecta: function (item, respuesta) {},
          alAcertar / alFallar / alRevelar: function (...) {},
          textoFallo / textoRevelado: function (...) { return '...'; },
+         textoAcierto: function (item) { return '...'; },   // lo que acertó, en palabras
          pista: function (item, intento, respuesta) { return '...'; },
          alTerminar: function (resultado) {}
        });
@@ -26,6 +27,7 @@ window.Motor = (function () {
   var INTENTOS = 3;
   var PUNTOS_POR_INTENTO = [3, 2, 1];   // según en qué intento acierte
   var ESPERA_ACIERTO = 650;             // cuánto se ve el festejo (con menos, no se llegaba a leer)
+  var ESPERA_REFUERZO = 500;            // y un poco más si repite lo que se aprendió («Son 5 pelotas»)
   var ESPERA_FALLO = 260;               // bloqueo cortito (evita el doble clic)
   var ESPERA_REVELAR = 1500;            // tiempo para mirar la respuesta correcta
   var ESPERA_MUDO = 320;                // en el examen no hay nada que leer
@@ -274,12 +276,18 @@ window.Motor = (function () {
     /* El acierto dice qué pasó, no cuántos puntos dio: los puntos
        compiten con el contenido en vez de reforzarlo. Si salió después de
        errar, se festeja eso: que lo pensó otra vez y no se rindió.
-       Y si con éste llegó a una racha redonda, se festeja la racha. */
-    aviso(hito ? '¡' + Util.plural(e.racha, 'seguida', 'seguidas').replace(/^\d+/, numeroEnLetras(e.racha)) + '! ' + Util.otraDe(RACHA)
+       Y si con éste llegó a una racha redonda, se festeja la racha.
+       Después va, si el juego lo sabe decir, lo que acaba de acertar en
+       palabras («Son 5 pelotas», «6 × 7 = 42»): escucharlo otra vez es lo
+       que hace que quede. A los chicos se lo dice la voz (ver lector.js),
+       y se la espera antes de pasar. */
+    var refuerzo = e.cfg.textoAcierto ? e.cfg.textoAcierto(item, respuesta) || '' : '';
+    aviso((hito ? '¡' + Util.plural(e.racha, 'seguida', 'seguidas').replace(/^\d+/, numeroEnLetras(e.racha)) + '! ' + Util.otraDe(RACHA)
       : e.intento === 0 ? festejo()
       : e.intento === 1 ? Util.otraDe(BIEN_AL_SEGUNDO)
-      : Util.otraDe(BIEN_AL_TERCERO), 'bien');
-    luego(siguiente, hito ? ESPERA_ACIERTO + 350 : ESPERA_ACIERTO);
+      : Util.otraDe(BIEN_AL_TERCERO)) + (refuerzo ? ' ' + refuerzo : ''), refuerzo ? 'bien con-refuerzo' : 'bien');
+    luego(refuerzo ? pasarCuandoCalle : siguiente,
+          (hito ? ESPERA_ACIERTO + 350 : ESPERA_ACIERTO) + (refuerzo ? ESPERA_REFUERZO : 0));
   }
 
   function numeroEnLetras(n) {

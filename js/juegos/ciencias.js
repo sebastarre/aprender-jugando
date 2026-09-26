@@ -39,13 +39,21 @@ window.Ciencias = (function () {
     };
   }
 
-  /** Un juego de pregunta y respuesta escrita, con las malas a mano. */
+  /**
+   * Un juego de pregunta y respuesta escrita, con las malas a mano. Cada
+   * fila trae además una pista para pensar (sale al equivocarse) y un
+   * dato que explica la respuesta (sale al acertar y al mostrar la que
+   * era): antes, al errar sólo decía «¡Buen intento!», sin enseñar nada.
+   *   [id, pregunta, respuesta, malas, pista, dato]
+   */
   function cuestionario(def, filas) {
     return T.banco(Object.assign({
-      items: filas.map(function (f) { return { id: f[0], p: f[1], r: f[2], m: f[3] }; }),
+      items: filas.map(function (f) { return { id: f[0], p: f[1], r: f[2], m: f[3], pista: f[4], dato: f[5] }; }),
       forma: 'frase',
       consigna: function (it) { return it.p; },
-      textoRevelado: function (it) { return 'Era «' + it.r + '».'; },
+      pista: function (it) { return it.pista || ''; },
+      textoAcierto: function (it) { return it.dato || ''; },
+      textoRevelado: function (it) { return 'Era «' + it.r + '».' + (it.dato ? ' ' + it.dato : ''); },
       repaso: function (it) { return { simbolo: def.simbolo, nombre: T.plano(it.p), dato: it.r }; }
     }, def));
   }
@@ -97,6 +105,7 @@ window.Ciencias = (function () {
       return NOMBRE_DE[r] ? mayuscula(NOMBRE_DE[r]) + ' hace «' + RUIDO_DE[r] + '».' : '';
     },
     textoRevelado: function (it) { return mayuscula(it.quien) + ' hace «' + it.sonido + '».'; },
+    textoAcierto: function (it) { return mayuscula(it.quien) + ' hace «' + it.sonido + '».'; },
     repaso: function (it) { return { simbolo: it.r, nombre: mayuscula(it.quien), dato: 'Hace «' + it.sonido + '»' }; }
   });
 
@@ -145,6 +154,7 @@ window.Ciencias = (function () {
       return 'Pensá: ¿para qué ' + (/^(los|las) /.test(parte) ? 'sirven ' : 'sirve ') + parte + '?';
     },
     textoRevelado: function (it) { return '¡' + mayuscula(PARTE[it.r]) + '!'; },
+    textoAcierto: function (it) { return mayuscula(PARTE[it.r]) + '.'; },
     repaso: function (it) { return { simbolo: it.r, nombre: T.plano(it.p), dato: mayuscula(PARTE[it.r]) }; }
   });
 
@@ -166,6 +176,9 @@ window.Ciencias = (function () {
     ['pinguino', '🐧', 'el pingüino', POLO], ['foca', '🦭', 'la foca', POLO],
     ['camello', '🐪', 'el camello', DESIERTO], ['escorpion', '🦂', 'el escorpión', DESIERTO]
   ];
+
+  /** «🌊 En el mar» → «en el mar» */
+  function lugarDe(r) { return r.replace(/^\S+ /, '').toLowerCase(); }
 
   var DONDE_VIVE = T.banco({
     id: 'habitat',
@@ -196,8 +209,16 @@ window.Ciencias = (function () {
       return mayuscula(r.replace(/^\S+ /, '').toLowerCase()) + (otros.length > 1 ? ' viven ' : ' vive ') +
              otros.join(' y ') + '.';
     },
-    textoRevelado: function (it) { return mayuscula(it.quien) + ' vive ' + it.r.replace(/^\S+ /, '').toLowerCase() + '.'; },
-    repaso: function (it) { return { simbolo: it.emoji, nombre: mayuscula(it.quien), dato: 'Vive ' + it.r.replace(/^\S+ /, '').toLowerCase() }; }
+    textoRevelado: function (it) { return mayuscula(it.quien) + ' vive ' + lugarDe(it.r) + '.'; },
+    textoAcierto: function (it) { return mayuscula(it.quien) + ' vive ' + lugarDe(it.r) + '.'; },
+    alReves: {
+      consigna: function (it) { return '¿Quién vive <b>' + lugarDe(it.r) + '</b>?'; },
+      fallo: function (it, r, otro) { return mayuscula(otro.quien) + ' vive ' + lugarDe(r) + '.'; },
+      // el pingüino y la foca también nadan en el mar: no pueden estar juntos con uno del mar
+      excluir: function (it) { return it.r === MAR ? [POLO] : it.r === POLO ? [MAR] : []; },
+      nombre: function (it) { return it.quien; }
+    },
+    repaso: function (it) { return { simbolo: it.emoji, nombre: mayuscula(it.quien), dato: 'Vive ' + lugarDe(it.r) }; }
   });
 
   /* ============================================================
@@ -252,6 +273,9 @@ window.Ciencias = (function () {
         ? mayuscula(QUE_ES[it.r]) + ' es un ser vivo: nace, crece, se alimenta y se reproduce.'
         : mayuscula(QUE_ES[it.r]) + ' no es un ser vivo: no nace, no crece ni se alimenta.';
     },
+    textoAcierto: function (it) {
+      return mayuscula(QUE_ES[it.r]) + (it.vivo ? ' es un ser vivo: nace y crece.' : ' no es un ser vivo.');
+    },
     repaso: function (it) {
       return { simbolo: it.r, nombre: mayuscula(QUE_ES[it.r]), dato: it.vivo ? 'Es un ser vivo' : 'No es un ser vivo' };
     }
@@ -275,19 +299,19 @@ window.Ciencias = (function () {
     ],
     simbolo: '🌱'
   }, [
-    ['agua', '¿Por dónde toma el <b>agua</b> una planta?', 'Por la raíz', ['Por las hojas', 'Por la flor', 'Por el fruto']],
-    ['sostiene', '¿Qué parte <b>sostiene</b> a la planta y lleva el agua hacia arriba?', 'El tallo', ['La raíz', 'La flor', 'La semilla']],
-    ['alimento', '¿Qué parte fabrica el <b>alimento</b> de la planta con la luz del sol?', 'Las hojas', ['La raíz', 'El tallo', 'La semilla']],
-    ['nace', '¿De dónde <b>nace</b> una planta nueva?', 'De una semilla', ['De una piedra', 'Del viento', 'De la luz']],
-    ['necesita', '¿Qué <b>necesita</b> una planta para vivir?', 'Agua, luz y aire', ['Solo tierra', 'Solo agua', 'Oscuridad']],
-    ['abejas', '¿Qué parte de la planta atrae a las <b>abejas</b>?', 'La flor', ['La raíz', 'El tallo', 'La hoja']],
-    ['manzana', 'La <b>manzana</b> es… de la planta', 'El fruto', ['La raíz', 'La hoja', 'El tallo']],
-    ['zanahoria', 'La <b>zanahoria</b> que comemos es…', 'La raíz', ['El fruto', 'La flor', 'La hoja']],
-    ['lechuga', 'La <b>lechuga</b> que comemos son…', 'Las hojas', ['La raíz', 'El fruto', 'Las semillas']],
-    ['tronco', 'El <b>tronco</b> de un árbol es su…', 'Tallo', ['Raíz', 'Hoja', 'Fruto']],
-    ['oxigeno', '¿Qué gas largan las plantas que nosotros necesitamos para <b>respirar</b>?', 'Oxígeno', ['Humo', 'Polvo', 'Dióxido de carbono']],
-    ['germinar', '¿Cómo se dice cuando una semilla empieza a <b>crecer</b>?', 'Germinar', ['Florecer', 'Madurar', 'Podar']],
-    ['cactus', 'Los <b>cactus</b> viven en lugares…', 'Secos, con poca lluvia', ['Muy mojados', 'Bajo el mar', 'Sin nada de luz']]
+    ['agua', '¿Por dónde toma el <b>agua</b> una planta?', 'Por la raíz', ['Por las hojas', 'Por la flor', 'Por el fruto'], 'Pensá en la parte que está bajo tierra.', 'La raíz está bajo tierra y chupa el agua.'],
+    ['sostiene', '¿Qué parte <b>sostiene</b> a la planta y lleva el agua hacia arriba?', 'El tallo', ['La raíz', 'La flor', 'La semilla'], 'Es la parte larga que va de la raíz a las hojas.', 'El tallo sostiene la planta y sube el agua.'],
+    ['alimento', '¿Qué parte fabrica el <b>alimento</b> de la planta con la luz del sol?', 'Las hojas', ['La raíz', 'El tallo', 'La semilla'], 'Es la parte verde que recibe la luz del sol.', 'Las hojas fabrican el alimento con la luz del sol.'],
+    ['nace', '¿De dónde <b>nace</b> una planta nueva?', 'De una semilla', ['De una piedra', 'Del viento', 'De la luz'], 'Pensá en lo que hay adentro de una fruta.', 'De cada semilla puede nacer una planta nueva.'],
+    ['necesita', '¿Qué <b>necesita</b> una planta para vivir?', 'Agua, luz y aire', ['Solo tierra', 'Solo agua', 'Oscuridad'], 'Es más de una cosa: pensá en lo que le das a una planta en una maceta.', 'Las plantas necesitan agua, luz y aire para vivir.'],
+    ['abejas', '¿Qué parte de la planta atrae a las <b>abejas</b>?', 'La flor', ['La raíz', 'El tallo', 'La hoja'], 'Es la parte de colores, con perfume.', 'Las abejas van a las flores a buscar néctar.'],
+    ['manzana', 'La <b>manzana</b> es… de la planta', 'El fruto', ['La raíz', 'La hoja', 'El tallo'], 'Adentro tiene semillas.', 'La manzana es el fruto: adentro guarda las semillas.'],
+    ['zanahoria', 'La <b>zanahoria</b> que comemos es…', 'La raíz', ['El fruto', 'La flor', 'La hoja'], '¿La zanahoria crece arriba o bajo tierra?', 'La zanahoria crece bajo tierra: es una raíz.'],
+    ['lechuga', 'La <b>lechuga</b> que comemos son…', 'Las hojas', ['La raíz', 'El fruto', 'Las semillas'], 'Es la parte verde y finita de la planta.', 'De la lechuga comemos las hojas.'],
+    ['tronco', 'El <b>tronco</b> de un árbol es su…', 'Tallo', ['Raíz', 'Hoja', 'Fruto'], 'Es lo que sostiene al árbol, desde el piso hasta las ramas.', 'El tronco es el tallo de los árboles: grueso y duro.'],
+    ['oxigeno', '¿Qué gas largan las plantas que nosotros necesitamos para <b>respirar</b>?', 'Oxígeno', ['Humo', 'Polvo', 'Dióxido de carbono'], 'Es el mismo gas que respiramos todos.', 'Las plantas largan oxígeno, que es lo que respiramos.'],
+    ['germinar', '¿Cómo se dice cuando una semilla empieza a <b>crecer</b>?', 'Germinar', ['Florecer', 'Madurar', 'Podar'], 'Empieza con «ger»…', 'Cuando una semilla empieza a crecer, germina.'],
+    ['cactus', 'Los <b>cactus</b> viven en lugares…', 'Secos, con poca lluvia', ['Muy mojados', 'Bajo el mar', 'Sin nada de luz'], '¿En los lugares donde hay cactus llueve mucho?', 'Los cactus guardan agua adentro para vivir donde casi no llueve.']
   ]);
 
   /* ============================================================
@@ -334,8 +358,23 @@ window.Ciencias = (function () {
     textoRevelado: function (it) {
       return 'Los que ' + PISTAS_DIETA[it.r].replace('come', 'comen') + ' son ' + it.r + 's, como ' + it.quien + '.';
     },
+    // «las personas comen de todo», «el león come carne»
+    textoAcierto: function (it) { return mayuscula(it.quien) + ' ' + comeDe(it.quien, it.r) + '.'; },
+    alReves: {
+      consigna: function (it) { return '¿Cuál <b>' + PISTAS_DIETA[it.r] + '</b>?'; },
+      fallo: function (it, r, otro) { return mayuscula(otro.quien) + ' ' + comeDe(otro.quien, r) + '.'; },
+      // el oso come carne y plantas: con «¿cuál come carne?» serían dos las buenas
+      excluir: function (it) { return it.r === 'omnívoro' ? [] : ['omnívoro']; },
+      nombre: function (it) { return it.quien; }
+    },
     repaso: function (it) { return { simbolo: it.emoji, nombre: mayuscula(it.quien), dato: mayuscula(it.r) }; }
   });
+
+  /** «come carne», o «comen de todo» si son varios (las personas). */
+  function comeDe(quien, r) {
+    var dice = PISTAS_DIETA[r];
+    return /^(los|las) /.test(quien) ? dice.replace('come', 'comen') : dice;
+  }
 
   /* ============================================================
      Clases de animales
@@ -391,6 +430,15 @@ window.Ciencias = (function () {
       // «un ave», como «un águila»: la a del principio lleva la fuerza
       return mayuscula(it.quien) + ' es un ' + it.r + ': ' + PISTAS_CLASE[it.r] + '.';
     },
+    // «la gallina tiene plumas», «el delfín toma leche de bebé»
+    textoAcierto: function (it) {
+      return mayuscula(it.quien) + (it.r === 'mamífero' ? ' toma leche de bebé.' : ' ' + PISTAS_CLASE[it.r] + '.');
+    },
+    alReves: {
+      consigna: function (it) { return '¿Cuál es un <b>' + it.r + '</b>?'; },
+      fallo: function (it, r, otro) { return mayuscula(otro.quien) + ' es un ' + r + ': ' + PISTAS_CLASE[r] + '.'; },
+      nombre: function (it) { return it.quien; }
+    },
     repaso: function (it) { return { simbolo: it.emoji, nombre: mayuscula(it.quien), dato: mayuscula(it.r) }; }
   });
 
@@ -412,20 +460,20 @@ window.Ciencias = (function () {
     ],
     simbolo: '💧'
   }, [
-    ['hielo', 'El <b>hielo</b> es agua en estado…', 'Sólido', ['Líquido', 'Gaseoso']],
-    ['vapor', 'El <b>vapor</b> que sale de la pava es agua en estado…', 'Gaseoso', ['Sólido', 'Líquido']],
-    ['canilla', 'El agua que sale de la <b>canilla</b> está en estado…', 'Líquido', ['Sólido', 'Gaseoso']],
-    ['derrite', 'Cuando el hielo <b>se derrite</b>, se convierte en…', 'Agua líquida', ['Vapor', 'Más hielo']],
-    ['congela', '¿Cómo se llama cuando el agua se <b>convierte en hielo</b>?', 'Solidificación', ['Evaporación', 'Fusión', 'Condensación']],
-    ['evapora', 'Cuando el agua se calienta y <b>se hace vapor</b>, se llama…', 'Evaporación', ['Fusión', 'Solidificación', 'Condensación']],
-    ['gotitas', 'Las <b>gotitas</b> que aparecen afuera de un vaso con agua fría vienen de…', 'El vapor que hay en el aire', ['El vidrio del vaso', 'El agua que se escapa del vaso', 'La lluvia']],
-    ['hierve', '¿A qué temperatura <b>hierve</b> el agua?', 'A 100 °C', ['A 0 °C', 'A 50 °C', 'A 200 °C']],
-    ['congela-temp', '¿A qué temperatura se <b>congela</b> el agua?', 'A 0 °C', ['A 100 °C', 'A 10 °C', 'A 50 °C']],
-    ['piedra', 'Una <b>piedra</b> es un…', 'Sólido', ['Líquido', 'Gas']],
-    ['aire', 'El <b>aire</b> es un…', 'Gas', ['Sólido', 'Líquido']],
-    ['leche', 'La <b>leche</b> es un…', 'Líquido', ['Sólido', 'Gas']],
-    ['manteca', '¿Qué le pasa a la <b>manteca</b> si la dejás al sol?', 'Se derrite', ['Se congela', 'Se endurece', 'Se hace vapor']],
-    ['nubes', 'Las <b>nubes</b> están hechas de…', 'Gotitas de agua', ['Humo', 'Algodón', 'Polvo']]
+    ['hielo', 'El <b>hielo</b> es agua en estado…', 'Sólido', ['Líquido', 'Gaseoso'], 'El hielo tiene su propia forma, y se puede agarrar.', 'El hielo es agua sólida: tiene su propia forma.'],
+    ['vapor', 'El <b>vapor</b> que sale de la pava es agua en estado…', 'Gaseoso', ['Sólido', 'Líquido'], 'El vapor se escapa para arriba y no se puede agarrar.', 'El vapor es agua en estado gaseoso.'],
+    ['canilla', 'El agua que sale de la <b>canilla</b> está en estado…', 'Líquido', ['Sólido', 'Gaseoso'], 'Toma la forma del vaso donde la pongas.', 'El agua de la canilla es líquida: toma la forma del recipiente.'],
+    ['derrite', 'Cuando el hielo <b>se derrite</b>, se convierte en…', 'Agua líquida', ['Vapor', 'Más hielo'], 'Pensá en un cubito que se deja afuera de la heladera.', 'El hielo, al derretirse, vuelve a ser agua líquida.'],
+    ['congela', '¿Cómo se llama cuando el agua se <b>convierte en hielo</b>?', 'Solidificación', ['Evaporación', 'Fusión', 'Condensación'], 'Se hace sólida: la palabra se parece a «sólido».', 'Cuando el agua se hace hielo, se solidifica.'],
+    ['evapora', 'Cuando el agua se calienta y <b>se hace vapor</b>, se llama…', 'Evaporación', ['Fusión', 'Solidificación', 'Condensación'], 'Se hace vapor: la palabra se parece a «vapor».', 'Cuando el agua se hace vapor, se evapora.'],
+    ['gotitas', 'Las <b>gotitas</b> que aparecen afuera de un vaso con agua fría vienen de…', 'El vapor que hay en el aire', ['El vidrio del vaso', 'El agua que se escapa del vaso', 'La lluvia'], 'El aire tiene agua que no se ve.', 'El vapor del aire se enfría al tocar el vaso y se hace gotitas: es la condensación.'],
+    ['hierve', '¿A qué temperatura <b>hierve</b> el agua?', 'A 100 °C', ['A 0 °C', 'A 50 °C', 'A 200 °C'], 'Es un número redondo y grande.', 'El agua hierve a los 100 °C.'],
+    ['congela-temp', '¿A qué temperatura se <b>congela</b> el agua?', 'A 0 °C', ['A 100 °C', 'A 10 °C', 'A 50 °C'], 'Es el número más chico de todos los que hay.', 'El agua se congela a los 0 °C.'],
+    ['piedra', 'Una <b>piedra</b> es un…', 'Sólido', ['Líquido', 'Gas'], 'Tiene su propia forma y no se derrama.', 'La piedra es un sólido: tiene su propia forma.'],
+    ['aire', 'El <b>aire</b> es un…', 'Gas', ['Sólido', 'Líquido'], 'No se ve y ocupa todo el lugar.', 'El aire es un gas: no se ve y ocupa todo el lugar.'],
+    ['leche', 'La <b>leche</b> es un…', 'Líquido', ['Sólido', 'Gas'], 'Se sirve en un vaso, y si se vuelca se derrama.', 'La leche es un líquido: toma la forma del vaso.'],
+    ['manteca', '¿Qué le pasa a la <b>manteca</b> si la dejás al sol?', 'Se derrite', ['Se congela', 'Se endurece', 'Se hace vapor'], 'Pensá en un helado al sol.', 'Con el calor, la manteca se derrite.'],
+    ['nubes', 'Las <b>nubes</b> están hechas de…', 'Gotitas de agua', ['Humo', 'Algodón', 'Polvo'], 'Pensá de dónde sale la lluvia.', 'Las nubes son millones de gotitas de agua.']
   ]);
 
   /* ============================================================
@@ -446,19 +494,19 @@ window.Ciencias = (function () {
     ],
     simbolo: '🫀'
   }, [
-    ['bombea', '¿Qué órgano <b>bombea la sangre</b> por todo el cuerpo?', 'El corazón', ['Los pulmones', 'El estómago', 'El cerebro']],
-    ['respiramos', '¿Con qué órganos <b>respiramos</b>?', 'Los pulmones', ['El corazón', 'El hígado', 'Los riñones']],
-    ['tragar', '¿Adónde va la comida después de <b>tragarla</b>?', 'Al estómago', ['A los pulmones', 'Al corazón', 'Al cerebro']],
-    ['manda', '¿Qué órgano <b>manda</b> sobre todo el cuerpo?', 'El cerebro', ['El corazón', 'El estómago', 'Los pulmones']],
-    ['forma', '¿Qué sostiene el cuerpo y le da <b>forma</b>?', 'El esqueleto', ['Los músculos', 'La piel', 'La sangre']],
-    ['grande', '¿Cuál es el órgano <b>más grande</b> del cuerpo?', 'La piel', ['El hígado', 'El corazón', 'El cerebro']],
-    ['rinones', '¿Qué limpian los <b>riñones</b>?', 'La sangre', ['El aire', 'La comida', 'Los huesos']],
-    ['mover', '¿Qué nos permite <b>mover</b> los huesos?', 'Los músculos', ['La piel', 'El pelo', 'Las uñas']],
-    ['sangre', '¿Por dónde viaja la <b>sangre</b>?', 'Por las venas y las arterias', ['Por los huesos', 'Por el estómago', 'Por los nervios']],
-    ['gas', '¿Qué gas del aire <b>necesita</b> el cuerpo?', 'El oxígeno', ['El dióxido de carbono', 'El humo', 'El helio']],
-    ['huesos', '¿Cuántos <b>huesos</b> tiene una persona grande, más o menos?', 'Unos 200', ['Unos 20', 'Unos 1000', 'Unos 50']],
-    ['iris', '¿Cómo se llama la parte del ojo que tiene <b>color</b>?', 'El iris', ['La pupila', 'La pestaña', 'La ceja']],
-    ['leche', 'Cuando se caen los <b>dientes de leche</b>, salen…', 'Los dientes definitivos', ['Otros dientes de leche', 'Dientes postizos', 'Nada']]
+    ['bombea', '¿Qué órgano <b>bombea la sangre</b> por todo el cuerpo?', 'El corazón', ['Los pulmones', 'El estómago', 'El cerebro'], 'Late todo el tiempo, y lo sentís en el pecho.', 'El corazón bombea la sangre a todo el cuerpo.'],
+    ['respiramos', '¿Con qué órganos <b>respiramos</b>?', 'Los pulmones', ['El corazón', 'El hígado', 'Los riñones'], 'Se llenan de aire cuando respirás hondo.', 'Los pulmones se llenan de aire cuando respiramos.'],
+    ['tragar', '¿Adónde va la comida después de <b>tragarla</b>?', 'Al estómago', ['A los pulmones', 'Al corazón', 'Al cerebro'], 'Es donde se junta la comida después de comer.', 'La comida baja al estómago, que la empieza a deshacer.'],
+    ['manda', '¿Qué órgano <b>manda</b> sobre todo el cuerpo?', 'El cerebro', ['El corazón', 'El estómago', 'Los pulmones'], 'Está adentro de la cabeza.', 'El cerebro está en la cabeza y manda sobre todo el cuerpo.'],
+    ['forma', '¿Qué sostiene el cuerpo y le da <b>forma</b>?', 'El esqueleto', ['Los músculos', 'La piel', 'La sangre'], 'Está hecho de huesos.', 'El esqueleto son todos los huesos juntos: sostiene el cuerpo.'],
+    ['grande', '¿Cuál es el órgano <b>más grande</b> del cuerpo?', 'La piel', ['El hígado', 'El corazón', 'El cerebro'], 'Cubre todo el cuerpo, por afuera.', 'La piel es el órgano más grande: cubre todo el cuerpo.'],
+    ['rinones', '¿Qué limpian los <b>riñones</b>?', 'La sangre', ['El aire', 'La comida', 'Los huesos'], 'Es lo que el corazón manda por todo el cuerpo.', 'Los riñones limpian la sangre y hacen el pis.'],
+    ['mover', '¿Qué nos permite <b>mover</b> los huesos?', 'Los músculos', ['La piel', 'El pelo', 'Las uñas'], 'Se ponen duros cuando hacés fuerza.', 'Los músculos mueven los huesos.'],
+    ['sangre', '¿Por dónde viaja la <b>sangre</b>?', 'Por las venas y las arterias', ['Por los huesos', 'Por el estómago', 'Por los nervios'], 'Son como caños finitos por todo el cuerpo.', 'La sangre viaja por las venas y las arterias.'],
+    ['gas', '¿Qué gas del aire <b>necesita</b> el cuerpo?', 'El oxígeno', ['El dióxido de carbono', 'El humo', 'El helio'], 'Es el mismo gas que largan las plantas.', 'Respiramos para tomar el oxígeno del aire.'],
+    ['huesos', '¿Cuántos <b>huesos</b> tiene una persona grande, más o menos?', 'Unos 200', ['Unos 20', 'Unos 1000', 'Unos 50'], 'Son muchos, pero no mil.', 'Una persona grande tiene unos 206 huesos.'],
+    ['iris', '¿Cómo se llama la parte del ojo que tiene <b>color</b>?', 'El iris', ['La pupila', 'La pestaña', 'La ceja'], 'Se llama como una flor… y como el arcoíris.', 'El iris es la parte de color del ojo.'],
+    ['leche', 'Cuando se caen los <b>dientes de leche</b>, salen…', 'Los dientes definitivos', ['Otros dientes de leche', 'Dientes postizos', 'Nada'], 'Son los que quedan para toda la vida.', 'Después de los de leche salen los definitivos, que son para siempre.']
   ]);
 
   /* ============================================================
@@ -479,22 +527,22 @@ window.Ciencias = (function () {
     ],
     simbolo: '🪐'
   }, [
-    ['cerca', '¿Qué planeta está <b>más cerca</b> del Sol?', 'Mercurio', ['Venus', 'La Tierra', 'Marte']],
-    ['grande', '¿Cuál es el planeta <b>más grande</b>?', 'Júpiter', ['Saturno', 'La Tierra', 'Neptuno']],
+    ['cerca', '¿Qué planeta está <b>más cerca</b> del Sol?', 'Mercurio', ['Venus', 'La Tierra', 'Marte'], 'Es el primero de la lista: «Mi Vieja Tía…».', 'Mercurio es el más cercano al Sol.'],
+    ['grande', '¿Cuál es el planeta <b>más grande</b>?', 'Júpiter', ['Saturno', 'La Tierra', 'Neptuno'], 'Es un gigante de gas: el quinto planeta.', 'Júpiter es el más grande: adentro entrarían más de mil Tierras.'],
     // todos los gigantes tienen anillos, pero sólo los de Saturno se ven: las malas son planetas de roca
-    ['anillos', '¿Qué planeta tiene unos <b>anillos</b> enormes que se ven con un telescopio?', 'Saturno', ['Marte', 'Mercurio', 'Venus']],
-    ['rojo', '¿A qué planeta le dicen <b>el planeta rojo</b>?', 'Marte', ['Júpiter', 'Venus', 'Neptuno']],
-    ['sol', '¿Qué es el <b>Sol</b>?', 'Una estrella', ['Un planeta', 'Una luna', 'Un cometa']],
-    ['cuantos', '¿Cuántos <b>planetas</b> tiene el sistema solar?', '8', ['9', '7', '10']],
-    ['luna', '¿Qué es la <b>Luna</b>?', 'Un satélite de la Tierra', ['Un planeta', 'Una estrella', 'Un cometa']],
-    ['anio', '¿Cuánto tarda la Tierra en dar <b>una vuelta alrededor del Sol</b>?', 'Un año', ['Un día', 'Un mes', 'Una semana']],
+    ['anillos', '¿Qué planeta tiene unos <b>anillos</b> enormes que se ven con un telescopio?', 'Saturno', ['Marte', 'Mercurio', 'Venus'], 'Es el sexto planeta.', 'Los anillos de Saturno son de hielo y piedras.'],
+    ['rojo', '¿A qué planeta le dicen <b>el planeta rojo</b>?', 'Marte', ['Júpiter', 'Venus', 'Neptuno'], 'Es el cuarto planeta, justo después de la Tierra.', 'Marte es rojo porque su suelo está oxidado.'],
+    ['sol', '¿Qué es el <b>Sol</b>?', 'Una estrella', ['Un planeta', 'Una luna', 'Un cometa'], 'Brilla con luz propia, como las que se ven de noche.', 'El Sol es una estrella: la más cercana a nosotros.'],
+    ['cuantos', '¿Cuántos <b>planetas</b> tiene el sistema solar?', '8', ['9', '7', '10'], 'Contá: Mercurio, Venus, Tierra, Marte…', 'Son 8: Mercurio, Venus, Tierra, Marte, Júpiter, Saturno, Urano y Neptuno.'],
+    ['luna', '¿Qué es la <b>Luna</b>?', 'Un satélite de la Tierra', ['Un planeta', 'Una estrella', 'Un cometa'], 'Gira alrededor de la Tierra.', 'La Luna es un satélite: gira alrededor de la Tierra.'],
+    ['anio', '¿Cuánto tarda la Tierra en dar <b>una vuelta alrededor del Sol</b>?', 'Un año', ['Un día', 'Un mes', 'Una semana'], 'Es mucho más que un mes.', 'La Tierra tarda un año en dar la vuelta al Sol.'],
     // la mala más tentadora es la otra vuelta de la Tierra: ésa hace los años, no los días
-    ['dia', '¿Por qué hay <b>día y noche</b>?', 'Porque la Tierra gira sobre sí misma', ['Porque el Sol se apaga', 'Porque la Luna tapa al Sol', 'Porque la Tierra gira alrededor del Sol']],
+    ['dia', '¿Por qué hay <b>día y noche</b>?', 'Porque la Tierra gira sobre sí misma', ['Porque el Sol se apaga', 'Porque la Luna tapa al Sol', 'Porque la Tierra gira alrededor del Sol'], 'Pensá en una pelota que gira delante de una linterna.', 'La Tierra gira sobre sí misma: el lado que mira al Sol tiene día.'],
     // Mercurio está más cerca, pero Venus tiene una atmósfera que guarda el calor
-    ['caliente', '¿Cuál es el planeta <b>más caliente</b>?', 'Venus', ['Mercurio', 'Marte', 'La Tierra']],
-    ['lejos', '¿Qué planeta está <b>más lejos</b> del Sol?', 'Neptuno', ['Urano', 'Saturno', 'Plutón']],
-    ['pluton', '¿Qué es <b>Plutón</b> hoy?', 'Un planeta enano', ['Un planeta', 'Una estrella', 'Un satélite']],
-    ['galaxia', '¿Cómo se llama nuestra <b>galaxia</b>?', 'La Vía Láctea', ['Andrómeda', 'La Osa Mayor', 'El Sistema Solar']]
+    ['caliente', '¿Cuál es el planeta <b>más caliente</b>?', 'Venus', ['Mercurio', 'Marte', 'La Tierra'], 'No es el más cercano al Sol: tiene un aire espeso que guarda el calor.', 'Venus es el más caliente: su aire espeso guarda el calor.'],
+    ['lejos', '¿Qué planeta está <b>más lejos</b> del Sol?', 'Neptuno', ['Urano', 'Saturno', 'Plutón'], 'Es el último de la lista: «…Usar Neptuno».', 'Neptuno es el más lejano. Plutón ya no se cuenta como planeta.'],
+    ['pluton', '¿Qué es <b>Plutón</b> hoy?', 'Un planeta enano', ['Un planeta', 'Una estrella', 'Un satélite'], 'Antes era un planeta, pero es muy chiquito.', 'Plutón es un planeta enano: es muy chico para ser planeta.'],
+    ['galaxia', '¿Cómo se llama nuestra <b>galaxia</b>?', 'La Vía Láctea', ['Andrómeda', 'La Osa Mayor', 'El Sistema Solar'], 'Se llama como algo que se toma en el desayuno.', 'Nuestra galaxia es la Vía Láctea.']
   ]);
 
   var JUEGOS = [QUIEN_HACE, MI_CUERPO, DONDE_VIVE, ESTA_VIVO, PLANTAS, QUE_COME,

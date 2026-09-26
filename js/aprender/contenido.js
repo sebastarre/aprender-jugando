@@ -829,8 +829,8 @@ window.Lecciones = (function () {
             { visual: lugar('rio'), nombre: 'el río', decir: 'El río.' },
             { visual: emoji('🌊'), nombre: 'el mar', decir: 'El mar.' },
             { visual: emoji('🏖️'), nombre: 'la playa', decir: 'La playa.' },
-            { visual: emoji('🌲'), nombre: 'el bosque', decir: 'El bosque.' },
-            { visual: emoji('🌾'), nombre: 'el campo', decir: 'El campo.' }
+            { visual: lugar('bosque'), nombre: 'el bosque', decir: 'El bosque.' },
+            { visual: lugar('campo'), nombre: 'el campo', decir: 'El campo.' }
           ] }
         },
         {
@@ -846,7 +846,7 @@ window.Lecciones = (function () {
         {
           texto: 'En el <b>bosque</b> hay muchísimos árboles juntos. El <b>campo</b> es grande y plano, con pasto y vacas.',
           gesto: 'festejo',
-          visual: function () { return emojis(['🌲', '🌾']); },
+          visual: function () { return emojis([lugar('bosque'), lugar('campo')]); },
           practica: { pregunta: '¿Dónde hay <b>muchos árboles</b> juntos?', opciones: ['🌲 En el bosque', '🌊 En el mar', '🏖️ En la playa'], correcta: 0, explicacion: 'Un bosque es un lugar lleno de árboles.', pista: 'Buscá el dibujo que tiene árboles.' }
         }
       ]
@@ -872,7 +872,7 @@ window.Lecciones = (function () {
           texto: 'Hay lugares con muchísima gente y lugares con muchísimas vacas. Tocá cada uno.',
           interactivo: { tipo: 'escuchar', cosas: [
             { visual: emoji('🏙️'), nombre: 'la ciudad', decir: 'La ciudad: edificios, autos y mucha gente.' },
-            { visual: emoji('🌾'), nombre: 'el campo', decir: 'El campo: pasto, vacas y tractores.' },
+            { visual: lugar('campo'), nombre: 'el campo', decir: 'El campo: pasto, vacas y tractores.' },
             { visual: emoji('🌊'), nombre: 'el mar', decir: 'El mar: agua salada, barcos y peces.' }
           ] }
         },

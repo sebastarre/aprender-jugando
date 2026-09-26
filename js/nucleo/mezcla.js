@@ -51,6 +51,7 @@ window.Mezcla = (function () {
       alResponder: delegar('alResponder'),
       textoFallo: delegar('textoFallo'),
       textoRevelado: delegar('textoRevelado'),
+      textoAcierto: delegar('textoAcierto'),
       alTerminar: ganchos.alTerminar
     });
   }

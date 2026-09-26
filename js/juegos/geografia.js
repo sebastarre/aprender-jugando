@@ -285,9 +285,46 @@ window.Geografia = (function () {
     ['mar', 'el mar', '🌊'], ['rio', 'el río', '🏞️'],
     ['cueva', 'la cueva', '🕳️'], ['puente', 'el puente', '🌉']
   ];
-  /* Los que tienen dibujo propio (js/nucleo/dibujos.js): el emoji del río,
-     🏞️, es un parque con un lago, y no se entendía que era un río. */
-  var DIBUJO_LUGAR = { rio: 'rio' };
+  /* Los que tienen dibujo propio (js/nucleo/dibujos.js): con emoji, el río
+     (🏞️) era un parque con un lago, la cueva (🕳️) un agujero, el puente
+     (🌉) estaba de noche, el bosque (🌲) era un solo pino y el campo (🌾)
+     una espiga. El granero (🏚️) es del juego de «Dónde se ve». */
+  var DIBUJO_LUGAR = { rio: 'rio', cueva: 'cueva', puente: 'puente', bosque: 'bosque', campo: 'campo', granero: 'granero' };
+
+  /* Cómo es cada lugar, para decirlo al acertar y cuando se elige otro:
+     «el bosque tiene muchísimos árboles juntos» enseña más que «no era». */
+  var COMO_ES_LUGAR = {
+    'la montaña': 'es altísima, y arriba tiene nieve',
+    'el desierto': 'es de arena, con mucho sol y casi nada de agua',
+    'la isla': 'es tierra con agua por todos lados',
+    'el volcán': 'es una montaña que echa fuego y humo',
+    'la playa': 'es la arena al lado del mar',
+    'la ciudad': 'tiene edificios, calles y mucha gente',
+    'el campo': 'es grande y plano, con pasto, cultivos y animales',
+    'el bosque': 'tiene muchísimos árboles juntos',
+    'el mar': 'es agua salada, enorme, con olas',
+    'el río': 'es agua dulce que corre',
+    'la cueva': 'es un hueco grande en la roca',
+    'el puente': 'sirve para cruzar por arriba del agua'
+  };
+
+  /* Los que se parecen: en el dibujo del puente se ve el agua de un río, en
+     la playa y en la isla se ve el mar, y el volcán es una montaña. Nunca
+     van juntos como opciones, de ninguna de las dos maneras de preguntar. */
+  var PARECIDOS = {
+    'el río': ['el puente'], 'el puente': ['el río'],
+    'el mar': ['la playa', 'la isla'], 'la playa': ['el mar', 'la isla'], 'la isla': ['el mar', 'la playa'],
+    'la montaña': ['el volcán', 'la cueva'], 'el volcán': ['la montaña'], 'la cueva': ['la montaña']
+  };
+
+  /** El dibujo de un lugar o de una cosa: el propio si tiene, si no el emoji. */
+  function dibujoDe(it, etiqueta) {
+    if (it.dibujo && window.Dibujos) {
+      return '<div class="visual-emoji visual-paisaje" role="img" aria-label="' + etiqueta + '">' + Dibujos.svg(it.dibujo) + '</div>';
+    }
+    return '<div class="visual-emoji" role="img" aria-label="' + etiqueta + '">' + it.emoji + '</div>';
+  }
+  function mayusculaDe(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
 
   var PAISAJES_JUEGO = T.banco({
     id: 'paisajes',
@@ -306,13 +343,18 @@ window.Geografia = (function () {
     items: PAISAJES.map(function (p) { return { id: p[0], r: p[1], emoji: p[2], dibujo: DIBUJO_LUGAR[p[0]] }; }),
     forma: 'palabra',
     consigna: function () { return '¿Qué lugar es este?'; },
-    visual: function (it) {
-      if (it.dibujo && window.Dibujos) {
-        return '<div class="visual-emoji visual-paisaje" role="img" aria-label="' + it.r + '">' + Dibujos.svg(it.dibujo) + '</div>';
-      }
-      return '<div class="visual-emoji" role="img" aria-label="' + it.r + '">' + it.emoji + '</div>';
+    visual: function (it) { return dibujoDe(it, it.r); },
+    // eligió otro lugar: cómo es ése, y que mire otra vez
+    textoFallo: function (it, r) { return mayusculaDe(r) + ' ' + COMO_ES_LUGAR[r] + '. Mirá bien el dibujo.'; },
+    textoAcierto: function (it) { return mayusculaDe(it.r) + ' ' + COMO_ES_LUGAR[it.r] + '.'; },
+    textoRevelado: function (it) { return 'Es ' + it.r + ': ' + COMO_ES_LUGAR[it.r] + '.'; },
+    excluir: function (it) { return PARECIDOS[it.r] || []; },
+    alReves: {
+      consigna: function (it) { return '¿Dónde está <b>' + it.r + '</b>?'; },
+      excluir: function (it) { return PARECIDOS[it.r] || []; },
+      fallo: function (it, r) { return mayusculaDe(r) + ' ' + COMO_ES_LUGAR[r] + '.'; },
+      nombre: function (it) { return it.r; }
     },
-    textoRevelado: function (it) { return 'Es ' + it.r + '.'; },
     repaso: function (it) {
       if (it.dibujo && window.Dibujos) return { imagen: Dibujos.url(it.dibujo), dibujo: true, nombre: it.r, dato: 'Un lugar de la Tierra' };
       return { simbolo: it.emoji, nombre: it.r, dato: 'Un lugar de la Tierra' };
@@ -353,17 +395,24 @@ window.Geografia = (function () {
       { nombre: 'La ciudad y el campo', filtro: function (it) { return it.r !== 'en el mar'; } },
       { nombre: 'También el mar' }
     ],
-    items: DONDE.map(function (d) { return { id: d[0], que: d[1], emoji: d[2], r: d[3] }; }),
+    items: DONDE.map(function (d) { return { id: d[0], que: d[1], emoji: d[2], r: d[3], dibujo: DIBUJO_LUGAR[d[0]] }; }),
     categorias: ['en la ciudad', 'en el campo', 'en el mar'],
     cuantas: 3,
     forma: 'palabra',
     consigna: function (it) { return '¿Dónde se ve <b>' + it.que + '</b>?'; },
-    visual: function (it) {
-      return '<div class="visual-emoji" role="img" aria-label="' + it.que + '">' + it.emoji + '</div>';
+    visual: function (it) { return dibujoDe(it, it.que); },
+    textoFallo: function (it, r) { return mayusculaDe(it.que) + ' no se ve ' + r + '.'; },
+    textoRevelado: function (it) { return mayusculaDe(it.que) + ' se ve ' + it.r + '.'; },
+    textoAcierto: function (it) { return mayusculaDe(it.que) + ' se ve ' + it.r + '.'; },
+    alReves: {
+      consigna: function (it) { return '¿Qué se ve <b>' + it.r + '</b>?'; },
+      fallo: function (it, r, otro) { return mayusculaDe(otro.que) + ' se ve ' + r + '.'; },
+      nombre: function (it) { return it.que; }
     },
-    textoFallo: function (it, r) { return it.que.charAt(0).toUpperCase() + it.que.slice(1) + ' no se ve ' + r + '.'; },
-    textoRevelado: function (it) { return it.que.charAt(0).toUpperCase() + it.que.slice(1) + ' se ve ' + it.r + '.'; },
-    repaso: function (it) { return { simbolo: it.emoji, nombre: it.que, dato: 'Se ve ' + it.r }; }
+    repaso: function (it) {
+      if (it.dibujo && window.Dibujos) return { imagen: Dibujos.url(it.dibujo), dibujo: true, nombre: it.que, dato: 'Se ve ' + it.r };
+      return { simbolo: it.emoji, nombre: it.que, dato: 'Se ve ' + it.r };
+    }
   });
 
   /* Países conocidos, uno por continente y varios de América, para que
@@ -416,6 +465,7 @@ window.Geografia = (function () {
     },
     textoFallo: function (it, r) { return it.pais + ' no está en ' + r + '.'; },
     textoRevelado: function (it) { return it.pais + ' está en ' + it.r + '.'; },
+    textoAcierto: function (it) { return it.pais + ' está en ' + it.r + '.'; },
     repaso: function (it) {
       return { imagen: Util.bandera(it.bandera), nombre: it.pais, dato: 'Está en ' + it.r };
     }
@@ -516,7 +566,8 @@ window.Geografia = (function () {
         return con(ganchosMapa, {
           textoRevelado: function (pais) {
             return 'Era ' + pais.nombre + '. ¡Ahora ya sabés dónde queda!';
-          }
+          },
+          textoAcierto: function (pais) { return pais.nombre + ' está en ' + pais.sub + '.'; }
         });
       }
     },
@@ -547,7 +598,8 @@ window.Geografia = (function () {
         return con(ganchosMapa, {
           textoRevelado: function (pais) {
             return 'Era ' + pais.nombre + ': ahí está ' + pais.capital + '.';
-          }
+          },
+          textoAcierto: function (pais) { return pais.capital + ' es la capital de ' + pais.nombre + '.'; }
         });
       }
     },
@@ -617,7 +669,8 @@ window.Geografia = (function () {
             return pais.__ctx.modo === 'quiz'
               ? 'Era ' + pais.nombre + '. ¡Mirá bien su bandera!'
               : 'Era ' + pais.nombre + '. ¡Ahora ya sabés dónde queda!';
-          }
+          },
+          textoAcierto: function (pais) { return 'Es la bandera de ' + pais.nombre + '.'; }
         };
       }
     }

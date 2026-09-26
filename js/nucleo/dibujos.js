@@ -211,6 +211,77 @@ window.Dibujos = (function () {
     // el recuadro, al final: tapa las puntas de todo lo de adentro
     rect(8, 12, 104, 96, 16, 'none');
 
+  /* Los otros lugares que con emoji confundían, en el mismo recuadro: la
+     cueva era un agujero (🕳️), el puente estaba de noche (🌉), el granero
+     era una casa abandonada (🏚️), el bosque era un solo pino (🌲) y el
+     campo, una espiga (🌾). */
+  function cielo() { return '<rect x="8" y="12" width="104" height="96" rx="16" fill="' + C.agua + '"/>'; }
+  // el suelo desde la altura y hasta abajo, con las esquinas del recuadro
+  function suelo(y, color) {
+    return '<path d="M8 ' + y + ' L112 ' + y + ' L112 92 A16 16 0 0 1 96 108 L24 108 A16 16 0 0 1 8 92 Z" fill="' + color + '"/>';
+  }
+  function recuadro() { return rect(8, 12, 104, 96, 16, 'none'); }
+  function pino(cx, base, ancho, alto) {
+    return rect(cx - 2.5, base - 2, 5, 9, 1.5, C.pelo) +
+      camino('M' + (cx - ancho) + ' ' + base + ' L' + cx + ' ' + (base - alto * 0.62) + ' L' + (cx + ancho) + ' ' + base + ' Z', C.verde) +
+      camino('M' + (cx - ancho * 0.72) + ' ' + (base - alto * 0.42) + ' L' + cx + ' ' + (base - alto) + ' L' +
+             (cx + ancho * 0.72) + ' ' + (base - alto * 0.42) + ' Z', C.verde);
+  }
+
+  // La cueva: una loma de piedra con la boca oscura abajo
+  D.cueva =
+    cielo() + circ(90, 30, 8, C.girasol) +
+    camino('M8 74 Q16 40 46 32 Q76 24 98 40 Q108 48 112 58 L112 92 A16 16 0 0 1 96 108 L24 108 A16 16 0 0 1 8 92 Z', C.canas) +
+    raya('M22 62 q6 -4 12 -2 M86 50 q6 -3 11 1 M94 78 q5 -3 9 0 M20 86 q5 -3 9 0', T, 2.2, ' opacity=".35"') +
+    camino('M40 108 L40 86 Q40 62 60 62 Q80 62 80 86 L80 108 Z', T) +
+    '<ellipse cx="31" cy="102" rx="6" ry="3.5" fill="' + C.canas + '"' + TR + '/>' +
+    '<ellipse cx="89" cy="103" rx="5" ry="3" fill="' + C.canas + '"' + TR + '/>' +
+    recuadro();
+
+  // El puente: de día, de una orilla a la otra por arriba del agua
+  D.puente =
+    cielo() + circ(26, 30, 8, C.girasol) +
+    suelo(80, C.cielo) +
+    raya('M20 94 q5 -3 10 0 M52 100 q5 -3 10 0 M82 92 q5 -3 10 0', C.blanco, 2.6) +
+    camino('M8 60 L28 60 L34 80 L8 80 Z', C.pasto) +
+    camino('M112 60 L92 60 L86 80 L112 80 Z', C.pasto) +
+    camino('M26 80 Q60 34 94 80 L84 80 Q60 50 36 80 Z', C.coral) +
+    rect(18, 52, 84, 8, 3, C.coral) +
+    raya('M22 52 V43 M34 52 V43 M46 52 V43 M58 52 V43 M70 52 V43 M82 52 V43 M96 52 V43 M20 43 H100', T, 2.6) +
+    recuadro();
+
+  // El granero: el galpón rojo del campo, con su portón y un fardo
+  D.granero =
+    cielo() + circ(94, 28, 8, C.girasol) +
+    suelo(86, C.pasto) +
+    rect(30, 54, 56, 42, 3, C.coral) +
+    camino('M24 58 L58 30 L92 58 Z', C.pelo) +
+    rect(52, 40, 12, 12, 2, C.blanco) +
+    rect(46, 70, 24, 26, 2, C.blanco) +
+    raya('M46 70 L70 96 M70 70 L46 96', C.coral, 3) +
+    rect(92, 86, 14, 10, 2, C.girasol) +
+    recuadro();
+
+  // El bosque: muchos árboles juntos, los de atrás más chicos
+  D.bosque =
+    cielo() + circ(92, 28, 8, C.girasol) +
+    suelo(76, C.pasto) +
+    pino(30, 76, 14, 34) + pino(80, 76, 13, 30) +
+    pino(52, 94, 20, 54) + pino(98, 96, 12, 36) +
+    rect(18, 86, 5, 12, 2, C.pelo) + circ(20.5, 80, 10, C.verde) +
+    recuadro();
+
+  // El campo: la llanura con los surcos, el alambrado y el molino
+  D.campo =
+    cielo() + circ(28, 30, 8, C.girasol) +
+    suelo(66, C.pasto) +
+    raya('M8 80 L66 72 M8 94 L70 82 M18 106 L76 92', C.verde, 3.4) +
+    raya('M14 64 V80 M30 62 V78 M46 60 V76 M10 68 L50 63', T, 2.6) +
+    raya('M84 96 L91 42 L98 96 M86 80 H96 M88 62 H94', T, 3) +
+    raya('M91 27 V53 M78 40 H104 M81.8 30.8 L100.2 49.2 M100.2 30.8 L81.8 49.2', T, 3) +
+    circ(91, 40, 4, C.coral) +
+    recuadro();
+
   /* ---------- las caritas de la bienvenida ---------- */
 
   function cara(cx, cy, r, pelo, conAnteojos) {

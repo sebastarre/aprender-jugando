@@ -266,6 +266,8 @@ window.Tablero = (function () {
       },
       // sin un texto propio, el motor dice algo amable («¡Buen intento!»)
       textoFallo: textos.fallo || null,
+      // lo que acertó, en palabras, después del festejo («Son 5 pelotas»)
+      textoAcierto: textos.acierto || null,
       // la ayuda de cada intento fallado; sin pista, el aviso de siempre
       pista: textos.pista || null,
       textoRevelado: textos.revelado || function (it) {
@@ -465,7 +467,10 @@ window.Tablero = (function () {
    *   def.forma, def.mostrar, def.etiqueta   ver respuestas()
    *   def.repaso     function (item) -> { simbolo, nombre, dato }
    *   def.textoFallo, def.textoRevelado
+   *   def.textoAcierto function (item) -> lo que acertó, en palabras, después
+   *                  del festejo («El delfín vive en el mar»)
    *   def.pista      function (item, intento) -> la ayuda de ese intento (1 o 2)
+   *   def.alReves    otra manera de preguntar, con dibujos (ver tocaAlReves)
    */
   function banco(def) {
     var items = def.items.map(function (x) {
@@ -527,6 +532,62 @@ window.Tablero = (function () {
     });
     var porNivel = {};
     niveles.forEach(function (n) { porNivel[n.id] = n; });
+
+    /* ---------------------- al revés ----------------------
+
+       Otra manera de preguntar lo mismo: en vez de «¿Qué es la vaca?» con
+       las categorías abajo, «¿Cuál come plantas?» con los dibujos abajo.
+       Ahora que nada se repite los niveles son más cortos, y así se
+       practica más sin repetir; el que todavía no lee contesta mirando.
+       Va alternada con la de siempre, como el «¿Dónde está…?» de Inglés:
+       de 4 a 7 una y una, de 8 a 12 una de cada tres.
+
+         def.alReves.consigna  function (item) -> «¿Cuál vive en el mar?»
+         def.alReves.fallo     function (item, r, otro) -> lo que se dice
+                               del dibujo que tocó (otro), que es de la
+                               categoría r
+         def.alReves.excluir   function (item) -> categorías que no pueden
+                               estar entre los dibujos (el pingüino también
+                               vive en el mar)
+       Cada botón es un dibujo (def.visual). Los otros son de otras
+       categorías, así que sigue habiendo uno solo bien. */
+    function tocaAlReves() {
+      if (!def.alReves || !window.Motor) return false;
+      var i = Motor.indiceActual();
+      var chico = document.documentElement.classList.contains('registro-chico');
+      return chico ? i % 2 === 1 : i % 3 === 1;
+    }
+
+    function montarAlReves(it) {
+      var prohibidas = {};
+      prohibidas[plano(it.r)] = true;
+      (def.alReves.excluir ? def.alReves.excluir(it) : []).forEach(function (r) { prohibidas[plano(r)] = true; });
+      // los otros dibujos, de otras categorías: primero de categorías distintas entre sí
+      var cuantos = (def.cuantas || 4) - 1;
+      var candidatos = Util.mezclar(items.filter(function (o) { return !prohibidas[plano(o.r)]; }));
+      var otros = [], usadas = {};
+      candidatos.forEach(function (o) {
+        if (otros.length < cuantos && !usadas[plano(o.r)]) { usadas[plano(o.r)] = true; otros.push(o); }
+      });
+      candidatos.forEach(function (o) { if (otros.length < cuantos && otros.indexOf(o) < 0) otros.push(o); });
+      consigna(def.alReves.consigna(it));
+      visual(null);
+      /* El bueno vale su respuesta, como siempre; cada uno de los otros, su
+         propio id con un «#» adelante (puede haber dos de la misma
+         categoría, y cada botón tiene que tener el suyo). */
+      Opciones.armar(Util.mezclar(otros.concat([it])).map(function (o) {
+        return { id: o === it ? it.r : '#' + o.id, cosa: o };
+      }), {
+        clase: 'dibujo',
+        contenido: function (o) {
+          var caja = Util.crear('span', 'opcion-dibujo');
+          caja.innerHTML = def.visual(o.cosa);
+          return caja;
+        },
+        atributos: function (o) { return { 'aria-label': def.alReves.nombre ? def.alReves.nombre(o.cosa) : plano(o.cosa.r) }; },
+        alElegir: function (o) { Motor.responder(o.id); }
+      });
+    }
 
     /** El nivel elegido; sin nada elegido, el último (que los tiene todos). */
     function nivelDe(sel) {
@@ -775,6 +836,12 @@ window.Tablero = (function () {
          dice?» y «¿dónde está?», y Sílabas suma las palmas. */
       montar: function (it) {
         preparar();
+        it.__alReves = tocaAlReves();
+        if (it.__alReves) {
+          montarAlReves(it);
+          if (def.alMontar) def.alMontar(it);
+          return;
+        }
         consigna(def.consigna(it));
         visual(def.visual ? def.visual(it) : null);
         function base() {
@@ -788,7 +855,19 @@ window.Tablero = (function () {
         if (def.alMontar) def.alMontar(it);
       },
       ganchos: function () {
-        return ganchos(correcta, { fallo: def.textoFallo, revelado: def.textoRevelado, pista: def.pista });
+        return ganchos(correcta, {
+          // al revés se tocó un dibujo: lo que se dice es de ése («El conejo come plantas»)
+          fallo: function (it, r) {
+            if (it.__alReves && def.alReves.fallo) {
+              var otro = String(r).charAt(0) === '#' ? porId[String(r).slice(1)] : null;
+              return otro ? def.alReves.fallo(it, otro.r, otro) : '';
+            }
+            return def.textoFallo ? def.textoFallo(it, r) : '';
+          },
+          revelado: def.textoRevelado,
+          pista: def.pista,
+          acierto: def.textoAcierto
+        });
       },
       /* La tarjeta con que se presenta algo nuevo antes de preguntarlo
          (ver js/nucleo/presentacion.js). Si el juego no dice cómo, sale

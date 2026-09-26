@@ -70,6 +70,12 @@ window.Lengua = (function () {
 
   function escrita(id) { return NOMBRES_PRIMERA[id] || id; }
 
+  /** «Oso» empieza con O. */
+  function empiezaCon(it) {
+    var p = escrita(it.id.split(':')[1]);
+    return '«' + p.charAt(0).toUpperCase() + p.slice(1) + '» empieza con ' + it.r + '.';
+  }
+
   var PRIMERA_LETRA = T.banco({
     id: 'letras',
     nombre: 'La primera letra',
@@ -94,9 +100,14 @@ window.Lengua = (function () {
       return '<div class="visual-emoji" role="img" aria-label="' + escrita(it.id.split(':')[1]) + '">' + it.emoji + '</div>';
     },
     textoFallo: function (it) { return 'Decí «' + escrita(it.id.split(':')[1]) + '» despacito: ¿cómo suena al principio?'; },
-    textoRevelado: function (it) {
-      var p = escrita(it.id.split(':')[1]);
-      return '«' + p.charAt(0).toUpperCase() + p.slice(1) + '» empieza con ' + it.r + '.';
+    textoRevelado: function (it) { return empiezaCon(it); },
+    textoAcierto: function (it) { return empiezaCon(it); },
+    alReves: {
+      consigna: function (it) { return '¿Cuál empieza con <b>' + it.r + '</b>?'; },
+      fallo: function (it, r, otro) { return empiezaCon(otro); },
+      // la B y la V suenan igual: no pueden estar juntas entre los dibujos
+      excluir: function (it) { return SE_CONFUNDEN[it.r] || []; },
+      nombre: function (it) { return escrita(it.id.split(':')[1]); }
     },
     repaso: function (it) {
       return { simbolo: it.emoji, nombre: escrita(it.id.split(':')[1]), dato: 'Empieza con ' + it.r };
@@ -155,6 +166,7 @@ window.Lengua = (function () {
     },
     textoFallo: function () { return 'Decí la palabra despacito y escuchá qué vocal falta.'; },
     textoRevelado: function (it) { return 'Faltaba la «' + it.r + '»: ' + it.palabra + '.'; },
+    textoAcierto: function (it) { return 'Faltaba la «' + it.r + '»: ' + it.palabra + '.'; },
     presentar: function (it) {
       var p = it.palabra;
       return {
@@ -217,6 +229,7 @@ window.Lengua = (function () {
     consigna: function (it) { return '¿Qué palabra rima con <b>' + it.palabra + '</b>?'; },
     textoFallo: function (it, r) { return 'Escuchá el final: «' + it.palabra + '» y «' + r + '» terminan distinto.'; },
     textoRevelado: function (it) { return '«' + it.palabra + '» rima con «' + it.r + '».'; },
+    textoAcierto: function (it) { return '«' + it.palabra + '» rima con «' + it.r + '».'; },
     presentar: function (it) {
       return { titulo: '<b>' + it.palabra + '</b> y <b>' + it.r + '</b>', texto: 'Riman: suenan igual al final.' };
     },
@@ -281,6 +294,7 @@ window.Lengua = (function () {
     consigna: function (it) { return '¿Cuál es lo contrario de <b>' + it.palabra + '</b>?'; },
     textoFallo: function (it) { return 'Pensá lo opuesto de «' + it.palabra + '»: ¿qué sería al revés?'; },
     textoRevelado: function (it) { return 'Lo contrario de «' + it.palabra + '» es «' + it.r + '».'; },
+    textoAcierto: function (it) { return 'Lo contrario de «' + it.palabra + '» es «' + it.r + '».'; },
     presentar: function (it) {
       return { titulo: '<b>' + it.palabra + '</b> y <b>' + it.r + '</b>', texto: 'Son contrarios: uno es lo opuesto del otro.' };
     },
@@ -334,6 +348,7 @@ window.Lengua = (function () {
     textoRevelado: function (it) {
       return 'Tiene ' + it.r + ': ' + it.partes.split('-').join(' · ') + '.';
     },
+    textoAcierto: function (it) { return it.partes.split('-').join(' · ') + '.'; },
     /* Las palmas: un botón para aplaudir cada golpe de voz mientras se
        dice la palabra, y los puntitos de cuántas van. Es lo que se hace
        en la escuela, con las manos; acá además suena. */
@@ -461,6 +476,7 @@ window.Lengua = (function () {
       return 'Empieza con «' + it.piezas[0] + '».';
     },
     textoRevelado: function (it) { return 'Era «' + it.palabra + '»: ' + it.piezas.join(' · ') + '.'; },
+    textoAcierto: function (it) { return '«' + it.palabra + '»: ' + it.piezas.join(' · ') + '.'; },
     repaso: function (it) {
       return { simbolo: it.emoji, nombre: it.palabra, dato: it.piezas.join(' · ') };
     }
@@ -519,6 +535,7 @@ window.Lengua = (function () {
     textoFallo: function () { return 'Mirá bien cada letra: hay una que cambia.'; },
     // no «un ...»: sería «un mamá», «un flor», «un luz»
     textoRevelado: function (it) { return 'El plural de «' + it.palabra + '» es «' + it.r + '».'; },
+    textoAcierto: function (it) { return 'El plural de «' + it.palabra + '» es «' + it.r + '».'; },
     repaso: function (it) { return { simbolo: '📚', nombre: 'El plural de ' + it.palabra, dato: it.r }; }
   });
 
@@ -576,6 +593,7 @@ window.Lengua = (function () {
     consigna: function () { return '¿Cuál está <b>bien escrita</b>?'; },
     textoFallo: function () { return 'Mirá bien cada letra: hay una que cambia.'; },
     textoRevelado: function (it) { return 'Se escribe «' + it.r + '». ' + reglaDe(it.r); },
+    textoAcierto: function (it) { return 'Se escribe «' + it.r + '».'; },
     pista: function (it, intento) {
       if (intento === 1) return reglaDe(it.r);
       return 'Empieza así: «' + it.r.slice(0, Math.ceil(it.r.length / 2)) + '…»';
@@ -631,6 +649,7 @@ window.Lengua = (function () {
     consigna: function (it) { return '¿Qué palabra significa lo mismo que <b>' + it.palabra + '</b>?'; },
     textoFallo: function (it, r) { return '«' + r + '» quiere decir otra cosa.'; },
     textoRevelado: function (it) { return '«' + it.palabra + '» y «' + it.r + '» son sinónimos.'; },
+    textoAcierto: function (it) { return '«' + it.palabra + '» y «' + it.r + '» quieren decir lo mismo.'; },
     repaso: function (it) { return { simbolo: '🟰', nombre: 'Lo mismo que ' + it.palabra, dato: it.r }; }
   });
 
@@ -692,6 +711,9 @@ window.Lengua = (function () {
     textoFallo: function () { return 'Decí la palabra en voz alta: ¿qué parte suena más fuerte?'; },
     textoRevelado: function (it) {
       return it.r === sinTilde(it.r) ? '«' + it.r + '» no lleva tilde.' : 'Se escribe «' + it.r + '».';
+    },
+    textoAcierto: function (it) {
+      return it.r === sinTilde(it.r) ? '«' + it.r + '» no lleva tilde.' : '«' + it.r + '» lleva tilde.';
     },
     repaso: function (it) { return { simbolo: '´', nombre: 'Se escribe', dato: it.r }; }
   });
@@ -759,6 +781,7 @@ window.Lengua = (function () {
     textoRevelado: function (it) {
       return '«' + it.palabra + '» es un ' + it.r + ': ' + PISTAS_CLASE[it.r] + '.';
     },
+    textoAcierto: function (it) { return '«' + it.palabra + '» es un ' + it.r + '.'; },
     repaso: function (it) { return { simbolo: '🏷️', nombre: it.palabra, dato: 'Es un ' + it.r }; }
   });
 

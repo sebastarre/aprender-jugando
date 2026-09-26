@@ -52,8 +52,10 @@ window.Lector = (function () {
       esperaAviso = setTimeout(function () {
         /* También cuando se equivoca: «¡Buen intento! ¡Probá otra vez!»
            dicho en voz alta es lo que haría un grande al lado, y el que
-           todavía no lee no tiene otra manera de enterarse. */
-        if (/\b(mal|pista|dato)\b/.test(aviso.className) && aviso.textContent.trim()) {
+           todavía no lee no tiene otra manera de enterarse. Y cuando
+           acierta y el cartel repite lo aprendido («¡Muy bien! Son 5
+           pelotas»): el motor espera a que la voz termine. */
+        if (/\b(mal|pista|dato|con-refuerzo)\b/.test(aviso.className) && aviso.textContent.trim()) {
           quitarResaltado();
           Voz.decir(aviso.innerHTML);
         }

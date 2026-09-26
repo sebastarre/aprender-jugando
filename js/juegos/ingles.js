@@ -62,6 +62,7 @@ window.Ingles = (function () {
       textoRevelado: function (it) {
         return '<b>' + it.que.charAt(0).toUpperCase() + it.que.slice(1) + '</b> se dice <span lang="en">' + it.r + '</span>.';
       },
+      textoAcierto: function (it) { return completo.textoRevelado(it); },
       repaso: function (it) {
         return { simbolo: it.emoji || '🔤', nombre: it.que, dato: 'En inglés: ' + it.r };
       },
@@ -422,6 +423,9 @@ window.Ingles = (function () {
     textoRevelado: function (it) {
       return '<span lang="en">' + it.ingles + '</span> quiere decir «' + it.r + '».';
     },
+    textoAcierto: function (it) {
+      return '<span lang="en">' + it.ingles + '</span> quiere decir «' + it.r + '».';
+    },
     repaso: function (it) {
       return { simbolo: '💬', nombre: it.ingles, dato: 'Quiere decir: ' + it.r };
     }
@@ -477,6 +481,10 @@ window.Ingles = (function () {
       }[r] || '';
     },
     textoRevelado: function (it) { return it.pista; },
+    // la frase entera, ya completa: «She is happy»
+    textoAcierto: function (it) {
+      return '<span lang="en">' + it.frase.replace('___', '<b>' + it.r + '</b>') + '</span>';
+    },
     repaso: function (it) {
       return { simbolo: '🔤', nombre: it.frase.replace('___', it.r), dato: T.plano(it.pista) };
     }

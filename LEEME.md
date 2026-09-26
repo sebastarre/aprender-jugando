@@ -260,6 +260,15 @@ tres veces, a veces seguidas. Ahora (`js/nucleo/tablero.js`):
   se repiten en una partida, y el mismo resultado sale dos veces como mucho
   (`Tablero.variadas`). «El más grande» hasta 10 ya no es casi siempre el 10:
   primero se elige la respuesta y después los otros números.
+- **Otra manera de preguntar lo mismo.** En los juegos de lista con dibujos
+  (los lugares, dónde se ve, dónde vive, qué come, clases de animales, la
+  primera letra) una pregunta de cada dos (de 4 a 7) o de cada tres (de 8 a
+  12) va al revés: en vez de «¿Qué es la vaca?» con las categorías abajo,
+  «¿Cuál come plantas?» con los dibujos abajo. Así los niveles cortos se
+  practican más sin repetir, y el que todavía no lee contesta mirando. Nunca
+  quedan dos respuestas buenas: en «¿Cuál come carne?» no sale el oso (es
+  omnívoro y también come carne), y el río no sale junto al puente, que tiene
+  agua abajo (`def.alReves` en `Tablero.banco`).
 - **Cuando las respuestas son categorías fijas** (herbívoro, carnívoro y
   omnívoro; sustantivo, adjetivo y verbo; en la ciudad, en el campo y en el
   mar), los botones van siempre en el mismo orden, y las letras por abecedario:
@@ -631,11 +640,22 @@ mudo. Ahora:
   su propio texto, el cartel arrancaba de una con él, y algunos sonaban a reto
   («¿Seguro que son 3?», «Mirá bien: se escribe distinto»). Nunca «mal» ni «te
   queda 1 intento»: los corazones ya lo muestran.
+- **Los cuestionarios de Ciencias** (las plantas, el cuerpo por dentro, la
+  materia, el sistema solar) traen en cada pregunta una pista para pensar
+  («Pensá en la parte que está bajo tierra») y un dato que explica la
+  respuesta («La raíz está bajo tierra y chupa el agua»). Antes, al errar sólo
+  decían «¡Buen intento!». En Contar, el segundo error trae la regla de oro:
+  «Tocá cada uno una sola vez. El último número que digas es cuántos hay».
 - **Lo que eligió también enseña.** Cada juego dice qué es: «El gato hace
   «¡Miau!»», «Cat es el gato», «En el mar viven el delfín y el pulpo»,
   «Probá: 6 × 7 da 42, y buscamos 56». O hace una pregunta para pensar: «Un pez
   respira con branquias: ¿el delfín también?», «Pensá: ¿para qué sirve la
   nariz?».
+- **Al acertar, además, repite lo aprendido:** «¡Genial! Son 5 pelotas»,
+  «¡Muy bien! 6 × 7 = 42», «¡Eso es! La vaca come plantas», «¡Bravo! Cat es el
+  gato». Escucharlo otra vez es lo que hace que quede. A los chicos se lo dice
+  la voz, y el juego espera a que termine antes de pasar (`textoAcierto` de
+  cada juego).
 - **Al acertar se festeja de verdad**, cada vez distinto («¡Genial!»,
   «¡Bravo!», «¡Lo sabías!»…) y una de cada tres veces con su nombre («¡Muy
   bien, Sofi!»). Nunca la misma frase dos veces seguidas, y el festejo queda
@@ -850,10 +870,12 @@ color, la pregunta, los globos— es plano. Así se sabe qué se toca sin probar
 como la mascota, y rellenos planos, sin ids (se pueden repetir en la misma
 pantalla). Hay uno por materia y uno por cada lugar grande: jugar, aprender, la
 meta, el repaso, la tienda, los ajustes, el candado y las caritas de la
-bienvenida. También el río del juego de los lugares: el emoji 🏞️ es un parque
-con un lago y no se entendía, así que es una foto dibujada, con el río que
-nace entre las lomas y se ensancha (`Dibujos.url` lo da como imagen, para el
-repaso). Se ponen con `data-dibujo="geografia"` o con
+bienvenida. También los lugares cuyos emojis confundían, dibujados como
+fotos en un recuadro: el río (🏞️ era un parque con un lago), la cueva (🕳️ era
+un agujero), el puente (🌉 estaba de noche), el bosque (🌲 era un solo pino),
+el campo (🌾 era una espiga, ahora con alambrado y molino) y el granero (🏚️
+era una casa abandonada). `Dibujos.url` los da como imagen, para el repaso.
+Se ponen con `data-dibujo="geografia"` o con
 `Dibujos.poner(el, 'geografia')`, y `herramientas/dibujos.html` los muestra
 todos juntos para revisarlos al agregar uno. **Los íconos chicos** siguen en
 `js/nucleo/iconos.js` (grilla de 24, trazo redondeado, dos tonos). En la
@@ -1183,7 +1205,7 @@ Es mucho para mirar, así que va en **cuatro pestañas**:
     (aprendiendo, afianzando o ya lo sabe), sacado de las cajas del repaso
     espaciado, y cuánto le toca repasar hoy.
   - *Lo que le cuesta* y *lo que mejor le sale*, con su materia.
-  - *Lecciones*: las 17, completada, para repasar o sin hacer.
+  - *Lecciones*: todas, completada, para repasar o sin hacer.
 - **Juegos**
   - *Juego por juego*, agrupado por materia: en qué nivel del mapa va, sus
     estrellas, partidas, porcentaje de aciertos, tiempo y cuándo jugó por

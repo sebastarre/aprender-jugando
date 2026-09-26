@@ -261,7 +261,14 @@ window.Matematica = (function () {
     },
     ganchos: function () {
       return T.ganchos(function (it) { return it.n; }, {
-        fallo: function () { return 'Contá de nuevo, tocando cada dibujito: uno, dos, tres…'; },
+        pista: function (it, intento) {
+          return intento === 1
+            ? 'Contá de nuevo, tocando cada dibujito: uno, dos, tres…'
+            : 'Tocá cada uno una sola vez. El último número que digas es cuántos hay.';
+        },
+        acierto: function (it) {
+          return it.n === 1 ? 'Es 1 ' + it.cosa.uno + '.' : 'Son ' + it.n + ' ' + it.cosa.muchos + '.';
+        },
         revelado: function (it) {
           return it.n === 1 ? 'Era 1 ' + it.cosa.uno + '.' : 'Eran ' + it.n + ' ' + it.cosa.muchos + '.';
         }
@@ -414,7 +421,11 @@ window.Matematica = (function () {
           var como = COMO_ES[r.toLowerCase()];
           return como ? 'Un ' + r.toLowerCase() + ' ' + como + ': ¿ésta también?' : '';
         },
-        revelado: function (it) { return 'Es un ' + nombreFigura(it.figura).toLowerCase() + '.'; }
+        revelado: function (it) { return 'Es un ' + nombreFigura(it.figura).toLowerCase() + '.'; },
+        acierto: function (it) {
+          var n = nombreFigura(it.figura).toLowerCase();
+          return 'Es un ' + n + (COMO_ES[n] ? ': ' + COMO_ES[n] : '') + '.';
+        }
       });
     },
     deClave: function (resto) {
@@ -557,6 +568,9 @@ window.Matematica = (function () {
         },
         revelado: function (it) {
           return 'El ' + (it.modo === 'mayor' ? 'más grande' : 'más chico') + ' era ' + it.respuesta + '.';
+        },
+        acierto: function (it) {
+          return 'El ' + it.respuesta + ' es el ' + (it.modo === 'mayor' ? 'más grande' : 'más chico') + '.';
         }
       });
     },
@@ -823,7 +837,8 @@ window.Matematica = (function () {
       return T.ganchos(function (it) { return it.resultado; }, {
         fallo: diagnosticoCuenta,
         pista: pistaCuenta,
-        revelado: explicacionCuenta
+        revelado: explicacionCuenta,
+        acierto: function (it) { return it.a + ' ' + it.op + ' ' + it.b + ' = ' + it.resultado + '.'; }
       });
     }
   };
@@ -939,6 +954,11 @@ window.Matematica = (function () {
           var regla = it.paso === 'x2' ? 'cada uno es el doble del anterior'
             : (it.paso.charAt(0) === '+' ? 'se suma ' : 'se resta ') + Math.abs(parseInt(it.paso, 10));
           return 'Seguía el ' + it.respuesta + ': ' + regla + '.';
+        },
+        // lo que hay que llevarse es la regla, no el número
+        acierto: function (it) {
+          return it.paso === 'x2' ? 'Cada número es el doble del anterior.'
+            : (it.paso.charAt(0) === '+' ? 'Va sumando ' : 'Va restando ') + Math.abs(parseInt(it.paso, 10)) + '.';
         }
       });
     },
@@ -1090,6 +1110,10 @@ window.Matematica = (function () {
         revelado: function (it) {
           return 'Eran las ' + it.texto + ': la aguja corta marca las ' + it.hora +
                  (it.minuto ? ' y la larga, ' + it.minuto + ' minutos.' : ' y la larga está en el 12.');
+        },
+        // «Son las tres y cuarto», como se dice
+        acierto: function (it) {
+          return window.Actividades ? Actividades.frase(it.hora, it.minuto) + '.' : 'Son las ' + it.texto + '.';
         }
       });
     }
@@ -1202,7 +1226,8 @@ window.Matematica = (function () {
         revelado: function (it) {
           var suma = it.b <= 5 && it.b > 1 ? ' (' + new Array(it.b + 1).join(it.a + ' + ').slice(0, -3) + ')' : '';
           return it.a + ' × ' + it.b + ' = ' + it.resultado + suma + '.';
-        }
+        },
+        acierto: function (it) { return it.a + ' × ' + it.b + ' = ' + it.resultado + '.'; }
       });
     }
   };
@@ -1312,6 +1337,9 @@ window.Matematica = (function () {
           return it.modo === 'doble'
             ? 'El doble de ' + it.n + ' es ' + it.respuesta + ' (' + it.n + ' + ' + it.n + ').'
             : 'La mitad de ' + it.n + ' es ' + it.respuesta + ' (' + it.respuesta + ' + ' + it.respuesta + ' = ' + it.n + ').';
+        },
+        acierto: function (it) {
+          return (it.modo === 'doble' ? 'El doble de ' : 'La mitad de ') + it.n + ' es ' + it.respuesta + '.';
         }
       });
     },
@@ -1427,6 +1455,9 @@ window.Matematica = (function () {
         revelado: function (it) {
           var lugar = it.respuesta / it.cifra;
           return 'Vale ' + it.respuesta + ': está en el lugar de las ' + nombres[lugar] + '.';
+        },
+        acierto: function (it) {
+          return 'El ' + it.cifra + ' está en las ' + nombres[it.respuesta / it.cifra] + ': vale ' + it.respuesta + '.';
         }
       });
     },
@@ -1530,7 +1561,8 @@ window.Matematica = (function () {
         },
         revelado: function (it) {
           return it.a + ' ÷ ' + it.d + ' = ' + it.respuesta + ', porque ' + it.respuesta + ' × ' + it.d + ' = ' + it.a + '.';
-        }
+        },
+        acierto: function (it) { return it.a + ' ÷ ' + it.d + ' = ' + it.respuesta + '.'; }
       });
     },
     deClave: function (resto) {
@@ -1665,7 +1697,9 @@ window.Matematica = (function () {
         fallo: function () { return 'Leé el cuento otra vez: ¿qué cuenta hay que hacer?'; },
         revelado: function (it) {
           return 'Era ' + it.a + ' ' + it.op + ' ' + it.b + ' = ' + it.respuesta + '.';
-        }
+        },
+        // lo difícil de un problema es darse cuenta de la cuenta: se dice cuál era
+        acierto: function (it) { return it.a + ' ' + it.op + ' ' + it.b + ' = ' + it.respuesta + '.'; }
       });
     },
     deClave: function (resto) {
@@ -1820,7 +1854,8 @@ window.Matematica = (function () {
         fallo: function () { return 'Contá las partes pintadas y las partes en total.'; },
         revelado: function (it) {
           return 'Era ' + it.respuesta + ': ' + it.n + (it.n === 1 ? ' pintada' : ' pintadas') + ' de ' + it.d + ' partes iguales.';
-        }
+        },
+        acierto: function (it) { return it.n + (it.n === 1 ? ' pintada' : ' pintadas') + ' de ' + it.d + ': ' + it.respuesta + '.'; }
       });
     },
     deClave: function (resto) {
