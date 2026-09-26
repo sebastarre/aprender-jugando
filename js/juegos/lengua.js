@@ -1,9 +1,10 @@
 /* ============================================================
    Materia: Lengua.
 
-   Doce juegos. Las edades salen de en qué año se enseña cada tema según
+   Trece juegos. Las edades salen de en qué año se enseña cada tema según
    el Diseño Curricular de la Provincia de Buenos Aires (2018):
 
+     4–6    Trazá las letras     A, E, I… con el dedo (Nivel Inicial y 1.º)
      4–6    La primera letra     🍎 → M          (Nivel Inicial)
      5–7    La vocal que falta   c_sa            (Inicial y 1.º)
      5–8    Armá la palabra      🏠 → ca + sa    (Inicial, Unidad Pedagógica y 1.º)
@@ -17,6 +18,8 @@
      9–12   Tildes               camión, camion… («reglas generales de acentuación», 4.º)
     10–12   Clases de palabras   correr → verbo  (sustantivo, adjetivo, verbo en 3.º;
                                                   con adverbio, más adelante)
+
+   «Trazá las letras» no se contesta eligiendo: se traza (js/nucleo/trazo.js).
 
    Todos son listas escritas a mano, no preguntas generadas: en lengua
    las respuestas no se calculan. Cada lista está revisada para que
@@ -878,7 +881,45 @@ window.Lengua = (function () {
      leérselo al chico, y leerlo es justo lo que se practica. */
   delete COMPRENSION_JUEGO.presentar;
 
-  var JUEGOS = [PRIMERA_LETRA, VOCAL_QUE_FALTA, ARMAR_JUEGO, RIMAS_JUEGO, CONTRARIOS_JUEGO, SILABAS_JUEGO,
+  /* ============================================================
+     Trazá las letras
+     ============================================================ */
+  /* Primero las vocales, después las consonantes de las primeras
+     palabras (mamá, papá, la casa). Cada letra con una palabra que
+     empieza con ella, que es como se la nombra en el jardín: la A de
+     abeja. Las formas y el orden de los trazos están en js/nucleo/trazo.js. */
+  var PARA_TRAZAR = [
+    ['A', '🐝', 'abeja'], ['E', '🐘', 'elefante'], ['I', '🏝️', 'isla'], ['O', '🐻', 'oso'], ['U', '🍇', 'uvas'],
+    ['M', '🍎', 'manzana'], ['P', '🐶', 'perro'], ['L', '🦁', 'león'], ['S', '🐸', 'sapo'], ['T', '🐢', 'tortuga'],
+    ['N', '🍊', 'naranja'], ['D', '🐬', 'delfín'], ['C', '🏠', 'casa']
+  ];
+
+  var TRAZAR_JUEGO = T.banco({
+    id: 'trazar',
+    nombre: 'Trazá las letras',
+    icono: 'trazar',
+    color: '#e11d48',
+    suave: '#ffe4e6',
+    texto: 'Con el dedo, como en el cuaderno',
+    edadMin: 4,
+    edadMax: 6,
+    niveles: [
+      { nombre: 'Las vocales', hasta: 5 },
+      { nombre: 'Más letras' }
+    ],
+    items: PARA_TRAZAR.map(function (x) { return { id: x[0], r: x[0], emoji: x[1], palabra: x[2] }; }),
+    consigna: function (it) { return 'Trazá la <b>' + it.r + '</b>'; },
+    visual: function (it) {
+      return '<span class="trazo-de"><b>' + it.r + '</b> de <span aria-hidden="true">' + it.emoji + '</span> ' + it.palabra + '</span>';
+    },
+    montar: function (it) { Trazo.trazar({ forma: it.r, respuesta: it.r, nombre: 'la ' + it.r }); },
+    textoAcierto: function (it) { return 'Así se escribe la ' + it.r + ', la de ' + it.palabra + '.'; },
+    repaso: function (it) { return { simbolo: it.emoji, nombre: 'La ' + it.r, dato: it.r + ' de ' + it.palabra }; }
+  });
+  // trazar no se puede hacer mal: en un examen, sumaría puntos regalados
+  TRAZAR_JUEGO.sinExamen = true;
+
+  var JUEGOS = [TRAZAR_JUEGO, PRIMERA_LETRA, VOCAL_QUE_FALTA, ARMAR_JUEGO, RIMAS_JUEGO, CONTRARIOS_JUEGO, SILABAS_JUEGO,
                 PLURALES_JUEGO, ORTOGRAFIA_JUEGO, SINONIMOS_JUEGO, COMPRENSION_JUEGO, TILDES_JUEGO, CLASES_JUEGO];
 
   var modulo = T.materia('lengua', JUEGOS);

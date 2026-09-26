@@ -2799,7 +2799,8 @@
     var lista = [];
     MATERIAS.forEach(function (m) {
       if (!m.disponible || materiaOculta(m)) return;
-      juegosVisibles(m).forEach(function (j) { lista.push({ materia: m, juego: j }); });
+      // trazar no se puede hacer mal: no entra en el examen
+      juegosVisibles(m).forEach(function (j) { if (!j.sinExamen) lista.push({ materia: m, juego: j }); });
     });
     return lista;
   }

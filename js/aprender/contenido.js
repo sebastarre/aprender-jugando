@@ -365,6 +365,12 @@ window.Lecciones = (function () {
     return '<div class="lectura"><b class="lectura-titulo">' + titulo + '</b><p>' + texto + '</p></div>';
   }
 
+  /** Letras o números quietos, con el número de cada trazo donde empieza (js/nucleo/trazo.js). */
+  function formas(lista) {
+    if (!window.Trazo) return '';
+    return '<div class="fila-figuras">' + lista.map(function (f) { return Trazo.dibujo(f); }).join('') + '</div>';
+  }
+
   /** Una planta con sus partes, de la raíz a la flor. */
   function planta() {
     var t = ' stroke="#27304A" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"';
@@ -457,6 +463,41 @@ window.Lecciones = (function () {
   /* ---------------------- las lecciones ---------------------- */
   var LECCIONES = [
     /* ============ MATEMÁTICA ============ */
+    {
+      id: 'trazar-los-numeros',
+      materia: 'matematica',
+      titulo: 'Trazar los números',
+      icono: 'trazar-numeros',
+      edadMin: 4,
+      minutos: 2,
+      resumen: 'Por dónde se empieza cada número.',
+      juego: 'matematica/trazar-numeros',
+      ejercicio: { juego: 'matematica/trazar-numeros', nivel: 'n1', cantidad: 5, consigna: 'Trazá los números con el dedo.' },
+      reflexion: {"pregunta":"¿Por qué hay que escribir bien los números?","razones":["Para que los demás entiendan cuánto es","Para gastar menos lápiz","Para que se sequen más rápido"],"correcta":0,"porque":"Un 1 mal hecho puede parecer un 7: si se escribe bien, cualquiera lo lee.","grande":"Escribí con un grande el número de tu edad, y el de tu casa."},
+      aprendiste: [
+        'Los números se trazan desde el <b>punto verde</b>, casi siempre <b>arriba</b>.',
+        'El <b>1</b> es una rayita que sube y otra que baja. El <b>2</b> empieza con una curva.',
+        'Cada número dice <b>cuántos hay</b>: el 3 son tres manzanas.'
+      ],
+      pasos: [
+        {
+          texto: '¡Hola! Los números se escriben siguiendo un camino. El <b>1</b> es fácil: una rayita que sube y otra larga que baja.',
+          visual: function () { return formas(['1']); }
+        },
+        {
+          prediccion: {"pregunta":"¿Por dónde te parece que empieza el 2?","opciones":["Arriba, con una curva","Abajo, con la raya","Por el medio"],"correcta":0,"sinDibujo":true,"explicacion":"El 2 empieza arriba con una curva, baja en diagonal y termina con una raya abajo."},
+          texto: 'El <b>2</b> empieza arriba con una curva, baja en diagonal y termina con una raya.',
+          visual: function () { return formas(['2']); }
+        },
+        {
+          texto: 'Cada número dice <b>cuántos hay</b>: el <b>3</b> son tres manzanas.',
+          gesto: 'festejo',
+          visual: function () { return cosas('manzana', 3) + formas(['3']); },
+          practica: { pregunta: '¿Cuántas manzanas son el <b>4</b>?', opciones: ['4', '3', '5'], correcta: 0, enOrden: true, explicacion: 'El 4 son cuatro: una, dos, tres, cuatro.', pista: 'Contá con los dedos hasta 4.' }
+        }
+      ]
+    },
+
     {
       id: 'contar-hasta-diez',
       materia: 'matematica',
@@ -1420,6 +1461,41 @@ window.Lecciones = (function () {
     },
 
     /* ============ LENGUA ============ */
+    {
+      id: 'trazar-las-letras',
+      materia: 'lengua',
+      titulo: 'Trazar las letras',
+      icono: 'trazar',
+      edadMin: 4,
+      minutos: 2,
+      resumen: 'Por dónde se empieza y en qué orden.',
+      juego: 'lengua/trazar',
+      ejercicio: { juego: 'lengua/trazar', nivel: 'n1', cantidad: 5, consigna: 'Trazá las vocales con el dedo.' },
+      reflexion: {"pregunta":"¿Por qué conviene empezar las letras por arriba?","razones":["Porque así la mano baja cómoda y salen parejas","Porque abajo no hay lugar","Porque arriba está más limpio"],"correcta":0,"porque":"Empezar arriba y bajar es el movimiento más cómodo para la mano: las letras salen parejas y sin esfuerzo.","grande":"Escribí tu nombre con un grande, empezando cada letra por arriba."},
+      aprendiste: [
+        'Las letras se trazan desde el <b>punto verde</b>, casi siempre <b>arriba</b>.',
+        'Si una letra tiene varias rayas, van <b>en orden</b>: 1, 2, 3.',
+        'Las <b>vocales</b> son A, E, I, O y U.'
+      ],
+      pasos: [
+        {
+          texto: '¡Hola! Las letras se escriben siguiendo un camino. Se empieza en el <b>punto verde</b>, casi siempre <b>arriba</b>.',
+          visual: function () { return formas(['I', 'L']); }
+        },
+        {
+          prediccion: {"pregunta":"¿Por dónde te parece que se empieza la O?","opciones":["Arriba","Abajo","Al costado"],"correcta":0,"sinDibujo":true,"explicacion":"La O empieza arriba y baja por la izquierda, dando la vuelta hasta volver arriba."},
+          texto: 'La <b>O</b> empieza arriba y baja por la izquierda, dando toda la vuelta.',
+          visual: function () { return formas(['O']); }
+        },
+        {
+          texto: 'Si una letra tiene varias rayas, van en orden: primero la <b>1</b>, después la <b>2</b>, después la <b>3</b>. ¡Mirá la A!',
+          gesto: 'festejo',
+          visual: function () { return formas(['A']); },
+          practica: { pregunta: 'En la <b>A</b>, ¿qué raya se hace al final?', opciones: ['La del medio, acostada', 'La de la izquierda', 'La de la derecha'], correcta: 0, explicacion: 'Primero bajan las dos patas, y al final va la raya del medio.', pista: 'Buscá la raya que tiene el número 3.' }
+        }
+      ]
+    },
+
     {
       id: 'las-vocales',
       materia: 'lengua',

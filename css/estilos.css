@@ -2305,6 +2305,39 @@ body.rindiendo .vidas { display: none; }
 
 .figura { display: block; width: clamp(110px, 32vw, 150px); height: auto; }
 .figura-ancha { width: clamp(180px, 56vw, 260px); }
+/* trazar con el dedo: el caminito gris, lo que se va pintando y el punto
+   verde donde se empieza (js/nucleo/trazo.js) */
+.trazo { display: flex; justify-content: center; }
+.trazo-lienzo {
+  display: block;
+  width: clamp(190px, 58vw, 260px);
+  height: auto;
+  touch-action: none;             /* arrastrar el dedo traza, no mueve la pantalla */
+  -webkit-user-select: none;
+  user-select: none;
+  border: 2px solid var(--borde);
+  border-radius: var(--radio-s);
+  background: var(--tarjeta);
+}
+.trazo-lienzo:focus-visible { outline: 3px solid var(--primario); outline-offset: 3px; }
+/* en las lecciones, la forma quieta para mirar: más chica y sin marco */
+.trazo-dibujo { width: clamp(120px, 38vw, 170px); border: 0; background: none; }
+.trazo-camino { fill: none; stroke: var(--borde); stroke-width: 17; stroke-linecap: round; stroke-linejoin: round; }
+.trazo-guia { fill: none; stroke: var(--tinta-suave); stroke-width: 1.4; stroke-dasharray: .5 4.5; stroke-linecap: round; }
+.trazo-pintado { fill: none; stroke: var(--primario); stroke-width: 12; stroke-linecap: round; stroke-linejoin: round; }
+.trazada .trazo-pintado { stroke: var(--exito); }
+.trazo-inicio circle { fill: var(--exito); stroke: var(--tinta); stroke-width: 2; }
+.trazo-inicio text { fill: var(--sobre-primario); font-weight: 800; }
+.trazo-bolita { fill: var(--coral); stroke: var(--tarjeta); stroke-width: 1.5; }
+@media (prefers-reduced-motion: no-preference) {
+  .trazo-inicio.llamar circle { animation: trazo-llamar .45s ease 2; transform-box: fill-box; transform-origin: center; }
+}
+@keyframes trazo-llamar { 50% { transform: scale(1.45); } }
+/* la palabra que ayuda a acordarse de la letra, y las cosas del número */
+.trazo-de { font-size: 1.25rem; font-weight: 800; color: var(--tinta-suave); }
+.trazo-de b { color: var(--primario-osc); }
+.trazo-cosas .act-cosa { width: 32px; height: 32px; }
+
 /* cien cuadraditos: decimales y porcentajes */
 .cuadricula { width: clamp(150px, 42vw, 190px); }
 

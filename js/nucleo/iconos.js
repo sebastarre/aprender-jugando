@@ -584,6 +584,14 @@ window.Iconos = (function () {
           '<path d="M4.6 15c-2 1.8-2.6 3.3-1.6 3.9 1.8 1.1 7-1.3 11.6-5.4 4.6-4.1 7-8.3 5.3-9.4-1-.6-2.6-.1-4.6 1.3"/>']
     },
 
+    /* ---- trazar con el dedo: la forma punteada, como en el cuaderno ---- */
+    trazar: {
+      b: [], t: ['<path d="M5 20.5 12 3.5l7 17M8 14.5h8" stroke-dasharray="2.2 2.6"/>']
+    },
+    'trazar-numeros': {
+      b: [], t: ['<path d="M6.5 8C6.5 3.5 17.5 3 17 8.5c-.4 3.6-6.3 7.4-10.5 12H18" stroke-dasharray="2.2 2.6"/>']
+    },
+
     /* ---- juegos de lengua (los nuevos) ---- */
     // una hoja con renglones: un texto para leer
     comprension: {

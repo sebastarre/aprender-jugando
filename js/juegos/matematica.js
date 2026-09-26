@@ -1,11 +1,13 @@
 /* ============================================================
    Materia: Matemática.
 
-   Dieciséis juegos que se responden eligiendo entre tarjetas. Cada uno dice
+   Diecisiete juegos que se responden eligiendo entre tarjetas (menos
+   «Trazá los números», que se traza con el dedo: ver js/nucleo/trazo.js). Cada uno dice
    entre qué edades se muestra (edadMin–edadMax), tomado de en qué año
    de la primaria se enseña cada tema según el Diseño Curricular de la
    Provincia de Buenos Aires (2018) y los NAP:
 
+     4–6    Trazá los números escribir las cifras (Nivel Inicial y 1.º)
      4–6    Contar            conteo de colecciones (Nivel Inicial)
      4–7    Figuras           figuras geométricas (Inicial y 1.º)
      5–8    Mayor y menor     ordenar números (Inicial; hasta 1000 en 2.º)
@@ -2919,14 +2921,50 @@ window.Matematica = (function () {
     }
   };
 
+  /* ============================================================
+     Trazá los números
+     ============================================================ */
+  /* Una lista como las de Lengua (hay diez números, no hace falta
+     generar nada). Abajo de la consigna, tantas cosas como dice el
+     número: el 3 se traza mirando tres manzanas. Las formas y el orden
+     de los trazos están en js/nucleo/trazo.js. */
+  var TRAZAR_NUMEROS = T.banco({
+    id: 'trazar-numeros',
+    nombre: 'Trazá los números',
+    icono: 'trazar-numeros',
+    color: '#ea580c',
+    suave: '#ffedd5',
+    texto: 'Del 0 al 9, con el dedo',
+    edadMin: 4,
+    edadMax: 6,
+    niveles: [
+      { nombre: 'Del 1 al 5', filtro: function (it) { return it.n >= 1 && it.n <= 5; } },
+      { nombre: 'Del 0 al 9' }
+    ],
+    items: [1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map(function (n) { return { id: String(n), r: String(n), n: n }; }),
+    consigna: function (it) { return 'Trazá el <b>' + it.r + '</b>'; },
+    visual: function (it) {
+      if (!it.n) return '<span class="trazo-de">El 0 es cuando no hay nada</span>';
+      var html = '<div class="act-fila trazo-cosas" aria-hidden="true">';
+      for (var i = 0; i < it.n; i++) html += '<img class="act-cosa" src="assets/contar/manzana.png" alt="">';
+      return html + '</div>';
+    },
+    montar: function (it) { Trazo.trazar({ forma: it.r, respuesta: it.r, nombre: 'el ' + it.r }); },
+    textoAcierto: function (it) { return it.n ? 'Así se escribe el ' + it.r + ': ' + Util.plural(it.n, 'manzana', 'manzanas') + '.' : 'Así se escribe el 0: nada.'; },
+    repaso: function (it) { return { simbolo: '✍️', nombre: 'El ' + it.r, dato: 'Se traza con el dedo' }; }
+  });
+  // trazar no se puede hacer mal: en un examen, sumaría puntos regalados
+  TRAZAR_NUMEROS.sinExamen = true;
+
   /* ============================================================ */
 
   // en el orden de las edades, que es como se muestran
-  var JUEGOS = [CONTAR, FIGURAS_JUEGO, COMPARAR, CUENTAS, SERIE, RELOJ,
+  var JUEGOS = [TRAZAR_NUMEROS, CONTAR, FIGURAS_JUEGO, COMPARAR, CUENTAS, SERIE, RELOJ,
                 DOBLES, POSICION, DINERO, PROBLEMAS, TABLAS, DIVISION, FRACCIONES,
                 MEDIDAS, DECIMALES, PORCENTAJES];
   var NUEVOS = {};
   JUEGOS.forEach(function (j) {
+    j.materia = 'matematica';          // el banco lo usa para pesar lo que más cuesta
     Tablero.conJugar(j);
     if (j.deClave) NUEVOS[j.id] = j;
   });

@@ -14,10 +14,10 @@ App para chicos con dos mitades que se apoyan una en la otra:
 - **Jugar** — juegos para practicar eso mismo.
 
 Cada lección termina ofreciendo el juego donde usar lo que se acaba de leer, y
-cada juego tiene su lección al lado. Hay seis materias con 58 juegos entre
+cada juego tiene su lección al lado. Hay seis materias con 60 juegos entre
 todas: **Geografía** (6, de reconocer una montaña a las capitales del mundo en
-un mapa interactivo), **Matemática** (16, de contar a porcentajes), **Lengua**
-(12, de la primera letra a leer y entender un texto), **Ciencias** (10, de los
+un mapa interactivo), **Matemática** (17, de trazar los números a
+porcentajes), **Lengua** (13, de trazar las letras a leer y entender un texto), **Ciencias** (10, de los
 ruidos de los animales al sistema solar), **Inglés** (10, de los colores al
 verbo *to be*) e **Historia** (4, de los símbolos patrios a la vida en la
 colonia).
@@ -180,7 +180,7 @@ y cada uno guarda su propio récord.
 
 Antes de los niveles, la pantalla previa preguntaba «¿cuántas preguntas: 5, 10
 o todas?». Era una pregunta de máquina: no decía nada de lo que había adentro
-y un chico de cinco no tenía cómo contestarla. Entre los 58 juegos hay 181
+y un chico de cinco no tenía cómo contestarla. Entre los 60 juegos hay 185
 niveles.
 
 En los juegos de lista, el nivel dice qué preguntas entran: los primeros N de
@@ -506,8 +506,34 @@ su camino de niveles y su lección:
 
 Los juegos de lista con pista y dato (Ciencias, Historia y Leer y entender)
 salen todos de `Tablero.cuestionario`. La voz ahora lee «$350» como «350
-pesos» y «25 %» como «25 por ciento» (antes decía dólares). Con estos, son 61
-lecciones.
+pesos» y «25 %» como «25 por ciento» (antes decía dólares).
+
+## Trazar con el dedo: 4 a 6 años
+
+**Trazá las letras** (Lengua) y **Trazá los números** (Matemática) no se
+contestan eligiendo: se traza. La forma aparece como un caminito gris, con un
+punto verde donde empieza el trazo que toca (con su número, si tiene varios) y
+una bolita que lo recorre para mostrar hacia dónde se va. Se pasa el dedo por
+encima y se va pintando; al terminar todos los trazos, se contesta sola.
+
+- Las formas son la **imprenta mayúscula** de primer grado y los números del 0
+  al 9, cada una como la lista de sus trazos en el orden y el sentido en que
+  se enseñan (`FORMAS` en `js/nucleo/trazo.js`, en una caja de 100 × 120). Hay
+  13 letras: las vocales y las consonantes de las primeras palabras (M, P, L,
+  S, T, N, D, C).
+- **No se puede hacer mal.** Si el dedo se sale del camino, lo pintado queda
+  donde iba y se sigue desde ahí; si se apoya lejos, el punto verde se
+  agranda para que lo encuentre. El dedo puede adelantarse un poco, pero no
+  saltearse un pedazo: así no se «corta camino» por adentro de la O.
+- Abajo de la consigna, una ayuda: «A de 🐝 abeja», o tantas manzanas como
+  dice el número.
+- Con el teclado, Enter o espacio completan el trazo que toca. Con «reducir
+  movimiento» la bolita no se mueve.
+- No entran en el examen (`sinExamen`): como no se pueden hacer mal, sumarían
+  puntos regalados.
+
+Cada uno tiene su lección, con las formas quietas y el número de cada trazo
+donde empieza (`Trazo.dibujo`). Con estas, son 63 lecciones.
 
 ## Racha y meta del día
 
@@ -536,8 +562,8 @@ mucho perdía los días viejos de la cuenta.
 ## El mapa de niveles
 
 Cada juego tiene su **camino de niveles**, como en los juegos de mapa: al tocar
-un juego se entra al mapa, y no a una pantalla de opciones. Son **784 niveles**
-en los 58 juegos, entre 10 y 20 por juego según cuánto hay para aprender.
+un juego se entra al mapa, y no a una pantalla de opciones. Son **806 niveles**
+en los 60 juegos, entre 10 y 20 por juego según cuánto hay para aprender.
 
 **Cómo se juega**
 
@@ -1530,14 +1556,15 @@ js/
                            sorteo, el teclado de números, y banco() para armar
                            un juego de una lista
   nucleo/fichas.js         Armar una palabra tocando fichas en orden
+  nucleo/trazo.js          Trazar una letra o un número con el dedo, trazo por trazo
   nucleo/lector.js         La voz que lee las preguntas y las respuestas (4 a 7)
   nucleo/presentacion.js   «Conocé lo nuevo»: lo que trae un nivel, antes de jugarlo
   nucleo/pwa.js            Registra el service worker y el cartel de "Instalar"
   nucleo/arranque.js       La cortina del nombre al abrir la app
   mapa.js                  Motor del mapa: proyección, dibujo, zoom y clics
   juegos/geografia.js      Los seis juegos de geografía
-  juegos/matematica.js     Los dieciséis juegos de matemática
-  juegos/lengua.js         Los doce juegos de lengua
+  juegos/matematica.js     Los diecisiete juegos de matemática
+  juegos/lengua.js         Los trece juegos de lengua
   juegos/ciencias.js       Los diez juegos de ciencias
   juegos/ingles.js         Los diez juegos de inglés
   juegos/historia.js       Los cuatro juegos de historia
