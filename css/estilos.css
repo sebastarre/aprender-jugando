@@ -77,6 +77,16 @@
   --verde:    #2E9E4F;
   --lila:     #7B5AE0;
   --fuego:    #FF7A1A;
+  --fuego-claro: #FFB547;  /* el relleno de adentro de la llama */
+  --fuego-suave: #FFEDDC;  /* la pastilla de la racha */
+
+  /* Lo que se mira y se toca en los juegos y las lecciones no es texto
+     para leer: una cifra, una sílaba, un dibujo. Tiene su propia escala,
+     aparte de la de la letra (DESIGN.md, Typography: pieza y cartel). */
+  --letra-pieza:  1.6rem;                      /* teclas, fichas, sílabas, contadores */
+  --letra-cartel: 2.5rem;                      /* un número o una palabra sola, grande */
+  --dibujo-chico: 2.8rem;                      /* un dibujo en una tarjeta o una respuesta */
+  --dibujo-grande: clamp(4.2rem, 18vw, 5.4rem); /* el dibujo de «Conocé lo nuevo» */
 
   /* La forma de mancha de los dibujos: redonda pero no un círculo de
      compás, como una mancha de témpera. */
@@ -498,7 +508,7 @@ a { color: var(--primario-osc); text-underline-offset: .2em; text-decoration-thi
 }
 .cuenta .ico { width: 26px; height: 26px; stroke-width: 2.2; }
 .cuenta .ico-blando { opacity: 1; }
-.cuenta-racha .ico { color: var(--fuego); --ico-relleno: #FFB547; }
+.cuenta-racha .ico { color: var(--fuego); --ico-relleno: var(--fuego-claro); }
 /* Si hoy todavía no jugó, la llama se apaga pero no desaparece: la
    racha sigue viva hasta que termine el día. */
 .cuenta-racha.racha-pendiente { color: var(--tinta-suave); }
@@ -2236,17 +2246,21 @@ body.rindiendo .vidas { display: none; }
 
 /* De a cinco por fila, como un ábaco: 7 se ve como «cinco y dos». */
 .contar {
-  display: grid;
-  grid-template-columns: repeat(5, auto);
+  /* en flex y no en grilla de cinco: con una sola cosa, la grilla dejaba
+     los cuatro lugares vacíos a la derecha y el dibujo quedaba corrido */
+  display: flex;
+  flex-wrap: wrap;
   justify-content: center;
   gap: 8px 12px;
-  font-size: clamp(2.1rem, 9vw, 2.9rem);
+  --tam-cosa: clamp(46px, 12.5vw, 64px);
+  max-width: calc(5 * (var(--tam-cosa) + 6px) + 4 * 12px);
+  margin-inline: auto;
   line-height: 1;
 }
 .contar img {
   display: block;
-  width: 1.25em;
-  height: 1.25em;
+  width: var(--tam-cosa);
+  height: var(--tam-cosa);
   user-select: none;
   -webkit-user-drag: none;
 }
@@ -2388,6 +2402,495 @@ body.rindiendo .vidas { display: none; }
 body.jugando .pie { display: none; }
 
 /* ============================================================
+   El juego, vivo: la mascota que pregunta, la voz, la racha
+
+   De 4 a 7 la pregunta la dice la mascota desde un globo, y la voz la
+   lee (ver js/nucleo/lector.js); de 8 a 12 va sola, con el parlantito
+   al lado para escucharla. La mascota salta con cada acierto y duda con
+   cada error: el motor le pone a la pantalla la clase reaccion-bien o
+   reaccion-mal, y lo demás lo hace esto.
+   ============================================================ */
+.pregunta-cabeza {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+}
+/* con dos clases: la regla general de .mascota (display: block) le
+   ganaría a una sola */
+.pregunta-cabeza .pregunta-mascota { display: none; }
+.pregunta-globo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.btn-escuchar {
+  flex: none;
+  width: 46px;
+  height: 46px;
+  display: inline-grid;
+  place-items: center;
+  border: 2px solid var(--borde);
+  border-radius: 50%;
+  background: var(--tarjeta);
+  color: var(--primario-osc);
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 3px 0 var(--sombra-clay);
+  transition: transform .12s var(--suave), box-shadow .12s var(--suave), border-color .15s;
+}
+.btn-escuchar .ico { width: 22px; height: 22px; }
+.btn-escuchar:active { transform: translateY(3px); box-shadow: 0 0 0 var(--sombra-clay); }
+@media (hover: hover) { .btn-escuchar:hover { border-color: var(--pista); } }
+.btn-escuchar-texto {
+  width: auto;
+  display: inline-flex;
+  gap: 6px;
+  padding: 0 18px 0 14px;
+  border-radius: 999px;
+}
+
+.registro-chico .pregunta-cabeza {
+  justify-content: flex-start;
+  max-width: 560px;
+  margin: 0 auto;
+}
+.registro-chico .pregunta-cabeza .pregunta-mascota {
+  display: block;
+  flex: none;
+  height: clamp(84px, 24vw, 104px);
+  transform-origin: 50% 100%;
+}
+.registro-chico .pregunta-globo {
+  position: relative;
+  flex: 1;
+  justify-content: space-between;
+  padding: 12px 12px 12px 18px;
+  border: 2px solid var(--borde);
+  border-radius: var(--radio);
+  background: var(--tarjeta);
+  text-align: left;
+}
+/* la punta del globo, mirando a la mascota */
+.registro-chico .pregunta-globo::before {
+  content: '';
+  position: absolute;
+  left: -9px;
+  top: 50%;
+  width: 16px;
+  height: 16px;
+  margin-top: -8px;
+  transform: rotate(45deg);
+  border-left: 2px solid var(--borde);
+  border-bottom: 2px solid var(--borde);
+  border-bottom-left-radius: 4px;
+  background: var(--tarjeta);
+}
+
+@keyframes mascota-salta {
+  0%   { transform: none; }
+  35%  { transform: translateY(-14px) rotate(-4deg); }
+  65%  { transform: translateY(0) scale(1.03, .97); }
+  100% { transform: none; }
+}
+@keyframes mascota-duda {
+  0%, 100% { transform: none; }
+  30%      { transform: rotate(-7deg); }
+  65%      { transform: rotate(5deg); }
+}
+.reaccion-bien .pregunta-mascota { animation: mascota-salta .6s var(--suave); }
+.reaccion-mal .pregunta-mascota { animation: mascota-duda .55s ease-in-out; }
+
+/* Cada pregunta entra deslizándose, y sus respuestas detrás. */
+@media (prefers-reduced-motion: no-preference) {
+  .pregunta.entra { animation: pregunta-entra .34s var(--suave) both; }
+  #zona-opciones.entra > * { animation: opcion-entra .36s var(--suave) both; }
+  #zona-opciones.entra > :nth-child(2) { animation-delay: .04s; }
+  #zona-opciones.entra > :nth-child(3) { animation-delay: .08s; }
+  #zona-opciones.entra > :nth-child(n+4) { animation-delay: .12s; }
+}
+@keyframes pregunta-entra {
+  from { opacity: 0; transform: translateX(22px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes opcion-entra {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* La respuesta que la voz está diciendo, para el que todavía no lee. */
+.btn-opcion.leyendo {
+  border-color: var(--primario);
+  background: var(--seleccion);
+  box-shadow: 0 var(--paso) 0 var(--primario-osc);
+}
+
+/* ---- La racha ----
+   Con dos seguidas aparece la llamita con el número; con tres, la barra
+   de avance se prende del color del fuego. Se corta con un error. */
+/* La llamita va encima del final de la barra, en la misma celda: si
+   ocupara un lugar propio, en el celular la barra quedaba en un punto. */
+.progreso-envase {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 12px;
+}
+.progreso-barra { grid-column: 1; grid-row: 1; }
+.progreso-texto { grid-column: 2; grid-row: 1; }
+/* de 4 a 7 no hace falta el «3 / 8»: la barra ya dice cuánto falta */
+.registro-chico .progreso-texto { display: none; }
+.racha-juego {
+  grid-column: 1;
+  grid-row: 1;
+  justify-self: end;
+  position: relative;
+  z-index: 1;
+  margin-right: -8px;
+  border: 2px solid var(--tarjeta);
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: 30px;
+  padding: 0 10px 0 5px;
+  border-radius: 999px;
+  background: var(--fuego-suave);
+  color: var(--tinta);
+  font-size: 1.0625rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.racha-juego .ico { width: 22px; height: 22px; color: var(--fuego); }
+.racha-juego .ico-blando { fill: var(--fuego-claro); opacity: 1; }
+.racha-juego.sube { animation: racha-sube .45s var(--rebote); }
+@keyframes racha-sube {
+  0%   { transform: scale(.6); }
+  60%  { transform: scale(1.15); }
+  100% { transform: none; }
+}
+.progreso-barra i { transition: transform .5s var(--suave), background-color .3s; }
+
+/* y al final del nivel, la mejor racha de la partida */
+.nivel-fin-racha {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  margin: -4px auto 14px;
+  padding: 5px 16px 5px 9px;
+  border-radius: 999px;
+  background: var(--fuego-suave);
+  color: var(--tinta);
+  font-weight: 800;
+}
+.nivel-fin-racha .ico { width: 24px; height: 24px; color: var(--fuego); }
+.nivel-fin-racha .ico-blando { fill: var(--fuego-claro); opacity: 1; }
+.nivel-fin-racha b { font-variant-numeric: tabular-nums; }
+.hud.en-racha .progreso-barra i { background: var(--fuego); }
+
+/* ============================================================
+   Contar tocando
+
+   Cada cosa es un botón: al tocarla se marca con su número. Cuando están
+   todas contadas, los números se ponen verdes.
+   ============================================================ */
+.contar-cosa {
+  position: relative;
+  display: grid;
+  place-items: center;
+  padding: 3px;
+  border: 0;
+  border-radius: var(--radio-s);
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform .12s var(--suave);
+}
+.contar-cosa:active { transform: scale(.9); }
+.contar-cosa.contada img { opacity: .6; }
+.contar-cosa.contada::after {
+  content: attr(data-n);
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 5px;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--tarjeta);
+  border-radius: 999px;
+  background: var(--primario);
+  color: var(--sobre-primario);
+  font-size: 1.0625rem;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  animation: sello-entra .25s var(--rebote) both;
+}
+.contar.todas .contar-cosa::after { background: var(--exito-osc); color: #ffffff; }
+
+/* ============================================================
+   El teclado de números
+
+   De 8 a 12, las cuentas se escriben una sí y una no. Números grandes
+   como los de un teléfono, borrar a la izquierda y «listo» a la derecha.
+   ============================================================ */
+.teclado {
+  width: 100%;
+  max-width: 360px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.teclado-pantalla {
+  height: 74px;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--pista);
+  border-radius: var(--radio-s);
+  background: var(--tarjeta);
+  color: var(--tinta);
+  font-size: var(--letra-cartel);
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  transition: border-color .15s, background-color .15s;
+}
+.teclado-pantalla.vacia { color: var(--pista); }
+.teclado-pantalla.correcta { border-color: var(--exito); background: var(--exito-suave); color: #14532d; }
+.teclado-pantalla.incorrecta { border-color: var(--error); background: var(--error-suave); color: #7f1d1d; animation: temblar .4s ease-in-out; }
+.teclado-pantalla.elegida { border-color: var(--primario); background: var(--seleccion); }
+.teclado-teclas {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px 10px;
+}
+.tecla {
+  min-height: 58px;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--borde);
+  border-radius: var(--radio-s);
+  background: var(--tarjeta);
+  color: var(--tinta);
+  font: inherit;
+  font-size: var(--letra-pieza);
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 var(--paso) 0 var(--sombra-clay);
+  transition: transform .1s var(--suave), box-shadow .1s var(--suave);
+  touch-action: manipulation;
+}
+.tecla .ico { width: 26px; height: 26px; stroke-width: 2.6; }
+.tecla:active:not(:disabled) { transform: translateY(var(--paso)); box-shadow: 0 0 0 var(--sombra-clay); }
+.tecla:disabled { opacity: .5; cursor: default; }
+.tecla-borrar { color: var(--tinta-suave); }
+.tecla-listo {
+  border-color: var(--primario);
+  background: var(--primario);
+  color: var(--sobre-primario);
+  box-shadow: 0 var(--paso) 0 var(--primario-osc);
+}
+.tecla-listo:active:not(:disabled) { box-shadow: 0 0 0 var(--primario-osc); }
+.tecla-listo:disabled { border-color: var(--borde); background: var(--borde); color: var(--tinta-suave); box-shadow: 0 var(--paso) 0 var(--sombra-clay); opacity: 1; }
+
+/* ============================================================
+   Las fichas: armar la palabra
+
+   Arriba los huecos punteados; abajo las fichas con su escalón. La ficha
+   que se usa deja su lugar vacío (no se corre el resto), así el chico
+   ve de dónde salió cada una.
+   ============================================================ */
+.fichas {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+.fichas-huecos,
+.fichas-mazo {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px 8px;
+}
+.hueco,
+.ficha {
+  min-width: 66px;
+  height: 62px;
+  padding: 0 14px;
+  border-radius: var(--radio-s);
+  font: inherit;
+  font-size: 1.7rem;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--tinta);
+  touch-action: manipulation;
+}
+.fichas-letras .hueco,
+.fichas-letras .ficha { min-width: 56px; padding: 0 10px; }
+.hueco {
+  border: 2px dashed var(--pista);
+  background: var(--papel);
+  cursor: pointer;
+  transition: border-color .15s, background-color .15s;
+}
+.hueco.lleno { border-style: solid; border-color: var(--primario); background: var(--seleccion); }
+.hueco.bien, .hueco.fijo { border-style: solid; border-color: var(--exito); background: var(--exito-suave); color: #14532d; }
+.hueco.mal { border-style: solid; border-color: var(--error); background: var(--error-suave); color: #7f1d1d; }
+.hueco.elegida { border-style: solid; border-color: var(--primario); background: var(--seleccion); }
+.hueco:disabled { cursor: default; }
+.ficha {
+  border: 2px solid var(--borde);
+  background: var(--tarjeta);
+  box-shadow: 0 var(--paso) 0 var(--sombra-clay);
+  cursor: pointer;
+  transition: transform .1s var(--suave), box-shadow .1s var(--suave);
+}
+.ficha:active:not(:disabled) { transform: translateY(var(--paso)); box-shadow: 0 0 0 var(--sombra-clay); }
+.ficha.usada { visibility: hidden; }
+.fichas.sacudida .fichas-huecos { animation: temblar .4s ease-in-out; }
+.fichas.armada .fichas-huecos { animation: salto-acierto .5s var(--suave); }
+
+/* Lo que sólo se escucha: la palabra de «Armá la palabra» la dice la
+   voz, pero escrita sería copiarla. */
+.solo-voz {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ============================================================
+   Las palmas de Sílabas
+   ============================================================ */
+.palmas { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.palmas-boton {
+  width: 112px;
+  height: 112px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: var(--girasol);
+  color: #5A3B00;
+  font: inherit;
+  font-size: var(--letra-pieza);
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 5px 0 var(--oro);
+  transition: transform .08s var(--suave), box-shadow .08s var(--suave);
+  touch-action: manipulation;
+}
+.palmas-boton:active { transform: translateY(5px) scale(.96); box-shadow: 0 0 0 var(--oro); }
+.palmas-cuenta { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; min-height: 20px; }
+.palma {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--oro);
+  border-radius: 50%;
+  background: var(--girasol);
+  animation: sello-entra .25s var(--rebote) both;
+}
+.palmas-otra {
+  min-height: 40px;
+  padding: 0 12px;
+  border: none;
+  background: none;
+  color: var(--tinta-suave);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: .2em;
+  cursor: pointer;
+}
+
+/* ============================================================
+   Las respuestas con dibujos («¿Dónde está yellow?»)
+   ============================================================ */
+.btn-opcion.dibujo {
+  justify-content: center;
+  min-height: clamp(96px, 26vw, 124px);
+  padding: 10px;
+}
+.opcion-dibujo { display: grid; place-items: center; }
+.opcion-dibujo .visual-color { width: clamp(58px, 16vw, 76px); height: clamp(58px, 16vw, 76px); border-radius: 16px; }
+.opcion-dibujo .visual-emoji { font-size: var(--dibujo-chico); }
+.opcion-dibujo .numero-grande { font-size: var(--letra-cartel); letter-spacing: 0; }
+
+/* ============================================================
+   «Cosas nuevas»: lo que trae un nivel, antes de preguntarlo
+   ============================================================ */
+#pantalla-juego.presentando > :not(.presenta) { display: none !important; }
+.presenta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding-top: 2px;
+}
+/* la cabeza va al lado de la flecha de volver, como la barra del juego */
+.presenta-cabeza {
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  padding-left: 60px;
+}
+.presenta-mascota { flex: none; height: 66px; }
+.presenta-titulo { margin: 0; font-size: clamp(1.7rem, 5vw, 2.3rem); font-weight: 800; line-height: 1.1; }
+.presenta-tarjeta {
+  width: 100%;
+  max-width: 440px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 24px 20px 20px;
+  border: 2px solid var(--borde);
+  border-radius: var(--radio);
+  background: var(--tarjeta);
+  text-align: center;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .presenta-tarjeta.entra { animation: paso-entra .38s var(--suave) both; }
+}
+.presenta-visual { display: grid; place-items: center; min-height: 112px; cursor: pointer; }
+.presenta-visual .visual-emoji { font-size: var(--dibujo-grande); }
+.presenta-visual .visual-color { width: 124px; height: 124px; }
+.presenta-visual .trozos span { font-size: var(--letra-pieza); }
+.presenta-nombre { margin: 8px 0 0; font-size: var(--letra-cartel); font-weight: 800; line-height: 1.1; text-wrap: balance; }
+.presenta-dato { margin: 0 0 8px; color: var(--tinta-suave); font-size: 1.15rem; line-height: 1.35; text-wrap: balance; }
+/* la letra que importa, en coral (es letra grande: alcanza con 3:1) */
+.resalte { color: var(--coral); }
+.presenta-puntos { display: flex; justify-content: center; gap: 7px; min-height: 10px; }
+.presenta-puntos span {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--borde);
+  transition: transform .3s var(--suave), background-color .3s;
+}
+.presenta-puntos .hecho { background: var(--primario); }
+.presenta-puntos .ahora { background: var(--primario); transform: scaleX(2.2); margin: 0 6px; }
+.presenta-botones { display: flex; gap: 12px; width: 100%; max-width: 440px; }
+.presenta-botones .btn-gigante { flex: 1; width: auto; }
+.presenta-botones .btn-secundario { flex: none; }
+
+/* ============================================================
    Los resultados
 
    Sin caja alrededor: la mascota, las estrellas, el título y dos
@@ -2471,7 +2974,13 @@ body.jugando .pie { display: none; }
 .tarjeta-fin .stat:nth-child(4n+3) { --stat-banda: #1673C4; }
 .tarjeta-fin .stat:nth-child(4n+4) { --stat-banda: #6A48D6; }
 #pantalla-fin .stat-puntaje { display: none; }
-#pantalla-fin .stats-fin { grid-template-columns: repeat(2, 1fr); }
+/* una fila con las que se ven (dos, o tres con la racha): así ninguna queda sola */
+#pantalla-fin .stats-fin { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 1fr; }
+/* la nota del examen trae tres: en dos columnas el tercero quedaba solo */
+@media (min-width: 360px) {
+  #nota-stats { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  #nota-stats .stat span { padding-inline: 4px; }
+}
 
 /* Lo que hay que repasar: una fila por cosa. */
 .repaso { margin: 8px 0 24px; text-align: left; }
@@ -2895,7 +3404,7 @@ body.en-bienvenida .pie { display: none; }
 .leccion-cabecera { text-align: center; margin-bottom: 18px; }
 .titulo-leccion { margin: 0 0 12px; font-size: clamp(1.5rem, 4.4vw, 2.1rem); font-weight: 800; line-height: 1.1; text-wrap: balance; }
 
-.leccion-puntitos { display: flex; justify-content: center; gap: 7px; margin-bottom: 6px; }
+
 .puntito {
   width: 11px;
   height: 11px;
@@ -2999,6 +3508,294 @@ body.en-bienvenida .pie { display: none; }
   gap: 12px;
   margin-top: 22px;
 }
+
+/* La barra de avance de la lección, como la de los juegos. */
+.leccion-puntitos { display: block; max-width: 420px; margin: 0 auto 6px; }
+.leccion-barra {
+  display: block;
+  height: 14px;
+  border-radius: 999px;
+  background: var(--borde);
+  overflow: hidden;
+}
+.leccion-barra i {
+  position: relative;
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--exito);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform .5s var(--suave);
+}
+.leccion-barra i::after {
+  content: '';
+  position: absolute;
+  top: 22%;
+  left: 7px;
+  right: 7px;
+  height: 22%;
+  min-height: 2px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .38);
+}
+
+/* «¿Y vos?»: la práctica del final de un paso. */
+.paso-practica {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 2px dashed var(--borde);
+}
+.practica-titulo { margin: 0 0 2px; color: var(--primario-osc); font-size: 1.15rem; font-weight: 800; }
+.practica-pregunta { margin-bottom: 4px; font-weight: 700; }
+
+/* ============================================================
+   Las actividades de las lecciones: aprender tocando
+   (js/aprender/actividades.js)
+   ============================================================ */
+.actividad {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  margin: 12px 0 18px;
+}
+/* lo que dice lo que pasó, abajo de cada actividad */
+.act-cartel {
+  min-height: 1.5em;
+  margin: 0;
+  color: var(--tinta);
+  font-size: 1.0625rem;
+  line-height: 1.4;
+  text-align: center;
+  text-wrap: balance;
+}
+.act-cartel b { color: var(--primario-osc); }
+@media (prefers-reduced-motion: no-preference) {
+  .act-cartel.nuevo { animation: aparecer .3s var(--suave) both; }
+}
+.act-botones { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px 10px; }
+.act-boton { min-width: 150px; }
+
+/* ---- escuchar: tarjetas que se tocan para oírlas ---- */
+/* en flex y no en grilla: con cinco vocales, la última quedaba sola a la
+   izquierda; así la que sobra va al medio */
+.act-escuchar {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px 10px;
+}
+.act-tarjeta {
+  position: relative;
+  flex: 0 1 136px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 112px;
+  padding: 12px 6px 10px;
+  border: 2px solid var(--borde);
+  border-radius: var(--radio-s);
+  background: var(--tarjeta);
+  box-shadow: 0 var(--paso) 0 var(--sombra-clay);
+  color: var(--tinta);
+  font: inherit;
+  cursor: pointer;
+  transition: transform .12s var(--suave), box-shadow .12s var(--suave), border-color .15s;
+}
+.act-tarjeta:active { transform: translateY(var(--paso)); box-shadow: 0 0 0 var(--sombra-clay); }
+.act-tarjeta.oida { border-color: var(--primario); }
+.act-tarjeta.salta .act-tarjeta-visual { animation: mascota-salta .5s var(--suave); }
+.act-tarjeta-visual { display: grid; place-items: center; line-height: 1; }
+.act-tarjeta-visual .visual-emoji { font-size: var(--dibujo-chico); }
+/* una pareja (flor y tambor) entra en una tarjeta: dos por fila */
+.act-tarjeta-visual .fila-emojis { flex-wrap: nowrap; gap: 6px; }
+.act-tarjeta-visual .fila-emojis .visual-emoji { font-size: calc(var(--dibujo-chico) * .75); }
+.act-tarjeta-visual .visual-color { width: 56px; height: 56px; border-radius: var(--radio-s); }
+.act-tarjeta-visual .figura { width: 64px; }
+.act-tarjeta-nombre { font-size: 1.15rem; font-weight: 800; line-height: 1.15; }
+.act-tarjeta-nombre b { color: var(--primario-osc); }
+.act-parlante {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: grid;
+  color: var(--primario-osc);
+  opacity: .8;
+}
+.act-parlante .ico { width: 18px; height: 18px; }
+
+/* ---- contar, sumar y restar ---- */
+/* un poco más chicas que en el juego: la tarjeta es más angosta que la
+   pantalla, y así entran cinco por fila, como en el ábaco */
+.act-contar { margin: 0 auto; --tam-cosa: clamp(38px, 10.5vw, 52px); }
+.act-fila { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+.act-cosa {
+  display: block;
+  width: clamp(40px, 11vw, 52px);
+  height: clamp(40px, 11vw, 52px);
+  user-select: none;
+  -webkit-user-drag: none;
+  transition: transform .45s var(--suave), opacity .35s;
+}
+/* Las dos filas de una suma (o la de una resta) van en un solo renglón,
+   sean cuantas sean las cosas: el tamaño sale del ancho de la tarjeta
+   y de cuántas hay (--n, lo pone actividades.js). */
+.actividad-sumar, .actividad-restar { container-type: inline-size; }
+.act-suma .act-cosa,
+.act-resta .act-cosa {
+  width: var(--tam);
+  height: var(--tam);
+}
+.act-suma .act-cosa { --tam: min(46px, calc((100cqi - 92px - var(--n, 5) * 6px) / var(--n, 5))); }
+.act-resta .act-cosa { --tam: min(46px, calc((100cqi - 24px - var(--n, 5) * 6px) / var(--n, 5))); }
+.act-resta { flex-wrap: nowrap; }
+.act-suma {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+.act-suma .act-fila { flex-wrap: nowrap; }
+.act-grupo {
+  padding: 8px;
+  border: 2px dashed var(--pista);
+  border-radius: var(--radio-s);
+  transition: transform .45s var(--suave), border-color .3s;
+}
+.act-signo { font-size: var(--letra-cartel); font-weight: 800; line-height: 1; color: var(--tinta-suave); transition: opacity .25s; }
+/* Juntas: los dos montoncitos se corren hasta tocarse (--junta, medido al
+   tocar el botón), se va el signo y el borde se hace uno solo, verde. */
+.act-suma.juntos .act-signo { opacity: 0; }
+.act-suma.juntos .act-grupo { border-color: var(--exito); border-style: solid; }
+.act-suma.juntos .act-grupo:first-child {
+  transform: translateX(var(--junta, 0px));
+  border-right-color: transparent;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.act-suma.juntos .act-grupo:last-child {
+  transform: translateX(calc(var(--junta, 0px) * -1));
+  border-left-color: transparent;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+.act-resta .act-cosa.se-va { opacity: 0; transform: translateY(-40px) rotate(20deg) scale(.6); }
+
+/* ---- el reloj ---- */
+.act-reloj { width: clamp(170px, 50vw, 220px); }
+.act-reloj svg { display: block; width: 100%; height: auto; }
+.act-reloj-digital {
+  margin: -6px 0 0;
+  padding: 2px 14px;
+  border-radius: 999px;
+  background: var(--seleccion);
+  color: var(--tinta);
+  font-size: var(--letra-pieza);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- multiplicar ---- */
+.act-puntos { display: flex; flex-direction: column; align-items: center; gap: 9px; }
+.act-puntos-fila { display: flex; gap: 9px; }
+.act-puntos .punto-bola { animation: sello-entra .25s var(--rebote) both; }
+/* «Filas − 3 +» y «Columnas − 4 +» */
+.act-controles { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 22px; }
+.act-control { display: flex; align-items: center; gap: 8px; }
+/* el nombre con el mismo ancho: uno arriba del otro, los botones quedan alineados */
+.act-control-nombre { min-width: 5.4em; margin-right: 2px; font-weight: 800; text-align: right; }
+.act-control-boton {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 2px solid var(--borde);
+  border-radius: 50%;
+  background: var(--tarjeta);
+  box-shadow: 0 var(--paso) 0 var(--sombra-clay);
+  color: var(--primario-osc);
+  font: inherit;
+  font-size: var(--letra-pieza);
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform .12s var(--suave), box-shadow .12s var(--suave);
+}
+.act-control-boton:active { transform: translateY(var(--paso)); box-shadow: 0 0 0 var(--sombra-clay); }
+.act-control-boton:disabled { opacity: .4; cursor: default; transform: none; box-shadow: none; }
+.act-control-valor {
+  min-width: 1.3em;
+  font-size: var(--letra-pieza);
+  font-weight: 800;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- sílabas ---- */
+.act-silabas { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+.act-palabra {
+  display: inline-flex;
+  gap: 4px;
+  padding: 10px 14px;
+  border: 2px solid var(--borde);
+  border-radius: var(--radio-s);
+  background: var(--tarjeta);
+  box-shadow: 0 var(--paso) 0 var(--sombra-clay);
+  font: inherit;
+  cursor: pointer;
+  transition: transform .12s var(--suave), box-shadow .12s var(--suave);
+}
+.act-palabra:active { transform: translateY(var(--paso)); box-shadow: 0 0 0 var(--sombra-clay); }
+.act-silaba {
+  padding: 2px 6px;
+  border-radius: 999px;
+  color: var(--tinta);
+  font-size: var(--letra-pieza);
+  font-weight: 800;
+  transition: background-color .15s, color .15s, transform .15s var(--suave);
+}
+.act-palabra.abierta .act-silaba + .act-silaba { border-left: 2px dotted var(--pista); padding-left: 8px; }
+.act-silaba.suena { background: var(--girasol); color: #5A3B00; transform: translateY(-3px); }
+
+/* ---- fracciones: la torta ---- */
+.act-torta { width: clamp(170px, 50vw, 230px); height: auto; }
+/* los mismos colores que la torta del juego de fracciones (el coral de
+   Matemática y el trazo de tinta): en la lección salen las dos juntas */
+.act-porcion {
+  fill: #ffffff;
+  stroke: var(--tinta);
+  stroke-width: 3;
+  stroke-linejoin: round;
+  cursor: pointer;
+  transition: fill .2s;
+}
+.act-porcion.pintada { fill: var(--coral); }
+.act-porcion:focus-visible { outline: none; stroke: var(--primario); stroke-width: 4; }
+
+/* ---- los dibujos de las lecciones para los más chicos ---- */
+.fila-emojis { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 18px; }
+.act-tarjeta-visual .numero-grande { font-size: var(--letra-cartel); letter-spacing: 0; }
+/* dos grupos alineados a la izquierda: se ve cuál es más largo sin contar */
+.dos-filas { display: flex; flex-direction: column; gap: 10px; }
+.dos-filas .act-fila {
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  padding: 8px 10px;
+  border: 2px dashed var(--pista);
+  border-radius: var(--radio-s);
+}
+.fila-figuras { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 12px 18px; }
+/* dividir es repartir: un plato por amigo */
+.repartir { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 14px; }
+.repartir .act-fila { flex-wrap: nowrap; }
+.repartir .act-cosa { width: 34px; height: 34px; }
+.fila-figuras .figura { width: clamp(76px, 22vw, 104px); }
+.dibujo-planta { width: clamp(230px, 72vw, 300px); }
 
 /* pensar en la lección: la predicción y el «¿por qué?» */
 .leccion-opciones { display: grid; gap: 12px; margin: 16px 0 8px; }
@@ -4271,6 +5068,11 @@ body.en-bienvenida .pie { display: none; }
 }
 
 /* ---------------- Celular ---------------- */
+@media (max-width: 420px) {
+  .vidas .ico { width: 24px; height: 24px; }
+  .vidas { gap: 2px; }
+}
+
 @media (max-width: 620px) {
   .btn-gigante { width: 100%; }
   .botones-fin .btn-secundario { width: 100%; }

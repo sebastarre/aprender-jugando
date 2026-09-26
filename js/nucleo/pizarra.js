@@ -50,9 +50,11 @@ window.Pizarra = (function () {
     else window.addEventListener('resize', ajustarTamano);
 
     /* Aparece con la botonera de respuestas y se va con ella: el mapa
-       usa la otra zona, y ahí la pizarra sólo empujaría el mapa. */
+       usa la otra zona, y ahí la pizarra sólo empujaría el mapa. Y sólo
+       si la pregunta es de hacer cuentas (la botonera lo dice con
+       data-pizarra): debajo de «¿con qué letra empieza?» no sirve. */
     var opciones = Util.$('zona-opciones');
-    new MutationObserver(sincronizar).observe(opciones, { attributes: true, attributeFilter: ['hidden'] });
+    new MutationObserver(sincronizar).observe(opciones, { attributes: true, attributeFilter: ['hidden', 'data-pizarra'] });
 
     /* Pregunta nueva, pizarra limpia. */
     new MutationObserver(function () { if (trazos.length) borrar(); })
@@ -63,7 +65,8 @@ window.Pizarra = (function () {
   }
 
   function sincronizar() {
-    caja.hidden = Util.$('zona-opciones').hidden;
+    var opciones = Util.$('zona-opciones');
+    caja.hidden = opciones.hidden || opciones.getAttribute('data-pizarra') !== 'si';
     if (!caja.hidden) ajustarTamano();
   }
 

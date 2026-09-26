@@ -12,6 +12,13 @@
      visual: function ()  devuelve HTML (normalmente un SVG dibujado acá)
      truco:  'texto'      un recuadro con el atajo para acordarse
      video:  'url'        muestra un video embebido (necesita internet)
+     interactivo: {...}   una actividad para tocar y probar: contar, juntar,
+                          mover el reloj… (ver js/aprender/actividades.js).
+                          Puede ser una función que la devuelva, si usa
+                          dibujos de un juego.
+     practica: { pregunta, opciones, correcta, explicacion, pista }
+                          «¿Y vos?» después de la explicación: hay que
+                          contestarla bien para seguir
 
    Y la lección entera puede tener un `ejercicio`: unas preguntas de un
    juego que el chico tiene que hacer para terminarla.
@@ -108,16 +115,16 @@ window.Lecciones = (function () {
   /** Rosa de los vientos. */
   function brujula() {
     return '<svg class="dibujo-svg" viewBox="0 0 200 200" role="img" aria-label="Los cuatro puntos cardinales">' +
-      '<circle cx="100" cy="100" r="78" fill="#ffffff" stroke="#dfe6f7" stroke-width="4"/>' +
-      '<polygon points="100,28 112,100 100,88 88,100" fill="#ef4a5e"/>' +
-      '<polygon points="100,172 112,100 100,112 88,100" fill="#4c6ef5"/>' +
-      '<polygon points="172,100 100,112 112,100 100,88" fill="#8b5cf6"/>' +
-      '<polygon points="28,100 100,112 88,100 100,88" fill="#21b573"/>' +
-      '<circle cx="100" cy="100" r="7" fill="#1d2b4a"/>' +
-      '<text x="100" y="18" text-anchor="middle" font-size="20" font-weight="700" fill="#1d2b4a">N</text>' +
-      '<text x="100" y="196" text-anchor="middle" font-size="20" font-weight="700" fill="#1d2b4a">S</text>' +
-      '<text x="190" y="107" text-anchor="middle" font-size="20" font-weight="700" fill="#1d2b4a">E</text>' +
-      '<text x="10" y="107" text-anchor="middle" font-size="20" font-weight="700" fill="#1d2b4a">O</text>' +
+      '<circle cx="100" cy="100" r="78" fill="#ffffff" stroke="#E3E8F0" stroke-width="4"/>' +
+      '<polygon points="100,28 112,100 100,88 88,100" fill="#F2644E"/>' +
+      '<polygon points="100,172 112,100 100,112 88,100" fill="#3AA3E8"/>' +
+      '<polygon points="172,100 100,112 112,100 100,88" fill="#8B6CF0"/>' +
+      '<polygon points="28,100 100,112 88,100 100,88" fill="#4DBF6B"/>' +
+      '<circle cx="100" cy="100" r="7" fill="#27304A"/>' +
+      '<text x="100" y="18" text-anchor="middle" font-size="20" font-weight="700" fill="#27304A">N</text>' +
+      '<text x="100" y="196" text-anchor="middle" font-size="20" font-weight="700" fill="#27304A">S</text>' +
+      '<text x="190" y="107" text-anchor="middle" font-size="20" font-weight="700" fill="#27304A">E</text>' +
+      '<text x="10" y="107" text-anchor="middle" font-size="20" font-weight="700" fill="#27304A">O</text>' +
       '</svg>';
   }
 
@@ -149,6 +156,76 @@ window.Lecciones = (function () {
 
   function reloj(hora, minuto) {
     return window.Matematica ? Matematica.dibujarReloj(hora, minuto) : '';
+  }
+
+  /** Un dibujo grande (un emoji que es la cosa misma: la vaca, la uva). */
+  function emoji(e) { return '<div class="visual-emoji" aria-hidden="true">' + e + '</div>'; }
+
+  /** Varios dibujos grandes en fila. */
+  function emojis(lista) {
+    return '<div class="fila-emojis" aria-hidden="true">' + lista.map(function (e) {
+      return '<span class="visual-emoji">' + e + '</span>';
+    }).join('') + '</div>';
+  }
+
+  /** Un cuadrado del color, para escuchar su nombre. */
+  function color(hex) { return '<div class="visual-color" style="background:' + hex + '"></div>'; }
+
+  /** N cosas en fila, con los dibujos de contar (assets/contar). */
+  function cosas(cosa, n) {
+    var html = '<div class="act-fila" aria-hidden="true">';
+    for (var i = 0; i < n; i++) html += '<img class="act-cosa" src="assets/contar/' + cosa + '.png" alt="">';
+    return html + '</div>';
+  }
+
+  /** Lo repartido: un plato por amigo, con lo que le tocó a cada uno. */
+  function repartir(cosa, cadaUno, platos) {
+    var html = '<div class="repartir" aria-hidden="true">';
+    for (var i = 0; i < platos; i++) html += '<div class="act-grupo">' + cosas(cosa, cadaUno) + '</div>';
+    return html + '</div>';
+  }
+
+  /** Dos grupos, uno arriba del otro, para comparar cuántos hay. */
+  function dosFilas(cosa, a, b) {
+    return '<div class="dos-filas">' + cosas(cosa, a) + cosas(cosa, b) + '</div>';
+  }
+
+  /** Las figuras de Matemática, en fila: [[id, color], …] */
+  function figuras(lista) {
+    if (!window.Matematica) return '';
+    return '<div class="fila-figuras">' + lista.map(function (f) {
+      return Matematica.dibujarFigura(f[0], f[1]);
+    }).join('') + '</div>';
+  }
+
+  function torta(n, d) {
+    return window.Matematica ? Matematica.dibujarFraccion(n, d, 'circulo') : '';
+  }
+
+  /** Una planta con sus partes, de la raíz a la flor. */
+  function planta() {
+    var t = ' stroke="#27304A" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"';
+    function rotulo(x, y, texto, ancla) {
+      return '<text x="' + x + '" y="' + y + '" font-family="\'Baloo 2\', sans-serif" font-weight="800" ' +
+             'font-size="15" fill="#27304A" text-anchor="' + (ancla || 'start') + '">' + texto + '</text>';
+    }
+    function linea(x1, y1, x2, y2) {
+      return '<path d="M' + x1 + ' ' + y1 + ' L' + x2 + ' ' + y2 + '" stroke="#5B6478" stroke-width="1.6" stroke-dasharray="3 3"/>';
+    }
+    return '<svg class="dibujo-svg dibujo-planta" viewBox="0 0 240 230" role="img" aria-label="Una planta con su raíz, su tallo, sus hojas y su flor">' +
+      '<rect x="10" y="150" width="220" height="72" rx="14" fill="#F2B48E"/>' +
+      '<path d="M120 150 C118 170 104 180 96 200 M120 152 C124 172 138 182 146 202 M120 150 L120 206"' + t + ' fill="none"/>' +
+      '<path d="M120 152 L120 64"' + t + ' fill="none"/>' +
+      '<path d="M120 116 C100 118 86 106 80 92 C98 90 112 98 120 116 Z" fill="#4DBF6B"' + t + '/>' +
+      '<path d="M120 96 C140 98 154 86 160 72 C142 70 128 78 120 96 Z" fill="#4DBF6B"' + t + '/>' +
+      '<circle cx="120" cy="40" r="13" fill="#FFC93C"' + t + '/><circle cx="101" cy="50" r="13" fill="#FFC93C"' + t + '/>' +
+      '<circle cx="139" cy="50" r="13" fill="#FFC93C"' + t + '/><circle cx="108" cy="68" r="13" fill="#FFC93C"' + t + '/>' +
+      '<circle cx="132" cy="68" r="13" fill="#FFC93C"' + t + '/><circle cx="120" cy="56" r="11" fill="#F2644E"' + t + '/>' +
+      linea(150, 44, 182, 34) + rotulo(186, 39, 'flor') +
+      linea(160, 76, 186, 84) + rotulo(190, 89, 'hoja') +
+      linea(120, 132, 72, 136) + rotulo(66, 141, 'tallo', 'end') +
+      linea(144, 196, 180, 204) + rotulo(184, 209, 'raíz') +
+      '</svg>';
   }
 
   /* ---------------------- las lecciones ---------------------- */
@@ -241,13 +318,14 @@ window.Lecciones = (function () {
       pasos: [
         {
           titulo: 'Es una suma repetida',
-          texto: 'Multiplicar es una manera corta de sumar el <b>mismo número muchas veces</b>. En vez de escribir 4 + 4 + 4, escribimos <b>4 × 3</b>.',
-          visual: function () { return puntitos(3, 4); }
+          texto: 'Multiplicar es una manera corta de sumar el <b>mismo número muchas veces</b>. En vez de escribir 4 + 4 + 4, escribimos <b>4 × 3</b>. Cambiá las filas y las columnas, y mirá cómo cambia la cuenta.',
+          interactivo: { tipo: 'multiplicar', filas: 3, columnas: 4 }
         },
         {
           titulo: 'Filas y columnas',
           prediccion: {"pregunta":"Hay 3 filas de 4 puntitos. ¿Cuántos puntitos son?","opciones":["12","7","34"],"correcta":0,"explicacion":"Son 4 + 4 + 4 = 12. El 7 sería 3 + 4, que es otra cuenta."},
-          texto: 'Mirá los puntitos: hay <b>3 filas</b> de <b>4</b> cada una. Contálos: son <b>12</b>. Eso es 4 × 3.'
+          texto: 'Mirá los puntitos: hay <b>3 filas</b> de <b>4</b> cada una. Contalos: son <b>12</b>. Eso es 4 × 3.',
+          visual: function () { return puntitos(3, 4); }
         },
         {
           titulo: 'El orden no importa',
@@ -286,6 +364,12 @@ window.Lecciones = (function () {
           titulo: 'Y media es abajo de todo',
           texto: 'Cuando la aguja larga llega al <b>6</b>, pasó media vuelta: son <b>30 minutos</b>, o sea «y media». Fijate que la corta ya está entre dos números.',
           visual: function () { return reloj(3, 30); }
+        },
+        {
+          titulo: 'Movelo vos',
+          texto: 'Tocá los botones y mirá cómo se mueven las agujas: la larga da la vuelta y la corta avanza despacito.',
+          interactivo: { tipo: 'reloj', hora: 3, minuto: 0 },
+          practica: { pregunta: 'La aguja corta está en el 8 y la larga en el 12. ¿Qué hora es?', opciones: ['Las 8 en punto', 'Las 12 y 8', 'Las 8 y media'], correcta: 0, explicacion: 'La larga en el 12 es «en punto», y la corta dice la hora: las 8.' }
         }
       ]
     },
@@ -393,8 +477,8 @@ window.Lecciones = (function () {
       pasos: [
         {
           titulo: 'Las palabras tienen pedacitos',
-          texto: 'Si decís una palabra despacio, vas a notar que sale en <b>golpes de voz</b>. Cada golpe es una <b>sílaba</b>.',
-          visual: function () { return trozos(['ma', 'ri', 'po', 'sa']); }
+          texto: 'Si decís una palabra despacio, vas a notar que sale en <b>golpes de voz</b>. Cada golpe es una <b>sílaba</b>. Tocá las palabras y aplaudí con cada golpe.',
+          interactivo: { tipo: 'silabas', palabras: ['ma-ri-po-sa', 'sol', 'ca-sa', 'e-le-fan-te'] }
         },
         {
           titulo: 'Contalas aplaudiendo',
@@ -590,26 +674,33 @@ window.Lecciones = (function () {
       pasos: [
         {
           titulo: 'Los tres primeros',
-          texto: 'En inglés el <b>rojo</b> es <b lang="en">red</b>, el <b>azul</b> es <b lang="en">blue</b> y el <b>amarillo</b> es <b lang="en">yellow</b>.',
-          visual: function () {
-            return muestrario([['#dc2626', 'red'], ['#2563eb', 'blue'], ['#eab308', 'yellow']]);
-          }
+          texto: 'En inglés el <b>rojo</b> es <b lang="en">red</b>, el <b>azul</b> es <b lang="en">blue</b> y el <b>amarillo</b> es <b lang="en">yellow</b>. Tocá cada color para escucharlo.',
+          interactivo: { tipo: 'escuchar', cosas: [
+            { visual: color('#dc2626'), nombre: '<span lang="en">red</span>', decir: '<span lang="en">red</span>' },
+            { visual: color('#2563eb'), nombre: '<span lang="en">blue</span>', decir: '<span lang="en">blue</span>' },
+            { visual: color('#eab308'), nombre: '<span lang="en">yellow</span>', decir: '<span lang="en">yellow</span>' }
+          ] }
         },
         {
           titulo: 'Tres más',
           prediccion: {"pregunta":"¿Cómo te parece que se dice «naranja» en inglés? Suena parecido.","opciones":["orange","green","purple"],"correcta":0,"explicacion":"Orange: se parece a «naranja», y sirve para la fruta y para el color."},
           texto: 'El <b>verde</b> es <b lang="en">green</b>, el <b>naranja</b> es <b lang="en">orange</b> (igual que la fruta) y el <b>violeta</b> es <b lang="en">purple</b>.',
-          visual: function () {
-            return muestrario([['#16a34a', 'green'], ['#ea580c', 'orange'], ['#7c3aed', 'purple']]);
-          },
+          interactivo: { tipo: 'escuchar', cosas: [
+            { visual: color('#16a34a'), nombre: '<span lang="en">green</span>', decir: '<span lang="en">green</span>' },
+            { visual: color('#ea580c'), nombre: '<span lang="en">orange</span>', decir: '<span lang="en">orange</span>' },
+            { visual: color('#7c3aed'), nombre: '<span lang="en">purple</span>', decir: '<span lang="en">purple</span>' }
+          ] },
           truco: 'Orange es la naranja y el color naranja: la misma palabra para las dos cosas.'
         },
         {
           titulo: 'El blanco y el negro',
           texto: 'El <b>blanco</b> es <b lang="en">white</b> y el <b>negro</b> es <b lang="en">black</b>. Y el <b>rosa</b> es <b lang="en">pink</b>.',
-          visual: function () {
-            return muestrario([['#f8fafc', 'white'], ['#111827', 'black'], ['#ec4899', 'pink']]);
-          }
+          interactivo: { tipo: 'escuchar', cosas: [
+            { visual: color('#f8fafc'), nombre: '<span lang="en">white</span>', decir: '<span lang="en">white</span>' },
+            { visual: color('#111827'), nombre: '<span lang="en">black</span>', decir: '<span lang="en">black</span>' },
+            { visual: color('#ec4899'), nombre: '<span lang="en">pink</span>', decir: '<span lang="en">pink</span>' }
+          ] },
+          practica: { pregunta: '¿Cómo se dice <b>negro</b> en inglés?', opciones: ['<span lang="en">black</span>', '<span lang="en">white</span>', '<span lang="en">blue</span>'], correcta: 0, explicacion: 'Negro es <span lang="en">black</span>, y blanco es <span lang="en">white</span>.' }
         }
       ]
     },
@@ -628,10 +719,10 @@ window.Lecciones = (function () {
       pasos: [
         {
           titulo: 'Del uno al cinco',
-          texto: '<b lang="en">One, two, three, four, five</b>. Decilos en voz alta mientras contás con los dedos de una mano.',
-          visual: function () {
-            return listaEn([['1', 'one'], ['2', 'two'], ['3', 'three'], ['4', 'four'], ['5', 'five']]);
-          }
+          texto: '<b lang="en">One, two, three, four, five</b>. Tocá cada número para escucharlo y contá con los dedos de una mano.',
+          interactivo: { tipo: 'escuchar', cosas: ['one', 'two', 'three', 'four', 'five'].map(function (n, i) {
+            return { visual: '<div class="numero-grande">' + (i + 1) + '</div>', nombre: '<span lang="en">' + n + '</span>', decir: '<span lang="en">' + n + '</span>' };
+          }) }
         },
         {
           titulo: 'Del seis al diez',
@@ -688,6 +779,568 @@ window.Lecciones = (function () {
           visual: function () {
             return listaEn([['How are you?', '¿Cómo estás?'], ['I am fine', 'Estoy bien']], true);
           }
+        }
+      ]
+    },
+
+    /* ============ PARA LOS MÁS CHICOS: MATEMÁTICA ============ */
+    {
+      id: 'contar-hasta-diez',
+      materia: 'matematica',
+      titulo: 'Contar de a uno',
+      icono: 'contar',
+      edadMin: 4,
+      minutos: 2,
+      resumen: 'Tocar cada cosa y decir su número.',
+      juego: 'matematica/contar',
+      ejercicio: { juego: 'matematica/contar', nivel: 'hasta5', cantidad: 5, consigna: 'Contá cuántas hay en cada dibujo. Podés tocarlas para contarlas.' },
+      pasos: [
+        {
+          titulo: 'Contamos de a una',
+          texto: 'A cada manzana le toca <b>un número</b>: uno, dos, tres. Decilos en voz alta mientras las tocás.',
+          interactivo: { tipo: 'contar', cosa: 'manzana', n: 3 }
+        },
+        {
+          titulo: 'El último número dice cuántas hay',
+          texto: 'Si contaste <b>uno, dos, tres, cuatro, cinco</b>, hay <b>cinco</b>. No hace falta volver a contar.',
+          interactivo: { tipo: 'contar', cosa: 'pez', n: 5 },
+          practica: { pregunta: 'Contaste «uno, dos, tres, cuatro». ¿Cuántos hay?', opciones: ['4', '1', '5'], correcta: 0, explicacion: 'El último número que dijiste es cuántos hay: cuatro.' }
+        },
+        {
+          titulo: 'Sin saltearse ninguna',
+          texto: 'Para no perderte, tocá cada una <b>una sola vez</b>. Probá con muchos pollitos.',
+          interactivo: { tipo: 'contar', cosa: 'pollito', n: 8 },
+          truco: 'Si son muchos, contá de izquierda a derecha, como cuando se lee.'
+        }
+      ]
+    },
+
+    {
+      id: 'las-figuras',
+      materia: 'matematica',
+      titulo: 'Las figuras',
+      icono: 'figuras',
+      edadMin: 4,
+      minutos: 2,
+      resumen: 'El círculo, el cuadrado, el triángulo y el rectángulo.',
+      juego: 'matematica/figuras',
+      ejercicio: { juego: 'matematica/figuras', nivel: 'basicas', cantidad: 5, consigna: 'Mirá cada figura y elegí cómo se llama.' },
+      pasos: [
+        {
+          titulo: 'Cuatro figuras',
+          texto: 'Tocá cada figura para escuchar cómo se llama.',
+          interactivo: function () {
+            return { tipo: 'escuchar', cosas: [
+              { visual: Matematica.dibujarFigura('circulo', '#3AA3E8'), nombre: 'círculo', decir: 'El círculo' },
+              { visual: Matematica.dibujarFigura('cuadrado', '#FFC93C'), nombre: 'cuadrado', decir: 'El cuadrado' },
+              { visual: Matematica.dibujarFigura('triangulo', '#4DBF6B'), nombre: 'triángulo', decir: 'El triángulo' },
+              { visual: Matematica.dibujarFigura('rectangulo', '#F2644E'), nombre: 'rectángulo', decir: 'El rectángulo' }
+            ] };
+          }
+        },
+        {
+          titulo: 'Redonda o con puntas',
+          texto: 'El <b>círculo</b> es redondo: no tiene puntas. El <b>cuadrado</b> tiene 4 lados iguales. El <b>triángulo</b> tiene 3 lados y 3 puntas.',
+          visual: function () { return figuras([['circulo', '#3AA3E8'], ['cuadrado', '#FFC93C'], ['triangulo', '#4DBF6B']]); },
+          practica: { pregunta: '¿Cuál tiene <b>3 puntas</b>?', opciones: ['El triángulo', 'El círculo', 'El cuadrado'], correcta: 0, explicacion: 'El triángulo tiene 3 lados y 3 puntas.' }
+        },
+        {
+          titulo: 'Un cuadrado estirado',
+          texto: 'El <b>rectángulo</b> también tiene 4 lados, pero dos son largos y dos son cortos. Es como un cuadrado estirado.',
+          visual: function () { return figuras([['cuadrado', '#FFC93C'], ['rectangulo', '#F2644E']]); },
+          practica: { pregunta: '¿Cuántos lados tiene el <b>rectángulo</b>?', opciones: ['4', '3', '2'], correcta: 0, explicacion: 'Tiene 4, como el cuadrado: dos largos y dos cortos.' }
+        }
+      ]
+    },
+
+    {
+      id: 'sumar-es-juntar',
+      materia: 'matematica',
+      titulo: 'Sumar es juntar',
+      icono: 'mas',
+      edadMin: 5,
+      minutos: 2,
+      resumen: 'Juntar dos grupos y contar todo.',
+      juego: 'matematica/cuentas',
+      ejercicio: { juego: 'matematica/cuentas', nivel: 'facil', valores: { operacion: 'suma' }, cantidad: 5, consigna: 'Resolvé cinco sumas chiquitas. Si querés, contá con los dedos.' },
+      pasos: [
+        {
+          titulo: 'Juntamos',
+          texto: 'Hay <b>2</b> manzanas y <b>3</b> manzanas. Tocá «¡Juntar!» y contá todas.',
+          interactivo: { tipo: 'sumar', a: 2, b: 3, cosa: 'manzana' }
+        },
+        {
+          titulo: 'El signo más',
+          texto: 'Juntar se escribe con el signo <b>+</b>, que se lee «más». <b>4 + 2 = 6</b> se lee «cuatro más dos es igual a seis».',
+          interactivo: { tipo: 'sumar', a: 4, b: 2, cosa: 'frutilla' },
+          practica: { pregunta: '¿Cuánto es <b>3 + 1</b>?', opciones: ['4', '2', '31'], correcta: 0, explicacion: 'Tres y uno más son cuatro.' }
+        },
+        {
+          titulo: 'Con los dedos',
+          texto: 'Si no tenés manzanas, usá los dedos: levantá <b>3</b> en una mano y <b>2</b> en la otra, y contalos todos: son <b>5</b>.',
+          truco: 'Empezá por el número más grande y seguí contando: tres… cuatro, cinco.'
+        }
+      ]
+    },
+
+    {
+      id: 'restar-es-sacar',
+      materia: 'matematica',
+      titulo: 'Restar es sacar',
+      icono: 'menos',
+      edadMin: 5,
+      minutos: 2,
+      resumen: 'Sacar algunas y ver cuántas quedan.',
+      juego: 'matematica/cuentas',
+      ejercicio: { juego: 'matematica/cuentas', nivel: 'facil', valores: { operacion: 'resta' }, cantidad: 5, consigna: 'Resolvé cinco restas chiquitas.' },
+      pasos: [
+        {
+          titulo: 'Sacamos',
+          texto: 'Hay <b>5</b> globos. Tocá el botón para sacar <b>2</b> y mirá cuántos quedan.',
+          interactivo: { tipo: 'restar', a: 5, b: 2, cosa: 'globo' }
+        },
+        {
+          titulo: 'El signo menos',
+          texto: 'Sacar se escribe con el signo <b>−</b>, que se lee «menos». <b>6 − 3 = 3</b>.',
+          interactivo: { tipo: 'restar', a: 6, b: 3, cosa: 'pelota' },
+          practica: { pregunta: 'Tenés <b>4</b> pelotas y regalás <b>1</b>. ¿Cuántas te quedan?', opciones: ['3', '5', '4'], correcta: 0, explicacion: '4 − 1 = 3: si sacás una, quedan tres.' }
+        },
+        {
+          titulo: 'Restar achica',
+          texto: 'Cuando restás, el número <b>se achica</b>: siempre queda menos de lo que había.',
+          truco: 'Contá para atrás: si tenés 5 y sacás 2, decí «cuatro, tres». Quedan 3.'
+        }
+      ]
+    },
+
+    {
+      id: 'mas-y-menos',
+      materia: 'matematica',
+      titulo: '¿Dónde hay más?',
+      icono: 'comparar',
+      edadMin: 5,
+      minutos: 2,
+      resumen: 'Cuál número es más grande y cuál más chico.',
+      juego: 'matematica/comparar',
+      ejercicio: { juego: 'matematica/comparar', nivel: 'hasta10', cantidad: 5, consigna: 'En cada pregunta, buscá el número que te piden.' },
+      pasos: [
+        {
+          titulo: 'Contá las dos filas',
+          texto: 'Arriba hay <b>3</b> flores y abajo hay <b>5</b>. Hay <b>más</b> abajo: 5 es más que 3.',
+          visual: function () { return dosFilas('flor', 3, 5); },
+          practica: { pregunta: '¿Qué es más: <b>2</b> o <b>6</b>?', opciones: ['6', '2'], correcta: 0, explicacion: 'Seis es más que dos: si contás, el 6 viene después.' }
+        },
+        {
+          titulo: 'El que viene después es más',
+          texto: 'Cuando contás <b>1, 2, 3, 4, 5…</b>, cada número es <b>uno más</b> que el anterior. Por eso el que viene después es el más grande.',
+          visual: function () { return trozos(['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']); },
+          practica: { pregunta: '¿Cuál es el <b>más chico</b>: 7, 4 o 9?', opciones: ['4', '7', '9'], correcta: 0, explicacion: 'El 4 viene antes que el 7 y que el 9 cuando contás.' }
+        }
+      ]
+    },
+
+    /* ============ MATEMÁTICA: PARA LOS MÁS GRANDES ============ */
+    {
+      id: 'dividir-es-repartir',
+      materia: 'matematica',
+      titulo: 'Dividir es repartir',
+      icono: 'division',
+      edadMin: 8,
+      minutos: 3,
+      resumen: 'Repartir en partes iguales, y la tabla al revés.',
+      juego: 'matematica/division',
+      ejercicio: { juego: 'matematica/division', nivel: '2', cantidad: 5, consigna: 'Empezá dividiendo por 2: cinco divisiones.' },
+      reflexion: {"pregunta":"¿Por qué, si sabés que 3 × 4 = 12, ya sabés cuánto es 12 ÷ 4?","razones":["Porque dividir es la multiplicación al revés","Porque siempre da 3","Porque 12 es un número par"],"correcta":0,"porque":"12 ÷ 4 pregunta qué número por 4 da 12, y eso es 3.","grande":"Repartí con un grande unas galletitas en partes iguales y decí la cuenta."},
+      pasos: [
+        {
+          titulo: 'Repartir en partes iguales',
+          texto: 'Hay <b>6</b> frutillas para <b>2</b> amigos. Si a cada uno le damos lo mismo, cada uno recibe <b>3</b>. Eso es <b>6 ÷ 2 = 3</b>.',
+          visual: function () { return repartir('frutilla', 3, 2); }
+        },
+        {
+          titulo: 'Es la tabla al revés',
+          prediccion: {"pregunta":"Si 2 × 4 = 8, ¿cuánto te parece que es 8 ÷ 2?","opciones":["4","16","6"],"correcta":0,"explicacion":"Dividir es preguntarse qué número por 2 da 8: es el 4."},
+          texto: 'Si sabés que <b>2 × 3 = 6</b>, ya sabés que <b>6 ÷ 2 = 3</b>. Dividir es preguntarse: ¿qué número por 2 da 6?',
+          practica: { pregunta: '¿Cuánto es <b>10 ÷ 2</b>?', opciones: ['5', '8', '20'], correcta: 0, explicacion: 'Porque 2 × 5 = 10.' }
+        },
+        {
+          titulo: 'Cómo comprobarlo',
+          texto: 'Para saber si una división está bien, se multiplica: si <b>12 ÷ 3 = 4</b>, entonces <b>4 × 3</b> tiene que dar <b>12</b>.',
+          truco: 'Para dividir por un número, pensá en su tabla.'
+        }
+      ]
+    },
+
+    {
+      id: 'las-fracciones',
+      materia: 'matematica',
+      titulo: 'Las fracciones',
+      icono: 'fracciones',
+      edadMin: 9,
+      minutos: 3,
+      resumen: 'Partes iguales de un entero: medios, tercios y cuartos.',
+      juego: 'matematica/fracciones',
+      ejercicio: { juego: 'matematica/fracciones', nivel: 'faciles', cantidad: 5, consigna: 'Mirá cada torta y elegí qué parte está pintada.' },
+      reflexion: {"pregunta":"¿Por qué 1/2 y 2/4 son lo mismo?","razones":["Porque las dos pintan la mitad de la torta","Porque tienen los mismos números","Porque 4 es más que 2"],"correcta":0,"porque":"2 de 4 partes iguales ocupan lo mismo que 1 de 2: la mitad.","grande":"Cortá con un grande una fruta en partes iguales y pónganle nombre a cada parte."},
+      pasos: [
+        {
+          titulo: 'Partes iguales',
+          texto: 'Una fracción es una parte de algo que se cortó en <b>partes iguales</b>. Esta torta está cortada en 4: tocá las partes para pintarlas.',
+          interactivo: { tipo: 'fraccion', partes: 4 }
+        },
+        {
+          titulo: 'Cómo se escribe',
+          texto: 'Abajo va en <b>cuántas partes</b> se cortó, y arriba <b>cuántas se pintaron</b>. Ésta es <b>3/4</b>, que se lee «tres cuartos».',
+          visual: function () { return torta(3, 4); },
+          practica: { pregunta: 'Una pizza en <b>8</b> porciones: comiste <b>3</b>. ¿Qué parte comiste?', opciones: ['3/8', '8/3', '3/5'], correcta: 0, explicacion: 'Abajo el total de porciones (8) y arriba las que comiste (3).' }
+        },
+        {
+          titulo: 'La mitad',
+          texto: 'Si se corta en 2 y se pinta 1, es <b>un medio</b>: la mitad. Probá: pintá la mitad de esta torta de 6.',
+          interactivo: { tipo: 'fraccion', partes: 6 },
+          truco: 'La mitad de 6 son 3: 3/6 también es la mitad.'
+        }
+      ]
+    },
+
+    /* ============ PARA LOS MÁS CHICOS: LENGUA ============ */
+    {
+      id: 'las-vocales',
+      materia: 'lengua',
+      titulo: 'Las vocales',
+      icono: 'vocales',
+      edadMin: 4,
+      minutos: 2,
+      resumen: 'A, E, I, O, U: las cinco vocales.',
+      juego: 'lengua/letras',
+      ejercicio: { juego: 'lengua/letras', nivel: 'n1', cantidad: 5, consigna: 'Mirá cada dibujo, decí su nombre despacio y elegí con qué letra empieza.' },
+      pasos: [
+        {
+          titulo: 'Las cinco vocales',
+          texto: 'Las vocales son <b>A, E, I, O, U</b>. Tocá cada una para escucharla.',
+          interactivo: { tipo: 'escuchar', cosas: [
+            { visual: emoji('🐝'), nombre: '<b>A</b> de abeja', decir: 'A. A de abeja.' },
+            { visual: emoji('🐘'), nombre: '<b>E</b> de elefante', decir: 'E. E de elefante.' },
+            { visual: emoji('🏝️'), nombre: '<b>I</b> de isla', decir: 'I. I de isla.' },
+            { visual: emoji('🐻'), nombre: '<b>O</b> de oso', decir: 'O. O de oso.' },
+            { visual: emoji('🍇'), nombre: '<b>U</b> de uva', decir: 'U. U de uva.' }
+          ] }
+        },
+        {
+          titulo: 'Se dicen largas',
+          texto: 'Las vocales se pueden estirar: <b>aaaa, eeee, iiii, oooo, uuuu</b>. Todas las palabras tienen alguna.',
+          visual: function () { return emoji('🐻'); },
+          practica: { pregunta: '¿Con qué vocal empieza <b>oso</b>?', opciones: ['O', 'A', 'U'], correcta: 0, explicacion: 'Oooo-so: empieza con O.' }
+        },
+        {
+          titulo: 'Escuchá la primera',
+          texto: 'Decí despacio <b>uuuu-va</b>. ¿Qué suena primero?',
+          visual: function () { return emoji('🍇'); },
+          practica: { pregunta: '¿Con qué vocal empieza <b>uva</b>?', opciones: ['U', 'O', 'E'], correcta: 0, explicacion: 'Uuuu-va: empieza con U.' }
+        }
+      ]
+    },
+
+    {
+      id: 'palabras-que-riman',
+      materia: 'lengua',
+      titulo: 'Palabras que riman',
+      icono: 'rimas',
+      edadMin: 5,
+      minutos: 2,
+      resumen: 'Dos palabras riman cuando terminan igual.',
+      juego: 'lengua/rimas',
+      ejercicio: { juego: 'lengua/rimas', nivel: 'n1', cantidad: 5, consigna: 'Escuchá la palabra y buscá la que rima.' },
+      pasos: [
+        {
+          titulo: 'Suenan igual al final',
+          texto: 'Escuchá: <b>gato</b> y <b>pato</b>. Terminan igual, con <b>-ato</b>. Por eso riman.',
+          interactivo: { tipo: 'escuchar', cosas: [
+            { visual: emoji('🐱'), nombre: 'g<b>ato</b>', decir: 'gato' },
+            { visual: emoji('🦆'), nombre: 'p<b>ato</b>', decir: 'pato' }
+          ] }
+        },
+        {
+          titulo: 'Más rimas',
+          texto: 'Tocá cada pareja y escuchá cómo terminan igual.',
+          interactivo: { tipo: 'escuchar', cosas: [
+            { visual: emojis(['🌸', '🥁']), nombre: 'fl<b>or</b> y tamb<b>or</b>', decir: 'flor, tambor' },
+            { visual: emojis(['🍋', '🚚']), nombre: 'lim<b>ón</b> y cami<b>ón</b>', decir: 'limón, camión' },
+            { visual: emojis(['🧀', '💋']), nombre: 'qu<b>eso</b> y b<b>eso</b>', decir: 'queso, beso' }
+          ] },
+          practica: { pregunta: '¿Qué palabra rima con <b>sol</b>?', opciones: ['caracol', 'casa', 'mano'], correcta: 0, explicacion: 'Sol y caracol terminan igual: -ol.' }
+        }
+      ]
+    },
+
+    {
+      id: 'armar-palabras',
+      materia: 'lengua',
+      titulo: 'Armar palabras',
+      icono: 'silabas',
+      edadMin: 5,
+      minutos: 2,
+      resumen: 'Las sílabas, y cómo se arma una palabra con ellas.',
+      juego: 'lengua/armar',
+      ejercicio: { juego: 'lengua/armar', nivel: 'n1', cantidad: 5, consigna: 'Armá cada palabra con sus pedacitos, en orden.' },
+      pasos: [
+        {
+          titulo: 'Pedacitos de palabra',
+          texto: 'Si decís <b>ca-sa</b> despacio, la palabra se parte en dos pedacitos: <b>ca</b> y <b>sa</b>. Se llaman <b>sílabas</b>. Tocá las palabras para escucharlas.',
+          interactivo: { tipo: 'silabas', palabras: ['ca-sa', 'lu-na', 'ga-to'] }
+        },
+        {
+          titulo: 'Con las manos',
+          texto: 'Aplaudí una vez por cada sílaba: <b>ma-ri-po-sa</b> son cuatro palmas.',
+          interactivo: { tipo: 'silabas', palabras: ['ma-ri-po-sa', 'to-ma-te', 'sol'] },
+          practica: { pregunta: '¿Cuántas sílabas tiene <b>pe-lo-ta</b>?', opciones: ['3', '2', '4'], correcta: 0, explicacion: 'Pe-lo-ta: tres palmas.' }
+        },
+        {
+          titulo: 'En orden',
+          texto: 'Para armar una palabra, las sílabas van <b>en orden</b>. Si las das vuelta dice otra cosa: <b>ca-sa</b> al revés es <b>sa-ca</b>.',
+          truco: 'Decí la palabra despacio y poné primero la sílaba que suena primero.'
+        }
+      ]
+    },
+
+    {
+      id: 'los-contrarios',
+      materia: 'lengua',
+      titulo: 'Los contrarios',
+      icono: 'contrarios',
+      edadMin: 6,
+      minutos: 2,
+      resumen: 'Palabras que dicen lo opuesto: grande y chico.',
+      juego: 'lengua/contrarios',
+      ejercicio: { juego: 'lengua/contrarios', nivel: 'n1', cantidad: 5, consigna: 'Buscá el contrario de cada palabra.' },
+      pasos: [
+        {
+          titulo: 'Lo opuesto',
+          texto: 'Dos palabras son <b>contrarias</b> cuando dicen lo opuesto: <b>grande</b> y <b>chico</b>, <b>día</b> y <b>noche</b>.',
+          interactivo: { tipo: 'escuchar', cosas: [
+            { visual: emoji('🐘'), nombre: 'grande', decir: 'grande' },
+            { visual: emoji('🐭'), nombre: 'chico', decir: 'chico' },
+            { visual: emoji('☀️'), nombre: 'día', decir: 'día' },
+            { visual: emoji('🌙'), nombre: 'noche', decir: 'noche' }
+          ] }
+        },
+        {
+          titulo: 'Ojo con los parecidos',
+          texto: '<b>Enorme</b> no es el contrario de grande: dice casi lo mismo. El contrario tiene que decir <b>lo opuesto</b>.',
+          practica: { pregunta: '¿Cuál es el contrario de <b>frío</b>?', opciones: ['caliente', 'helado', 'blanco'], correcta: 0, explicacion: 'Caliente es lo opuesto de frío. Helado dice casi lo mismo.' }
+        }
+      ]
+    },
+
+    /* ============ PARA LOS MÁS CHICOS: CIENCIAS ============ */
+    {
+      id: 'los-sonidos-de-los-animales',
+      materia: 'ciencias',
+      titulo: 'Los ruidos de los animales',
+      icono: 'sonidos',
+      edadMin: 4,
+      minutos: 2,
+      resumen: 'Cada animal hace su ruido.',
+      juego: 'ciencias/sonidos',
+      ejercicio: { juego: 'ciencias/sonidos', nivel: 'n1', cantidad: 5, consigna: 'Escuchá el ruido y tocá el animal que lo hace.' },
+      pasos: [
+        {
+          titulo: 'Los de la granja',
+          texto: 'Tocá cada animal para escuchar qué ruido hace.',
+          interactivo: { tipo: 'escuchar', cosas: [
+            { visual: emoji('🐄'), nombre: 'la vaca', decir: 'La vaca hace: ¡muuu!' },
+            { visual: emoji('🐶'), nombre: 'el perro', decir: 'El perro hace: ¡guau, guau!' },
+            { visual: emoji('🐱'), nombre: 'el gato', decir: 'El gato hace: ¡miau!' },
+            { visual: emoji('🐑'), nombre: 'la oveja', decir: 'La oveja hace: ¡beee!' },
+            { visual: emoji('🐷'), nombre: 'el chancho', decir: 'El chancho hace: ¡oink, oink!' },
+            { visual: emoji('🦆'), nombre: 'el pato', decir: 'El pato hace: ¡cuac, cuac!' }
+          ] }
+        },
+        {
+          titulo: 'Adiviná quién es',
+          texto: 'Si escuchás <b>«¡quiquiriquí!»</b> muy temprano, es el gallo que se despierta.',
+          visual: function () { return emoji('🐓'); },
+          practica: { pregunta: '¿Quién hace <b>«¡guau, guau!»</b>?', opciones: ['🐶 El perro', '🐱 El gato', '🐄 La vaca'], correcta: 0, explicacion: 'El perro ladra: ¡guau, guau!' }
+        }
+      ]
+    },
+
+    {
+      id: 'los-sentidos',
+      materia: 'ciencias',
+      titulo: 'Los cinco sentidos',
+      icono: 'cuerpo',
+      edadMin: 4,
+      minutos: 2,
+      resumen: 'Con qué vemos, oímos, olemos, probamos y tocamos.',
+      juego: 'ciencias/cuerpo',
+      ejercicio: { juego: 'ciencias/cuerpo', nivel: 'n1', cantidad: 5, consigna: 'Elegí la parte del cuerpo que usamos para cada cosa.' },
+      pasos: [
+        {
+          titulo: 'Cinco maneras de sentir',
+          texto: 'Con el cuerpo sentimos lo que pasa alrededor. Tocá cada uno.',
+          interactivo: { tipo: 'escuchar', cosas: [
+            { visual: emoji('👀'), nombre: 'ver', decir: 'Con los ojos, vemos.' },
+            { visual: emoji('👂'), nombre: 'oír', decir: 'Con las orejas, escuchamos.' },
+            { visual: emoji('👃'), nombre: 'oler', decir: 'Con la nariz, olemos.' },
+            { visual: emoji('👅'), nombre: 'el gusto', decir: 'Con la lengua, sentimos el gusto.' },
+            { visual: emoji('✋'), nombre: 'tocar', decir: 'Con las manos, tocamos.' }
+          ] }
+        },
+        {
+          titulo: 'Cada uno con lo suyo',
+          texto: 'Si te tapás los ojos no ves, pero igual podés oír, oler y tocar.',
+          practica: { pregunta: '¿Con qué <b>olemos</b> una flor?', opciones: ['👃 La nariz', '👂 Las orejas', '✋ La mano'], correcta: 0, explicacion: 'Olemos con la nariz.' }
+        }
+      ]
+    },
+
+    {
+      id: 'que-es-un-ser-vivo',
+      materia: 'ciencias',
+      titulo: 'Qué es un ser vivo',
+      icono: 'vivos',
+      edadMin: 6,
+      minutos: 2,
+      resumen: 'Nace, crece, se alimenta y tiene hijos.',
+      juego: 'ciencias/vivos',
+      ejercicio: { juego: 'ciencias/vivos', nivel: 'n2', cantidad: 5, consigna: 'En cada pregunta pensá: ¿nace, crece y se alimenta?' },
+      pasos: [
+        {
+          titulo: 'Qué tienen los seres vivos',
+          texto: 'Un <b>ser vivo</b> nace, crece, se alimenta y tiene hijos. Las personas, los animales y las plantas son seres vivos.',
+          visual: function () { return emojis(['👶', '🐶', '🌳']); }
+        },
+        {
+          titulo: 'Cosas que no están vivas',
+          texto: 'Una <b>piedra</b> no nace ni crece. Un <b>robot</b> se mueve, pero no come ni crece: tampoco está vivo.',
+          visual: function () { return emojis(['🪨', '🤖']); },
+          practica: { pregunta: '¿Cuál es un <b>ser vivo</b>?', opciones: ['🌻 La flor', '⚽ La pelota', '🚗 El auto'], correcta: 0, explicacion: 'La flor nace de una semilla, crece y toma agua: está viva.' }
+        },
+        {
+          titulo: 'La trampa',
+          prediccion: {"pregunta":"Un osito de peluche tiene ojos y cara. ¿Está vivo?","opciones":["No","Sí"],"correcta":0,"explicacion":"No nace, no crece ni come: es un juguete."},
+          texto: 'Que algo tenga cara o se mueva no alcanza: hay que ver si <b>nace, crece y se alimenta</b>.'
+        }
+      ]
+    },
+
+    {
+      id: 'las-partes-de-la-planta',
+      materia: 'ciencias',
+      titulo: 'Las partes de la planta',
+      icono: 'plantas',
+      edadMin: 7,
+      minutos: 2,
+      resumen: 'Raíz, tallo, hojas, flor y fruto.',
+      juego: 'ciencias/plantas',
+      ejercicio: { juego: 'ciencias/plantas', nivel: 'n1', cantidad: 5, consigna: 'Contestá qué hace cada parte de la planta.' },
+      pasos: [
+        {
+          titulo: 'De abajo para arriba',
+          texto: 'La <b>raíz</b> está bajo tierra y toma el agua. El <b>tallo</b> la sostiene y lleva el agua hacia arriba. Las <b>hojas</b> fabrican el alimento con la luz del sol.',
+          visual: planta
+        },
+        {
+          titulo: 'Flores y frutos',
+          texto: 'De la <b>flor</b> sale el <b>fruto</b>, y adentro del fruto están las <b>semillas</b>: de cada una puede nacer una planta nueva.',
+          visual: function () { return trozos(['🌸 flor', '🍎 fruto', '🌱 planta nueva']); },
+          practica: { pregunta: '¿Qué parte toma el agua de la tierra?', opciones: ['La raíz', 'La flor', 'La hoja'], correcta: 0, explicacion: 'La raíz está bajo tierra y toma el agua.' }
+        }
+      ]
+    },
+
+    {
+      id: 'que-comen-los-animales',
+      materia: 'ciencias',
+      titulo: 'Qué comen los animales',
+      icono: 'alimentacion',
+      edadMin: 8,
+      minutos: 3,
+      resumen: 'Herbívoros, carnívoros y omnívoros.',
+      juego: 'ciencias/alimentacion',
+      ejercicio: { juego: 'ciencias/alimentacion', nivel: 'n1', cantidad: 5, consigna: 'Decí si cada animal es herbívoro o carnívoro.' },
+      reflexion: {"pregunta":"¿Por qué el león tiene colmillos filosos y la vaca no?","razones":["Porque el león come carne y la vaca come pasto","Porque el león es más grande","Porque la vaca es más vieja"],"correcta":0,"porque":"Los dientes de cada animal son para lo que come: colmillos para cortar carne, muelas anchas para moler pasto.","grande":"Mirá con un grande qué come tu mascota o un animal del barrio."},
+      pasos: [
+        {
+          titulo: 'Tres maneras de comer',
+          texto: 'Los <b>herbívoros</b> comen plantas. Los <b>carnívoros</b> comen otros animales. Los <b>omnívoros</b> comen de todo.',
+          interactivo: { tipo: 'escuchar', cosas: [
+            { visual: emoji('🐄'), nombre: 'herbívoro', decir: 'La vaca come pasto: es herbívora.' },
+            { visual: emoji('🦁'), nombre: 'carnívoro', decir: 'El león come otros animales: es carnívoro.' },
+            { visual: emoji('🐻'), nombre: 'omnívoro', decir: 'El oso come frutas, miel y peces: es omnívoro.' }
+          ] }
+        },
+        {
+          titulo: 'Pistas en los dientes',
+          texto: 'Los carnívoros tienen <b>colmillos</b> filosos para cortar la carne. Los herbívoros tienen muelas <b>anchas</b> para moler el pasto.',
+          practica: { pregunta: 'La jirafa come hojas de los árboles. ¿Qué es?', opciones: ['Herbívora', 'Carnívora', 'Omnívora'], correcta: 0, explicacion: 'Come plantas: es herbívora.' }
+        },
+        {
+          titulo: 'Y nosotros',
+          texto: 'Las personas comemos frutas, verduras, carne y huevos: somos <b>omnívoros</b>.'
+        }
+      ]
+    },
+
+    /* ============ INGLÉS PARA LOS MÁS CHICOS ============ */
+    {
+      id: 'los-animales-en-ingles',
+      materia: 'ingles',
+      titulo: 'Los animales en inglés',
+      icono: 'animales',
+      edadMin: 5,
+      minutos: 2,
+      resumen: 'Dog, cat, bird, fish y mouse.',
+      juego: 'ingles/animales-en',
+      ejercicio: { juego: 'ingles/animales-en', nivel: 'n1', cantidad: 5, consigna: 'Escuchá y elegí cada animal.' },
+      pasos: [
+        {
+          titulo: 'Los de casa',
+          texto: 'Tocá cada animal para escuchar cómo se dice en inglés.',
+          interactivo: { tipo: 'escuchar', cosas: [
+            { visual: emoji('🐶'), nombre: '<span lang="en">dog</span>', decir: '<span lang="en">dog</span>. El perro.' },
+            { visual: emoji('🐱'), nombre: '<span lang="en">cat</span>', decir: '<span lang="en">cat</span>. El gato.' },
+            { visual: emoji('🐦'), nombre: '<span lang="en">bird</span>', decir: '<span lang="en">bird</span>. El pájaro.' },
+            { visual: emoji('🐟'), nombre: '<span lang="en">fish</span>', decir: '<span lang="en">fish</span>. El pez.' },
+            { visual: emoji('🐭'), nombre: '<span lang="en">mouse</span>', decir: '<span lang="en">mouse</span>. El ratón.' }
+          ] }
+        },
+        {
+          titulo: 'No se confundan',
+          texto: 'En inglés, <b lang="en">dog</b> es el perro y <b lang="en">cat</b> es el gato.',
+          visual: function () { return emojis(['🐶', '🐱']); },
+          practica: { pregunta: '¿Cómo se dice <b>el gato</b>?', opciones: ['<span lang="en">cat</span>', '<span lang="en">dog</span>', '<span lang="en">fish</span>'], correcta: 0, explicacion: 'El gato es <span lang="en">cat</span>.' }
+        }
+      ]
+    },
+
+    {
+      id: 'la-comida-en-ingles',
+      materia: 'ingles',
+      titulo: 'Las frutas en inglés',
+      icono: 'alimentacion',
+      edadMin: 5,
+      minutos: 2,
+      resumen: 'Apple, banana, strawberry y orange.',
+      juego: 'ingles/comida',
+      ejercicio: { juego: 'ingles/comida', nivel: 'n1', cantidad: 5, consigna: 'Escuchá y elegí cada fruta.' },
+      pasos: [
+        {
+          titulo: 'Las frutas',
+          texto: 'Tocá cada fruta para escucharla en inglés.',
+          interactivo: { tipo: 'escuchar', cosas: [
+            { visual: emoji('🍎'), nombre: '<span lang="en">apple</span>', decir: '<span lang="en">apple</span>. La manzana.' },
+            { visual: emoji('🍌'), nombre: '<span lang="en">banana</span>', decir: '<span lang="en">banana</span>. La banana.' },
+            { visual: emoji('🍓'), nombre: '<span lang="en">strawberry</span>', decir: '<span lang="en">strawberry</span>. La frutilla.' },
+            { visual: emoji('🍊'), nombre: '<span lang="en">orange</span>', decir: '<span lang="en">orange</span>. La naranja.' }
+          ] }
+        },
+        {
+          titulo: 'Una palabra, dos cosas',
+          texto: '<b lang="en">Orange</b> quiere decir <b>naranja</b>: la fruta y también el color.',
+          visual: function () { return emoji('🍊'); },
+          practica: { pregunta: '¿Cómo se dice <b>la manzana</b>?', opciones: ['<span lang="en">apple</span>', '<span lang="en">orange</span>', '<span lang="en">banana</span>'], correcta: 0, explicacion: 'La manzana es <span lang="en">apple</span>.' }
         }
       ]
     },

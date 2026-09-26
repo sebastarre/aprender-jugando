@@ -113,6 +113,12 @@ window.Iconos = (function () {
       t: ['<path d="M12 2.8a6.3 6.3 0 0 0-3.7 11.4c.7.5 1.1 1.3 1.1 2.1v.7h5.2v-.7c0-.8.4-1.6 1.1-2.1A6.3 6.3 0 0 0 12 2.8Z"/>',
           '<path d="M9.4 20.3h5.2"/>']
     },
+    /* Borrar el último número del teclado: la tecla de retroceso. */
+    retroceso: {
+      b: ['<path d="M9 5.5h10a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H9l-6-6.5Z"/>'],
+      t: ['<path d="M9 5.5h10a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H9l-6-6.5Z"/>',
+          '<path d="m12.5 9.5 5 5M17.5 9.5l-5 5"/>']
+    },
     /* La luna del descanso: se terminó el tiempo de hoy. */
     luna: {
       b: ['<path d="M19.5 14.6A7.8 7.8 0 0 1 9.4 4.5a7.8 7.8 0 1 0 10.1 10.1Z"/>'],

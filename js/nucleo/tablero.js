@@ -92,11 +92,16 @@ window.Tablero = (function () {
    */
   function respuestas(correcta, malas, config) {
     config = config || {};
+    /* Las cuentas de los más grandes se escriben en vez de elegirse (una
+       sí y una no, y todas en los desafíos): elegir entre cuatro números
+       deja adivinar por descarte, escribir obliga a hacer la cuenta. */
+    if (config.numerico && usarTeclado()) return teclado(correcta, config);
     var lista = Util.mezclar(malas.concat([correcta])).map(function (v) {
       return { id: v, valor: v };
     });
     Opciones.armar(lista, {
       clase: config.forma || 'texto',
+      pizarra: config.pizarra,
       contenido: function (o) {
         return config.mostrar ? config.mostrar(o.valor) : String(o.valor);
       },
@@ -105,6 +110,115 @@ window.Tablero = (function () {
       } : null,
       alElegir: function (o) { Motor.responder(o.valor); }
     });
+  }
+
+  /* ---------------------- el teclado de números ----------------------
+
+     Cuándo se escribe la respuesta lo decide app.js al arrancar cada
+     partida, según la edad del que juega:
+       'nunca'    de 4 a 7: con tarjetas, como siempre
+       'alterno'  de 8 a 12: una pregunta con tarjetas y la otra escrita
+       'siempre'  de 8 a 12, en los desafíos
+     Se decide por el número de pregunta y no con un contador, porque la
+     primera pregunta se arma dos veces (antes y al arrancar el motor). */
+  var modoTeclado = 'nunca';
+
+  function elegirTeclado(modo) { modoTeclado = modo || 'nunca'; }
+
+  function usarTeclado() {
+    if (modoTeclado === 'siempre') return true;
+    if (modoTeclado === 'alterno') return Motor.indiceActual() % 2 === 1;
+    return false;
+  }
+
+  function teclado(correcta, config) {
+    var largo = Math.min(5, String(correcta).length + 1);
+    var escrito = '';
+    var estado = '';          // '', 'correcta', 'incorrecta', 'elegida'
+    var bloqueado = false;
+
+    var caja = Util.crear('div', 'teclado');
+    caja.setAttribute('role', 'group');
+    caja.setAttribute('aria-label', 'Escribí la respuesta');
+    var pantalla = Util.crear('div', 'teclado-pantalla');
+    pantalla.setAttribute('aria-live', 'polite');
+    var numero = Util.crear('span', 'teclado-numero');
+    pantalla.appendChild(numero);
+    caja.appendChild(pantalla);
+
+    var teclas = Util.crear('div', 'teclado-teclas');
+    var listo;
+    ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'borrar', '0', 'listo'].forEach(function (t) {
+      var b = Util.crear('button', 'tecla' + (t === 'listo' ? ' tecla-listo' : t === 'borrar' ? ' tecla-borrar' : ''));
+      b.type = 'button';
+      if (t === 'borrar') {
+        b.setAttribute('aria-label', 'Borrar');
+        b.appendChild(Iconos.crear('retroceso'));
+      } else if (t === 'listo') {
+        b.setAttribute('aria-label', 'Listo, contestar');
+        b.appendChild(Iconos.crear('tilde'));
+        listo = b;
+      } else {
+        b.textContent = t;
+      }
+      b.addEventListener('click', function () { apretar(t); });
+      teclas.appendChild(b);
+    });
+    caja.appendChild(teclas);
+
+    var zona = Util.$('zona-opciones');
+    Util.vaciar(zona);
+    zona.setAttribute('data-columnas', '1');
+    zona.setAttribute('data-forma', 'teclado');
+    zona.appendChild(caja);
+
+    function pintar() {
+      numero.textContent = escrito || '?';
+      pantalla.className = 'teclado-pantalla' + (estado ? ' ' + estado : '') + (escrito ? '' : ' vacia');
+      listo.disabled = bloqueado || !escrito || estado === 'correcta';
+    }
+
+    function apretar(t) {
+      if (bloqueado || !Motor.libre()) return;
+      // después de un error, lo próximo que escribe empieza de cero
+      if (estado === 'incorrecta') { escrito = ''; estado = ''; }
+      if (t === 'borrar') escrito = escrito.slice(0, -1);
+      else if (t === 'listo') {
+        if (!escrito) return;
+        return Motor.responder(parseInt(escrito, 10));
+      } else if (escrito.length < largo) {
+        escrito = escrito === '0' ? t : escrito + t;
+      }
+      Sonido.tocar('clic');
+      pintar();
+    }
+
+    /* También con el teclado de la compu: los números, borrar y Enter. */
+    function conTeclas(ev) {
+      if (ev.altKey || ev.ctrlKey || ev.metaKey) return;
+      if (/^[0-9]$/.test(ev.key)) apretar(ev.key);
+      else if (ev.key === 'Backspace') apretar('borrar');
+      else if (ev.key === 'Enter') apretar('listo');
+      else return;
+      ev.preventDefault();
+    }
+    document.addEventListener('keydown', conTeclas);
+
+    Opciones.usar({
+      marcar: function (id, clase) {
+        // al acertar y al mostrar la que era se ve el número correcto
+        if (clase === 'correcta') escrito = String(id);
+        estado = clase;
+        pintar();
+      },
+      bloquear: function () {
+        bloqueado = true;
+        teclas.querySelectorAll('button').forEach(function (b) { b.disabled = true; });
+        pintar();
+      },
+      desarmar: function () { document.removeEventListener('keydown', conTeclas); }
+    }, config.pizarra);
+    pintar();
   }
 
   /** Saca las etiquetas de un pedazo de HTML, para textos del repaso. */
@@ -437,6 +551,7 @@ window.Tablero = (function () {
           : 'Repasar: ' + resumirNombres(nombres),
         test: false,
         vistos: paso.vistos,
+        nuevos: paso.nuevos,
         preguntas: function () {
           /* Todo lo nuevo sale, y el resto del nivel es repaso de lo de
              antes (cargado hacia lo que le cuesta). Un nivel de pocas cosas
@@ -507,16 +622,40 @@ window.Tablero = (function () {
         var nivel = nivelDe(sel);
         return 'Nivel ' + nivel.numero + ' · ' + nivel.nombre;
       },
+      /* Un juego puede armar la pregunta a su manera (def.montar recibe
+         la manera de siempre como `base`, por si la quiere usar) y colgarle
+         cosas después (def.alMontar): así Inglés alterna entre «¿cómo se
+         dice?» y «¿dónde está?», y Sílabas suma las palmas. */
       montar: function (it) {
         preparar();
         consigna(def.consigna(it));
         visual(def.visual ? def.visual(it) : null);
-        respuestas(it.r, malasDe(it), {
-          forma: def.forma, mostrar: def.mostrar, etiqueta: def.etiqueta
-        });
+        function base() {
+          respuestas(it.r, malasDe(it), {
+            forma: def.forma, mostrar: def.mostrar, etiqueta: def.etiqueta
+          });
+        }
+        if (def.montar) def.montar(it, base, juego);
+        else base();
+        if (def.alMontar) def.alMontar(it);
       },
       ganchos: function () {
         return ganchos(correcta, { fallo: def.textoFallo, revelado: def.textoRevelado, pista: def.pista });
+      },
+      /* La tarjeta con que se presenta algo nuevo antes de preguntarlo
+         (ver js/nucleo/presentacion.js). Si el juego no dice cómo, sale
+         del repaso: el dibujo, el nombre y el dato. */
+      presentar: function (it) {
+        if (def.presentar) return def.presentar(it);
+        var r = juego.repaso(it);
+        /* El dibujo va sólo si es la cosa misma: el de la pregunta, o el
+           del repaso cuando las respuestas son dibujos (la vaca, la nariz).
+           Los símbolos de adorno del repaso (una nota musical para las
+           rimas) no dicen nada de lo que hay que aprender. */
+        var visual = def.visual ? def.visual(it)
+                   : def.forma === 'emoji' && r.simbolo ? '<div class="visual-emoji" aria-hidden="true">' + r.simbolo + '</div>'
+                   : '';
+        return { visual: visual, titulo: r.nombre, texto: r.dato };
       },
       deClave: function (resto) {
         var it = porId[def.id + ':' + resto];
@@ -596,6 +735,8 @@ window.Tablero = (function () {
     consigna: consigna,
     visual: visual,
     respuestas: respuestas,
+    teclado: teclado,
+    elegirTeclado: elegirTeclado,
     ganchos: ganchos,
     plano: plano,
     sortear: sortear,

@@ -14,10 +14,10 @@ App para chicos con dos mitades que se apoyan una en la otra:
 - **Jugar** — juegos para practicar eso mismo.
 
 Cada lección termina ofreciendo el juego donde usar lo que se acaba de leer, y
-cada juego tiene su lección al lado. Hay cinco materias con 48 juegos entre
+cada juego tiene su lección al lado. Hay cinco materias con 49 juegos entre
 todas: **Geografía** (6, de reconocer una montaña a las capitales del mundo en
 un mapa interactivo), **Matemática** (12, de contar a fracciones), **Lengua**
-(10, de la primera letra a las tildes), **Ciencias** (10, de los ruidos de los
+(11, de la primera letra a las tildes), **Ciencias** (10, de los ruidos de los
 animales al sistema solar) e **Inglés** (10, de los colores al verbo *to be*).
 Cada materia tiene juegos para cada edad de 4 a 12 años, ordenados de menor a
 mayor, y ninguno está cerrado: la edad recomienda, no prohíbe.
@@ -113,6 +113,7 @@ un problema casi nunca es de cálculo, es elegir mal la cuenta.
 | 4–6 | La primera letra | Un dibujo: «¿Con qué letra empieza?» |
 | 5–7 | La vocal que falta | Un dibujo y «c ? sa» |
 | 5–7 | Rimas | «¿Qué palabra rima con gato?» |
+| 5–8 | Armá la palabra | Un dibujo y la palabra en fichas mezcladas (sílabas, y letras en el último nivel) que se ponen en orden |
 | 6–9 | Contrarios | «¿Cuál es lo contrario de grande?» |
 | 6–9 | Sílabas | «¿Cuántas sílabas tiene mariposa?» |
 | 8–11 | Plurales | «¿Cuál es el plural de lápiz?» |
@@ -177,7 +178,7 @@ y cada uno guarda su propio récord.
 
 Antes de los niveles, la pantalla previa preguntaba «¿cuántas preguntas: 5, 10
 o todas?». Era una pregunta de máquina: no decía nada de lo que había adentro
-y un chico de cinco no tenía cómo contestarla. Entre los 48 juegos hay 154
+y un chico de cinco no tenía cómo contestarla. Entre los 49 juegos hay 158
 niveles.
 
 En los juegos de lista, el nivel dice qué preguntas entran: los primeros N de
@@ -195,6 +196,49 @@ de esa combinación de juego y opciones. Lo que se falló aparece al final en
 Los países muy chiquitos (Malta, Nauru, el Vaticano, las islas del Caribe...)
 no se ven como manchas en el mapa: se dibujan como un puntito clickeable. Si el
 chico falla una vez con uno de ellos, el juego le avisa que busque el punto.
+
+## Jugar no es sólo elegir entre cuatro
+
+Con cuatro botones y «¿cuál es?» se aprende a reconocer, y también se puede
+adivinar. Cada juego pide ahora lo que su tema necesita:
+
+- **Contar tocando.** En Contar cada dibujito es un botón: al tocarlo se marca
+  con su número, suena un «pop» un poco más agudo cada vez y la voz dice el
+  número. Con todos contados, los números se ponen verdes. Es contar con el
+  dedo, que es como se aprende a contar; después se elige cuántos son.
+- **Escribir la cuenta.** De 8 a 12, las preguntas de cuentas (sumas y restas,
+  tablas, divisiones, dobles, problemas, qué número sigue, cuánto vale) se
+  contestan una con opciones y la siguiente con un teclado de números, porque
+  con opciones se puede adivinar o descartar. En los desafíos y en el examen
+  se escriben todas. Anda también con el teclado de la compu, y la pizarra
+  aparece abajo para hacer la cuenta a mano. De 4 a 7 siempre hay opciones
+  (`Tablero.teclado`).
+- **Armar la palabra.** En «Armá la palabra» la palabra viene en fichas
+  mezcladas y se arma tocándolas en orden. Si sale mal, lo que estaba en su
+  lugar queda fijo, en verde, y vuelve sólo lo otro: se sigue desde lo que ya
+  salió, en vez de empezar de cero (`js/nucleo/fichas.js`).
+- **Aplaudir las sílabas.** En Sílabas hay un botón «¡Plas!» para aplaudir cada
+  golpe de voz, con un puntito por palmada, antes de contestar cuántas son.
+- **Escuchar en inglés.** En los juegos de palabras de inglés aparece también
+  la pregunta al revés: se escucha la palabra y se toca el dibujo («¿Dónde
+  está *apple*?»). Primero se entiende lo que se oye, como con el idioma
+  propio. De 4 a 7 es una sí y una no; de 8 a 12, una de cada tres.
+- **La voz, para los que todavía no leen.** De 4 a 7 cada pregunta se lee
+  sola, y si las respuestas son palabras se lee cada una mientras su botón se
+  ilumina, para saber cuál es cuál. Tocar una respuesta corta la voz. De 8 a
+  12 no se lee sola: el parlantito de al lado de la pregunta la lee cuando se
+  lo toca (`js/nucleo/lector.js`).
+- **Conocer lo nuevo antes.** La primera vez que se juega un nivel, antes de
+  preguntar, la mascota presenta lo que trae: cada cosa nueva en una tarjeta,
+  con su dibujo, su nombre y un dato, leída en voz alta. Antes, un chico que
+  nunca había oído *yellow* tenía que adivinar cuál era entre cuatro. Se puede
+  saltar, y en un nivel ya pasado no aparece (`js/nucleo/presentacion.js`).
+- **La racha.** Desde la segunda bien seguida al primer intento aparece un
+  fueguito con la cuenta al lado de la barra; el sonido del acierto sube un
+  poquito con cada una, y a las 3, 5, 10… hay un festejo y la barra se pone
+  naranja. Un error la corta, sin castigo. Al final del nivel se ve la mejor
+  de la partida («8 seguidas a la primera»). Es la sensación de ir embalado,
+  que es lo que hace querer seguir.
 
 ## Cómo se adapta a cada chico
 
@@ -320,6 +364,42 @@ dos momentos en que el chico tiene que pensar:
 
 La voz lee las dos, con las opciones en el orden en que están en pantalla.
 
+**Aprender tocando.** Leer no es aprender, y menos a los cuatro años. Un paso
+puede traer, en vez de un dibujo quieto, algo para tocar (campo `interactivo`
+del paso; las actividades están en `js/aprender/actividades.js`):
+
+| Actividad | Qué se hace | Por ejemplo en |
+|---|---|---|
+| Escuchar | Tarjetas que se tocan y dicen su nombre | Las vocales, los ruidos de los animales, los colores en inglés |
+| Contar | Tocar cada cosa para contarla | Contar de a uno |
+| Juntar | Dos montoncitos que se juntan con un botón: 2 + 3 | Sumar es juntar |
+| Sacar | Un montoncito del que se van algunas: 5 − 2 | Restar es sacar |
+| El reloj | Botones que mueven las agujas y dicen la hora | Leer el reloj |
+| Filas y columnas | Puntitos con «Filas − 3 +» y «Columnas − 4 +», y la cuenta al lado | Qué es multiplicar |
+| Sílabas | Palabras que se escuchan de a golpes, iluminando cada sílaba | Qué es una sílaba, Armar palabras |
+| La torta | Porciones que se pintan tocándolas: 3/4, «es la mitad» | Las fracciones |
+
+Nada de esto se corrige: es para probar. Lo que se corrige es la práctica
+**«¿Y vos?»** del final de algunos pasos: una pregunta sobre lo que se acaba de
+ver, que hay que contestar bien para seguir. Si sale mal dice por qué y se
+prueba de nuevo; al segundo error muestra cuál era, para no trabarse. Campo
+`practica` del paso: `{ pregunta, opciones, correcta, explicacion, pista }`.
+
+En cada paso va primero el dibujo o la actividad y después el texto: un chico
+mira antes de leer, y la voz lee el texto igual. Arriba, una barra que se
+llena como la de los juegos dice cuánto falta.
+
+**Lecciones para los más chicos.** Había 17 lecciones y sólo dos eran para
+menos de 6 años. Ahora son 35: de las 18 nuevas, 15 son de 4 a 7 (contar de a
+uno, las figuras, sumar es juntar, restar es sacar, dónde hay más, las
+vocales, palabras que riman, armar palabras, los contrarios, los ruidos de los
+animales, los cinco sentidos, qué es un ser vivo, las partes de la planta, y
+los animales y las frutas en inglés) y tres para los más grandes (dividir es
+repartir, las fracciones y qué comen los animales). Son cortas, con poco texto
+y mucho para tocar. El «¿No sabés cómo se hace?» de cada juego lleva a la
+lección de su edad: la de sumar juntando a los de 5, la de llevarse una a los
+de 7.
+
 ## Racha y meta del día
 
 En el cartel del inicio hay una llamita con **los días seguidos** que jugó.
@@ -347,8 +427,8 @@ mucho perdía los días viejos de la cuenta.
 ## El mapa de niveles
 
 Cada juego tiene su **camino de niveles**, como en los juegos de mapa: al tocar
-un juego se entra al mapa, y no a una pantalla de opciones. Son **656 niveles**
-en los 48 juegos, entre 10 y 20 por juego según cuánto hay para aprender.
+un juego se entra al mapa, y no a una pantalla de opciones. Son **674 niveles**
+en los 49 juegos, entre 10 y 20 por juego según cuánto hay para aprender.
 
 **Cómo se juega**
 
@@ -491,7 +571,9 @@ máquina con otras reglas:
 - **no dice si estuvo bien** hasta que termina (tampoco se ve el puntaje ni
   los corazones: verlos subir sería saber que acertaste),
 - al final da una **nota del 1 al 10**, el porcentaje y la lista de lo que
-  erró con la respuesta correcta.
+  erró con la respuesta correcta,
+- de 8 a 12, **las cuentas se escriben** todas con el teclado de números: con
+  opciones se puede adivinar, y en un examen eso no mide nada.
 
 Lo arma el chico: elige **qué juegos entran** (puede mezclar geografía con
 matemática), de qué zona si entró algo de geografía, y cuántas preguntas.
@@ -1265,19 +1347,24 @@ js/
   nucleo/papelitos.js      Los papelitos de colores que caen al pasar un nivel
   nucleo/cuenta.js         La cuenta de la familia: entrar con mail y código (Supabase)
   nucleo/tablero.js        Lo común a los juegos de tarjetas: la botonera, el
-                           sorteo, y banco() para armar un juego de una lista
+                           sorteo, el teclado de números, y banco() para armar
+                           un juego de una lista
+  nucleo/fichas.js         Armar una palabra tocando fichas en orden
+  nucleo/lector.js         La voz que lee las preguntas y las respuestas (4 a 7)
+  nucleo/presentacion.js   «Conocé lo nuevo»: lo que trae un nivel, antes de jugarlo
   nucleo/pwa.js            Registra el service worker y el cartel de "Instalar"
   nucleo/arranque.js       La cortina del nombre al abrir la app
   mapa.js                  Motor del mapa: proyección, dibujo, zoom y clics
-  juegos/geografia.js      Los tres juegos de geografía
+  juegos/geografia.js      Los seis juegos de geografía
   juegos/matematica.js     Los doce juegos de matemática
-  juegos/lengua.js         Los diez juegos de lengua
+  juegos/lengua.js         Los once juegos de lengua
   juegos/ciencias.js       Los diez juegos de ciencias
   juegos/ingles.js         Los diez juegos de inglés
   juegos/examen.js         Modo examen: mezcla juegos y pone la nota
   juegos/repaso.js         Modo repaso: rearma las preguntas que se fallaron
   aprender/contenido.js    El texto y los dibujos de las lecciones
   aprender/leccion.js      Visor de lecciones (los pasos, de a uno)
+  aprender/actividades.js  Lo que se toca en una lección: contar, juntar, el reloj…
   tienda/catalogo.js       Los colores de cada ranura, disfraces y fondos
   tienda/temas.js          Junta los colores puestos y los escribe en el CSS
   app.js                   Las dos secciones, las pantallas y la navegación

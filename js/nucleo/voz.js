@@ -246,6 +246,11 @@ window.Voz = (function () {
    * Dice uno o varios pedazos de HTML, en orden.
    * `opciones.alTerminar` se llama cuando termina de hablar, salvo que
    * antes lo hayan cortado.
+   * `opciones.alEmpezarParte(i)` se llama cuando empieza a decir el
+   * pedazo número i de la lista: es lo que usa el juego para marcar cada
+   * respuesta mientras la lee.
+   * `opciones.pausa` (en segundos, sólo con alEmpezarParte) deja un
+   * silencio corto entre pedazo y pedazo.
    */
   function decir(html, opciones) {
     opciones = opciones || {};
@@ -254,17 +259,28 @@ window.Voz = (function () {
     var mio = turno;
 
     var frases = [];
-    [].concat(html).forEach(function (h) {
+    [].concat(html).forEach(function (h, parte) {
       if (!h) return;
+      var primera = true;
       tramos(h).forEach(function (t) {
         oraciones(t.texto).forEach(function (o) {
-          if (o.trim()) frases.push({ texto: o.trim(), idioma: t.idioma });
+          if (!o.trim()) return;
+          frases.push({ texto: o.trim(), idioma: t.idioma, parte: parte, empieza: primera });
+          primera = false;
         });
       });
     });
     if (!frases.length) return false;
 
     frases.forEach(function (f, i) {
+      if (opciones.alEmpezarParte && f.empieza && i > 0 && opciones.pausa) {
+        /* Un silencio: una frase vacía con volumen cero no suena en todos
+           los aparatos, así que va una coma, que las voces leen como pausa. */
+        var silencio = new SpeechSynthesisUtterance(',');
+        silencio.volume = 0;
+        silencio.rate = 0.6;
+        sintesis.speak(silencio);
+      }
       var u = new SpeechSynthesisUtterance(f.texto);
       var voz = vozPara(f.idioma);
       if (voz) u.voice = voz;
@@ -275,6 +291,11 @@ window.Voz = (function () {
          desafinan, como una grabación acelerada. A las robóticas un
          poquito más agudo las hace sonar menos serias. */
       u.pitch = voz && esNatural(voz) ? 1 : 1.08;
+      if (opciones.alEmpezarParte && f.empieza) {
+        u.onstart = function () {
+          if (mio === turno) opciones.alEmpezarParte(f.parte);
+        };
+      }
       /* Si una voz de internet falla (se cortó la conexión, el servidor
          no contestó), se anota como rota y se dice todo de nuevo con la
          siguiente. Cortar a propósito también dispara el error, pero con

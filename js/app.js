@@ -355,13 +355,28 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
+  /* Cómo se juega según la edad, antes de cada partida:
+       - de 4 a 7 la voz lee sola cada pregunta y, si las respuestas son
+         palabras, también cada respuesta (ver js/nucleo/lector.js);
+       - de 8 a 12 las cuentas se escriben una sí y una no, y todas en los
+         desafíos y en el examen (ver Tablero.teclado).
+     `leerSiempre` es para el ejercicio de una lección, que se lee a
+     cualquier edad: ya se venía leyendo la lección entera. */
+  function prepararPartida(opciones) {
+    opciones = opciones || {};
+    var chico = esRegistroChico();
+    Lector.prender({ auto: chico || !!opciones.leerSiempre, opciones: chico });
+    Tablero.elegirTeclado(chico ? 'nunca' : opciones.desafio ? 'siempre' : 'alterno');
+  }
+
   function irA(hash) {
     if (location.hash === hash) enrutar();
     else location.hash = hash;
   }
 
   function cortarPartida() {
-    dejarDeLeerPreguntas();
+    Lector.apagar();
+    Presentacion.cortar();
     cerrarHojaDeNivel();
     nivelEnJuego = null;
     ejercicioActual = null;
@@ -1205,8 +1220,17 @@
     var caja = $('enlace-leccion');
     Util.vaciar(caja);
     var clave = materia.id + '/' + juego.id;
-    var leccion = (window.Lecciones ? Lecciones.LECCIONES : []).filter(function (l) {
+    var candidatas = (window.Lecciones ? Lecciones.LECCIONES : []).filter(function (l) {
       return l.juego === clave || (l.ejercicio && l.ejercicio.juego === clave);
+    });
+    /* Si hay varias (sumar juntando, sumar llevándose una), la de su edad:
+       la más avanzada que le toca, y mejor una que todavía no vio. */
+    var edad = edadDelChico();
+    var leTocan = candidatas.filter(function (l) { return !edad || (l.edadMin || 0) <= edad; });
+    if (!leTocan.length) leTocan = candidatas;
+    var leccion = leTocan.slice().sort(function (a, b) {
+      return (Almacen.leccionVista(a.id) ? 1 : 0) - (Almacen.leccionVista(b.id) ? 1 : 0) ||
+             (edad ? (b.edadMin || 0) - (a.edadMin || 0) : (a.edadMin || 0) - (b.edadMin || 0));
     })[0];
     caja.hidden = !leccion;
     if (!leccion) return;
@@ -1666,11 +1690,21 @@
        bien o mal (no es un examen mudo): es para chicos, y cada respuesta
        enseña algo aunque ya no sume. */
     var reglas = nivel.test ? { intentos: 1, pista: null } : {};
-    juego.montar(items[0]);
-    Motor.jugar(Object.assign({
-      items: items,
-      render: function (item) { juego.montar(item); }
-    }, juego.ganchos(), reglas, { alTerminar: terminarNivel }));
+    prepararPartida({ desafio: nivel.test });
+    function arrancar() {
+      juego.montar(items[0]);
+      Motor.jugar(Object.assign({
+        items: items,
+        render: function (item) { juego.montar(item); }
+      }, juego.ganchos(), reglas, { alTerminar: terminarNivel }));
+    }
+    /* La primera vez que se juega un nivel que trae cosas nuevas, primero
+       se presentan (ver js/nucleo/presentacion.js): preguntar algo que
+       nunca se vio es hacer adivinar. Al volver a jugarlo, ya no. */
+    var nuevos = !nivel.test && nivel.nuevos && juego.presentar &&
+                 !Almacen.estrellasDeNivel(claveDeMapa(materia, juego), nivel.numero) ? nivel.nuevos : [];
+    if (nuevos.length) Presentacion.mostrar(juego, nuevos, arrancar);
+    else arrancar();
   }
 
   function terminarNivel(r) {
@@ -1783,6 +1817,19 @@
     }
     $('nivel-fin-titulo').textContent = titulo;
     $('nivel-fin-texto').textContent = texto;
+
+    // la mejor racha de la partida, con el mismo fueguito del contador
+    var racha = $('nivel-fin-racha');
+    var mejor = r.mejorRacha || 0;
+    Util.vaciar(racha);
+    racha.hidden = mejor < 3;
+    if (mejor >= 3) {
+      racha.appendChild(Iconos.crear('fuego'));
+      var dicho = Util.crear('span');
+      dicho.appendChild(Util.crear('b', null, String(mejor)));
+      dicho.appendChild(document.createTextNode(' seguidas a la primera'));
+      racha.appendChild(dicho);
+    }
 
     var rec = $('nivel-fin-recomendacion');
     rec.hidden = !(u.paso && !u.siguiente);
@@ -2276,7 +2323,17 @@
     var materia = materiaPorId(sel.materia);
     var juego = juegoPorId(materia, sel.juego);
     if (!materia || !juego) return irA('#/juegos');
+    prepararPartida();
     juego.jugar(datosSeleccion(), { alTerminar: terminarPartida });
+  }
+
+  /* La mejor racha de la partida (cuántas seguidas al primer intento), si
+     llegó a tres: es lo que el chico sintió mientras jugaba, con el fuego
+     del contador, y está bueno que el final se lo recuerde. */
+  function pintarRachaFin(r) {
+    var racha = r.mejorRacha || 0;
+    $('stat-racha').textContent = racha;
+    $('stat-racha-caja').hidden = racha < 3;
   }
 
   /* ---------------------- el ejercicio de una lección ----------------------
@@ -2309,12 +2366,12 @@
 
     var datos = datosSeleccion();
     datos.cantidad = ej.cantidad || 5;
-    leerPreguntas();
+    prepararPartida({ leerSiempre: true });
     enc.juego.jugar(datos, { alTerminar: terminarEjercicio });
   }
 
   function terminarEjercicio(r) {
-    dejarDeLeerPreguntas();
+    Lector.apagar();
     var leccion = ejercicioActual;
     ejercicioActual = null;
     if (!leccion) return irA('#/aprender');
@@ -2358,31 +2415,6 @@
     };
     Sonido.tocar(aprobado ? 'fin' : 'revelar');
     irA('#/leccion/' + leccion.id + '/resultado');
-  }
-
-  /* Mientras dura el ejercicio, la voz lee cada consigna. Se escucha el
-     cartel de la pregunta en vez de pedirle el texto a cada juego: así
-     sirve para los 48 juegos sin tocar ninguno. */
-  var observadorDePreguntas = null;
-  var esperaDeLectura = null;
-
-  function leerPreguntas() {
-    dejarDeLeerPreguntas();
-    if (!Voz.hay() || !Almacen.vozActiva() || !window.MutationObserver) return;
-    var cartel = $('pregunta-texto');
-    observadorDePreguntas = new MutationObserver(function () {
-      clearTimeout(esperaDeLectura);
-      esperaDeLectura = setTimeout(function () {
-        if (cartel.textContent.trim()) Voz.decir(cartel.innerHTML);
-      }, 80);
-    });
-    observadorDePreguntas.observe(cartel, { childList: true, characterData: true, subtree: true });
-  }
-
-  function dejarDeLeerPreguntas() {
-    clearTimeout(esperaDeLectura);
-    if (observadorDePreguntas) observadorDePreguntas.disconnect();
-    observadorDePreguntas = null;
   }
 
   /* ---------------------- resultados ---------------------- */
@@ -2463,6 +2495,7 @@
     $('stat-aciertos').textContent = r.aciertos + '/' + r.total;
     $('stat-precision').textContent = r.precision + '%';
     $('stat-record').textContent = Almacen.record(clave).puntos;
+    pintarRachaFin(r);
 
     var listoAhora = pintarListo(sinDominarAntes, materia);
     pintarNivel($('progreso-nivel'), materia, true);
@@ -2629,6 +2662,7 @@
     var items = Repaso.armarItems(juegoParaRepasar);
     if (!items.length) return irA('#/juegos');
     itemsDelRepaso = items;
+    prepararPartida();
     Repaso.jugar(items, { alTerminar: terminarRepaso });
   }
 
@@ -2723,6 +2757,7 @@
     $('stat-aciertos').textContent = r.aciertos + '/' + r.total;
     $('stat-precision').textContent = r.precision + '%';
     $('stat-record').textContent = Almacen.record(clave).puntos;
+    pintarRachaFin(r);
 
     $('desbloqueo').hidden = true;
     $('progreso-nivel').hidden = true;        // mezcla materias: no suma a ningún nivel
@@ -2860,6 +2895,8 @@
     }, Almacen.edad());
 
     if (!items.length) return irA('#/examen');
+    // en el examen las cuentas se escriben todas: con opciones se adivina
+    prepararPartida({ desafio: true });
     Examen.jugar(items, { alTerminar: terminarExamen });
   }
 

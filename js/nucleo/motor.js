@@ -74,10 +74,13 @@ window.Motor = (function () {
       perfectos: 0,
       acertados: [],        // los ítems que respondió bien (para las monedas)
       errores: [],
+      racha: 0,             // aciertos seguidos al primer intento
+      mejorRacha: 0,
       bloqueado: false,
       inicio: Date.now()    // para saber cuánto duró
     };
     document.body.classList.toggle('rindiendo', e.mudo);
+    pintarRacha();
     mostrarRonda();
   }
 
@@ -89,6 +92,63 @@ window.Motor = (function () {
     limpiarAviso();
     e.cfg.render(actual(), e.indice);
     pintarHUD();
+    entrar();
+  }
+
+  /* Cada pregunta nueva entra deslizándose: sin esto, el cambio de una a
+     la otra era un parpadeo y no se notaba que había pasado algo. */
+  var finDeEntrada = null;
+  function entrar() {
+    ['pregunta', 'zona-opciones'].forEach(function (id) {
+      var el = Util.$(id);
+      if (!el) return;
+      el.classList.remove('entra');
+      void el.offsetWidth;
+      el.classList.add('entra');
+    });
+    /* La clase se va al terminar de entrar: si se quedara, le ganaría a
+       la animación del botón que se acierta o se erra. */
+    clearTimeout(finDeEntrada);
+    finDeEntrada = setTimeout(function () {
+      ['pregunta', 'zona-opciones'].forEach(function (id) {
+        var el = Util.$(id);
+        if (el) el.classList.remove('entra');
+      });
+    }, 560);
+  }
+
+  /* La pantalla reacciona: la mascota salta con un acierto y duda con un
+     error. El motor sólo avisa con una clase; lo que se ve lo pone el CSS. */
+  var reaccionEnCurso = null;
+  function reaccionar(clase) {
+    var pantalla = Util.$('pantalla-juego');
+    if (!pantalla) return;
+    pantalla.classList.remove('reaccion-bien', 'reaccion-mal');
+    void pantalla.offsetWidth;
+    pantalla.classList.add(clase);
+    clearTimeout(reaccionEnCurso);
+    reaccionEnCurso = setTimeout(function () { pantalla.classList.remove(clase); }, 900);
+  }
+
+  /* La racha: cuántas seguidas bien al primer intento. Con tres o más la
+     barra se prende del color del fuego y aparece el cartelito; se corta
+     con el primer error. En el examen no hay racha: no se dice nada. */
+  var HITOS = [3, 5, 10, 15, 20, 25, 30];
+  function pintarRacha() {
+    var chip = Util.$('racha-juego');
+    var hud = document.querySelector('.hud');
+    var n = e && !e.mudo ? e.racha : 0;
+    if (hud) hud.classList.toggle('en-racha', n >= 3);
+    if (!chip) return;
+    chip.hidden = n < 2;
+    if (n < 2) return;
+    Util.vaciar(chip);
+    chip.appendChild(Iconos.crear('fuego'));
+    chip.appendChild(Util.crear('b', null, String(n)));
+    chip.setAttribute('aria-label', n + ' seguidas');
+    chip.classList.remove('sube');
+    void chip.offsetWidth;
+    chip.classList.add('sube');
   }
 
   function pintarHUD() {
@@ -136,8 +196,19 @@ window.Motor = (function () {
       return luego(siguiente, ESPERA_MUDO);
     }
 
+    if (e.intento === 0) {
+      e.racha++;
+      e.mejorRacha = Math.max(e.mejorRacha, e.racha);
+    } else {
+      e.racha = 0;
+    }
+    var hito = e.intento === 0 && HITOS.indexOf(e.racha) >= 0;
+
     if (e.cfg.alAcertar) e.cfg.alAcertar(item, respuesta);
-    Sonido.tocar('acierto');
+    Sonido.tocar('acierto', e.racha);
+    if (hito) luego(function () { Sonido.tocar('racha'); }, 180);
+    reaccionar('reaccion-bien');
+    pintarRacha();
 
     Util.$('marcador-puntos').textContent = e.puntos;
     var caja = Util.$('marcador-puntos').parentNode;
@@ -146,10 +217,16 @@ window.Motor = (function () {
 
     /* El acierto dice qué pasó, no cuántos puntos dio: los puntos
        compiten con el contenido en vez de reforzarlo. Si salió en un
-       segundo o tercer intento, se lo dice: es feedback, no un premio. */
-    aviso(e.intento === 0 ? festejo()
+       segundo o tercer intento, se lo dice: es feedback, no un premio.
+       Y si con éste llegó a una racha redonda, se festeja la racha. */
+    aviso(hito ? '¡' + Util.plural(e.racha, 'seguida', 'seguidas').replace(/^\d+/, numeroEnLetras(e.racha)) + '!'
+      : e.intento === 0 ? festejo()
       : '¡Bien! Te salió al ' + (e.intento === 1 ? 'segundo' : 'tercer') + ' intento.', 'bien');
-    luego(siguiente, ESPERA_ACIERTO);
+    luego(siguiente, hito ? ESPERA_ACIERTO + 350 : ESPERA_ACIERTO);
+  }
+
+  function numeroEnLetras(n) {
+    return { 3: 'Tres', 5: 'Cinco', 10: 'Diez', 15: 'Quince', 20: 'Veinte', 25: 'Veinticinco', 30: 'Treinta' }[n] || String(n);
   }
 
   function fallar(respuesta) {
@@ -171,6 +248,9 @@ window.Motor = (function () {
     }
 
     Sonido.tocar('error');
+    e.racha = 0;
+    pintarRacha();
+    reaccionar('reaccion-mal');
     if (e.cfg.alFallar) e.cfg.alFallar(item, respuesta, quedan);
 
     if (e.intento >= e.intentos) {
@@ -229,11 +309,14 @@ window.Motor = (function () {
       precision: total ? Math.round(e.aciertos / total * 100) : 0,
       acertados: e.acertados.slice(),
       errores: e.errores.slice(),
+      mejorRacha: e.mudo ? 0 : e.mejorRacha,
       // con un tope: una partida dejada abierta una hora no es una hora jugando
       segundos: Math.min(1800, Math.round((Date.now() - e.inicio) / 1000))
     };
     var alTerminar = e.cfg.alTerminar;
     e = null;
+    pintarRacha();
+    if (window.Opciones) Opciones.soltar();
     if (alTerminar) alTerminar(resultado);
   }
 
@@ -243,6 +326,8 @@ window.Motor = (function () {
     limpiarAviso();
     document.body.classList.remove('rindiendo');
     e = null;
+    pintarRacha();
+    if (window.Opciones) Opciones.soltar();
   }
 
   return {
@@ -251,6 +336,12 @@ window.Motor = (function () {
     abandonar: abandonar,
     enJuego: function () { return e !== null; },
     intentoActual: function () { return e ? e.intento : 0; },
+    /** El número de la pregunta de ahora (0 antes de arrancar). */
+    indiceActual: function () { return e ? e.indice : 0; },
+    /** ¿Se puede contestar ahora? (no mientras se muestra un acierto o un error) */
+    libre: function () { return !!e && !e.bloqueado; },
+    /** El examen no dice nada: los juegos lo usan para no delatar la respuesta. */
+    mudo: function () { return !!e && e.mudo; },
     aviso: aviso,
     INTENTOS: INTENTOS,
     PUNTOS_POR_INTENTO: PUNTOS_POR_INTENTO

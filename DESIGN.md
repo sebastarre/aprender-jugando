@@ -20,12 +20,16 @@ colors:
   verde: "#2E9E4F"
   lila: "#7B5AE0"
   fuego: "#FF7A1A"
+  fuego-claro: "#FFB547"
+  fuego-suave: "#FFEDDC"
   exito: "#16A34A"
   exito-osc: "#15803D"
   exito-suave: "#DCF5E4"
+  exito-tinta: "#14532D"
   error: "#EF4444"
   error-osc: "#B91C1C"
   error-suave: "#FDE3E3"
+  error-tinta: "#7F1D1D"
 typography:
   display:
     fontFamily: "Baloo 2, Trebuchet MS, Segoe UI, system-ui, sans-serif"
@@ -60,6 +64,16 @@ typography:
     fontWeight: 800
     lineHeight: 1.25
     letterSpacing: "0.03em"
+  pieza:
+    fontFamily: "Baloo 2, Trebuchet MS, Segoe UI, system-ui, sans-serif"
+    fontSize: "1.6rem"
+    fontWeight: 800
+    lineHeight: 1
+  cartel:
+    fontFamily: "Baloo 2, Trebuchet MS, Segoe UI, system-ui, sans-serif"
+    fontSize: "2.5rem"
+    fontWeight: 800
+    lineHeight: 1
 rounded:
   s: "16px"
   m: "22px"
@@ -103,11 +117,11 @@ components:
     padding: "12px"
   respuesta-correcta:
     backgroundColor: "{colors.exito-suave}"
-    textColor: "#14532D"
+    textColor: "{colors.exito-tinta}"
     rounded: "{rounded.s}"
   respuesta-errada:
     backgroundColor: "{colors.error-suave}"
-    textColor: "#7F1D1D"
+    textColor: "{colors.error-tinta}"
     rounded: "{rounded.s}"
   tarjeta-proximo-paso:
     backgroundColor: "{colors.cielo}"
@@ -119,6 +133,28 @@ components:
     textColor: "#6B4A00"
     rounded: "{rounded.pastilla}"
     padding: "4px 18px"
+  pastilla-racha:
+    backgroundColor: "{colors.fuego-suave}"
+    textColor: "{colors.tinta}"
+    rounded: "{rounded.pastilla}"
+    padding: "0 10px 0 5px"
+    height: "30px"
+  tecla:
+    backgroundColor: "{colors.papel}"
+    textColor: "{colors.tinta}"
+    rounded: "{rounded.s}"
+    height: "58px"
+  tecla-listo:
+    backgroundColor: "{colors.primario}"
+    textColor: "{colors.papel}"
+    rounded: "{rounded.s}"
+    height: "58px"
+  ficha-de-armar:
+    backgroundColor: "{colors.papel}"
+    textColor: "{colors.tinta}"
+    rounded: "{rounded.s}"
+    padding: "0 14px"
+    height: "62px"
 ---
 
 # Design System: Bichito Curioso
@@ -150,11 +186,11 @@ Blanco y azul marino de base; el color vive en objetos chicos y saturados, y cad
 
 ### Secondary
 - **Los primarios de juguete** (coral, girasol, verde, lila, más el cielo): los de los dibujos, las materias y las puertas del inicio. Coral es Matemática y la puerta de Jugar; girasol, Lengua, las estrellas, las monedas y las metas; verde, Ciencias; lila, Inglés y la puerta de Aprender; cielo, Geografía. No los pisa ningún tema: una estrella es amarilla aunque el chico se compre todo en verde.
-- **Oro y fuego**: el trazo de las estrellas y las monedas (oro) y la llama de la racha (fuego).
+- **Oro y fuego**: el trazo de las estrellas y las monedas (oro) y la llama de la racha (fuego, con fuego-claro adentro). La racha de una partida va en una pastilla durazno (fuego-suave) y, desde tres seguidas, el relleno de la barra de avance se pone fuego.
 - **Los colores de los juegos**: cada juego trae un color propio, escrito en su módulo (js/juegos/*.js), con su versión suave. Pinta sólo lo de ese juego: su círculo en la lista, los niveles de su camino, su cartel y su recomendación. Es identidad del juego, no de la interfaz, igual que los colores que son la pregunta misma («¿de qué color es?», las figuras, el reloj). Todos dan 3:1 o más contra el blanco del dibujo que llevan encima.
 
 ### Tertiary
-- **Acertar y errar** (exito / exito-osc / exito-suave y error / error-osc / error-suave): sólo para respuestas, sellos y avisos. Nunca los usa otra cosa, así que un color de reposo no se lee como una respuesta ya contestada.
+- **Acertar y errar** (exito / exito-osc / exito-suave / exito-tinta y error / error-osc / error-suave / error-tinta; las «tinta» son la letra sobre los suaves): sólo para respuestas, sellos y avisos. Nunca los usa otra cosa, así que un color de reposo no se lee como una respuesta ya contestada.
 - **Crema** (crema, con letra #6B4A00 o #5A3B00): la pista de un juego, los trucos de las lecciones, las monedas ganadas y el cartel de la meta. Es ayuda, no reto.
 
 ### Neutral
@@ -186,6 +222,11 @@ Blanco y azul marino de base; el color vive en objetos chicos y saturados, y cad
 - **Title** (800, 1.15rem, 1.15): el nombre de una materia, un juego, una lección o una puerta (1,4rem).
 - **Body** (400, 1.0625rem, 1.45): bajadas, explicaciones, el texto de una lección (máximo 62ch).
 - **Label** (800, 0.8rem, 0.03em, mayúsculas): sólo la banda de los recuadros de números de los resultados y del perfil.
+
+Aparte va la escala de lo que no es texto para leer sino cosas para mirar y tocar en los juegos y las lecciones (tokens de CSS `--letra-pieza`, `--letra-cartel`, `--dibujo-chico`, `--dibujo-grande`):
+- **Pieza** (800, 1.6rem, 1): lo escrito en algo que se toca: las teclas, las fichas de armar, las sílabas, los contadores.
+- **Cartel** (800, 2.5rem, 1): un número o una palabra sola y grande: la pantalla del teclado, el nombre de lo nuevo, un número como respuesta.
+- **Dibujos** (2,8rem en una tarjeta o una respuesta; de 4,2 a 5,4rem en «Conocé lo nuevo»): el tamaño de un emoji que es contenido.
 
 ### Named Rules
 **La Regla de la Letra que Crece.** El registro de los chicos sube la letra base de 16 a 17px y con ella todo lo que está en rem. No se escribe un tamaño aparte para cada cosa: se cambia la raíz.
@@ -261,6 +302,21 @@ Niveles redondos de 70px del color del juego con un escalón de 6px en su tono o
 
 ### Las respuestas
 Fichas blancas iguales con la respuesta a 800. Al contestar se pintan: relleno suave, filo y escalón del color, y un sello dibujado en la esquina (tilde o cruz) para el que no distingue verde de rojo. Debajo, una banda del mismo color dice qué pasó, con su dibujito adelante (tilde, cruz, lamparita u ojo).
+
+### El teclado de números
+Para escribir las cuentas de 8 a 12 (una sí y una no; todas en los desafíos y en el examen). Arriba, una pantalla blanca de 74px con filo de riel que muestra lo escrito a 2,5rem en cifras tabulares, en gris riel mientras está vacía. Abajo, las teclas en tres columnas como las de un teléfono: del 1 al 9, borrar, 0 y listo. Cada tecla es una ficha blanca de 58px con escalón; «listo» es la única azul, con su tilde, y queda gris mientras no hay nada escrito. Al contestar, la pantalla se pinta como una respuesta.
+
+### Las fichas de armar
+Arriba, huecos con filo punteado de riel; abajo, fichas blancas con escalón y la sílaba o la letra a 1,7rem. La ficha usada deja su lugar vacío (las otras no se corren), para que se vea de dónde salió. Un hueco lleno se pone en celeste de selección; si la palabra sale mal, los que estaban en su lugar quedan verdes y fijos, y vuelven sólo los otros.
+
+### La racha
+La pastilla fuego-suave con la llama y el número se monta sobre la punta de la barra de avance desde la segunda seguida al primer intento, y salta una vez cada vez que sube. Con tres o más, el relleno de la barra pasa a fuego. Al final del nivel, la misma pastilla dice la mejor de la partida («8 seguidas a la primera»). Un error la saca sin ruido: no hay castigo.
+
+### Conocé lo nuevo
+Antes del primer intento de un nivel, lo que trae de nuevo: la mascota chica y el título arriba, al lado de la flecha de volver; al medio, una tarjeta blanca plana con el dibujo grande, el nombre a 800 y el dato en tinta suave; abajo, un puntito por cosa (el de ahora, estirado y azul) y dos botones: el azul, «Siguiente», y «Saltar», secundario, a su izquierda.
+
+### Las lecciones
+Arriba, una barra de avance como la de los juegos. Cada paso es una tarjeta blanca: primero el dibujo o la actividad, después el texto (máximo 62ch), el truco en crema y, separada por una línea punteada, la práctica «¿Y vos?» con las mismas fichas de respuesta de la predicción. Las actividades se arman con piezas que ya existen: tarjetas para escuchar (fichas con escalón y un parlantito en la esquina, de a dos por fila en el celular), las cosas de contar con su número, montoncitos con filo punteado de riel que se juntan en uno con filo verde, contadores «− 3 +» de botones redondos de 44px con escalón, y la torta del juego de fracciones, en el coral de Matemática con trazo de tinta. Debajo de cada actividad, un renglón centrado cuenta lo que pasó.
 
 ## Do's and Don'ts
 

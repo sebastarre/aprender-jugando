@@ -39,9 +39,18 @@ window.Ingles = (function () {
   }
 
   /* Los juegos de vocabulario preguntan todos lo mismo, así que la
-     consigna y los textos se escriben una sola vez. */
+     consigna y los textos se escriben una sola vez.
+
+     Y preguntan de dos maneras, que se van alternando:
+       «¿Cómo se dice?»  se ve el dibujo y se elige la palabra en inglés
+       «¿Dónde está…?»   la voz dice la palabra en inglés y se toca el
+                         dibujo: es la que puede jugar un chico que todavía
+                         no lee, y la que enseña cómo suena la palabra.
+     De 4 a 7 va una y una; de 8 a 12, una de cada tres es «¿dónde está?».
+     Sólo los juegos que tienen dibujo para cada palabra (colores,
+     números, animales, comida) pueden preguntar la segunda. */
   function vocabulario(def) {
-    return T.banco(Object.assign({
+    var completo = Object.assign({
       forma: 'palabra',
       mostrar: en,
       consigna: function (it) { return '¿Cómo se dice <b>' + it.que + '</b>?'; },
@@ -51,8 +60,48 @@ window.Ingles = (function () {
       },
       repaso: function (it) {
         return { simbolo: it.emoji || '🔤', nombre: it.que, dato: 'En inglés: ' + it.r };
+      },
+      montar: function (it, base, juego) {
+        if (!completo.visual || !tocaEscuchar()) return base();
+        dondeEsta(it, juego);
+      },
+      presentar: function (it) {
+        return {
+          visual: completo.visual ? completo.visual(it) : '',
+          titulo: '<span lang="en">' + it.r + '</span>',
+          texto: it.que.charAt(0).toUpperCase() + it.que.slice(1)
+        };
       }
-    }, def));
+    }, def);
+
+    /** «¿Dónde está…?»: la palabra en inglés arriba, los dibujos abajo. */
+    function dondeEsta(it, juego) {
+      var porPalabra = {};
+      juego.ITEMS.forEach(function (x) { porPalabra[x.r] = x; });
+      var otros = juego.malasDe(it).map(function (r) { return porPalabra[r]; }).filter(Boolean);
+      T.consigna('¿Dónde está <b><span lang="en">' + it.r + '</span></b>?');
+      T.visual(null);
+      Opciones.armar(Util.mezclar(otros.concat([it])).map(function (o) { return { id: o.r, cosa: o }; }), {
+        clase: 'dibujo',
+        contenido: function (o) {
+          var caja = Util.crear('span', 'opcion-dibujo');
+          caja.innerHTML = completo.visual(o.cosa);
+          return caja;
+        },
+        atributos: function (o) { return { 'aria-label': o.cosa.que }; },
+        alElegir: function (o) { Motor.responder(o.id); }
+      });
+    }
+
+    return T.banco(completo);
+  }
+
+  function esChico() { return document.documentElement.classList.contains('registro-chico'); }
+
+  /** Qué manera de preguntar le toca a esta pregunta. */
+  function tocaEscuchar() {
+    var i = Motor.indiceActual();
+    return esChico() ? i % 2 === 0 : i % 3 === 2;
   }
 
   /* ============================================================
@@ -357,7 +406,9 @@ window.Ingles = (function () {
     }),
     forma: 'frase',
     consigna: function (it) {
-      return '¿Qué quiere decir <b lang="en">' + it.ingles + '</b>?';
+      // entre comillas: «What is your name?» trae su propio signo, y sin
+      // ellas se leía «name??», como un error
+      return '¿Qué quiere decir «<b lang="en">' + it.ingles + '</b>»?';
     },
     textoFallo: function () { return 'No quiere decir eso.'; },
     textoRevelado: function (it) {

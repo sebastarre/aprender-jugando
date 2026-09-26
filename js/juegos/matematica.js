@@ -45,6 +45,33 @@ window.Matematica = (function () {
   var distractores = T.distractores;
 
   function prepararTablero() { T.preparar(); }
+
+  /* Cómo se contesta cada pregunta de números. Las cuentas (sumas,
+     tablas, dobles, divisiones, problemas) llevan la pizarra, para
+     hacerlas a mano, y de 8 años para arriba se escriben una sí y una no
+     (ver Tablero.teclado). «Qué número sigue» y «Cuánto vale» también se
+     escriben, pero se hacen de cabeza: sin pizarra. */
+  var CALCULO = { numerico: true, pizarra: true };
+  var ESCRITO = { numerico: true };
+
+  /** Contar tocando: cada cosa se marca con su número y la voz lo dice. */
+  function contarTocando(caja) {
+    var cosas = caja.querySelectorAll('.contar-cosa');
+    var contadas = 0;
+    Array.prototype.forEach.call(cosas, function (b) {
+      b.addEventListener('click', function () {
+        if (b.classList.contains('contada')) return;
+        contadas++;
+        b.classList.add('contada');
+        b.setAttribute('data-n', contadas);
+        b.setAttribute('aria-label', 'Contaste ' + contadas);
+        Sonido.despertar();
+        Sonido.tocar('pop', contadas);
+        if (Voz.hay() && Almacen.vozActiva()) Voz.decir(String(contadas));
+        if (contadas === cosas.length) caja.querySelector('.contar').classList.add('todas');
+      });
+    });
+  }
   function ocultarVisual() { T.visual(null); }
   function consigna(html) { T.consigna(html); }
   function armarRespuestas(correcta, malas, config) { T.respuestas(correcta, malas, config); }
@@ -195,13 +222,20 @@ window.Matematica = (function () {
       prepararTablero();
       consigna('¿Cuántos hay?');
       /* De a cinco por fila, como en un ábaco: así 7 se ve como «cinco y
-         dos» y no hay que contar de a uno cada vez. */
-      var html = '<div class="contar" role="img" aria-label="' +
-                 it.n + ' ' + (it.n === 1 ? it.cosa.uno : it.cosa.muchos) + '">';
+         dos» y no hay que contar de a uno cada vez.
+
+         Y cada cosa se toca para contarla: se marca con su número y la voz
+         lo dice («uno, dos, tres»). Es como se enseña a contar —una por
+         una, sin saltearse ni repetir, y el último número que se dijo es
+         cuántas hay— y un chico de cuatro lo hace con el dedo sobre la
+         mesa. Tocar no contesta: la respuesta se elige abajo. */
+      var html = '<div class="contar" role="group" aria-label="Tocá cada ' + it.cosa.uno + ' para contarla">';
       for (var i = 0; i < it.n; i++) {
-        html += '<img src="' + dibujoDe(it.cosa) + '" alt="" draggable="false">';
+        html += '<button type="button" class="contar-cosa" aria-label="' + it.cosa.uno + '">' +
+                '<img src="' + dibujoDe(it.cosa) + '" alt="" draggable="false"></button>';
       }
       T.visual(html + '</div>');
+      contarTocando(Util.$('pregunta-visual'));
       // el error de contar: pasarse uno o quedarse corto
       armarRespuestas(it.n, distractores(it.n, [it.n - 1, it.n + 1, it.n - 2, it.n + 2], 3, 1));
     },
@@ -733,7 +767,7 @@ window.Matematica = (function () {
         it.resultado + 1, it.resultado - 1,
         it.resultado + 10, it.resultado - 10,
         it.op === '+' ? it.a - it.b : it.a + it.b
-      ], 3, 0));
+      ], 3, 0), CALCULO);
     },
     ganchos: function () {
       return T.ganchos(function (it) { return it.resultado; }, {
@@ -842,7 +876,7 @@ window.Matematica = (function () {
       // de seguir sumando en una de dobles; si coincide, se descarta solo
       armarRespuestas(it.respuesta, distractores(it.respuesta, [
         it.respuesta + 1, it.respuesta - 1, it.respuesta + salto, ultimo, ultimo + salto
-      ], 3, 0));
+      ], 3, 0), ESCRITO);
     },
     ganchos: function () {
       return T.ganchos(function (it) { return it.respuesta; }, {
@@ -1102,7 +1136,7 @@ window.Matematica = (function () {
         it.a * (it.b + 1), it.a * (it.b - 1),
         (it.a + 1) * it.b, (it.a - 1) * it.b,
         it.resultado + it.a, it.resultado - it.a, it.a + it.b
-      ], 3, 0));
+      ], 3, 0), CALCULO);
     },
     ganchos: function () {
       return T.ganchos(function (it) { return it.resultado; }, {
@@ -1206,11 +1240,11 @@ window.Matematica = (function () {
       if (it.modo === 'doble') {
         consigna('¿Cuál es el <b>doble</b> de ' + it.n + '?');
         // errores: devolver el mismo número, sumarle 2, errarle por uno
-        armarRespuestas(r, distractores(r, [it.n, it.n + 2, r + 1, r - 1, r + 2, r - 2], 3, 0));
+        armarRespuestas(r, distractores(r, [it.n, it.n + 2, r + 1, r - 1, r + 2, r - 2], 3, 0), CALCULO);
       } else {
         consigna('¿Cuál es la <b>mitad</b> de ' + it.n + '?');
         // el error clásico: calcular el doble en vez de la mitad
-        armarRespuestas(r, distractores(r, [it.n * 2, it.n - 2, r + 1, r - 1, r + 2], 3, 1));
+        armarRespuestas(r, distractores(r, [it.n * 2, it.n - 2, r + 1, r - 1, r + 2], 3, 1), CALCULO);
       }
     },
     ganchos: function () {
@@ -1336,7 +1370,7 @@ window.Matematica = (function () {
       }).join('') + '</div>');
       // las cuatro lecturas posibles de una cifra: 5, 50, 500 y 5000
       var todas = [1, 10, 100, 1000].map(function (m) { return it.cifra * m; });
-      armarRespuestas(it.respuesta, todas.filter(function (v) { return v !== it.respuesta; }));
+      armarRespuestas(it.respuesta, todas.filter(function (v) { return v !== it.respuesta; }), ESCRITO);
     },
     ganchos: function () {
       var nombres = { 1: 'unidades', 10: 'decenas', 100: 'centenas', 1000: 'unidades de mil' };
@@ -1438,7 +1472,7 @@ window.Matematica = (function () {
       // errores: correrse una fila de la tabla, o contestar con el divisor
       armarRespuestas(it.respuesta, distractores(it.respuesta, [
         it.respuesta + 1, it.respuesta - 1, it.d, it.respuesta + 2, it.respuesta - 2
-      ], 3, 1));
+      ], 3, 1), CALCULO);
     },
     ganchos: function () {
       return T.ganchos(function (it) { return it.respuesta; }, {
@@ -1579,7 +1613,7 @@ window.Matematica = (function () {
          los mismos números. */
       var otras = ['+', '−', '×'].filter(function (op) { return op !== it.op; })
         .map(function (op) { return resolver(op, it.a, it.b); });
-      armarRespuestas(r, distractores(r, otras.concat([r + 1, r - 1, r + 2]), 3, 0));
+      armarRespuestas(r, distractores(r, otras.concat([r + 1, r - 1, r + 2]), 3, 0), CALCULO);
     },
     ganchos: function () {
       return T.ganchos(function (it) { return it.respuesta; }, {
@@ -1614,7 +1648,8 @@ window.Matematica = (function () {
   }
 
   function dibujarFraccion(n, d, forma) {
-    var lleno = '#fb7185', vacio = '#ffffff', linea = '#9f1239';
+    // el coral de Matemática y el trazo de tinta de todos los dibujos
+    var lleno = '#E5533D', vacio = '#ffffff', linea = '#27304A';
     var partes = '';
     if (forma === 'barra') {
       var ancho = 200 / d;
@@ -1766,8 +1801,10 @@ window.Matematica = (function () {
   return {
     id: 'matematica',
     JUEGOS: JUEGOS,
-    /** Lo usa también la lección sobre el reloj, en la sección Aprender. */
+    /** Los usan también las lecciones y sus actividades (js/aprender/actividades.js). */
     dibujarReloj: dibujarReloj,
+    dibujarFigura: dibujarFigura,
+    dibujarFraccion: dibujarFraccion,
     claveItem: function (item) { return item.id; },
     /**
      * Qué juego sabe dibujar esta pregunta. Acá es obligatorio: una tabla

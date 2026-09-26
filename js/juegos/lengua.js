@@ -1,11 +1,12 @@
 /* ============================================================
    Materia: Lengua.
 
-   Diez juegos. Las edades salen de en qué año se enseña cada tema según
+   Once juegos. Las edades salen de en qué año se enseña cada tema según
    el Diseño Curricular de la Provincia de Buenos Aires (2018):
 
      4–6    La primera letra     🍎 → M          (Nivel Inicial)
      5–7    La vocal que falta   c_sa            (Inicial y 1.º)
+     5–8    Armá la palabra      🏠 → ca + sa    (Inicial, Unidad Pedagógica y 1.º)
      5–7    Rimas                gato → pato     (Inicial y Unidad Pedagógica)
      6–9    Contrarios           grande → chico  (hay que leer: 1.º)
      6–9    Sílabas              ma-ri-po-sa     (Unidad Pedagógica, 1.º y 2.º)
@@ -152,6 +153,14 @@ window.Lengua = (function () {
     },
     textoFallo: function (it, r) { return 'Con «' + r + '» no se lee bien.'; },
     textoRevelado: function (it) { return 'Faltaba la «' + it.r + '»: ' + it.palabra + '.'; },
+    presentar: function (it) {
+      var p = it.palabra;
+      return {
+        visual: '<div class="visual-emoji" aria-hidden="true">' + it.emoji + '</div>',
+        titulo: p.slice(0, it.hueco) + '<b class="resalte">' + it.r + '</b>' + p.slice(it.hueco + 1),
+        texto: 'Fijate en la «' + it.r + '».'
+      };
+    },
     repaso: function (it) {
       return { simbolo: it.emoji, nombre: it.palabra, dato: 'Faltaba la «' + it.r + '»' };
     }
@@ -206,6 +215,9 @@ window.Lengua = (function () {
     consigna: function (it) { return '¿Qué palabra rima con <b>' + it.palabra + '</b>?'; },
     textoFallo: function (it, r) { return '«' + r + '» no suena como «' + it.palabra + '».'; },
     textoRevelado: function (it) { return '«' + it.palabra + '» rima con «' + it.r + '».'; },
+    presentar: function (it) {
+      return { titulo: '<b>' + it.palabra + '</b> y <b>' + it.r + '</b>', texto: 'Riman: suenan igual al final.' };
+    },
     repaso: function (it) { return { simbolo: '🎵', nombre: 'Rima con ' + it.palabra, dato: it.r }; }
   });
 
@@ -267,6 +279,9 @@ window.Lengua = (function () {
     consigna: function (it) { return '¿Cuál es lo contrario de <b>' + it.palabra + '</b>?'; },
     textoFallo: function (it, r) { return '«' + r + '» no es lo contrario.'; },
     textoRevelado: function (it) { return 'Lo contrario de «' + it.palabra + '» es «' + it.r + '».'; },
+    presentar: function (it) {
+      return { titulo: '<b>' + it.palabra + '</b> y <b>' + it.r + '</b>', texto: 'Son contrarios: uno es lo opuesto del otro.' };
+    },
     repaso: function (it) { return { simbolo: '↕️', nombre: 'Lo contrario de ' + it.palabra, dato: it.r }; }
   });
 
@@ -317,8 +332,135 @@ window.Lengua = (function () {
     textoRevelado: function (it) {
       return 'Tiene ' + it.r + ': ' + it.partes.split('-').join(' · ') + '.';
     },
+    /* Las palmas: un botón para aplaudir cada golpe de voz mientras se
+       dice la palabra, y los puntitos de cuántas van. Es lo que se hace
+       en la escuela, con las manos; acá además suena. */
+    alMontar: function () { palmas(Util.$('pregunta-visual')); },
+    presentar: function (it) {
+      var partes = it.partes.split('-');
+      return {
+        visual: '<div class="trozos">' + partes.map(function (x) { return '<span>' + x + '</span>'; }).join('') + '</div>',
+        titulo: it.palabra,
+        texto: 'Tiene ' + (partes.length === 1 ? 'una sílaba.' : partes.length + ' sílabas.')
+      };
+    },
     repaso: function (it) {
       return { simbolo: '👏', nombre: it.palabra, dato: it.partes.split('-').join(' · ') };
+    }
+  });
+
+  /** El botón de aplaudir de Sílabas, con los puntitos de cuántas palmas van. */
+  function palmas(caja) {
+    var cuenta = 0;
+    caja.innerHTML =
+      '<div class="palmas">' +
+        '<button type="button" class="palmas-boton">¡Plas!</button>' +
+        '<div class="palmas-cuenta" aria-live="polite"></div>' +
+        '<button type="button" class="palmas-otra" hidden>Otra vez</button>' +
+      '</div>';
+    caja.hidden = false;
+    var puntos = caja.querySelector('.palmas-cuenta');
+    var otra = caja.querySelector('.palmas-otra');
+    function pintar() {
+      Util.vaciar(puntos);
+      for (var i = 0; i < cuenta; i++) puntos.appendChild(Util.crear('span', 'palma'));
+      puntos.setAttribute('aria-label', cuenta ? Util.plural(cuenta, 'palma') : 'Todavía no aplaudiste');
+      otra.hidden = !cuenta;
+    }
+    caja.querySelector('.palmas-boton').addEventListener('click', function () {
+      if (cuenta >= 8) return;
+      cuenta++;
+      Sonido.despertar();
+      Sonido.tocar('aplauso');
+      pintar();
+    });
+    otra.addEventListener('click', function () { cuenta = 0; Sonido.tocar('clic'); pintar(); });
+    pintar();
+  }
+
+  /* ============================================================
+     Armá la palabra
+     ============================================================ */
+
+  /* [palabra, dibujo, sílabas]. Palabras que un chico de cinco nombra de
+     una sola manera al ver el dibujo (nada de 🐸, que es rana o sapo, ni
+     de 🐞, que acá es vaquita de San Antonio), cortadas como en la
+     escuela: los diptongos juntos (za-na-ho-ria, di-no-sau-rio) y la LL,
+     la RR y la CH sin separar. */
+  var ARMAR = [
+    ['casa', '🏠', 'ca-sa'], ['gato', '🐱', 'ga-to'], ['pato', '🦆', 'pa-to'],
+    ['luna', '🌙', 'lu-na'], ['vaca', '🐮', 'va-ca'], ['mono', '🐵', 'mo-no'],
+    ['oso', '🐻', 'o-so'], ['uva', '🍇', 'u-va'], ['nube', '☁️', 'nu-be'],
+    ['pera', '🍐', 'pe-ra'], ['dado', '🎲', 'da-do'], ['llave', '🔑', 'lla-ve'],
+    ['rosa', '🌹', 'ro-sa'], ['lobo', '🐺', 'lo-bo'], ['bota', '👢', 'bo-ta'],
+    ['queso', '🧀', 'que-so'], ['globo', '🎈', 'glo-bo'], ['leche', '🥛', 'le-che'],
+    ['silla', '🪑', 'si-lla'], ['ratón', '🐭', 'ra-tón'], ['limón', '🍋', 'li-món'],
+    ['tomate', '🍅', 'to-ma-te'], ['zapato', '👞', 'za-pa-to'], ['pelota', '⚽', 'pe-lo-ta'],
+    ['conejo', '🐰', 'co-ne-jo'], ['corona', '👑', 'co-ro-na'], ['manzana', '🍎', 'man-za-na'],
+    ['banana', '🍌', 'ba-na-na'], ['jirafa', '🦒', 'ji-ra-fa'], ['tortuga', '🐢', 'tor-tu-ga'],
+    ['caballo', '🐴', 'ca-ba-llo'], ['galleta', '🍪', 'ga-lle-ta'], ['tiburón', '🦈', 'ti-bu-rón'],
+    ['ballena', '🐳', 'ba-lle-na'], ['abeja', '🐝', 'a-be-ja'], ['helado', '🍦', 'he-la-do'],
+    ['regalo', '🎁', 're-ga-lo'], ['estrella', '⭐', 'es-tre-lla'],
+    ['mariposa', '🦋', 'ma-ri-po-sa'], ['elefante', '🐘', 'e-le-fan-te'],
+    ['zanahoria', '🥕', 'za-na-ho-ria'], ['dinosaurio', '🦕', 'di-no-sau-rio'],
+    ['cocodrilo', '🐊', 'co-co-dri-lo'], ['bicicleta', '🚲', 'bi-ci-cle-ta'],
+    ['chocolate', '🍫', 'cho-co-la-te'], ['calabaza', '🎃', 'ca-la-ba-za']
+  ];
+
+  /* Y letra por letra, sólo palabras cortas y sin tilde: con más de
+     cuatro letras las fichas no entran en un renglón del celular. */
+  var ARMAR_LETRAS = [
+    ['sol', '☀️'], ['pan', '🍞'], ['oso', '🐻'], ['uva', '🍇'], ['pez', '🐟'],
+    ['mar', '🌊'], ['pie', '🦶'], ['ojo', '👁️'], ['luna', '🌙'], ['casa', '🏠'],
+    ['gato', '🐱'], ['pato', '🦆'], ['vaca', '🐮'], ['dado', '🎲'], ['nube', '☁️'],
+    ['rosa', '🌹'], ['mono', '🐵'], ['flor', '🌼'], ['tren', '🚂'], ['pera', '🍐']
+  ];
+
+  function itemsParaArmar() {
+    return ARMAR.map(function (x) {
+      return { id: 's-' + sinTilde(x[0]), palabra: x[0], emoji: x[1], piezas: x[2].split('-'),
+               modo: 'silabas', r: x[0] };
+    }).concat(ARMAR_LETRAS.map(function (x) {
+      return { id: 'l-' + x[0], palabra: x[0], emoji: x[1], piezas: x[0].split(''),
+               modo: 'letras', r: x[0] };
+    }));
+  }
+
+  var ARMAR_JUEGO = T.banco({
+    id: 'armar',
+    nombre: 'Armá la palabra',
+    icono: 'lapiz',
+    color: '#0891b2',
+    suave: '#cffafe',
+    texto: 'Con sílabas y con letras',
+    edadMin: 5,
+    edadMax: 8,
+    niveles: [
+      { nombre: 'Con dos sílabas', filtro: function (it) { return it.modo === 'silabas' && it.piezas.length === 2; } },
+      { nombre: 'Con tres sílabas', filtro: function (it) { return it.modo === 'silabas' && it.piezas.length <= 3; } },
+      { nombre: 'Palabras largas', filtro: function (it) { return it.modo === 'silabas'; } },
+      { nombre: 'Letra por letra' }
+    ],
+    items: itemsParaArmar(),
+    /* La palabra no se ve escrita (sería copiarla), pero la voz la dice:
+       va en un pedacito que sólo se escucha. */
+    consigna: function (it) {
+      return 'Armá la palabra<span class="solo-voz">: ' + it.palabra + '</span>';
+    },
+    visual: function (it) {
+      return '<div class="visual-emoji" role="img" aria-label="' + it.palabra + '">' + it.emoji + '</div>';
+    },
+    montar: function (it) {
+      Fichas.armar({ piezas: it.piezas, unir: '', hablar: true, clase: it.modo });
+    },
+    textoFallo: function (it, armada) { return 'Así dice «' + armada + '».'; },
+    pista: function (it, intento) {
+      if (intento === 1) return 'Decí «' + it.palabra + '» despacio. ¿Cómo empieza?';
+      return 'Empieza con «' + it.piezas[0] + '».';
+    },
+    textoRevelado: function (it) { return 'Era «' + it.palabra + '»: ' + it.piezas.join(' · ') + '.'; },
+    repaso: function (it) {
+      return { simbolo: it.emoji, nombre: it.palabra, dato: it.piezas.join(' · ') };
     }
   });
 
@@ -633,7 +775,7 @@ window.Lengua = (function () {
     return 'Mirala letra por letra.';
   }
 
-  var JUEGOS = [PRIMERA_LETRA, VOCAL_QUE_FALTA, RIMAS_JUEGO, CONTRARIOS_JUEGO, SILABAS_JUEGO,
+  var JUEGOS = [PRIMERA_LETRA, VOCAL_QUE_FALTA, ARMAR_JUEGO, RIMAS_JUEGO, CONTRARIOS_JUEGO, SILABAS_JUEGO,
                 PLURALES_JUEGO, ORTOGRAFIA_JUEGO, SINONIMOS_JUEGO, TILDES_JUEGO, CLASES_JUEGO];
 
   var modulo = T.materia('lengua', JUEGOS);
