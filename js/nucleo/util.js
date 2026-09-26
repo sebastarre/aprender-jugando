@@ -56,6 +56,17 @@ window.Util = (function () {
   /** Elige un elemento de la lista con una probabilidad fija. */
   function unaDe(lista) { return alAzar(lista); }
 
+  /* Al azar, pero nunca el mismo que la vez anterior con esa lista: una
+     frase de festejo repetida dos veces seguidas suena a máquina. */
+  var ultimaDe = typeof WeakMap === 'function' ? new WeakMap() : null;
+  function otraDe(lista) {
+    if (!ultimaDe || lista.length < 2) return alAzar(lista);
+    var antes = ultimaDe.get(lista);
+    var elegida = alAzar(lista.filter(function (x) { return x !== antes; }));
+    ultimaDe.set(lista, elegida);
+    return elegida;
+  }
+
   /** document.getElementById abreviado. */
   function $(id) { return document.getElementById(id); }
 
@@ -199,7 +210,7 @@ window.Util = (function () {
 
   return {
     mezclar: mezclar, muestra: muestra, muestraPesada: muestraPesada,
-    alAzar: alAzar, unaDe: unaDe,
+    alAzar: alAzar, unaDe: unaDe, otraDe: otraDe,
     limitar: limitar, $: $, crear: crear, vaciar: vaciar,
     oscurecer: oscurecer, aclarar: aclarar,
     contraste: contraste, cartel: cartel,

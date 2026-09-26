@@ -327,7 +327,7 @@ window.Ciencias = (function () {
     mostrar: conPista(PISTAS_DIETA),
     consigna: function (it) { return '¿Qué es <b>' + it.quien + '</b>?'; },
     visual: function (it) { return '<div class="visual-emoji" aria-hidden="true">' + it.emoji + '</div>'; },
-    textoFallo: function (it) { return 'Pensá qué come ' + it.quien + '.'; },
+    textoFallo: function (it) { return 'Pensá: ¿qué come ' + it.quien + '?'; },
     /* Dicho al revés para no tener que concordar: «la vaca es herbívora»
        pero «el león es carnívoro» y «el águila es carnívora», y eso
        habría que anotarlo animal por animal. */

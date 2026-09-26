@@ -27,9 +27,10 @@
                          Puede ser una función que la devuelva.
      truco:  'texto'     un recuadro con el atajo para acordarse
      video:  'url'       un video embebido (necesita internet)
-     practica: { pregunta, opciones, correcta, explicacion, pista }
-                         «¿Y vos?» después de la explicación: hay que
-                         contestarla bien para seguir
+     practica: { pregunta, opciones, correcta, explicacion, pista, enOrden }
+                         una pregunta después de la explicación: hay que
+                         contestarla bien para seguir. Con enOrden, las
+                         opciones no se mezclan (cuando son categorías)
      prediccion: { pregunta, opciones, correcta, explicacion, sinDibujo }
                          la mascota pregunta ANTES de explicar, y lo que se
                          toca aparece después; con sinDibujo el dibujo
@@ -240,11 +241,16 @@ window.Lecciones = (function () {
   /** Un dibujo grande (un emoji que es la cosa misma: la vaca, la uva). */
   function emoji(e) { return '<div class="visual-emoji" aria-hidden="true">' + e + '</div>'; }
 
-  /** Varios dibujos grandes en fila. */
+  /** Varios dibujos grandes en fila (un emoji, o el HTML de un dibujo de lugar). */
   function emojis(lista) {
     return '<div class="fila-emojis" aria-hidden="true">' + lista.map(function (e) {
-      return '<span class="visual-emoji">' + e + '</span>';
+      return e.charAt(0) === '<' ? e : '<span class="visual-emoji">' + e + '</span>';
     }).join('') + '</div>';
+  }
+
+  /** Un lugar con dibujo propio (el río), del tamaño de un emoji. */
+  function lugar(nombre) {
+    return window.Dibujos ? '<span class="visual-emoji visual-paisaje" aria-hidden="true">' + Dibujos.svg(nombre) + '</span>' : '';
   }
 
   /** Una letra grande con su dibujo al lado: la A y la abeja. */
@@ -820,7 +826,7 @@ window.Lecciones = (function () {
           texto: '¡Nos vamos de paseo! Tocá cada lugar y escuchá cómo se llama.',
           interactivo: { tipo: 'escuchar', cosas: [
             { visual: emoji('🏔️'), nombre: 'la montaña', decir: 'La montaña.' },
-            { visual: emoji('🏞️'), nombre: 'el río', decir: 'El río.' },
+            { visual: lugar('rio'), nombre: 'el río', decir: 'El río.' },
             { visual: emoji('🌊'), nombre: 'el mar', decir: 'El mar.' },
             { visual: emoji('🏖️'), nombre: 'la playa', decir: 'La playa.' },
             { visual: emoji('🌲'), nombre: 'el bosque', decir: 'El bosque.' },
@@ -829,7 +835,7 @@ window.Lecciones = (function () {
         },
         {
           texto: 'La <b>montaña</b> es tan alta que arriba hace frío y hay <b>nieve</b>. Y el <b>río</b> es agua que baja corriendo.',
-          visual: function () { return emojis(['🏔️', '🏞️']); },
+          visual: function () { return emojis(['🏔️', lugar('rio')]); },
           practica: { pregunta: '¿Dónde hay <b>nieve</b> arriba?', opciones: ['🏔️ En la montaña', '🏖️ En la playa', '🌾 En el campo'], correcta: 0, explicacion: 'Arriba de las montañas hace mucho frío, y por eso hay nieve.', pista: '¿Qué lugar es tan alto que llega hasta donde hace frío?' }
         },
         {
@@ -1598,7 +1604,7 @@ window.Lecciones = (function () {
         {
           texto: 'Los dientes dan pistas: los carnívoros tienen <b>colmillos</b> filosos para cortar carne. Los herbívoros, <b>muelas anchas</b> para moler pasto.',
           visual: function () { return emojis(['🦁', '🐄']); },
-          practica: { pregunta: 'El koala come hojas de eucalipto, y nada más. ¿Qué es?', opciones: ['Herbívoro', 'Carnívoro', 'Omnívoro'], correcta: 0, explicacion: 'Come sólo plantas: es herbívoro.', pista: 'Las hojas, ¿son plantas o animales?' }
+          practica: { pregunta: 'El koala come hojas de eucalipto, y nada más. ¿Qué es?', opciones: ['Herbívoro', 'Carnívoro', 'Omnívoro'], enOrden: true, correcta: 0, explicacion: 'Come sólo plantas: es herbívoro.', pista: 'Las hojas, ¿son plantas o animales?' }
         }
       ]
     },

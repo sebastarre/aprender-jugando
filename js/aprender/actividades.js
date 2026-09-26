@@ -46,6 +46,9 @@ window.Actividades = (function () {
   'use strict';
 
   function vozActiva() { return Voz.hay() && Almacen.vozActiva(); }
+
+  // cuando algo no va ahí: primero algo cálido, como en los juegos (ver js/nucleo/motor.js)
+  var ANIMO = ['¡Buen intento!', '¡Ups!', '¡No pasa nada!'];
   function decir(texto, opciones) { if (Voz.hay()) Voz.decir(texto, opciones); }
 
   function dibujoDe(cosa) { return 'assets/contar/' + (cosa || 'manzana') + '.png'; }
@@ -468,7 +471,9 @@ window.Actividades = (function () {
       cajon.classList.remove('sacude');
       void cajon.offsetWidth;
       cajon.classList.add('sacude');
-      avisar(c.pista || ('Mmm, ' + Tablero.plano(c.nombre) + ' va en otro grupo. ¡Probá de nuevo!'), true);
+      var pista = c.pista || (mayuscula(Tablero.plano(c.nombre)) + ' va en otro grupo.');
+      // si la pista ya pregunta algo («¿Dónde hay muchas calles?»), eso ya invita a probar
+      avisar(Util.otraDe(ANIMO) + ' ' + pista + (/\?$/.test(Tablero.plano(pista)) ? '' : ' ¡Probá con otro grupo!'), true);
     }
 
     caja.appendChild(cajones);
@@ -517,7 +522,7 @@ window.Actividades = (function () {
           void b.offsetWidth;
           b.classList.add('sacude');
           Sonido.tocar('error');
-          avisar((r.pistas && r.pistas[k]) || 'Mmm, esa no. ¡Probá otra!', true);
+          avisar(Util.otraDe(ANIMO) + ' ' + ((r.pistas && r.pistas[k]) || '¡Probá otra!'), true);
         });
         b.innerHTML = parte;
         fila.appendChild(b);

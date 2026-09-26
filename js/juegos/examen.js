@@ -45,7 +45,8 @@ window.Examen = (function () {
       });
     });
 
-    return Util.mezclar(items);
+    // mezcladas, pero sin la misma pregunta ni la misma respuesta dos veces seguidas
+    return Tablero.espaciar(items);
   }
 
   /**

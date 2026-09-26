@@ -25,7 +25,7 @@ window.Motor = (function () {
 
   var INTENTOS = 3;
   var PUNTOS_POR_INTENTO = [3, 2, 1];   // según en qué intento acierte
-  var ESPERA_ACIERTO = 420;             // cuánto se ve el acierto
+  var ESPERA_ACIERTO = 650;             // cuánto se ve el festejo (con menos, no se llegaba a leer)
   var ESPERA_FALLO = 260;               // bloqueo cortito (evita el doble clic)
   var ESPERA_REVELAR = 1500;            // tiempo para mirar la respuesta correcta
   var ESPERA_MUDO = 320;                // en el examen no hay nada que leer
@@ -39,21 +39,45 @@ window.Motor = (function () {
     temporizadores = [];
   }
 
-  /* ---------------------- lo que se dice al errar ----------------------
+  /* ---------------------- lo que se dice ----------------------
 
-     Equivocarse es parte de aprender, y el cartel lo tiene que decir así.
-     Nunca «mal», ni una cuenta regresiva de intentos («te queda 1»: los
-     corazones ya lo muestran, y dicho suena a amenaza). Primero algo amable
-     y verdadero —«¡Casi!» sólo lo dice cada juego cuando de verdad estuvo
-     cerca—, si se puede algo que enseñe, y al final una invitación a
-     probar otra vez. Van variando, como cuando lo dice una persona. */
-  var ANIMO = ['¡Buen intento!', 'Todavía no.', 'Mmm, esa no era.'];
-  var OTRA_VEZ = ['¡Probá otra vez!', '¡Otra vez, sin apuro!', '¡Dale, que vos podés!'];
-  var UNA_MAS = ['¡Una vez más, vos podés!', '¡Una más, con calma!', '¡Dale, que ya casi!'];
+     El cartel dice lo que diría una maestra que quiere al chico, sentada
+     al lado. Al acertar, se festeja de verdad, cada vez distinto y a veces
+     con su nombre. Al errar, siempre arranca con algo cálido —antes, si el
+     juego traía su propio texto, el cartel empezaba de una con «¿Seguro que
+     son 3?», que a los cinco años suena a reto—, después lo que enseña el
+     juego («el gato hace miau») o una pista, y al final una invitación a
+     probar otra vez. Nunca «mal», ni los intentos que quedan: los corazones
+     ya lo muestran, y dicho suena a amenaza. Van variando, como cuando lo
+     dice una persona. */
+  var BIEN = ['¡Muy bien!', '¡Genial!', '¡Eso es!', '¡Bravo!', '¡Excelente!', '¡Qué bien!',
+              '¡Buenísimo!', '¡Perfecto!', '¡Lo sabías!', '¡Así se hace!'];
+  var BIEN_CON_NOMBRE = ['¡Muy bien, #!', '¡Genial, #!', '¡Eso es, #!', '¡Bravo, #!', '¡Qué bien, #!'];
+  // si salió después de errar, lo que se festeja es que lo pensó otra vez y no se rindió
+  var BIEN_AL_SEGUNDO = ['¡Muy bien! Lo pensaste de nuevo y te salió.', '¡Eso! Probaste otra vez y lo lograste.',
+                         '¡Genial! Así se aprende: probando.'];
+  var BIEN_AL_TERCERO = ['¡Lo lograste! Qué bueno que no te rendiste.', '¡Eso! Seguiste probando y te salió.'];
+  var RACHA = ['¡Vas volando!', '¡Qué racha!', '¡Imparable!'];
+
+  var ANIMO = ['¡Buen intento!', '¡Uy, esa no era!', '¡No pasa nada!', '¡Ups!'];
+  var OTRA_VEZ = ['¡Probá otra vez!', '¡Dale, otra vez!', '¡Vos podés!', '¡Seguro que ahora sale!'];
+  var UNA_MAS = ['¡Una vez más, vos podés!', '¡Dale, que ya casi lo tenés!', '¡Una más, con calma!'];
+  // si el juego ya arranca con algo cálido («Casi: te olvidaste…»), no se agrega otro
+  var YA_ANIMA = /^(?:¡?Casi|¡?Muy cerca|¡?Uy|¡?Ups|¡?Buen intento|¡?No pasa nada)/i;
   // si el juego ya invita a hacer algo («Contá…», «Pensá…»), no hace falta otra invitación
-  var YA_INVITA = /(?:^|[\s¿¡])(?:Contá|Tocá|Decí|Pensá|Mirá|Leé|Escuchá|Probá|Fijate)(?=[\s:,.])/;
-  // cuando al final se muestra la que era: lo que se aprendió, no lo que se perdió
-  var CONSUELO = ['¡Ahora ya lo sabés!', 'La próxima te sale.', 'Así se aprende.'];
+  var YA_INVITA = /(?:^|[\s¿¡])(?:Contá|Tocá|Decí|Pensá|Mirá|Leé|Escuchá|Probá|Fijate|Buscá|Buscalo|Buscala|Aplaudí)(?=[\s:,.!])/;
+  // cuando al final se muestra la que era: primero tranquilidad, al final lo que se aprendió
+  var REVELAR = ['¡No pasa nada!', '¡Tranqui, te ayudo!', '¡Te muestro!'];
+  var CONSUELO = ['¡Ahora ya lo sabés!', '¡La próxima te sale!', '¡Así se aprende!'];
+
+  function sinMarcas(html) { return String(html).replace(/<[^>]*>/g, '').trim(); }
+
+  /** El nombre del chico, para festejarlo con su nombre (sólo el primero). */
+  function nombreDelChico() {
+    var yo = window.Almacen && Almacen.activo && Almacen.activo();
+    var nombre = yo && yo.nombre ? String(yo.nombre).trim().split(/\s+/)[0] : '';
+    return nombre && nombre !== 'Jugador' ? nombre : '';
+  }
 
   /* ---------------------- cartel de mensajes ---------------------- */
   function aviso(texto, tipo) {
@@ -251,10 +275,10 @@ window.Motor = (function () {
        compiten con el contenido en vez de reforzarlo. Si salió después de
        errar, se festeja eso: que lo pensó otra vez y no se rindió.
        Y si con éste llegó a una racha redonda, se festeja la racha. */
-    aviso(hito ? '¡' + Util.plural(e.racha, 'seguida', 'seguidas').replace(/^\d+/, numeroEnLetras(e.racha)) + '!'
+    aviso(hito ? '¡' + Util.plural(e.racha, 'seguida', 'seguidas').replace(/^\d+/, numeroEnLetras(e.racha)) + '! ' + Util.otraDe(RACHA)
       : e.intento === 0 ? festejo()
-      : e.intento === 1 ? '¡Bien! Lo pensaste otra vez y te salió.'
-      : '¡Eso! No te rendiste, y te salió.', 'bien');
+      : e.intento === 1 ? Util.otraDe(BIEN_AL_SEGUNDO)
+      : Util.otraDe(BIEN_AL_TERCERO), 'bien');
     luego(siguiente, hito ? ESPERA_ACIERTO + 350 : ESPERA_ACIERTO);
   }
 
@@ -291,8 +315,8 @@ window.Motor = (function () {
       return;
     }
 
-    // lo que dice el juego de esa respuesta («El gato hace «¡Miau!»»), o algo amable
-    var propio = (e.cfg.textoFallo && e.cfg.textoFallo(item, respuesta, quedan)) || Util.alAzar(ANIMO);
+    // lo que dice el juego de esa respuesta («El gato hace «¡Miau!»»), si dice algo
+    var propio = (e.cfg.textoFallo && e.cfg.textoFallo(item, respuesta, quedan)) || '';
 
     /* Andamiaje: cada intento que falla trae más ayuda que el anterior.
        Primero una pista para pensar («empezá por las unidades»), después
@@ -300,10 +324,17 @@ window.Motor = (function () {
        explicación. Sin esto, los intentos 2 y 3 eran sólo otra chance de
        tocar un botón, y con cuatro opciones se acertaba por descarte. */
     var pista = e.cfg.pista ? e.cfg.pista(item, e.intento, respuesta) : '';
+
+    // primero algo cálido, después lo que enseña, y al final la invitación
+    var partes = [];
+    if (!YA_ANIMA.test(sinMarcas(propio))) partes.push(Util.otraDe(ANIMO));
+    if (propio) partes.push(propio);
+    if (pista) partes.push(pista);
+    if (!YA_INVITA.test(sinMarcas(propio + ' ' + pista))) {
+      partes.push(Util.otraDe(quedan === 1 ? UNA_MAS : OTRA_VEZ));
+    }
     // el dibujito lo pone el cartel (la lamparita o la flecha de «otra vez»), no va escrito
-    if (pista) aviso(propio + ' ' + pista, 'pista');
-    else if (YA_INVITA.test(propio)) aviso(propio, 'mal');
-    else aviso(propio + ' ' + Util.alAzar(quedan === 1 ? UNA_MAS : OTRA_VEZ), 'mal');
+    aviso(partes.join(' '), pista ? 'pista' : 'mal');
 
     luego(function () { if (e) e.bloqueado = false; }, ESPERA_FALLO);
   }
@@ -318,9 +349,10 @@ window.Motor = (function () {
     var plano = String(texto).replace(/<[^>]*>/g, '').trim();
     if (!/!$/.test(plano)) {
       if (!/[.?…»)]$/.test(plano)) texto += '.';
-      texto += ' ' + Util.alAzar(CONSUELO);
+      texto += ' ' + Util.otraDe(CONSUELO);
     }
-    aviso(texto, 'dato');
+    // y antes que nada, tranquilidad: no saberlo todavía no es un problema
+    aviso(Util.otraDe(REVELAR) + ' ' + texto, 'dato');
     // una explicación larga necesita más tiempo para leerla
     var largo = String(texto).replace(/<[^>]*>/g, '').length;
     luego(pasarCuandoCalle, Math.min(4000, Math.max(ESPERA_REVELAR, largo * 45)));
@@ -339,8 +371,19 @@ window.Motor = (function () {
     })();
   }
 
+  /* Una de cada tres veces, con su nombre: «¡Genial, Sofi!» es otra cosa
+     que «¡Genial!». Más seguido dejaría de sonar a que se lo dicen a él. */
+  var festejoAnterior = '';
   function festejo() {
-    return Util.alAzar(['¡Muy bien!', '¡Eso es!', '¡Bien pensado!', '¡Correcto!']);
+    var nombre = nombreDelChico();
+    // nunca dos veces seguidas con el nombre, ni «¡Eso es!» después de «¡Eso es, Sofi!»
+    var conNombre = nombre && Math.random() < 1 / 3 && festejoAnterior.indexOf(nombre) < 0;
+    var raiz = function (f) { return f.replace(/^¡/, '').split(/[,!]/)[0]; };
+    var lista = (conNombre ? BIEN_CON_NOMBRE : BIEN).filter(function (f) {
+      return raiz(f) !== raiz(festejoAnterior);
+    });
+    festejoAnterior = Util.otraDe(lista).replace('#', nombre);
+    return festejoAnterior;
   }
 
   /* ---------------------- avance y cierre ---------------------- */

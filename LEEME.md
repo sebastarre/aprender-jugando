@@ -240,6 +240,37 @@ adivinar. Cada juego pide ahora lo que su tema necesita:
   de la partida («8 seguidas a la primera»). Es la sensación de ir embalado,
   que es lo que hace querer seguir.
 
+## Preguntas que no se repiten
+
+Antes, un nivel con pocas cosas estiraba la partida repitiéndolas: contar hasta
+3 eran ocho preguntas, y «¿cuántos hay?» con los mismos tres pollitos salía
+tres veces, a veces seguidas. Ahora (`js/nucleo/tablero.js`):
+
+- **Nunca la misma pregunta dos veces seguidas**, y cada una sale dos veces
+  como mucho por partida. Si ni así alcanza, la partida es más corta: el primer
+  nivel de un juego puede tener cuatro preguntas (`Tablero.sortear`,
+  `Tablero.espaciar`).
+- **Si se repite, se ve distinta:** el mismo número con otra cosa para contar,
+  la misma figura de otro color, la misma fracción en torta y en barra.
+- **La misma respuesta tampoco sale seguida**, si se puede. Los niveles de los
+  juegos de categorías se arman intercalándolas (antes el primer nivel de
+  «¿Qué come?» eran dos herbívoros: cuatro preguntas y siempre el mismo botón)
+  y se completan con lo de antes, parejo entre las respuestas.
+- **Las cuentas que se inventan** (sumas, series, dobles, «el más grande») no
+  se repiten en una partida, y el mismo resultado sale dos veces como mucho
+  (`Tablero.variadas`). «El más grande» hasta 10 ya no es casi siempre el 10:
+  primero se elige la respuesta y después los otros números.
+- **Cuando las respuestas son categorías fijas** (herbívoro, carnívoro y
+  omnívoro; sustantivo, adjetivo y verbo; en la ciudad, en el campo y en el
+  mar), los botones van siempre en el mismo orden, y las letras por abecedario:
+  el chico las encuentra donde las dejó (`def.categorias` y `def.orden` en
+  `Tablero.banco`).
+
+Se revisó generando más de 19.000 partidas de todos los juegos y niveles:
+ninguna pregunta salió dos veces seguidas ni tres veces en la misma partida, y
+la misma respuesta tres veces seguidas quedó en casos contados (un nivel de
+«am, is, are» que es casi todo «is»).
+
 ## Cómo se adapta a cada chico
 
 La primera vez que se abre, la app pide **nombre y edad** (no hay registro ni
@@ -386,7 +417,7 @@ del paso; las actividades están en `js/aprender/actividades.js`):
 | El mapa | Un mapa quieto para tocar: los continentes, los países de alrededor según el rumbo, la capital de cada país | Qué es un continente, Cómo se lee un mapa, Qué es una capital |
 
 Nada de esto se corrige: es para probar. Lo que se corrige es la práctica
-**«¿Y vos?»** del final de algunos pasos: una pregunta sobre lo que se acaba de
+**pregunta de práctica** del final de algunos pasos: una pregunta sobre lo que se acaba de
 ver, que hay que contestar bien para seguir. Si sale mal dice por qué y se
 prueba de nuevo; al segundo error muestra cuál era, para no trabarse. Campo
 `practica` del paso: `{ pregunta, opciones, correcta, explicacion, pista }`.
@@ -593,33 +624,43 @@ mudo. Ahora:
 - **El botón elegido** se marca en rojo suave con su cruz y la mascota duda:
   con eso alcanza para saber que no era ésa.
 - **El cartel no reta, anima.** Es crema, como las pistas, con una flecha de
-  «otra vez» en lugar de la cruz. Dice primero algo amable y verdadero («¡Buen
-  intento!», «Todavía no.»; «¡Casi!» sólo cuando de verdad estuvo cerca), si
-  se puede algo que enseñe, y al final una invitación: «¡Probá otra vez!»,
-  «¡Dale, que vos podés!». Nunca «mal» ni «te queda 1 intento»: los corazones
-  ya lo muestran.
+  «otra vez» en lugar de la cruz. Siempre arranca con algo cálido («¡Buen
+  intento!», «¡Uy, esa no era!», «¡No pasa nada!»; «¡Casi!» sólo cuando de
+  verdad estuvo cerca), después lo que enseña el juego o una pista, y al final
+  una invitación: «¡Probá otra vez!», «¡Vos podés!». Antes, si el juego traía
+  su propio texto, el cartel arrancaba de una con él, y algunos sonaban a reto
+  («¿Seguro que son 3?», «Mirá bien: se escribe distinto»). Nunca «mal» ni «te
+  queda 1 intento»: los corazones ya lo muestran.
 - **Lo que eligió también enseña.** Cada juego dice qué es: «El gato hace
   «¡Miau!»», «Cat es el gato», «En el mar viven el delfín y el pulpo»,
   «Probá: 6 × 7 da 42, y buscamos 56». O hace una pregunta para pensar: «Un pez
   respira con branquias: ¿el delfín también?», «Pensá: ¿para qué sirve la
   nariz?».
-- **Si le sale después de errar**, se festeja eso: «¡Bien! Lo pensaste otra vez
-  y te salió», «¡Eso! No te rendiste, y te salió».
-- **Al mostrar la que era**, cierra con lo que ganó: «¡Ahora ya lo sabés!», «La
-  próxima te sale», «Así se aprende». Si la explicación es larga queda más
-  tiempo, y si la voz la está leyendo, se la espera antes de pasar.
+- **Al acertar se festeja de verdad**, cada vez distinto («¡Genial!»,
+  «¡Bravo!», «¡Lo sabías!»…) y una de cada tres veces con su nombre («¡Muy
+  bien, Sofi!»). Nunca la misma frase dos veces seguidas, y el festejo queda
+  un poco más a la vista antes de pasar. Ya no dice «¡Correcto!», que suena a
+  máquina de corregir.
+- **Si le sale después de errar**, se festeja eso: «¡Eso! Probaste otra vez y
+  lo lograste», «¡Lo lograste! Qué bueno que no te rendiste».
+- **Al mostrar la que era**, primero tranquilidad y al final lo que ganó:
+  «¡No pasa nada! Eran 3 pelotas. ¡Ahora ya lo sabés!». Si la explicación es
+  larga queda más tiempo, y si la voz la está leyendo, se la espera antes de
+  pasar.
 - **De 4 a 7, la voz lo dice**, como lo diría un grande al lado.
 - **Los finales tampoco retan:** «¡Buen intento!» en vez de «¡A practicar un
   poco más!» o «No alcanzó», «Para repasar» en vez de «Lo que erraste», y
   siempre con qué hacer ahora. La lista de repaso no repite una pregunta que
   se erró dos veces.
 
-En las lecciones pasa lo mismo: «Todavía no. Mirá otra vez con calma y probá
-de nuevo», y en la predicción «¡Bien que lo pensaste! Era…».
+En las lecciones pasa lo mismo: «¡Uy, esa no era! Levantá 3 dedos, después 1
+más, y contalos todos. ¡Probá otra vez!», y en la predicción, que se contesta
+antes de saber, «¡Buena idea! Pero era…».
 
-Los textos generales están en `js/nucleo/motor.js` (`ANIMO`, `OTRA_VEZ`,
-`UNA_MAS`, `CONSUELO`) y los de cada juego en su `textoFallo`. Un juego que no
-dice nada propio recibe los generales.
+Los textos generales están en `js/nucleo/motor.js` (`BIEN`, `BIEN_CON_NOMBRE`,
+`ANIMO`, `OTRA_VEZ`, `UNA_MAS`, `REVELAR`, `CONSUELO`) y los de cada juego en
+su `textoFallo`. Las frases se eligen con `Util.otraDe`, que nunca repite la de
+la vez anterior.
 
 ## Modo examen
 
@@ -809,7 +850,10 @@ color, la pregunta, los globos— es plano. Así se sabe qué se toca sin probar
 como la mascota, y rellenos planos, sin ids (se pueden repetir en la misma
 pantalla). Hay uno por materia y uno por cada lugar grande: jugar, aprender, la
 meta, el repaso, la tienda, los ajustes, el candado y las caritas de la
-bienvenida. Se ponen con `data-dibujo="geografia"` o con
+bienvenida. También el río del juego de los lugares: el emoji 🏞️ es un parque
+con un lago y no se entendía, así que es una foto dibujada, con el río que
+nace entre las lomas y se ensancha (`Dibujos.url` lo da como imagen, para el
+repaso). Se ponen con `data-dibujo="geografia"` o con
 `Dibujos.poner(el, 'geografia')`, y `herramientas/dibujos.html` los muestra
 todos juntos para revisarlos al agregar uno. **Los íconos chicos** siguen en
 `js/nucleo/iconos.js` (grilla de 24, trazo redondeado, dos tonos). En la

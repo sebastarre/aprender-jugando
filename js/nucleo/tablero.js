@@ -89,6 +89,8 @@ window.Tablero = (function () {
    *   mostrar   cómo se escribe cada valor (texto o un nodo)
    *   etiqueta  lo que lee un lector de pantalla, si el valor es un
    *             emoji que solo no se entiende
+   *   orden     las respuestas posibles en su orden (herbívoro, carnívoro,
+   *             omnívoro): los botones van en ese orden en vez de al azar
    */
   function respuestas(correcta, malas, config) {
     config = config || {};
@@ -96,7 +98,12 @@ window.Tablero = (function () {
        sí y una no, y todas en los desafíos): elegir entre cuatro números
        deja adivinar por descarte, escribir obliga a hacer la cuenta. */
     if (config.numerico && usarTeclado()) return teclado(correcta, config);
-    var lista = Util.mezclar(malas.concat([correcta])).map(function (v) {
+    /* Cuando las respuestas son siempre las mismas categorías, van siempre
+       en el mismo lugar: el chico las encuentra donde las dejó y no tiene
+       que volver a leer las tres en cada pregunta. Mezcladas, parecía que
+       el juego cambiaba las reglas. */
+    var todas = malas.concat([correcta]);
+    var lista = (config.orden ? enOrden(todas, config.orden) : Util.mezclar(todas)).map(function (v) {
       return { id: v, valor: v };
     });
     Opciones.armar(lista, {
@@ -110,6 +117,12 @@ window.Tablero = (function () {
       } : null,
       alElegir: function (o) { Motor.responder(o.valor); }
     });
+  }
+
+  /** Los valores en el orden de `orden`; los que no están ahí, al final. */
+  function enOrden(valores, orden) {
+    function lugar(v) { var i = orden.indexOf(v); return i < 0 ? orden.length : i; }
+    return valores.slice().sort(function (x, y) { return lugar(x) - lugar(y); });
   }
 
   /* ---------------------- el teclado de números ----------------------
@@ -263,17 +276,26 @@ window.Tablero = (function () {
 
   /* ======================== sorteo ======================== */
 
+  /* Cuántas veces puede salir la misma pregunta en una partida. Con un
+     pozo chico (contar hasta 3, los tercios) se pedían ocho preguntas y
+     cada una salía tres o cuatro veces, a veces pegadas: «¿cuántos hay?»
+     con los mismos tres pollitos, tres veces seguidas. Ahora cada una
+     sale dos veces como mucho, nunca seguidas, y si ni así alcanza, la
+     partida es más corta: aburre menos que la misma pregunta otra vez. */
+  var VECES = 2;
+
   /**
    * Saca `cantidad` preguntas de un pozo finito, dándole prioridad a lo
    * que el chico viene fallando. Si se piden más preguntas que ítems
-   * tiene el pozo, se dan vueltas: dentro de cada vuelta no se repite.
+   * tiene el pozo, cada uno sale dos veces como mucho (ver VECES).
    *
    * `sinPesar` es para el examen, que mide y no enseña: ahí el sorteo
    * es parejo.
    */
   function sortear(materiaId, pozo, cantidad, sinPesar) {
     if (!pozo.length) return [];
-    var n = cantidad === 'todos' ? pozo.length : cantidad;
+    var pedidas = cantidad === 'todos' ? pozo.length : cantidad;
+    var n = Math.min(pedidas, pozo.length < 2 ? 1 : pozo.length * VECES);
     function vuelta(k) {
       return sinPesar
         ? Util.muestra(pozo, k)
@@ -281,12 +303,80 @@ window.Tablero = (function () {
             return Almacen.pesoDe(materiaId, it.id);
           });
     }
-    var salida = [];
-    while (salida.length < n) {
-      salida = salida.concat(vuelta(Math.min(pozo.length, n - salida.length)));
-    }
+    var salida = vuelta(Math.min(pozo.length, n));
+    if (salida.length < n) salida = salida.concat(vuelta(n - salida.length));
     // copias: el examen y el repaso les cuelgan cosas a los ítems
-    return salida.map(function (it) { return Object.assign({}, it); });
+    return espaciar(salida.map(function (it) { return Object.assign({}, it); }));
+  }
+
+  /** La respuesta de una pregunta, la guarde como la guarde cada juego. */
+  function laRespuesta(it) {
+    var r = it.r !== undefined ? it.r
+          : it.respuesta !== undefined ? it.respuesta
+          : it.resultado !== undefined ? it.resultado
+          : it.n !== undefined ? it.n : it.id;
+    return String(r);
+  }
+
+  /**
+   * Ordena una partida para que no se sienta repetida: la misma pregunta
+   * nunca sale dos veces seguidas (y, si se puede, tampoco con una sola en
+   * el medio), y la misma respuesta tampoco sale dos veces seguidas si hay
+   * con qué evitarlo. Dentro de eso, el orden es al azar: se arranca de la
+   * lista mezclada y se va eligiendo, de a una, la que menos choca con las
+   * dos anteriores.
+   */
+  function espaciar(lista, respuestaDe) {
+    respuestaDe = respuestaDe || laRespuesta;
+    var quedan = Util.mezclar(lista.slice());
+    var salida = [];
+    while (quedan.length) {
+      var a = salida[salida.length - 1], b = salida[salida.length - 2];
+      var cuantas = {}, deRespuesta = {};
+      quedan.forEach(function (it) {
+        cuantas[it.id] = (cuantas[it.id] || 0) + 1;
+        deRespuesta[respuestaDe(it)] = (deRespuesta[respuestaDe(it)] || 0) + 1;
+      });
+      var elegida = 0, menor = Infinity;
+      quedan.forEach(function (it, i) {
+        var r = respuestaDe(it);
+        var choque = 0;
+        if (a && it.id === a.id) choque += 100;
+        if (b && it.id === b.id) choque += 30;
+        // dos con la misma respuesta seguidas, mejor no; tres, casi nunca
+        if (a && r === respuestaDe(a)) choque += b && r === respuestaDe(b) ? 50 : 6;
+        /* Lo que más veces queda va antes: si no, al final sobran dos
+           iguales y quedan pegadas (con cinco «is» y dos «am», gastar los
+           «am» al principio dejaba tres «is» seguidos al final). */
+        choque -= cuantas[it.id] + 3 * deRespuesta[r];
+        if (choque < menor) { menor = choque; elegida = i; }
+      });
+      salida.push(quedan.splice(elegida, 1)[0]);
+    }
+    return salida;
+  }
+
+  /**
+   * Las preguntas de un juego que las inventa (cuentas, series, dobles):
+   * ninguna repetida, la misma respuesta dos veces como mucho (salvo que
+   * no haya más remedio) y ordenadas con espaciar(). Si no hay tantas
+   * distintas como se piden —los dobles hasta 5 son cinco—, la partida es
+   * más corta.
+   */
+  function variadas(cantidad, generar) {
+    var vistas = {}, porRespuesta = {}, lista = [];
+    var tope = VECES;
+    for (var vuelta = 1; lista.length < cantidad && vuelta <= cantidad * 80; vuelta++) {
+      // si en muchas vueltas no aparece una respuesta nueva, es que no hay: se afloja el tope
+      if (vuelta === cantidad * 40) tope = Infinity;
+      var it = generar();
+      var r = laRespuesta(it);
+      if (vistas[it.id] || (porRespuesta[r] || 0) >= tope) continue;
+      vistas[it.id] = true;
+      porRespuesta[r] = (porRespuesta[r] || 0) + 1;
+      lista.push(it);
+    }
+    return espaciar(lista);
   }
 
   function cantidadesFijas() {
@@ -365,7 +455,9 @@ window.Tablero = (function () {
    *   def.consigna   function (item) -> HTML
    *   def.visual     function (item) -> HTML, opcional
    *   def.categorias lista fija de respuestas posibles (¿mamífero, ave,
-   *                  pez…?); las malas salen de ahí
+   *                  pez…?); las malas salen de ahí, y los botones van
+   *                  siempre en ese orden
+   *   def.orden      otro orden para los botones (las letras, por abecedario)
    *   def.excluir    function (item) -> respuestas que no pueden salir
    *                  como malas porque confundirían (la boca cuando la
    *                  respuesta es la lengua)
@@ -462,6 +554,51 @@ window.Tablero = (function () {
       return plano(it.r);
     }
 
+    /**
+     * Suma a `ya` hasta `faltan` preguntas de `candidatos`, sin repetir
+     * ninguna y parejo entre las respuestas: cada vez elige, de las que
+     * tienen la respuesta que menos salió hasta ahora, la primera de un
+     * orden al azar (cargado hacia lo que le cuesta, si `pesar`).
+     */
+    function parejas(candidatos, faltan, ya, pesar) {
+      var salida = ya.slice();
+      var cuenta = {};
+      salida.forEach(function (it) { var r = plano(it.r); cuenta[r] = (cuenta[r] || 0) + 1; });
+      var orden = pesar
+        ? Util.muestraPesada(candidatos, candidatos.length, function (it) { return Almacen.pesoDe(juego.materia, it.id); })
+        : Util.mezclar(candidatos.slice());
+      for (var k = 0; k < faltan && orden.length; k++) {
+        var mejor = 0;
+        for (var i = 1; i < orden.length; i++) {
+          if ((cuenta[plano(orden[i].r)] || 0) < (cuenta[plano(orden[mejor].r)] || 0)) mejor = i;
+        }
+        var it = orden.splice(mejor, 1)[0];
+        cuenta[plano(it.r)] = (cuenta[plano(it.r)] || 0) + 1;
+        salida.push(Object.assign({}, it));
+      }
+      return salida;
+    }
+
+    /* Las listas vienen agrupadas por respuesta (primero los herbívoros,
+       después los carnívoros), y cortadas así el primer nivel de «¿Qué
+       come?» era la vaca y el caballo: dos herbívoros, cuatro preguntas y
+       siempre el mismo botón. Intercaladas, cada nivel trae de las dos. Si
+       cada cosa tiene su propia respuesta (los colores, las rimas), la
+       lista queda como está. */
+    function intercalar(lista) {
+      var grupos = [], deRespuesta = {};
+      lista.forEach(function (it) {
+        var r = plano(it.r);
+        if (!deRespuesta[r]) { deRespuesta[r] = []; grupos.push(deRespuesta[r]); }
+        deRespuesta[r].push(it);
+      });
+      var salida = [];
+      for (var i = 0; salida.length < lista.length; i++) {
+        grupos.forEach(function (g) { if (g[i]) salida.push(g[i]); });
+      }
+      return salida;
+    }
+
     /* Cómo se nombra lo que trae un nivel. Casi siempre, como en el
        repaso («el perro», «rima con gato»); pero cuando eso es la
        pregunta entera («¿Con qué sentimos el gusto de la comida?») o es
@@ -485,7 +622,7 @@ window.Tablero = (function () {
           vistos[it.id] = true;
           return true;
         });
-        return { nombre: n.nombre, nuevos: nuevos };
+        return { nombre: n.nombre, nuevos: intercalar(nuevos) };
       }).filter(function (e) { return e.nuevos.length; });
 
       var total = items.length;
@@ -554,21 +691,29 @@ window.Tablero = (function () {
         vistos: paso.vistos,
         nuevos: paso.nuevos,
         preguntas: function () {
-          /* Todo lo nuevo sale, y el resto del nivel es repaso de lo de
-             antes (cargado hacia lo que le cuesta). Un nivel de pocas cosas
-             las repite: el primero de todos tiene que durar algo. */
-          var cantidad = Math.min(8, Math.max(6, paso.nuevos.length + 3));
+          /* Lo nuevo sale entero, y el resto del nivel es repaso de lo de
+             antes, una vez cada cosa: cargado hacia lo que le cuesta y
+             parejo entre las respuestas, para que un nivel de tres
+             adjetivos no sean ocho preguntas de «adjetivo». Si el nivel
+             queda muy corto (el primero de todos no tiene nada de antes),
+             lo nuevo sale dos veces, separado. Antes un nivel de dos cosas
+             las estiraba a seis preguntas: cada una salía tres veces, a
+             veces seguidas. */
+          var LARGO = 8;
           var base = paso.nuevos.length ? paso.nuevos : paso.repasa;
           var viejos = paso.vistos.filter(function (it) { return base.indexOf(it) < 0; });
-          // lo nuevo sale entero; un repaso de una etapa grande, hasta completar el nivel
-          var salen = sortear(juego.materia, base, Math.min(base.length, cantidad), !paso.repasa);
-          if (viejos.length) {
-            salen = salen.concat(sortear(juego.materia, viejos, Math.max(0, cantidad - salen.length)));
+          var salen = [];
+          if (paso.nuevos.length) {
+            var veces = base.length + viejos.length < 6 ? 2 : 1;
+            for (var v = 0; v < veces; v++) {
+              base.forEach(function (it) { salen.push(Object.assign({}, it)); });
+            }
+          } else {
+            // un repaso: la mitad de su etapa y la otra mitad de lo de antes, si hay
+            salen = parejas(base, Math.min(base.length, viejos.length ? LARGO / 2 : LARGO), [], true);
           }
-          if (salen.length < cantidad) {
-            salen = salen.concat(sortear(juego.materia, base, cantidad - salen.length));
-          }
-          return Util.mezclar(salen);
+          salen = parejas(viejos, LARGO - salen.length, salen, true);
+          return espaciar(salen);
         }
       };
     }
@@ -582,7 +727,8 @@ window.Tablero = (function () {
         test: true,
         vistos: hasta,
         preguntas: function () {
-          return sortear(juego.materia, hasta, Math.min(10, Math.max(6, hasta.length)), true);
+          // cada cosa vista una vez, y parejo entre las respuestas: un desafío mide lo que se sabe
+          return espaciar(parejas(hasta, Math.min(10, hasta.length), [], false));
         }
       };
     }
@@ -633,7 +779,8 @@ window.Tablero = (function () {
         visual(def.visual ? def.visual(it) : null);
         function base() {
           respuestas(it.r, malasDe(it), {
-            forma: def.forma, mostrar: def.mostrar, etiqueta: def.etiqueta
+            forma: def.forma, mostrar: def.mostrar, etiqueta: def.etiqueta,
+            orden: def.orden || def.categorias || null
           });
         }
         if (def.montar) def.montar(it, base, juego);
@@ -741,6 +888,8 @@ window.Tablero = (function () {
     ganchos: ganchos,
     plano: plano,
     sortear: sortear,
+    espaciar: espaciar,
+    variadas: variadas,
     cantidadesFijas: cantidadesFijas,
     cantidadesDeBanco: cantidadesDeBanco,
     resumenDeCantidad: resumenDeCantidad,

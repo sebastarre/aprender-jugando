@@ -28,7 +28,7 @@ window.Dibujos = (function () {
     cielo: '#3AA3E8', coral: '#F2644E', girasol: '#FFC93C', verde: '#4DBF6B',
     violeta: '#8B6CF0', rosa: '#FF93B4', agua: '#C7EBFD', blanco: '#FFFFFF',
     naranja: '#FF9A3C', piel: '#F2B48E', pelo: '#7A4A2E', pelo2: '#3B2A22',
-    canas: '#8C94A6'
+    canas: '#8C94A6', pasto: '#9ED98B'
   };
 
   // el trazo de todos los dibujos: grueso, redondo, del color de la tinta
@@ -183,6 +183,34 @@ window.Dibujos = (function () {
     rect(30, 52, 60, 48, 10, C.girasol) +
     circ(60, 72, 6, T, ' stroke-width="0"') + rect(57, 74, 6, 14, 3, T, ' stroke-width="0"');
 
+  /* ---------- los lugares de la Tierra ---------- */
+
+  /* El río. El emoji 🏞️ es un parque con un lago, y en el juego de los
+     lugares no se entendía que era un río. Éste nace angostito entre las
+     lomas y se viene ensanchando, con olitas que muestran que corre, un
+     árbol en cada orilla y piedras. Va en un recuadro, como una foto: un
+     río suelto sobre el papel parecía un camino. Sin atributos repetidos,
+     porque también se usa como imagen (ver url()). */
+  D.rio =
+    // el cielo y el sol
+    '<rect x="8" y="12" width="104" height="96" rx="16" fill="' + C.agua + '"/>' +
+    circ(86, 32, 9, C.girasol) +
+    // las lomas del fondo
+    camino('M8 58 Q26 38 46 52 Q64 36 84 50 Q98 42 112 52 L112 72 L8 72 Z', C.verde) +
+    // el pasto de adelante, con las esquinas del recuadro
+    '<path d="M8 66 L112 66 L112 92 A16 16 0 0 1 96 108 L24 108 A16 16 0 0 1 8 92 Z" fill="' + C.pasto + '"/>' +
+    // el río: angostito atrás y ancho adelante
+    camino('M55 66 L65 66 C66 74 80 80 74 90 C70 98 78 104 82 108 L34 108 C38 102 32 96 40 88 C48 80 51 74 55 66 Z', C.cielo) +
+    // las olitas, para que se vea que el agua corre
+    raya('M47 97 q4 -3 8 0 M60 86 q3 -2 6 0 M53 103 q5 -3 10 0', C.blanco, 2.6) +
+    // un árbol en cada orilla, y unas piedras
+    rect(21, 74, 5, 12, 2, C.pelo) + circ(23.5, 70, 9, C.verde) +
+    rect(93, 80, 5, 12, 2, C.pelo) + circ(95.5, 76, 10, C.verde) +
+    '<ellipse cx="87" cy="100" rx="6" ry="3.5" fill="' + C.canas + '"' + TR + '/>' +
+    '<ellipse cx="26" cy="97" rx="5" ry="3" fill="' + C.canas + '"' + TR + '/>' +
+    // el recuadro, al final: tapa las puntas de todo lo de adentro
+    rect(8, 12, 104, 96, 16, 'none');
+
   /* ---------- las caritas de la bienvenida ---------- */
 
   function cara(cx, cy, r, pelo, conAnteojos) {
@@ -244,11 +272,19 @@ window.Dibujos = (function () {
 
   function hay(nombre) { return !!D[nombre]; }
 
+  /** El dibujo como imagen, para un <img> (el repaso muestra imágenes). */
+  function url(nombre) {
+    var cuerpo = D[nombre];
+    if (!cuerpo) return '';
+    return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">' + cuerpo + '</svg>');
+  }
+
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function () { hidratar(); });
   } else {
     hidratar();
   }
 
-  return { svg: svg, poner: poner, hidratar: hidratar, hay: hay, COLORES: C, TINTA: T };
+  return { svg: svg, poner: poner, hidratar: hidratar, hay: hay, url: url, COLORES: C, TINTA: T };
 })();

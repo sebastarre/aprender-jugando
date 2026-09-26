@@ -285,6 +285,9 @@ window.Geografia = (function () {
     ['mar', 'el mar', '🌊'], ['rio', 'el río', '🏞️'],
     ['cueva', 'la cueva', '🕳️'], ['puente', 'el puente', '🌉']
   ];
+  /* Los que tienen dibujo propio (js/nucleo/dibujos.js): el emoji del río,
+     🏞️, es un parque con un lago, y no se entendía que era un río. */
+  var DIBUJO_LUGAR = { rio: 'rio' };
 
   var PAISAJES_JUEGO = T.banco({
     id: 'paisajes',
@@ -300,14 +303,20 @@ window.Geografia = (function () {
       { nombre: 'Lugares lejanos', filtro: function (it) { return ['la ciudad', 'el puente'].indexOf(it.r) < 0; } },
       { nombre: 'Todos los lugares' }
     ],
-    items: PAISAJES.map(function (p) { return { id: p[0], r: p[1], emoji: p[2] }; }),
+    items: PAISAJES.map(function (p) { return { id: p[0], r: p[1], emoji: p[2], dibujo: DIBUJO_LUGAR[p[0]] }; }),
     forma: 'palabra',
     consigna: function () { return '¿Qué lugar es este?'; },
     visual: function (it) {
+      if (it.dibujo && window.Dibujos) {
+        return '<div class="visual-emoji visual-paisaje" role="img" aria-label="' + it.r + '">' + Dibujos.svg(it.dibujo) + '</div>';
+      }
       return '<div class="visual-emoji" role="img" aria-label="' + it.r + '">' + it.emoji + '</div>';
     },
     textoRevelado: function (it) { return 'Es ' + it.r + '.'; },
-    repaso: function (it) { return { simbolo: it.emoji, nombre: it.r, dato: 'Un lugar de la Tierra' }; }
+    repaso: function (it) {
+      if (it.dibujo && window.Dibujos) return { imagen: Dibujos.url(it.dibujo), dibujo: true, nombre: it.r, dato: 'Un lugar de la Tierra' };
+      return { simbolo: it.emoji, nombre: it.r, dato: 'Un lugar de la Tierra' };
+    }
   });
 
   /* Tres lugares y cosas que se ven en uno solo de los tres. Nada que

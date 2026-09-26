@@ -5,8 +5,8 @@
    Cada paso lo cuenta la mascota, desde un globito, con frases cortas
    (la voz las lee): una lección para chicos no puede ser un párrafo de
    manual. Abajo del globo va lo que se mira o se toca —el dibujo o la
-   actividad—, y si hay, el truco y la práctica «¿Y vos?». Es la misma
-   forma que la pantalla de juego: la mascota pregunta, el chico hace.
+   actividad—, y si hay, el truco y una pregunta para practicar. Es la
+   misma forma que la pantalla de juego: la mascota pregunta, el chico hace.
 
    Una lección tiene tres partes:
      1. los pasos, que la voz va leyendo;
@@ -162,28 +162,29 @@ window.Leccion = (function () {
   }
 
   /**
-   * «¿Y vos?»: una pregunta después de la explicación, para usar lo que se
-   * acaba de ver. A diferencia de la predicción, ésta hay que contestarla
-   * bien para seguir; si sale mal se dice por qué y se prueba otra vez, y
-   * al segundo error se muestra cuál era para no trabarse.
+   * La práctica: una pregunta después de la explicación, para usar lo que
+   * se acaba de ver. A diferencia de la predicción, ésta hay que
+   * contestarla bien para seguir; si sale mal se dice por qué y se prueba
+   * otra vez, y al segundo error se muestra cuál era para no trabarse.
+   * Antes llevaba un cartelito arriba, «¿Y vos?», que no decía nada: la
+   * pregunta sola ya se entiende.
    */
   function pintarPractica(tarjeta, pr) {
     var bloque = Util.crear('div', 'paso-practica');
-    bloque.appendChild(Util.crear('p', 'practica-titulo', '¿Y vos?'));
     var pregunta = Util.crear('p', 'paso-texto practica-pregunta');
     pregunta.innerHTML = Util.cuentasEnteras(pr.pregunta);
     bloque.appendChild(pregunta);
     var errores = 0;
     var aquiPaso = paso;
     var cartel = null;
-    var opciones = opcionesDe(pr.opciones, function (i, elegida, todas) {
+    var opciones = opcionesDe(pr.opciones, pr.enOrden, function (i, elegida, todas) {
       if (practicadas[aquiPaso]) return;
       var bien = i === pr.correcta;
       if (cartel) cartel.remove();
       var mascota = tarjeta.querySelector('.narrador-mascota');
       if (mascota) Mascota.gesto(mascota, bien ? 'festejo' : 'animo');
       if (bien) {
-        practicadas[aquiPaso] = { bien: true, texto: '¡Eso! ' + (pr.explicacion || '') };
+        practicadas[aquiPaso] = { bien: true, texto: Util.otraDe(BIEN) + ' ' + (pr.explicacion || '') };
         Sonido.tocar('acierto');
         elegida.classList.add('elegida-bien');
         todas.querySelectorAll('button').forEach(function (b) { b.disabled = true; });
@@ -200,13 +201,15 @@ window.Leccion = (function () {
       elegida.disabled = true;
       if (errores >= 2) {
         // no se traba: se muestra cuál era y se puede seguir
-        practicadas[aquiPaso] = { bien: false, texto: 'Era «' + pr.opciones[pr.correcta] + '». ' + (pr.explicacion || '') + ' ¡Ahora ya lo sabés!' };
+        practicadas[aquiPaso] = { bien: false, texto: '¡No pasa nada! Era «' + pr.opciones[pr.correcta] + '». ' +
+                                                      (pr.explicacion || '') + ' ¡Ahora ya lo sabés!' };
         marcarLaBuena(todas, pr.correcta);
         cartel = cartelDeRespuesta(practicadas[aquiPaso]);
         Util.$('btn-leccion-siguiente').hidden = false;
       } else {
-        cartel = cartelDeRespuesta({ bien: false, texto: Util.alAzar(['¡Buen intento!', 'Todavía no.', 'Mmm, esa no era.']) + ' ' +
-                                                         (pr.pista || 'Mirá otra vez con calma y probá de nuevo.') });
+        cartel = cartelDeRespuesta({ bien: false, texto: Util.otraDe(ANIMO) + ' ' +
+                                                         (pr.pista ? pr.pista + ' ' + Util.otraDe(OTRA_VEZ)
+                                                                   : 'Mirá otra vez con calma y probá de nuevo.') });
       }
       bloque.appendChild(cartel);
       traerALaVista(errores >= 2 ? Util.$('btn-leccion-siguiente') : cartel);
@@ -281,10 +284,19 @@ window.Leccion = (function () {
 
   /* ---------------------- pensar, no sólo leer ---------------------- */
 
-  /** Las opciones de una pregunta de la lección, mezcladas. */
-  function opcionesDe(textos, alElegir) {
+  /* Lo que dice la mascota cuando se contesta una pregunta de la lección:
+     lo mismo que en los juegos (ver js/nucleo/motor.js), algo cálido
+     primero y una invitación al final, nunca un reto. */
+  var BIEN = ['¡Eso!', '¡Muy bien!', '¡Genial!', '¡Bien pensado!'];
+  var ANIMO = ['¡Buen intento!', '¡Uy, esa no era!', '¡No pasa nada!'];
+  var OTRA_VEZ = ['¡Probá otra vez!', '¡Dale, otra vez!', '¡Vos podés!'];
+
+  /** Las opciones de una pregunta de la lección, mezcladas (o en su orden,
+      si son categorías: herbívoro, carnívoro y omnívoro van siempre así). */
+  function opcionesDe(textos, enOrden, alElegir) {
     var caja = Util.crear('div', 'leccion-opciones');
-    Util.mezclar(textos.map(function (t, i) { return { texto: t, i: i }; })).forEach(function (o) {
+    var lista = textos.map(function (t, i) { return { texto: t, i: i }; });
+    (enOrden ? lista : Util.mezclar(lista)).forEach(function (o) {
       var b = Util.crear('button', 'leccion-opcion');
       b.innerHTML = o.texto;              // el contenido es nuestro, no del usuario
       b.type = 'button';
@@ -326,12 +338,15 @@ window.Leccion = (function () {
 
   /** Un paso con predicción, antes de contestarla: la pregunta ya está en el globo. */
   function pintarPrediccion(caja, tarjeta, pred) {
-    tarjeta.appendChild(opcionesDe(pred.opciones, function (i) {
+    tarjeta.appendChild(opcionesDe(pred.opciones, pred.enOrden, function (i) {
       var bien = i === pred.correcta;
       Sonido.tocar(bien ? 'acierto' : 'clic');
+      /* Es una pregunta para pensar antes de saber: equivocarse acá es lo
+         esperable, y se festeja que lo haya pensado. */
       respondidas[paso] = {
         bien: bien,
-        texto: (bien ? '¡Bien pensado! ' : '¡Bien que lo pensaste! Era «' + pred.opciones[pred.correcta] + '». ') + pred.explicacion
+        texto: (bien ? Util.alAzar(['¡Bien pensado!', '¡Eso mismo!', '¡Muy bien pensado!']) + ' '
+                     : '¡Buena idea! Pero era «' + pred.opciones[pred.correcta] + '». ') + pred.explicacion
       };
       pintar();
     }));
@@ -357,14 +372,14 @@ window.Leccion = (function () {
     tarjeta.appendChild(Mascota.crear('piensa', 'final-mascota'));
     tarjeta.appendChild(Util.crear('h2', 'paso-titulo', '¿Por qué?'));
     tarjeta.appendChild(Util.crear('p', 'paso-texto reflexion-pregunta', ref.pregunta));
-    tarjeta.appendChild(opcionesDe(ref.razones, function (i, elegida, opciones) {
+    tarjeta.appendChild(opcionesDe(ref.razones, false, function (i, elegida, opciones) {
       var bien = i === ref.correcta;
       Sonido.tocar(bien ? 'acierto' : 'clic');
       opciones.querySelectorAll('button').forEach(function (b) { b.disabled = true; });
       elegida.classList.add(bien ? 'elegida-bien' : 'elegida-mal');
       if (!bien) opciones.querySelector('[data-i="' + ref.correcta + '"]').classList.add('elegida-bien');
 
-      var respuesta = (bien ? '¡Eso! ' : 'Pensalo así: ') + ref.porque;
+      var respuesta = (bien ? Util.otraDe(BIEN) + ' ' : '¡Buena idea! Pero pensalo así: ') + ref.porque;
       tarjeta.appendChild(cartelDeRespuesta({ bien: bien, texto: respuesta }));
       if (ref.grande) tarjeta.appendChild(Util.crear('p', 'reflexion-grande', ref.grande));
       tarjeta.appendChild(boton('btn-gigante', 'Ver cómo me fue', function () {
@@ -476,7 +491,7 @@ window.Leccion = (function () {
       // en el orden de la pantalla; la explicación todavía no
       if (p.prediccion && !respondidas[paso]) return leerTarjeta();
       var dicho = p.prediccion ? [respondidas[paso].texto] : [];
-      var practica = p.practica && !practicadas[paso] ? ['¿Y vos? ' + p.practica.pregunta] : [];
+      var practica = p.practica && !practicadas[paso] ? [p.practica.pregunta] : [];
       // la consigna de «tocar la que es»: sin ella, el que no lee no sabe qué buscar
       var consigna = Util.$('leccion-cuerpo').querySelector('.act-consigna');
       return dicho.concat([p.texto, consigna && consigna.textContent ? consigna.innerHTML : null,

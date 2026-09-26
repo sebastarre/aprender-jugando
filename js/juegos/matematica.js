@@ -171,6 +171,26 @@ window.Matematica = (function () {
     return { id: 'contar:' + n, juego: 'contar', n: n, cosa: Util.alAzar(COSAS) };
   }
 
+  /* Lo que se cuenta cambia en cada pregunta, y un número que sale dos
+     veces sale con otra cosa: contar 3 pollitos y más adelante 3
+     mariposas es practicar; contar los mismos 3 pollitos otra vez parecía
+     un error del juego. */
+  function variarCosas(items) {
+    var usadas = [];
+    items.forEach(function (it) {
+      var libres = COSAS.filter(function (c) { return usadas.indexOf(c) < 0; });
+      if (!libres.length) {
+        // más preguntas que cosas: se vuelve a empezar, sin repetir la de recién
+        var ultima = usadas[usadas.length - 1];
+        usadas = [ultima];
+        libres = COSAS.filter(function (c) { return c !== ultima; });
+      }
+      it.cosa = Util.alAzar(libres);
+      usadas.push(it.cosa);
+    });
+    return items;
+  }
+
   var CONTAR = {
     id: 'contar',
     nombre: 'Contar',
@@ -216,7 +236,7 @@ window.Matematica = (function () {
       var r = sel.hasta ? { desde: sel.desde || 1, hasta: sel.hasta } : deLista(RANGOS, sel.rango);
       var pozo = [];
       for (var n = r.desde; n <= r.hasta; n++) pozo.push(itemContar(n));
-      return sortearDelPozo(pozo, sel.cantidad, sel.sinPesar);
+      return variarCosas(sortearDelPozo(pozo, sel.cantidad, sel.sinPesar));
     },
     montar: function (it) {
       prepararTablero();
@@ -241,10 +261,10 @@ window.Matematica = (function () {
     },
     ganchos: function () {
       return T.ganchos(function (it) { return it.n; }, {
-        fallo: function (it, r) {
-          return (Number(r) === 1 ? '¿Seguro que es 1?' : '¿Seguro que son ' + r + '?') + ' Tocá cada dibujito para contarlo.';
-        },
-        revelado: function (it) { return 'Eran ' + it.n + '.'; }
+        fallo: function () { return 'Contá de nuevo, tocando cada dibujito: uno, dos, tres…'; },
+        revelado: function (it) {
+          return it.n === 1 ? 'Era 1 ' + it.cosa.uno + '.' : 'Eran ' + it.n + ' ' + it.cosa.muchos + '.';
+        }
       });
     },
     deClave: function (resto) {
@@ -309,6 +329,19 @@ window.Matematica = (function () {
              pintura: Util.alAzar(PINTURAS) };
   }
 
+  /* Cada figura de la partida, de otro color que la anterior; y si una
+     figura sale dos veces, la segunda es de otro color que la primera. */
+  function variarPinturas(items) {
+    var deFigura = {};
+    items.forEach(function (it, i) {
+      var antes = i ? items[i - 1].pintura : null;
+      var libres = PINTURAS.filter(function (p) { return p !== antes && p !== deFigura[it.figura]; });
+      it.pintura = Util.alAzar(libres);
+      deFigura[it.figura] = it.pintura;
+    });
+    return items;
+  }
+
   function nombreFigura(id) { return deLista(FIGURAS, id).nombre; }
 
   /* Cómo es cada figura, para cuando elige la que no es: en vez de «no es
@@ -364,7 +397,7 @@ window.Matematica = (function () {
         return sel.solo ? sel.solo.indexOf(f.id) >= 0 : (todas || f.basica);
       })
         .map(function (f) { return itemFigura(f.id, todas); });
-      return sortearDelPozo(pozo, sel.cantidad, sel.sinPesar);
+      return variarPinturas(sortearDelPozo(pozo, sel.cantidad, sel.sinPesar));
     },
     montar: function (it) {
       prepararTablero();
@@ -403,19 +436,28 @@ window.Matematica = (function () {
   ];
 
   /** Cuatro números distintos, según el nivel. */
-  function numerosParaComparar(nivel) {
+  function numerosParaComparar(nivel, modo) {
     var vistos = {}, lista = [];
     function sumar(n) { if (!vistos[n]) { vistos[n] = true; lista.push(n); } }
     var NUEVE = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+
+    /* Con números chicos, la respuesta se elige primero, pareja entre
+       todas las posibles, y los otros tres van del lado que corresponde.
+       Con cuatro números al azar hasta 10, «el más grande» era casi
+       siempre el 9 o el 10, y «el más chico», el 0 o el 1. */
+    if (!nivel || nivel === 'hasta10' || nivel === 'hasta20') {
+      var tope = nivel === 'hasta20' ? 20 : 10;
+      var menor = modo === 'menor';
+      var r = menor ? entero(0, tope - 3) : entero(3, tope);
+      sumar(r);
+      while (lista.length < 4) sumar(menor ? entero(r + 1, tope) : entero(0, r - 1));
+      return Util.mezclar(lista);
+    }
 
     /* Los escalones finos del mapa. Cada uno obliga a mirar una sola
        cosa: con decenas distintas alcanza con la primera cifra; con la
        misma decena, hay que mirar la segunda. */
     if (nivel === 'mil-mezcla') nivel = Math.random() < 0.5 ? 'centenas' : 'hasta1000';
-    if (nivel === 'hasta20') {
-      while (lista.length < 4) sumar(entero(0, 20));
-      return lista;
-    }
     if (nivel === 'decenas') {
       Util.muestra(NUEVE, 4).forEach(function (d) { sumar(d * 10 + entero(0, 9)); });
       return lista;
@@ -442,14 +484,10 @@ window.Matematica = (function () {
       ], 4).forEach(function (p) { sumar(p[0] * 100 + p[1] * 10 + p[2]); });
       return lista;
     }
-    if (nivel === 'hasta100') {
-      // la mitad de las veces, todos de la misma decena: 42, 47, 45, 49
-      var decena = entero(1, 9);
-      var misma = Math.random() < 0.5;
-      while (lista.length < 4) sumar(misma ? decena * 10 + entero(0, 9) : entero(10, 99));
-      return lista;
-    }
-    while (lista.length < 4) sumar(entero(0, 10));
+    // hasta 100: la mitad de las veces, todos de la misma decena (42, 47, 45, 49)
+    var decena = entero(1, 9);
+    var misma = Math.random() < 0.5;
+    while (lista.length < 4) sumar(misma ? decena * 10 + entero(0, 9) : entero(10, 99));
     return lista;
   }
 
@@ -499,14 +537,12 @@ window.Matematica = (function () {
       return { nivel: !edad || edad <= 6 ? 'hasta10' : edad <= 8 ? 'hasta100' : 'hasta1000' };
     },
     preguntas: function (sel) {
-      var items = [];
-      for (var i = 0; i < sel.cantidad; i++) {
+      return T.variadas(sel.cantidad, function () {
         // el mapa puede pedir una sola de las dos preguntas
         var modo = sel.modo === 'mayor' || sel.modo === 'menor' ? sel.modo
                  : (Math.random() < 0.5 ? 'mayor' : 'menor');
-        items.push(itemComparar(modo, numerosParaComparar(sel.nivel)));
-      }
-      return items;
+        return itemComparar(modo, numerosParaComparar(sel.nivel, modo));
+      });
     },
     montar: function (it) {
       prepararTablero();
@@ -517,7 +553,7 @@ window.Matematica = (function () {
     ganchos: function () {
       return T.ganchos(function (it) { return it.respuesta; }, {
         fallo: function (it, r) {
-          return it.modo === 'mayor' ? 'Hay uno más grande que ' + r + '.' : 'Hay uno más chico que ' + r + '.';
+          return 'Hay uno todavía más ' + (it.modo === 'mayor' ? 'grande' : 'chico') + ' que el ' + r + '. ¡Buscalo!';
         },
         revelado: function (it) {
           return 'El ' + (it.modo === 'mayor' ? 'más grande' : 'más chico') + ' era ' + it.respuesta + '.';
@@ -764,14 +800,13 @@ window.Matematica = (function () {
       // el mapa trae su propia forma de cuenta; el modo libre, uno de los cuatro niveles
       var nivel = sel.max ? null : deLista(NIVELES, sel.nivel);
       var modo = sel.operacion || 'ambas';
-      var items = [];
-      for (var i = 0; i < sel.cantidad; i++) {
+      // ninguna cuenta dos veces, ni el mismo resultado tres (ver Tablero.variadas)
+      return T.variadas(sel.cantidad, function () {
         var op = modo === 'ambas' ? (Math.random() < 0.5 ? '+' : '−') : (modo === 'suma' ? '+' : '−');
         var c = nivel ? cuenta(nivel, op) : cuentaDeMapa(sel, op);
         c.id = c.a + c.op + c.b;
-        items.push(c);
-      }
-      return items;
+        return c;
+      });
     },
     montar: function (it) {
       prepararTablero();
@@ -868,12 +903,10 @@ window.Matematica = (function () {
     },
     preguntas: function (sel) {
       var pasos = sel.pasos || deLista(NIVELES_SERIE, sel.nivel).pasos;
-      var items = [];
-      for (var i = 0; i < sel.cantidad; i++) {
+      return T.variadas(sel.cantidad, function () {
         var paso = Util.alAzar(pasos);
-        items.push(itemSerie(inicioPara(paso), paso));
-      }
-      return items;
+        return itemSerie(inicioPara(paso), paso);
+      });
     },
     montar: function (it) {
       prepararTablero();
@@ -1156,7 +1189,7 @@ window.Matematica = (function () {
         fallo: function (it, r) {
           // los distractores son la fila de al lado y la suma: se puede decir cuál fue
           if (r === it.resultado + it.a || r === it.resultado - it.a ||
-              r === it.resultado + it.b || r === it.resultado - it.b) return 'Te corriste un lugar en la tabla.';
+              r === it.resultado + it.b || r === it.resultado - it.b) return 'Casi: te corriste un lugar en la tabla.';
           if (r === it.a + it.b) return 'Esa es la suma, y acá hay que multiplicar.';
           return '';
         },
@@ -1238,13 +1271,12 @@ window.Matematica = (function () {
       var hasta = sel.hasta || deLista(TAMANOS, sel.tamano).hasta;
       var desde = sel.desde || (hasta === 10 ? 1 : 11);
       var modo = sel.modo || 'mezcla';
-      var items = [];
-      for (var i = 0; i < sel.cantidad; i++) {
+      // «dobles hasta 5» son cinco preguntas, no ocho con tres repetidas
+      return T.variadas(sel.cantidad, function () {
         var m = modo === 'mezcla' ? (Math.random() < 0.5 ? 'doble' : 'mitad') : modo;
         var base = sel.bases ? Util.alAzar(sel.bases) : entero(desde, hasta);
-        items.push(itemDoble(m, m === 'doble' ? base : base * 2));
-      }
-      return items;
+        return itemDoble(m, m === 'doble' ? base : base * 2);
+      });
     },
     montar: function (it) {
       prepararTablero();
@@ -1358,21 +1390,21 @@ window.Matematica = (function () {
     preguntas: function (sel) {
       var cifras = sel.cifras || deLista(LARGOS, sel.largo).cifras;
       var NOMBRES_LUGAR = ['u', 'd', 'c', 'm'];       // de derecha a izquierda
-      var items = [];
-      for (var i = 0; i < sel.cantidad; i++) {
-        var numero = numeroSinRepetir(cifras);
-        var texto = String(numero);
-        // se pregunta por una cifra que no sea 0: el 0 no «vale» nada
-        var lugares = [];
-        for (var p = 0; p < texto.length; p++) {
-          if (texto.charAt(p) === '0') continue;
-          if (sel.lugares && sel.lugares.indexOf(NOMBRES_LUGAR[texto.length - 1 - p]) < 0) continue;
-          lugares.push(p);
+      return T.variadas(sel.cantidad, function () {
+        for (;;) {
+          var numero = numeroSinRepetir(cifras);
+          var texto = String(numero);
+          // se pregunta por una cifra que no sea 0: el 0 no «vale» nada
+          var lugares = [];
+          for (var p = 0; p < texto.length; p++) {
+            if (texto.charAt(p) === '0') continue;
+            if (sel.lugares && sel.lugares.indexOf(NOMBRES_LUGAR[texto.length - 1 - p]) < 0) continue;
+            lugares.push(p);
+          }
+          // justo un 0 donde se preguntaba: otro número
+          if (lugares.length) return itemPosicion(numero, Util.alAzar(lugares));
         }
-        if (!lugares.length) { i--; continue; }   // justo un 0 donde se preguntaba: otro número
-        items.push(itemPosicion(numero, Util.alAzar(lugares)));
-      }
-      return items;
+      });
     },
     montar: function (it) {
       prepararTablero();
@@ -1614,9 +1646,7 @@ window.Matematica = (function () {
     },
     preguntas: function (sel) {
       var plantillas = sel.plantillas || (sel.tipo === 'todas' ? [0, 1, 2, 3, 4, 5, 6] : DE_SUMAR);
-      var items = [];
-      for (var i = 0; i < sel.cantidad; i++) items.push(problemaNuevo(plantillas));
-      return items;
+      return T.variadas(sel.cantidad, function () { return problemaNuevo(plantillas); });
     },
     montar: function (it) {
       prepararTablero();
@@ -1765,7 +1795,16 @@ window.Matematica = (function () {
       denominadores.forEach(function (d) {
         for (var n = 1; n < d; n++) pozo.push(itemFraccion(n, d, Math.random() < 0.5 ? 'torta' : 'barra'));
       });
-      return sortearDelPozo(pozo, sel.cantidad, sel.sinPesar);
+      /* Los tercios son dos fracciones: un nivel sólo de tercios tiene cada
+         una dos veces, y la segunda vez se ve de la otra forma (en torta si
+         antes fue una barra), para que se note que es la misma parte. */
+      var vistas = {};
+      return sortearDelPozo(pozo, sel.cantidad, sel.sinPesar).map(function (it) {
+        var clave = it.n + '/' + it.d;
+        var forma = vistas[clave] ? (vistas[clave] === 'torta' ? 'barra' : 'torta') : it.forma;
+        vistas[clave] = forma;
+        return itemFraccion(it.n, it.d, forma);
+      });
     },
     montar: function (it) {
       prepararTablero();

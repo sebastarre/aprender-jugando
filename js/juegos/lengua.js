@@ -86,6 +86,8 @@ window.Lengua = (function () {
     ],
     items: PRIMERA.map(function (x) { return { id: x[0], emoji: x[1], r: x[2] }; }),
     categorias: LETRAS,
+    // las letras de los botones, por abecedario: A, M, O, S
+    orden: LETRAS.slice().sort(),
     excluir: function (it) { return SE_CONFUNDEN[it.r] || []; },
     consigna: function () { return '¿Con qué letra empieza?'; },
     visual: function (it) {
@@ -323,7 +325,7 @@ window.Lengua = (function () {
     }),
     categorias: [1, 2, 3, 4, 5],
     consigna: function (it) { return '¿Cuántas sílabas tiene <b>' + it.palabra + '</b>?'; },
-    textoFallo: function (it, r) { return Number(r) === 1 ? '¿Seguro que es 1?' : '¿Seguro que son ' + r + '?'; },
+    textoFallo: function () { return ''; },
     pista: function (it, intento) {
       if (intento === 1) return 'Decí «' + it.palabra + '» despacio y aplaudí en cada golpe de voz.';
       var partes = it.partes.split('-');
@@ -453,7 +455,7 @@ window.Lengua = (function () {
     montar: function (it) {
       Fichas.armar({ piezas: it.piezas, unir: '', hablar: true, clase: it.modo });
     },
-    textoFallo: function (it, armada) { return 'Así dice «' + armada + '».'; },
+    textoFallo: function (it, armada) { return 'Así quedó «' + armada + '».'; },
     pista: function (it, intento) {
       if (intento === 1) return 'Decí «' + it.palabra + '» despacio. ¿Cómo empieza?';
       return 'Empieza con «' + it.piezas[0] + '».';
@@ -514,7 +516,7 @@ window.Lengua = (function () {
     items: PLURALES.map(function (x) { return { id: sinTilde(x[0]), palabra: x[0], r: x[1], m: x[2] }; }),
     forma: 'palabra',
     consigna: function (it) { return '¿Cuál es el plural de <b>' + it.palabra + '</b>?'; },
-    textoFallo: function (it, r) { return 'Mirá bien: «' + r + '» se escribe distinto.'; },
+    textoFallo: function () { return 'Mirá bien cada letra: hay una que cambia.'; },
     // no «un ...»: sería «un mamá», «un flor», «un luz»
     textoRevelado: function (it) { return 'El plural de «' + it.palabra + '» es «' + it.r + '».'; },
     repaso: function (it) { return { simbolo: '📚', nombre: 'El plural de ' + it.palabra, dato: it.r }; }
@@ -572,7 +574,7 @@ window.Lengua = (function () {
     items: ORTOGRAFIA.map(function (x) { return { id: x[0], r: x[0], m: x[1] }; }),
     forma: 'palabra',
     consigna: function () { return '¿Cuál está <b>bien escrita</b>?'; },
-    textoFallo: function (it, r) { return 'Mirá bien: «' + r + '» se escribe distinto.'; },
+    textoFallo: function () { return 'Mirá bien cada letra: hay una que cambia.'; },
     textoRevelado: function (it) { return 'Se escribe «' + it.r + '». ' + reglaDe(it.r); },
     pista: function (it, intento) {
       if (intento === 1) return reglaDe(it.r);

@@ -2233,6 +2233,12 @@ body.rindiendo .vidas { display: none; }
    Cada juego pinta su dibujo en #pregunta-visual. */
 .reloj { display: block; width: clamp(120px, 22vw, 168px); height: auto; }
 .visual-emoji { font-size: clamp(3.6rem, 13vw, 5rem); line-height: 1; }
+/* Un lugar con dibujo propio (el río) en vez de emoji: medido en em, crece
+   y se achica igual que los emojis que tiene al lado en cada pantalla. */
+.visual-paisaje { display: block; width: 1.1em; height: 1.1em; margin-inline: auto; }
+.visual-paisaje .dibujo { width: 100%; height: 100%; }
+/* sola, en la pregunta, es una foto: más grande que un emoji para que se lea */
+.pregunta-visual .visual-paisaje { width: 1.75em; height: 1.75em; }
 .visual-con-palabra { display: flex; flex-direction: column; align-items: center; gap: 8px; }
 .visual-palabra {
   font-size: clamp(1.9rem, 7vw, 2.6rem);
@@ -3549,13 +3555,12 @@ body.en-bienvenida .pie { display: none; }
   background: rgba(255, 255, 255, .38);
 }
 
-/* «¿Y vos?»: la práctica del final de un paso. */
+/* La práctica del final de un paso: una pregunta, sin cartelito arriba. */
 .paso-practica {
   margin-top: 20px;
   padding-top: 16px;
   border-top: 2px dashed var(--borde);
 }
-.practica-titulo { margin: 0 0 2px; color: var(--primario-osc); font-size: 1.15rem; font-weight: 800; }
 .practica-pregunta { margin-bottom: 4px; font-weight: 700; }
 
 /* ============================================================
