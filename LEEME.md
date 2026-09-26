@@ -461,6 +461,14 @@ qué comen los animales). Son cortas, con poco texto y mucho para tocar. El «¿
 lección de su edad: la de sumar juntando a los de 5, la de llevarse una a los
 de 7.
 
+**Una lección para cada juego.** Quedaban 15 juegos sin lección y ahora son
+52: qué número sigue, dobles y mitades, cuánto vale cada cifra, resolver
+problemas, las banderas, la vocal que falta, los plurales, escribir bien, los
+sinónimos, dónde vive cada animal, el cuerpo por dentro, y la familia, el
+cuerpo, la escuela y las acciones en inglés. Si el dibujo de un paso muestra
+la respuesta a su predicción (las banderas con su nombre, «lápiz → lápices»),
+la predicción lleva `sinDibujo: true` y el dibujo aparece recién al contestar.
+
 ## Racha y meta del día
 
 En el cartel del inicio hay una llamita con **los días seguidos** que jugó.

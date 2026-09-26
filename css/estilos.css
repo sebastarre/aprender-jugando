@@ -4221,6 +4221,26 @@ body.en-bienvenida .pie { display: none; }
   text-decoration-thickness: .08em;
 }
 
+/* cuánto vale cada cifra: el número con cada cifra en su lugar, su nombre y lo que vale */
+.posicional { display: flex; justify-content: center; gap: 10px; }
+.posicional-cifra {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 76px;
+  padding: 10px 8px;
+  border: 2px solid var(--borde);
+  border-radius: var(--radio-s);
+  background: var(--tarjeta);
+}
+.posicional-cifra b { font-size: var(--letra-cartel); line-height: 1; color: var(--primario-osc); }
+.posicional-cifra span { font-size: .8rem; font-weight: 700; color: var(--tinta-suave); }
+.posicional-cifra i { font-style: normal; font-size: 1.15rem; font-weight: 800; }
+
+/* una bandera como opción de respuesta */
+.bandera-opcion { width: 72px; height: 48px; object-fit: cover; border: 1px solid var(--borde); border-radius: 5px; vertical-align: middle; }
+
 /* la fila de los números, con los saltitos de sumar y de restar */
 .recta { display: block; width: min(100%, 360px); height: auto; }
 

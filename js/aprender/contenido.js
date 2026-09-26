@@ -222,6 +222,43 @@ window.Lecciones = (function () {
     return window.Dibujos ? '<div class="visual-dibujo">' + Dibujos.svg('geografia') + '</div>' : '';
   }
 
+  /** Una serie de números con el que sigue por descubrir, como en el juego. */
+  function serie(numeros) {
+    return '<div class="serie" role="img" aria-label="' + numeros.join(', ') + ' y el que sigue">' +
+      numeros.map(function (n) { return '<span>' + n + '</span>'; }).join('') +
+      '<span class="serie-falta">?</span></div>';
+  }
+
+  /** Un número con cada cifra en su lugar: su nombre y cuánto vale. */
+  function posicional(n) {
+    var cifras = String(n).split('');
+    var nombres = ['unidades', 'decenas', 'centenas', 'miles'];
+    return '<div class="posicional">' + cifras.map(function (c, i) {
+      var lugar = cifras.length - 1 - i;
+      return '<div class="posicional-cifra"><b>' + c + '</b><span>' + nombres[lugar] + '</span>' +
+             '<i>' + (Number(c) * Math.pow(10, lugar)) + '</i></div>';
+    }).join('') + '</div>';
+  }
+
+  function paisDe(id) {
+    return (window.PAISES || []).filter(function (p) { return p.id === id; })[0] || { nombre: id };
+  }
+  /** La bandera de un país, grande. */
+  function bandera(id) {
+    return '<img class="visual-bandera" src="' + Util.bandera(id) + '" alt="La bandera de ' + paisDe(id).nombre + '">';
+  }
+  /** Una bandera chica, para una opción de respuesta (sin decir de quién es). */
+  function banderaOpcion(id) {
+    return '<img class="bandera-opcion" src="' + Util.bandera(id) + '" alt="Una bandera">';
+  }
+  /** Varias banderas, cada una con su país. */
+  function banderas(codigos) {
+    return '<div class="tarjetitas">' + codigos.map(function (id) {
+      return '<div class="tarjetita"><img src="' + Util.bandera(id) + '" alt="" class="tarjetita-bandera">' +
+             '<b>' + paisDe(id).nombre + '</b></div>';
+    }).join('') + '</div>';
+  }
+
   /** País → capital, con la bandera. */
   function paisCapital(codigos) {
     var porId = {};
@@ -805,6 +842,164 @@ window.Lecciones = (function () {
       ]
     },
 
+
+    {
+      id: 'que-numero-sigue',
+      materia: 'matematica',
+      titulo: 'Qué número sigue',
+      icono: 'serie',
+      edadMin: 6,
+      minutos: 2,
+      resumen: 'Descubrir la regla de una fila de números.',
+      juego: 'matematica/serie',
+      ejercicio: { juego: 'matematica/serie', nivel: 'facil', cantidad: 5, consigna: 'Mirá cada fila de números y elegí el que sigue.' },
+      aprendiste: [
+        'Una serie tiene una <b>regla</b>: cada número cambia igual.',
+        'Para descubrirla, fijate <b>cuánto cambia</b> de uno al siguiente.',
+        'Puede ir para adelante (2, 4, 6…) o para atrás (10, 9, 8…).'
+      ],
+      pasos: [
+        {
+          texto: '¡Hola! Mirá estos números: <b>2, 4, 6, 8</b>… Cada uno es <b>2 más</b> que el anterior. Eso es la <b>regla</b> de la fila.',
+          visual: function () { return serie([2, 4, 6, 8]); }
+        },
+        {
+          prediccion: {"pregunta":"¿Qué número sigue en 5, 10, 15, 20…?","opciones":["25","21","30"],"correcta":0,"explicacion":"Va de 5 en 5: después del 20 viene el 25."},
+          texto: 'Siempre la misma pregunta: ¿cuánto cambia de un número al siguiente? Acá, <b>5</b> cada vez.',
+          visual: function () { return serie([5, 10, 15, 20]); },
+          truco: 'Restá dos números que estén juntos y vas a saber la regla: 10 − 5 = 5.'
+        },
+        {
+          texto: 'Las filas también pueden ir <b>para atrás</b>: 10, 9, 8, 7… Cada uno es <b>1 menos</b>.',
+          gesto: 'festejo',
+          visual: function () { return serie([10, 9, 8, 7]); },
+          practica: { pregunta: '¿Qué número sigue en <b>10, 9, 8, 7</b>?', opciones: ['6', '8', '5'], correcta: 0, explicacion: 'Baja de a 1: después del 7 viene el 6.', pista: 'Fijate: ¿los números suben o bajan?' }
+        }
+      ]
+    },
+
+    {
+      id: 'dobles-y-mitades',
+      materia: 'matematica',
+      titulo: 'Dobles y mitades',
+      icono: 'dobles',
+      edadMin: 7,
+      minutos: 2,
+      resumen: 'El doble es dos veces; la mitad, partir en dos.',
+      juego: 'matematica/dobles',
+      ejercicio: { juego: 'matematica/dobles', nivel: 'chicos', valores: { modo: 'mezcla' }, cantidad: 5, consigna: 'Calculá cinco dobles y mitades.' },
+      reflexion: {"pregunta":"¿Por qué, si el doble de 6 es 12, la mitad de 12 es 6?","razones":["Porque doble y mitad son lo mismo al revés","Porque 12 es un número grande","Porque siempre da 6"],"correcta":0,"porque":"El doble junta dos veces lo mismo; la mitad lo vuelve a separar en dos partes iguales.","grande":"Buscá con un grande algo que se pueda partir por la mitad, y contá cuánto queda de cada lado."},
+      aprendiste: [
+        'El <b>doble</b> es el mismo número dos veces: el doble de 4 es 4 + 4 = 8.',
+        'La <b>mitad</b> es partir en dos partes iguales: la mitad de 8 es 4.',
+        'Son lo mismo al revés.'
+      ],
+      pasos: [
+        {
+          texto: 'Tengo <b>3</b> frutillas y me regalan <b>otras 3</b>: ¡ahora tengo el <b>doble</b>! El doble es el mismo número dos veces.',
+          interactivo: { tipo: 'sumar', a: 3, b: 3, cosa: 'frutilla' }
+        },
+        {
+          prediccion: {"pregunta":"¿Cuál te parece que es el doble de 5?","opciones":["10","7","25"],"correcta":0,"explicacion":"5 + 5 = 10. El 25 sería 5 × 5, que es otra cuenta."},
+          texto: 'El doble es como mirarse en un espejo: ¡aparece otro igual! Por eso el doble de 5 es <b>5 + 5</b>.',
+          visual: function () { return cosas('flor', 5) + cosas('flor', 5); }
+        },
+        {
+          texto: 'La <b>mitad</b> es al revés: partir en dos partes iguales. Repartí las 8 frutillas entre dos: la mitad de 8 es <b>4</b>.',
+          interactivo: { tipo: 'repartir', n: 8, platos: 2, cosa: 'frutilla' },
+          truco: 'Doble y mitad son lo mismo al revés: si el doble de 6 es 12, la mitad de 12 es 6.',
+          practica: { pregunta: '¿Cuál es la mitad de <b>10</b>?', opciones: ['5', '20', '8'], correcta: 0, explicacion: 'Porque 5 + 5 = 10.', pista: '¿Qué número, sumado dos veces, da 10?' }
+        }
+      ]
+    },
+
+    {
+      id: 'cuanto-vale-cada-cifra',
+      materia: 'matematica',
+      titulo: 'Cuánto vale cada cifra',
+      icono: 'posicion',
+      edadMin: 7,
+      minutos: 3,
+      resumen: 'Unidades, decenas y centenas.',
+      juego: 'matematica/posicion',
+      ejercicio: { juego: 'matematica/posicion', nivel: 'tres', cantidad: 5, consigna: 'Decí cuánto vale cada cifra marcada.' },
+      reflexion: {"pregunta":"¿Por qué en 44 los dos 4 no valen lo mismo?","razones":["Porque uno está en las decenas y el otro en las unidades","Porque uno es más grande que el otro","Porque se escriben distinto"],"correcta":0,"porque":"El de la izquierda son 4 decenas, o sea 40; el de la derecha son 4 unidades.","grande":"Mostrale a un grande cuánto vale cada cifra del número de tu casa."},
+      aprendiste: [
+        'Una cifra vale distinto según el <b>lugar</b> donde está.',
+        'Desde la derecha: <b>unidades</b>, <b>decenas</b> y <b>centenas</b>.',
+        'En 352, el 3 vale 300, el 5 vale 50 y el 2 vale 2.'
+      ],
+      pasos: [
+        {
+          texto: '¡Hola! En el <b>34</b>, el 3 no vale 3: son 3 <b>decenas</b>, o sea <b>30</b>. Y el 4 son 4 <b>unidades</b>.',
+          visual: function () { return posicional(34); }
+        },
+        {
+          prediccion: {"pregunta":"En 47, ¿cuánto te parece que vale el 4?","opciones":["40","4","47"],"correcta":0,"sinDibujo":true,"explicacion":"El 4 está en el lugar de las decenas: son 4 decenas, o sea 40."},
+          texto: 'El lugar lo cambia todo: el de la derecha son las <b>unidades</b>, y el de al lado, las <b>decenas</b>.',
+          visual: function () { return posicional(47); },
+          truco: 'Contá los lugares desde la derecha: unidades, decenas, centenas.'
+        },
+        {
+          texto: 'Con tres cifras aparecen las <b>centenas</b>: en el <b>352</b>, el 3 vale <b>300</b>.',
+          gesto: 'festejo',
+          visual: function () { return posicional(352); },
+          practica: { pregunta: 'En <b>528</b>, ¿cuánto vale el <b>5</b>?', opciones: ['500', '50', '5'], correcta: 0, explicacion: 'Está en el lugar de las centenas: vale 500.', pista: 'Contá los lugares desde la derecha: unidades, decenas, centenas.' }
+        }
+      ]
+    },
+
+    {
+      id: 'resolver-problemas',
+      materia: 'matematica',
+      titulo: 'Resolver problemas',
+      icono: 'problemas',
+      edadMin: 7,
+      minutos: 3,
+      resumen: 'Descubrir qué cuenta esconde un cuento.',
+      juego: 'matematica/problemas',
+      ejercicio: { juego: 'matematica/problemas', nivel: 'sumas', cantidad: 5, consigna: 'Leé cada cuento y elegí el resultado.' },
+      reflexion: {"pregunta":"«Tenía 10 caramelos y regalé 3.» ¿Por qué no puede dar 13?","razones":["Porque si regalé, me quedan menos que antes","Porque 13 es un número difícil","Porque los caramelos no se cuentan"],"correcta":0,"porque":"Regalar es sacar: el resultado tiene que ser menos que 10. Da 7.","grande":"Inventá con un grande un problema de compras y resolvelo."},
+      aprendiste: [
+        'Primero se lee el cuento y se busca <b>qué se pregunta</b>.',
+        'Si recibe o junta, tiene más: es una <b>suma</b>. Si regala o pierde, tiene menos: es una <b>resta</b>.',
+        'Al final se piensa si el resultado <b>tiene sentido</b>.'
+      ],
+      pasos: [
+        {
+          texto: 'Un problema es un <b>cuento con una cuenta escondida</b>. Lo primero es leerlo con calma y ver <b>qué te preguntan</b>.',
+          visual: function () { return emojis(['📖', '🔎']); }
+        },
+        {
+          prediccion: {"pregunta":"«Sofía tiene 8 figuritas y le regalan 5.» ¿Qué cuenta hay que hacer?","opciones":["8 + 5","8 − 5","8 × 5"],"correcta":0,"explicacion":"Le regalan: tiene más que antes. Es una suma: 8 + 5 = 13."},
+          texto: 'Las palabras dan pistas: si <b>le regalan</b>, <b>junta</b> o <b>gana</b>, tiene más que antes: es una <b>suma</b>.'
+        },
+        {
+          texto: 'Si <b>regala</b>, <b>pierde</b> o <b>se come</b>, le quedan menos: es una <b>resta</b>. ¿Me ayudás a separarlas?',
+          interactivo: { tipo: 'clasificar',
+            grupos: [
+              { id: 'mas', nombre: 'Tiene más: sumar', visual: '➕' },
+              { id: 'menos', nombre: 'Tiene menos: restar', visual: '➖' }
+            ],
+            cosas: [
+              { nombre: 'le regalan 3', grupo: 'mas', pista: 'Si le regalan, tiene más que antes: se suma.' },
+              { nombre: 'se comió 2', grupo: 'menos', pista: 'Si se comió algunos, le quedan menos: se resta.' },
+              { nombre: 'encontró 4', grupo: 'mas', pista: 'Si encontró, tiene más que antes: se suma.' },
+              { nombre: 'perdió 1', grupo: 'menos', pista: 'Si perdió, le quedan menos: se resta.' },
+              { nombre: 'compró 5', grupo: 'mas', pista: 'Si compró, tiene más: se suma.' },
+              { nombre: 'regaló 6', grupo: 'menos', pista: 'Si regaló, le quedan menos: se resta.' }
+            ],
+            final: '¡Muy bien! Ya sabés qué cuenta esconde cada cuento.'
+          }
+        },
+        {
+          texto: 'Y al final, pensá si tiene sentido: si regaló caramelos, no puede tener <b>más</b> que antes.',
+          gesto: 'piensa',
+          practica: { pregunta: '«Mateo tenía <b>12</b> caramelos y regaló <b>4</b>.» ¿Cuántos le quedan?', opciones: ['8', '16', '3'], correcta: 0, explicacion: 'Regaló: le quedan menos. 12 − 4 = 8.', pista: '¿Tiene más o menos que antes? Si tiene menos, se resta.' }
+        }
+      ]
+    },
+
     /* ============ GEOGRAFÍA ============ */
     {
       id: 'los-paisajes',
@@ -998,10 +1193,45 @@ window.Lecciones = (function () {
           interactivo: { tipo: 'mapa', modo: 'capitales' }
         },
         {
-          prediccion: {"pregunta":"La ciudad más grande de Brasil es São Paulo. ¿Será su capital?","opciones":["No, es otra ciudad","Sí, la capital siempre es la más grande"],"correcta":0,"explicacion":"La capital es donde está el gobierno. En Brasil es Brasilia, aunque São Paulo sea más grande."},
+          prediccion: {"pregunta":"La ciudad más grande de Brasil es São Paulo. ¿Será su capital?","opciones":["No, es otra ciudad","Sí, la capital siempre es la más grande"],"correcta":0,"sinDibujo":true,"explicacion":"La capital es donde está el gobierno. En Brasil es Brasilia, aunque São Paulo sea más grande."},
           texto: 'En <b>Estados Unidos</b> tampoco es Nueva York: es Washington. Y en <b>Australia</b>, Canberra, no Sídney.',
           visual: function () { return paisCapital(['BR', 'US', 'AU']); },
           truco: 'Si dudás entre dos ciudades famosas, la capital suele ser la menos famosa.'
+        }
+      ]
+    },
+
+
+    {
+      id: 'las-banderas',
+      materia: 'geografia',
+      titulo: 'Las banderas',
+      icono: 'banderas',
+      edadMin: 7,
+      minutos: 2,
+      resumen: 'Cada país tiene la suya: cómo reconocerlas.',
+      juego: 'geografia/banderas',
+      ejercicio: { juego: 'geografia/banderas', nivel: 'america-sur', valores: { modo: 'quiz' }, cantidad: 5, consigna: 'Elegí la bandera de cada país de América del Sur.' },
+      reflexion: {"pregunta":"¿Por qué hay que mirar los dibujos y no sólo los colores?","razones":["Porque hay banderas con los mismos colores","Porque los colores cambian con el sol","Porque los dibujos son más lindos"],"correcta":0,"porque":"Muchas banderas comparten colores: la de la Argentina y la de Uruguay son celestes y blancas, y las dos tienen sol.","grande":"Buscá con un grande la bandera de otro país que te guste, y contale cómo es."},
+      aprendiste: [
+        'Cada país tiene su <b>bandera</b>, con colores y dibujos propios.',
+        'La de la Argentina es celeste y blanca, con el <b>Sol de Mayo</b> en el medio.',
+        'Para reconocerlas, fijate en los <b>colores</b>, las <b>franjas</b> y los <b>dibujos</b>.'
+      ],
+      pasos: [
+        {
+          texto: '¡Hola! Cada país tiene su <b>bandera</b>, como una camiseta que lo representa. Ésta es la nuestra: celeste y blanca, con el <b>Sol de Mayo</b> en el medio.',
+          visual: function () { return bandera('AR'); }
+        },
+        {
+          prediccion: {"pregunta":"La bandera de Uruguay tiene muchas franjas y un sol en la esquina. ¿Cuál te parece que es?","opciones":[banderaOpcion('UY'),banderaOpcion('AR'),banderaOpcion('BR')],"correcta":0,"sinDibujo":true,"explicacion":"La de Uruguay tiene franjas blancas y celestes, y el sol arriba a la izquierda."},
+          texto: 'Muchas se parecen: hay que mirar bien los <b>colores</b>, las <b>franjas</b> y los <b>dibujos</b>. Éstas son de nuestros vecinos.',
+          visual: function () { return banderas(['UY', 'CL', 'PY', 'BO', 'BR']); }
+        },
+        {
+          texto: 'Un truco: buscá lo que la hace distinta. La de <b>Brasil</b> es la única verde y amarilla con un círculo azul.',
+          gesto: 'festejo',
+          practica: { pregunta: 'La de <b>Chile</b> tiene una sola estrella blanca en un cuadrado azul. ¿Cuál es?', opciones: [banderaOpcion('CL'), banderaOpcion('PY'), banderaOpcion('PE')], correcta: 0, explicacion: 'La de Chile es blanca y roja, con una estrella blanca en un cuadrado azul.', pista: 'Buscá la que tiene una estrella.' }
         }
       ]
     },
@@ -1364,6 +1594,168 @@ window.Lecciones = (function () {
           prediccion: {"pregunta":"En «pajaro», la sílaba fuerte es pa: la antepenúltima. ¿Te parece que lleva tilde?","opciones":["Sí, siempre","Sólo si termina en n, s o vocal","No, nunca"],"correcta":0,"explicacion":"Las esdrújulas llevan tilde siempre, sin excepción: pájaro.","sinDibujo":true},
           texto: 'Son las <b>esdrújulas</b>, ¡las más fáciles! Llevan tilde <b>siempre</b>: música, pájaro, teléfono.',
           visual: function () { return trozos(['pá', 'ja', 'ro'], 0); }
+        }
+      ]
+    },
+
+
+    {
+      id: 'la-vocal-que-falta',
+      materia: 'lengua',
+      titulo: 'La vocal que falta',
+      icono: 'vocales',
+      edadMin: 5,
+      minutos: 2,
+      resumen: 'Escuchar la palabra y completar la vocal.',
+      juego: 'lengua/vocales',
+      ejercicio: { juego: 'lengua/vocales', nivel: 'n1', cantidad: 5, consigna: 'Mirá cada dibujo y elegí la vocal que le falta a la palabra.' },
+      aprendiste: [
+        'Para encontrar la vocal que falta, decí la palabra <b>despacito</b>.',
+        'Las vocales se pueden estirar: g-<b>aaa</b>-to.',
+        'Todas las palabras tienen vocales.'
+      ],
+      pasos: [
+        {
+          texto: '¡Hola! A esta palabra le falta una letra: <b>g_to</b>. Es el nombre del dibujo. Decilo despacito: g-<b>aaa</b>-to. ¡Le falta la <b>a</b>!',
+          visual: function () { return emoji('🐱') + trozos(['g', '?', 't', 'o'], 1); }
+        },
+        {
+          texto: 'Ahora vos: mirá el dibujo, decí la palabra estirando las vocales y tocá la que falta.',
+          interactivo: { tipo: 'tocar', rondas: [
+            { consigna: '🌙 ¿Qué vocal le falta a <b>l_na</b>?', partes: ['a', 'e', 'i', 'o', 'u'], correcta: 4, bien: '¡Sí! L-<b>uuu</b>-na.',
+              pistas: { 0: 'Decí «luna» despacito: l-uuu-na.', 1: 'Decí «luna» despacito: l-uuu-na.', 2: 'Decí «luna» despacito: l-uuu-na.', 3: 'Decí «luna» despacito: l-uuu-na.' } },
+            { consigna: '☀️ ¿Y a <b>s_l</b>?', partes: ['a', 'e', 'i', 'o', 'u'], correcta: 3, bien: '¡Eso! S-<b>ooo</b>-l.',
+              pistas: { 0: 'Decí «sol» estirando: s-ooo-l.', 1: 'Decí «sol» estirando: s-ooo-l.', 2: 'Decí «sol» estirando: s-ooo-l.', 4: 'Decí «sol» estirando: s-ooo-l.' } },
+            { consigna: '🐟 ¿Y a <b>p_z</b>?', partes: ['a', 'e', 'i', 'o', 'u'], correcta: 1, bien: '¡Muy bien! P-<b>eee</b>-z.',
+              pistas: { 0: 'Decí «pez» estirando: p-eee-z.', 2: 'Decí «pez» estirando: p-eee-z.', 3: 'Decí «pez» estirando: p-eee-z.', 4: 'Decí «pez» estirando: p-eee-z.' } }
+          ] }
+        },
+        {
+          texto: 'Con las palabras largas es igual: decila despacito y escuchá cada vocal.',
+          gesto: 'festejo',
+          visual: function () { return emoji('🐮'); },
+          practica: { pregunta: '¿Qué vocal le falta a <b>v_ca</b>?', opciones: ['a', 'o', 'u'], correcta: 0, explicacion: 'V-aaa-ca: le falta la a.', pista: 'Decí «vaca» despacito y estirá la primera vocal.' }
+        }
+      ]
+    },
+
+    {
+      id: 'los-plurales',
+      materia: 'lengua',
+      titulo: 'Uno y muchos: el plural',
+      icono: 'plurales',
+      edadMin: 8,
+      minutos: 3,
+      resumen: 'Cómo se escribe una palabra cuando son varios.',
+      juego: 'lengua/plurales',
+      ejercicio: { juego: 'lengua/plurales', nivel: 'n2', cantidad: 5, consigna: 'Elegí cómo se escribe el plural de cada palabra.' },
+      reflexion: {"pregunta":"¿Por qué el plural de «luz» es «luces» y no «luzes»?","razones":["Porque la z antes de la e se cambia por c","Porque luces es más corta","Porque la z no existe"],"correcta":0,"porque":"En castellano casi nunca se escribe «ze»: la z se cambia por c, como en lápiz, lápices.","grande":"Buscá con un grande tres cosas de tu casa y decí cómo es su plural."},
+      aprendiste: [
+        'Si termina en vocal, se agrega <b>-s</b>: perro, perros.',
+        'Si termina en consonante, se agrega <b>-es</b>: flor, flores.',
+        'Si termina en <b>z</b>, la z se hace <b>c</b>: lápiz, lápices.'
+      ],
+      pasos: [
+        {
+          texto: 'Un <b>perro</b>, muchos <b>perros</b>. Cuando hay más de uno, la palabra cambia: es el <b>plural</b>. Si termina en vocal, se le agrega una <b>s</b>.',
+          visual: function () { return cadena([['🐶', 'perro'], ['🐶🐶', 'perros']]); }
+        },
+        {
+          texto: 'Si termina en consonante (una letra que no es vocal), se agrega <b>-es</b>: flor, flores; papel, papeles.',
+          visual: function () { return cadena([['🌸', 'flor'], ['🌸🌸', 'flores']]); },
+          practica: { pregunta: '¿Cuál es el plural de <b>tren</b>?', opciones: ['trenes', 'trens', 'trenez'], correcta: 0, explicacion: 'Termina en n, que es consonante: se agrega -es. Trenes.', pista: '¿Termina en vocal o en consonante?' }
+        },
+        {
+          prediccion: {"pregunta":"Lápiz termina en z. ¿Cómo te parece que es su plural?","opciones":["lápices","lápizes","lápizs"],"correcta":0,"sinDibujo":true,"explicacion":"La z se cambia por c: lápiz, lápices. Igual que luz, luces."},
+          texto: 'Casi nunca se escribe «ze»: por eso la <b>z</b> se cambia por <b>c</b>. Pez, peces; luz, luces.',
+          visual: function () { return cadena([['✏️', 'lápiz'], ['✏️✏️', 'lápices']]); },
+          truco: 'Z más -es se escribe -ces: nariz, narices.'
+        },
+        {
+          texto: 'Y a veces la tilde se va: <b>camión</b>, <b>camiones</b>. Decilas en voz alta: ¡la fuerza cambia de lugar!',
+          gesto: 'festejo',
+          practica: { pregunta: '¿Cuál es el plural de <b>ratón</b>?', opciones: ['ratones', 'ratónes', 'ratóns'], correcta: 0, explicacion: 'Ratones: al agregar -es, la tilde se va.', pista: 'Termina en n, así que se agrega -es. ¿Y la tilde?' }
+        }
+      ]
+    },
+
+    {
+      id: 'escribir-bien',
+      materia: 'lengua',
+      titulo: 'B o V, con H o sin H',
+      icono: 'ortografia',
+      edadMin: 8,
+      minutos: 3,
+      resumen: 'Palabras que suenan igual y se escriben distinto.',
+      juego: 'lengua/ortografia',
+      ejercicio: { juego: 'lengua/ortografia', nivel: 'n1', cantidad: 5, consigna: 'Elegí la palabra bien escrita.' },
+      reflexion: {"pregunta":"¿Por qué «ambulancia» va con M y no con N?","razones":["Porque antes de B siempre va M","Porque la M es más linda","Porque suena distinto"],"correcta":0,"porque":"Es una regla que no falla: antes de B va M, y antes de V va N.","grande":"Buscá con un grande palabras con MB y con NV en un libro o en la calle."},
+      aprendiste: [
+        'Hay letras que <b>suenan igual</b>: B y V, LL e Y, C, S y Z.',
+        'Antes de B va <b>M</b> (ambulancia); antes de V, <b>N</b> (invierno).',
+        'La <b>H</b> no suena, pero se escribe: hormiga, helado.'
+      ],
+      pasos: [
+        {
+          texto: '<b>Caballo</b> y <b>cavallo</b> suenan igual… ¡pero sólo una está bien escrita! Hay letras que suenan igual: la <b>B</b> y la <b>V</b>, la <b>LL</b> y la <b>Y</b>.',
+          visual: function () { return emoji('🐴') + trozos(['caballo', 'cavallo'], 0); }
+        },
+        {
+          texto: 'Una regla que no falla: antes de <b>B</b> siempre va <b>M</b> (a<b>mb</b>ulancia) y antes de <b>V</b>, <b>N</b> (i<b>nv</b>ierno).',
+          visual: function () { return emojis(['🚑', '❄️']); },
+          practica: { pregunta: '¿Cuál está bien escrita?', opciones: ['invierno', 'imvierno', 'inbierno'], correcta: 0, explicacion: 'Antes de V va N: invierno.', pista: 'Mirá la letra que va antes de la V.' }
+        },
+        {
+          prediccion: {"pregunta":"Decí «hormiga» en voz alta. ¿Qué letra no suena?","opciones":["La H","La R","La G"],"correcta":0,"explicacion":"La H es muda: no suena, pero se escribe."},
+          texto: 'Como la <b>H</b> no suena, hay que acordarse de cómo se escribe cada palabra: <b>h</b>ormiga, <b>h</b>elado, <b>h</b>ueso.',
+          gesto: 'festejo',
+          visual: function () { return emojis(['🐜', '🍦', '🦴']); },
+          truco: 'Leer mucho ayuda: los ojos se acuerdan de cómo se escribe cada palabra.'
+        }
+      ]
+    },
+
+    {
+      id: 'los-sinonimos',
+      materia: 'lengua',
+      titulo: 'Palabras que dicen lo mismo',
+      icono: 'sinonimos',
+      edadMin: 8,
+      minutos: 2,
+      resumen: 'Los sinónimos: contento y feliz.',
+      juego: 'lengua/sinonimos',
+      ejercicio: { juego: 'lengua/sinonimos', nivel: 'n1', cantidad: 5, consigna: 'Buscá la palabra que significa lo mismo.' },
+      aprendiste: [
+        'Los <b>sinónimos</b> son palabras distintas que dicen <b>lo mismo</b>.',
+        '<b>Contento</b> y <b>feliz</b>; <b>rápido</b> y <b>veloz</b>.',
+        'No hay que confundirlos con los contrarios, que dicen lo opuesto.'
+      ],
+      pasos: [
+        {
+          texto: 'Si estás <b>contento</b>, también podés decir que estás <b>feliz</b>. Son palabras distintas que dicen lo mismo: son <b>sinónimos</b>.',
+          visual: function () { return emoji('😄'); }
+        },
+        {
+          texto: 'Cada palabra tiene su pareja que dice lo mismo. Tocá una y llevala con la suya.',
+          interactivo: { tipo: 'clasificar',
+            grupos: [
+              { id: 'rapido', nombre: 'rápido', visual: '🐇' },
+              { id: 'grande', nombre: 'grande', visual: '🐘' },
+              { id: 'empezar', nombre: 'empezar', visual: '🏁' }
+            ],
+            cosas: [
+              { nombre: 'veloz', grupo: 'rapido', bien: '¡Sí! Rápido y veloz dicen lo mismo.', pista: '«Veloz» dice que algo va muy rápido.' },
+              { nombre: 'enorme', grupo: 'grande', bien: '¡Sí! Grande y enorme dicen lo mismo.', pista: '«Enorme» dice que algo es muy grande.' },
+              { nombre: 'comenzar', grupo: 'empezar', bien: '¡Sí! Empezar y comenzar dicen lo mismo.', pista: '«Comenzar» es lo mismo que arrancar algo.' }
+            ],
+            final: '¡Cada una con su sinónimo!'
+          }
+        },
+        {
+          prediccion: {"pregunta":"¿Grande y chico son sinónimos?","opciones":["No, son contrarios","Sí, son sinónimos"],"correcta":0,"explicacion":"Dicen lo opuesto: son contrarios. Los sinónimos dicen lo mismo."},
+          texto: 'No hay que confundirlos: los <b>sinónimos</b> dicen lo mismo y los <b>contrarios</b>, lo opuesto.',
+          truco: 'Los sinónimos sirven para no repetir la misma palabra cuando escribís.',
+          practica: { pregunta: '¿Qué palabra dice lo mismo que <b>lindo</b>?', opciones: ['bonito', 'feo', 'sucio'], correcta: 0, explicacion: 'Lindo y bonito son sinónimos.', pista: 'Buscá la que dice lo mismo, no lo opuesto.' }
         }
       ]
     },
@@ -1773,6 +2165,102 @@ window.Lecciones = (function () {
       ]
     },
 
+
+    {
+      id: 'donde-vive-cada-animal',
+      materia: 'ciencias',
+      titulo: '¿Dónde vive cada animal?',
+      icono: 'habitat',
+      edadMin: 5,
+      minutos: 2,
+      resumen: 'El mar, la selva, la granja, el polo y el desierto.',
+      juego: 'ciencias/habitat',
+      ejercicio: { juego: 'ciencias/habitat', nivel: 'n1', cantidad: 5, consigna: 'Decí dónde vive cada animal.' },
+      aprendiste: [
+        'Cada animal vive donde puede <b>comer</b> y <b>estar cómodo</b>.',
+        'En el <b>mar</b>, el delfín y el pulpo; en la <b>selva</b>, el mono y el loro.',
+        'En el <b>polo</b> hace muchísimo frío; en el <b>desierto</b>, calor y casi no hay agua.'
+      ],
+      pasos: [
+        {
+          texto: '¡Hola! Cada animal vive en su lugar: donde encuentra comida y está cómodo. Tocá cada lugar.',
+          interactivo: { tipo: 'escuchar', cosas: [
+            { visual: emoji('🌊'), nombre: 'el mar', decir: 'En el mar viven el delfín, el pulpo y la ballena.' },
+            { visual: emoji('🌴'), nombre: 'la selva', decir: 'En la selva viven el mono, el loro y el yaguareté.' },
+            { visual: lugar('granero'), nombre: 'la granja', decir: 'En la granja viven la vaca, la gallina y el caballo.' },
+            { visual: emoji('🧊'), nombre: 'el polo', decir: 'En el polo hace muchísimo frío: ahí viven el pingüino y la foca.' },
+            { visual: emoji('🏜️'), nombre: 'el desierto', decir: 'En el desierto hace calor y casi no llueve: ahí viven el camello y el escorpión.' }
+          ] }
+        },
+        {
+          texto: '¿Me ayudás a llevar a cada uno a su casa? Tocá un animal y después su lugar.',
+          interactivo: { tipo: 'clasificar',
+            grupos: [
+              { id: 'mar', nombre: 'El mar', visual: '🌊' },
+              { id: 'selva', nombre: 'La selva', visual: '🌴' },
+              { id: 'desierto', nombre: 'El desierto', visual: '🏜️' }
+            ],
+            cosas: [
+              { nombre: 'el delfín', visual: '🐬', grupo: 'mar', pista: 'El delfín nada todo el día. ¿Dónde hay agua de sobra?' },
+              { nombre: 'el mono', visual: '🐒', grupo: 'selva', pista: 'Al mono le encanta trepar a los árboles. ¿Dónde hay muchos?' },
+              { nombre: 'el camello', visual: '🐪', grupo: 'desierto', bien: '¡Sí! El camello aguanta muchos días sin tomar agua.', pista: 'El camello aguanta mucho sin tomar agua. ¿Dónde casi no hay?' },
+              { nombre: 'el pulpo', visual: '🐙', grupo: 'mar', pista: 'El pulpo vive bajo el agua salada.' },
+              { nombre: 'el loro', visual: '🦜', grupo: 'selva', pista: 'El loro vive en los árboles, donde hace calor y llueve mucho.' },
+              { nombre: 'el escorpión', visual: '🦂', grupo: 'desierto', pista: 'El escorpión vive entre la arena y las piedras, donde casi no llueve.' }
+            ],
+            final: '¡Cada animal en su casa!'
+          }
+        },
+        {
+          texto: 'Los del <b>polo</b> aguantan el frío: el pingüino tiene plumas apretaditas y una capa de grasa que lo abriga.',
+          gesto: 'festejo',
+          visual: function () { return emojis(['🐧', '🦭']); },
+          practica: { pregunta: '¿Dónde vive el <b>pingüino</b>?', opciones: ['🧊 En el polo', '🌴 En la selva', '🏜️ En el desierto'], correcta: 0, explicacion: 'El pingüino vive donde hace muchísimo frío: en el polo.', pista: 'Tiene plumas apretadas y grasa para abrigarse. ¿Dónde hace falta?' }
+        }
+      ]
+    },
+
+    {
+      id: 'el-cuerpo-por-dentro',
+      materia: 'ciencias',
+      titulo: 'El cuerpo por dentro',
+      icono: 'corazon',
+      edadMin: 9,
+      minutos: 3,
+      resumen: 'El corazón, los pulmones, el cerebro y los huesos.',
+      juego: 'ciencias/organos',
+      ejercicio: { juego: 'ciencias/organos', nivel: 'n1', cantidad: 5, consigna: 'Contestá para qué sirve cada parte del cuerpo por dentro.' },
+      reflexion: {"pregunta":"¿Por qué se te acelera el corazón cuando corrés?","razones":["Porque los músculos necesitan más sangre y oxígeno","Porque el corazón se asusta","Porque se achica"],"correcta":0,"porque":"Al correr, los músculos trabajan más y necesitan más oxígeno: el corazón late más rápido para mandarles sangre.","grande":"Tomale el pulso a un grande antes y después de saltar un rato."},
+      aprendiste: [
+        'El <b>corazón</b> bombea la sangre, y los <b>pulmones</b> toman el aire.',
+        'El <b>cerebro</b> manda sobre todo el cuerpo.',
+        'Los <b>huesos</b> sostienen el cuerpo y los <b>músculos</b> los mueven.'
+      ],
+      pasos: [
+        {
+          texto: 'Adentro tuyo hay un equipo que trabaja sin parar, ¡hasta cuando dormís! Tocá a cada uno.',
+          interactivo: { tipo: 'escuchar', cosas: [
+            { visual: emoji('❤️'), nombre: 'el corazón', decir: 'El corazón bombea la sangre por todo el cuerpo.' },
+            { visual: emoji('🫁'), nombre: 'los pulmones', decir: 'Los pulmones se llenan de aire cuando respirás.' },
+            { visual: emoji('🧠'), nombre: 'el cerebro', decir: 'El cerebro está en la cabeza y manda sobre todo el cuerpo.' },
+            { visual: emoji('🦴'), nombre: 'los huesos', decir: 'Los huesos sostienen el cuerpo: una persona grande tiene más de 200.' },
+            { visual: emoji('💪'), nombre: 'los músculos', decir: 'Los músculos mueven los huesos.' }
+          ] }
+        },
+        {
+          prediccion: {"pregunta":"Poné la mano en el pecho y saltá un rato. ¿Qué le pasa al corazón?","opciones":["Late más rápido","Se detiene","Late más despacio"],"correcta":0,"explicacion":"Al moverte, los músculos necesitan más sangre, y el corazón late más rápido para mandarla."},
+          texto: 'El corazón es un <b>músculo</b> del tamaño de tu puño, y late unas <b>100.000 veces por día</b>.',
+          visual: function () { return emoji('❤️'); }
+        },
+        {
+          texto: 'Cuando respirás, los <b>pulmones</b> toman el <b>oxígeno</b> del aire, y la sangre lo lleva a todo el cuerpo. El <b>cerebro</b> dirige todo.',
+          gesto: 'festejo',
+          visual: function () { return emojis(['🫁', '🧠']); },
+          practica: { pregunta: '¿Qué órgano manda sobre todo el cuerpo?', opciones: ['El cerebro', 'El estómago', 'Los pulmones'], correcta: 0, explicacion: 'El cerebro manda: por eso lo protege el cráneo, que es de hueso.', pista: 'Está adentro de la cabeza.' }
+        }
+      ]
+    },
+
     /* ============ INGLÉS ============ */
     {
       id: 'los-colores-en-ingles',
@@ -2027,7 +2515,7 @@ window.Lecciones = (function () {
           truco: 'Am es la más fácil: va siempre con I, y con nada más.'
         },
         {
-          prediccion: {"pregunta":"En «The dogs ___ big» hay varios perros. ¿Qué te parece que va?","opciones":["<span lang=\"en\">are</span>","<span lang=\"en\">is</span>","<span lang=\"en\">am</span>"],"correcta":0,"explicacion":"Con varios va <span lang=\"en\">are</span>; con uno solo, <span lang=\"en\">is</span>."},
+          prediccion: {"pregunta":"En «The dogs ___ big» hay varios perros. ¿Qué te parece que va?","opciones":["<span lang=\"en\">are</span>","<span lang=\"en\">is</span>","<span lang=\"en\">am</span>"],"correcta":0,"sinDibujo":true,"explicacion":"Con varios va <span lang=\"en\">are</span>; con uno solo, <span lang=\"en\">is</span>."},
           texto: 'Uno solo, <b lang="en">is</b>; varios, <b lang="en">are</b>. Mirá la diferencia:',
           visual: function () {
             return listaEn([['The dog is big', 'El perro es grande'],
@@ -2057,7 +2545,176 @@ window.Lecciones = (function () {
           }
         }
       ]
-    }
+    },
+    {
+      id: 'la-familia-en-ingles',
+      materia: 'ingles',
+      titulo: 'La familia en inglés',
+      icono: 'perfil',
+      edadMin: 6,
+      minutos: 2,
+      resumen: 'Mother, father, brother y sister.',
+      juego: 'ingles/familia',
+      ejercicio: { juego: 'ingles/familia', nivel: 'n1', cantidad: 5, consigna: 'Elegí cómo se dice cada familiar en inglés.' },
+      aprendiste: [
+        '<span lang="en">Mother</span> es la madre, y <span lang="en">father</span>, el padre.',
+        '<span lang="en">Brother</span> es el hermano, y <span lang="en">sister</span>, la hermana.',
+        '<span lang="en">Grandmother</span> y <span lang="en">grandfather</span> son los abuelos.'
+      ],
+      pasos: [
+        {
+          texto: '¡<span lang="en">Hello</span>! Te presento a la familia en inglés. Tocá a cada uno y repetilo conmigo.',
+          interactivo: { tipo: 'escuchar', cosas: [
+            { visual: emoji('👩'), nombre: '<span lang="en">mother</span>', decir: '<span lang="en">mother</span>. La madre.' },
+            { visual: emoji('👨'), nombre: '<span lang="en">father</span>', decir: '<span lang="en">father</span>. El padre.' },
+            { visual: emoji('👦'), nombre: '<span lang="en">brother</span>', decir: '<span lang="en">brother</span>. El hermano.' },
+            { visual: emoji('👧'), nombre: '<span lang="en">sister</span>', decir: '<span lang="en">sister</span>. La hermana.' }
+          ] }
+        },
+        {
+          texto: '¡Que no se te mezclen! <b lang="en">Brother</b> es el hermano, y <b lang="en">sister</b>, la hermana.',
+          visual: function () { return emojis(['👦', '👧']); },
+          practica: { pregunta: '¿Cómo se dice <b>la hermana</b>?', opciones: ['<span lang="en">sister</span>', '<span lang="en">brother</span>', '<span lang="en">mother</span>'], correcta: 0, explicacion: 'La hermana es <span lang="en">sister</span>, y el hermano, <span lang="en">brother</span>.', pista: 'Brother es el hermano. ¿Y la hermana?' }
+        },
+        {
+          prediccion: {"pregunta":"«Grand» quiere decir «grande». ¿Qué será grandmother?","opciones":["La abuela","La madre","La hermana"],"correcta":0,"explicacion":"<span lang=\"en\">Grandmother</span> es, tal cual, la «madre grande»: la abuela."},
+          texto: 'Y los abuelos son la «madre grande» y el «padre grande»: <b lang="en">grandmother</b> y <b lang="en">grandfather</b>.',
+          gesto: 'festejo',
+          interactivo: { tipo: 'escuchar', cosas: [
+            { visual: emoji('👵'), nombre: '<span lang="en">grandmother</span>', decir: '<span lang="en">grandmother</span>. La abuela.' },
+            { visual: emoji('👴'), nombre: '<span lang="en">grandfather</span>', decir: '<span lang="en">grandfather</span>. El abuelo.' }
+          ] }
+        }
+      ]
+    },
+
+    {
+      id: 'el-cuerpo-en-ingles',
+      materia: 'ingles',
+      titulo: 'El cuerpo en inglés',
+      icono: 'cuerpo',
+      edadMin: 6,
+      minutos: 2,
+      resumen: 'Eye, ear, nose, mouth y más.',
+      juego: 'ingles/cuerpo-en',
+      ejercicio: { juego: 'ingles/cuerpo-en', nivel: 'n1', cantidad: 5, consigna: 'Elegí cómo se dice cada parte de la cara en inglés.' },
+      aprendiste: [
+        '<span lang="en">Eye</span> es ojo, <span lang="en">ear</span> es oreja y <span lang="en">nose</span>, nariz.',
+        '<span lang="en">Mouth</span> es boca, y <span lang="en">hair</span>, pelo.',
+        '<span lang="en">Hand</span> es mano, y <span lang="en">foot</span>, pie.'
+      ],
+      pasos: [
+        {
+          texto: '¡Tocate cada parte de la cara mientras la decís en inglés! Tocá las tarjetas y repetí.',
+          interactivo: { tipo: 'escuchar', cosas: [
+            { visual: emoji('👁️'), nombre: '<span lang="en">eye</span>', decir: '<span lang="en">eye</span>. El ojo.' },
+            { visual: emoji('👂'), nombre: '<span lang="en">ear</span>', decir: '<span lang="en">ear</span>. La oreja.' },
+            { visual: emoji('👃'), nombre: '<span lang="en">nose</span>', decir: '<span lang="en">nose</span>. La nariz.' },
+            { visual: emoji('👄'), nombre: '<span lang="en">mouth</span>', decir: '<span lang="en">mouth</span>. La boca.' }
+          ] }
+        },
+        {
+          texto: 'Ahora el resto del cuerpo. ¡Movete mientras los decís!',
+          interactivo: { tipo: 'escuchar', cosas: [
+            { visual: emoji('✋'), nombre: '<span lang="en">hand</span>', decir: '<span lang="en">hand</span>. La mano.' },
+            { visual: emoji('🦶'), nombre: '<span lang="en">foot</span>', decir: '<span lang="en">foot</span>. El pie.' },
+            { visual: emoji('💪'), nombre: '<span lang="en">arm</span>', decir: '<span lang="en">arm</span>. El brazo.' },
+            { visual: emoji('🦵'), nombre: '<span lang="en">leg</span>', decir: '<span lang="en">leg</span>. La pierna.' }
+          ] },
+          practica: { pregunta: '¿Cómo se dice <b>la mano</b>?', opciones: ['<span lang="en">hand</span>', '<span lang="en">foot</span>', '<span lang="en">head</span>'], correcta: 0, explicacion: 'La mano es <span lang="en">hand</span>.', pista: 'Foot es el pie. ¿Y la mano?' }
+        },
+        {
+          texto: '¿Te animás? Te digo una parte en inglés y vos la buscás.',
+          gesto: 'festejo',
+          interactivo: { tipo: 'tocar', rondas: [
+            { consigna: '¿Cuál es el <b lang="en">nose</b>?', partes: ['👂', '👃', '👁️'], correcta: 1, bien: '¡Sí! <span lang="en">Nose</span> es la nariz.' },
+            { consigna: '¿Y el <b lang="en">foot</b>?', partes: ['🦶', '✋', '💪'], correcta: 0, bien: '¡Eso! <span lang="en">Foot</span> es el pie.' },
+            { consigna: '¿Y la <b lang="en">mouth</b>?', partes: ['👁️', '👂', '👄'], correcta: 2, bien: '¡Muy bien! <span lang="en">Mouth</span> es la boca.' }
+          ] }
+        }
+      ]
+    },
+
+    {
+      id: 'la-escuela-en-ingles',
+      materia: 'ingles',
+      titulo: 'La escuela en inglés',
+      icono: 'aprender',
+      edadMin: 7,
+      minutos: 2,
+      resumen: 'Book, pencil, notebook y los útiles.',
+      juego: 'ingles/escuela',
+      ejercicio: { juego: 'ingles/escuela', nivel: 'n1', cantidad: 5, consigna: 'Elegí cómo se dice cada útil en inglés.' },
+      aprendiste: [
+        '<span lang="en">Book</span> es libro, y <span lang="en">notebook</span>, cuaderno.',
+        '<span lang="en">Pencil</span> es lápiz, y <span lang="en">pen</span>, lapicera.',
+        '<span lang="en">Backpack</span> es la mochila.'
+      ],
+      pasos: [
+        {
+          texto: '¡Abrí la mochila! Vamos a ver los útiles en inglés. Tocá cada uno.',
+          interactivo: { tipo: 'escuchar', cosas: [
+            { visual: emoji('📖'), nombre: '<span lang="en">book</span>', decir: '<span lang="en">book</span>. El libro.' },
+            { visual: emoji('📓'), nombre: '<span lang="en">notebook</span>', decir: '<span lang="en">notebook</span>. El cuaderno.' },
+            { visual: emoji('✏️'), nombre: '<span lang="en">pencil</span>', decir: '<span lang="en">pencil</span>. El lápiz.' },
+            { visual: emoji('🖊️'), nombre: '<span lang="en">pen</span>', decir: '<span lang="en">pen</span>. La lapicera.' },
+            { visual: emoji('🎒'), nombre: '<span lang="en">backpack</span>', decir: '<span lang="en">backpack</span>. La mochila.' }
+          ] }
+        },
+        {
+          prediccion: {"pregunta":"Book es libro, y note quiere decir «nota». ¿Qué será un notebook?","opciones":["El cuaderno","La mochila","El lápiz"],"correcta":0,"sinDibujo":true,"explicacion":"Un <span lang=\"en\">notebook</span> es un libro para anotar: el cuaderno."},
+          texto: 'Algunas palabras se arman con otras dos: <b lang="en">note</b> y <b lang="en">book</b> hacen <b lang="en">notebook</b>.',
+          visual: function () { return emojis(['📓']); }
+        },
+        {
+          texto: '¡Cuidado con estos dos! <b lang="en">Pencil</b> es el lápiz, y <b lang="en">pen</b>, la lapicera.',
+          gesto: 'festejo',
+          visual: function () { return emojis(['✏️', '🖊️']); },
+          practica: { pregunta: '¿Cómo se dice <b>el lápiz</b>?', opciones: ['<span lang="en">pencil</span>', '<span lang="en">pen</span>', '<span lang="en">paper</span>'], correcta: 0, explicacion: 'El lápiz es <span lang="en">pencil</span>, y la lapicera, <span lang="en">pen</span>.', pista: 'El más largo de los dos nombres es el del lápiz.' }
+        }
+      ]
+    },
+
+    {
+      id: 'las-acciones-en-ingles',
+      materia: 'ingles',
+      titulo: 'Las acciones en inglés',
+      icono: 'jugar',
+      edadMin: 8,
+      minutos: 2,
+      resumen: 'Run, eat, sleep, play: lo que hacemos.',
+      juego: 'ingles/acciones',
+      ejercicio: { juego: 'ingles/acciones', nivel: 'n1', cantidad: 5, consigna: 'Elegí cómo se dice cada acción en inglés.' },
+      aprendiste: [
+        '<span lang="en">Run</span> es correr, <span lang="en">eat</span> es comer y <span lang="en">sleep</span>, dormir.',
+        '<span lang="en">Play</span> es jugar, y <span lang="en">drink</span>, tomar.',
+        'Con <span lang="en">I</span> adelante dicen lo que hacés: <span lang="en">I run</span>, yo corro.'
+      ],
+      pasos: [
+        {
+          texto: 'Las acciones son lo que hacemos: correr, comer, dormir… Tocá cada una, ¡y hacé el gesto!',
+          interactivo: { tipo: 'escuchar', cosas: [
+            { visual: emoji('🏃'), nombre: '<span lang="en">run</span>', decir: '<span lang="en">run</span>. Correr.' },
+            { visual: emoji('🍽️'), nombre: '<span lang="en">eat</span>', decir: '<span lang="en">eat</span>. Comer.' },
+            { visual: emoji('😴'), nombre: '<span lang="en">sleep</span>', decir: '<span lang="en">sleep</span>. Dormir.' },
+            { visual: emoji('🥤'), nombre: '<span lang="en">drink</span>', decir: '<span lang="en">drink</span>. Tomar.' },
+            { visual: emoji('⚽'), nombre: '<span lang="en">play</span>', decir: '<span lang="en">play</span>. Jugar.' },
+            { visual: emoji('🚶'), nombre: '<span lang="en">walk</span>', decir: '<span lang="en">walk</span>. Caminar.' }
+          ] }
+        },
+        {
+          prediccion: {"pregunta":"Si I es «yo», ¿qué quiere decir I sleep?","opciones":["Yo duermo","Yo como","Yo corro"],"correcta":0,"explicacion":"<span lang=\"en\">Sleep</span> es dormir: <span lang=\"en\">I sleep</span> es «yo duermo»."},
+          texto: 'Con <b lang="en">I</b> adelante, la acción dice lo que hacés vos:',
+          visual: function () { return listaEn([['I run', 'Yo corro'], ['I eat', 'Yo como'], ['I play', 'Yo juego']], true); }
+        },
+        {
+          texto: '¡A no mezclar! <b lang="en">Eat</b> es comer, y <b lang="en">drink</b>, tomar.',
+          gesto: 'festejo',
+          visual: function () { return emojis(['🍽️', '🥤']); },
+          practica: { pregunta: '¿Cómo se dice <b>tomar</b> (agua, leche…)?', opciones: ['<span lang="en">drink</span>', '<span lang="en">eat</span>', '<span lang="en">walk</span>'], correcta: 0, explicacion: 'Tomar es <span lang="en">drink</span>, y comer, <span lang="en">eat</span>.', pista: 'Eat es comer. ¿Y tomar?' }
+        }
+      ]
+    },
   ];
 
   function porId(id) {
