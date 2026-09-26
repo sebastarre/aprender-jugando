@@ -194,12 +194,13 @@ window.Leccion = (function () {
       elegida.disabled = true;
       if (errores >= 2) {
         // no se traba: se muestra cuál era y se puede seguir
-        practicadas[aquiPaso] = { bien: false, texto: 'Era «' + pr.opciones[pr.correcta] + '». ' + (pr.explicacion || '') };
+        practicadas[aquiPaso] = { bien: false, texto: 'Era «' + pr.opciones[pr.correcta] + '». ' + (pr.explicacion || '') + ' ¡Ahora ya lo sabés!' };
         marcarLaBuena(todas, pr.correcta);
         cartel = cartelDeRespuesta(practicadas[aquiPaso]);
         Util.$('btn-leccion-siguiente').hidden = false;
       } else {
-        cartel = cartelDeRespuesta({ bien: false, texto: 'Esa no. ' + (pr.pista || 'Mirá otra vez y probá de nuevo.') });
+        cartel = cartelDeRespuesta({ bien: false, texto: Util.alAzar(['¡Buen intento!', 'Todavía no.', 'Mmm, esa no era.']) + ' ' +
+                                                         (pr.pista || 'Mirá otra vez con calma y probá de nuevo.') });
       }
       bloque.appendChild(cartel);
       traerALaVista(errores >= 2 ? Util.$('btn-leccion-siguiente') : cartel);
@@ -292,7 +293,7 @@ window.Leccion = (function () {
       Sonido.tocar(bien ? 'acierto' : 'clic');
       respondidas[paso] = {
         bien: bien,
-        texto: (bien ? '¡Bien pensado! ' : 'Era «' + pred.opciones[pred.correcta] + '». ') + pred.explicacion
+        texto: (bien ? '¡Bien pensado! ' : '¡Bien que lo pensaste! Era «' + pred.opciones[pred.correcta] + '». ') + pred.explicacion
       };
       pintar();
     }));
@@ -325,7 +326,7 @@ window.Leccion = (function () {
       elegida.classList.add(bien ? 'elegida-bien' : 'elegida-mal');
       if (!bien) opciones.querySelector('[data-i="' + ref.correcta + '"]').classList.add('elegida-bien');
 
-      var respuesta = (bien ? '¡Eso! ' : 'No es por eso. ') + ref.porque;
+      var respuesta = (bien ? '¡Eso! ' : 'Pensalo así: ') + ref.porque;
       tarjeta.appendChild(cartelDeRespuesta({ bien: bien, texto: respuesta }));
       if (ref.grande) tarjeta.appendChild(Util.crear('p', 'reflexion-grande', ref.grande));
       tarjeta.appendChild(boton('btn-gigante', 'Ver cómo me fue', function () {
@@ -350,7 +351,8 @@ window.Leccion = (function () {
                                     (r.aprobado ? ' aprobado' : ''));
     tarjeta.appendChild(Mascota.crear('hola', 'final-mascota'));
     tarjeta.appendChild(Util.crear('h2', 'paso-titulo',
-      r.aprobado ? '¡Completaste la lección!' : '¡Casi!'));
+      r.aprobado ? '¡Completaste la lección!'
+        : r.aciertos >= aprobarCon(leccion.ejercicio) - 1 ? '¡Casi!' : '¡Buen intento!'));
 
     var cifra = Util.crear('p', 'resultado-cifra');
     cifra.appendChild(Util.crear('b', null, String(r.aciertos)));

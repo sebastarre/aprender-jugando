@@ -8,8 +8,9 @@
      - De 4 a 7 (el registro de los chicos) cada pregunta se lee sola al
        aparecer. Si las respuestas son palabras o frases, después de la
        pregunta se lee cada una, y el botón de la que se está diciendo se
-       marca: así el que no lee sabe cuál es cuál. También se leen las
-       pistas y el «era ésta», que es donde está lo que hay que aprender.
+       marca: así el que no lee sabe cuál es cuál. También se lee lo que
+       se le dice al errar, las pistas y el «era ésta», que es donde está
+       lo que hay que aprender.
      - De 8 a 12 no se lee nada solo, pero el parlantito de al lado de la
        pregunta la lee cuando se lo toca.
 
@@ -49,9 +50,12 @@ window.Lector = (function () {
     var o2 = new MutationObserver(function () {
       clearTimeout(esperaAviso);
       esperaAviso = setTimeout(function () {
-        if (/\b(pista|dato)\b/.test(aviso.className) && aviso.textContent.trim()) {
+        /* También cuando se equivoca: «¡Buen intento! ¡Probá otra vez!»
+           dicho en voz alta es lo que haría un grande al lado, y el que
+           todavía no lee no tiene otra manera de enterarse. */
+        if (/\b(mal|pista|dato)\b/.test(aviso.className) && aviso.textContent.trim()) {
           quitarResaltado();
-          Voz.decir(aviso.textContent);
+          Voz.decir(aviso.innerHTML);
         }
       }, 60);
     });

@@ -71,8 +71,8 @@ window.Examen = (function () {
     if (n === 10) return '¡Perfecto! No erraste ni una.';
     if (n >= 8) return '¡Muy bien! Estudiaste.';
     if (n >= 6) return 'Aprobado. Con un poco más de práctica sube.';
-    if (n >= 4) return 'Te faltó poco. Repasá y probá de nuevo.';
-    return 'Esta vez no salió. Pasá por Aprender y volvé a intentar.';
+    if (n >= 4) return 'Te faltó poquito: repasá lo de abajo y probá de nuevo, que la próxima sale.';
+    return 'Esta vez costó, y está bien: así se aprende. Pasá por Aprender, repasá lo de abajo y volvé a intentarlo.';
   }
 
   return {

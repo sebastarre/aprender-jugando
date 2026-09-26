@@ -190,8 +190,8 @@ Blanco y azul marino de base; el color vive en objetos chicos y saturados, y cad
 - **Los colores de los juegos**: cada juego trae un color propio, escrito en su módulo (js/juegos/*.js), con su versión suave. Pinta sólo lo de ese juego: su círculo en la lista, los niveles de su camino, su cartel y su recomendación. Es identidad del juego, no de la interfaz, igual que los colores que son la pregunta misma («¿de qué color es?», las figuras, el reloj). Todos dan 3:1 o más contra el blanco del dibujo que llevan encima.
 
 ### Tertiary
-- **Acertar y errar** (exito / exito-osc / exito-suave / exito-tinta y error / error-osc / error-suave / error-tinta; las «tinta» son la letra sobre los suaves): sólo para respuestas, sellos y avisos. Nunca los usa otra cosa, así que un color de reposo no se lee como una respuesta ya contestada.
-- **Crema** (crema, con letra #6B4A00 o #5A3B00): la pista de un juego, los trucos de las lecciones, las monedas ganadas y el cartel de la meta. Es ayuda, no reto.
+- **Acertar y errar** (exito / exito-osc / exito-suave / exito-tinta y error / error-osc / error-suave / error-tinta; las «tinta» son la letra sobre los suaves): sólo para respuestas, sellos y el aviso de acierto (el de errar va en crema: ver La Regla del Error Amable). Nunca los usa otra cosa, así que un color de reposo no se lee como una respuesta ya contestada.
+- **Crema** (crema, con letra #6B4A00 o #5A3B00): la pista de un juego, el cartel de cuando se equivoca, los trucos de las lecciones, las monedas ganadas y el cartel de la meta. Es ayuda, no reto.
 
 ### Neutral
 - **Tinta** (tinta): todo el texto y el trazo de los dibujos. 12:1 contra el papel.
@@ -204,6 +204,8 @@ Blanco y azul marino de base; el color vive en objetos chicos y saturados, y cad
 **La Regla del Papel Limpio.** El fondo es blanco y liso. El color va en las cosas de adelante, nunca atrás: una tarjeta pálida flotando en una pileta de color se ve lavada por más saturado que esté el fondo.
 
 **La Regla de los Colores con Dueño.** Verde y rojo son de acertar y errar; girasol es de las metas y los premios; cada primario de juguete es de su materia. Un color nuevo necesita un trabajo, no un lugar libre.
+
+**La Regla del Error Amable.** Al errar, el rojo queda en el botón elegido (suave, con su cruz) y el cartel anima en crema, con la flecha de «otra vez». Nunca una banda roja plena, ni «mal», ni una cuenta regresiva de intentos.
 
 **La Regla del 4,5.** Todo texto chico mide 4,5:1 o más; el blanco sobre el cielo (3,4:1) sólo lleva letra de 1,2rem en negrita para arriba. Cualquier combinación de la tienda pasa, porque cada ranura sólo ofrece tonos que aguantan su papel.
 
@@ -301,7 +303,7 @@ El cielo pleno con la mascota parada a la derecha sobre un sol girasol, el dibuj
 Niveles redondos de 70px del color del juego con un escalón de 6px en su tono oscuro, unidos por un camino punteado; lo cerrado va en gris con candado; el que toca es más grande y tiene un anillo que respira despacio; arriba, la carita del chico. Los desafíos llevan filo girasol.
 
 ### Las respuestas
-Fichas blancas iguales con la respuesta a 800. Al contestar se pintan: relleno suave, filo y escalón del color, y un sello dibujado en la esquina (tilde o cruz) para el que no distingue verde de rojo. Debajo, una banda del mismo color dice qué pasó, con su dibujito adelante (tilde, cruz, lamparita u ojo).
+Fichas blancas iguales con la respuesta a 800. Al contestar se pintan: relleno suave, filo y escalón del color, y un sello dibujado en la esquina (tilde o cruz) para el que no distingue verde de rojo. Debajo, una banda dice qué pasó, con su dibujito adelante: verde con la tilde al acertar; crema con la flecha de «otra vez» al errar, o con la lamparita si trae una pista; celeste con el ojo cuando muestra la que era.
 
 ### El teclado de números
 Para escribir las cuentas de 8 a 12 (una sí y una no; todas en los desafíos y en el examen). Arriba, una pantalla blanca de 74px con filo de riel que muestra lo escrito a 2,5rem en cifras tabulares, en gris riel mientras está vacía. Abajo, las teclas en tres columnas como las de un teléfono: del 1 al 9, borrar, 0 y listo. Cada tecla es una ficha blanca de 58px con escalón; «listo» es la única azul, con su tilde, y queda gris mientras no hay nada escrito. Al contestar, la pantalla se pinta como una respuesta.
@@ -333,5 +335,6 @@ Arriba, una barra de avance como la de los juegos. Cada paso es una tarjeta blan
 - **Don't** poner emojis como íconos de la interfaz; los emojis quedan sólo donde son contenido (lo que se cuenta en un juego, los disfraces).
 - **Don't** agregar animaciones que se repitan solas: nada respira, flota ni titila salvo el arranque y el anillo del nivel que toca.
 - **Don't** usar verde o rojo para algo que no sea acertar o errar.
+- **Don't** retar al que se equivoca: nada de «mal», «incorrecto», «no alcanzó» ni «te queda 1 intento». Primero algo amable y verdadero, después algo que enseñe y una invitación a probar otra vez.
 - **Don't** poner una etiqueta chiquita arriba de un título: si hace falta un saludo, lo dice la mascota en un globito.
 - **Don't** llenar la pantalla de fichas pastel iguales: las materias van blancas, con su dibujo sobre una mancha de su color.

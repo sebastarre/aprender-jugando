@@ -241,7 +241,9 @@ window.Matematica = (function () {
     },
     ganchos: function () {
       return T.ganchos(function (it) { return it.n; }, {
-        fallo: function (it, r) { return 'No son ' + r + '.'; },
+        fallo: function (it, r) {
+          return (Number(r) === 1 ? '¿Seguro que es 1?' : '¿Seguro que son ' + r + '?') + ' Tocá cada dibujito para contarlo.';
+        },
         revelado: function (it) { return 'Eran ' + it.n + '.'; }
       });
     },
@@ -309,6 +311,15 @@ window.Matematica = (function () {
 
   function nombreFigura(id) { return deLista(FIGURAS, id).nombre; }
 
+  /* Cómo es cada figura, para cuando elige la que no es: en vez de «no es
+     un triángulo», lo que tiene un triángulo, y que se fije si ésta también. */
+  var COMO_ES = {
+    'círculo': 'es redondo, sin puntas', 'cuadrado': 'tiene 4 lados iguales',
+    'triángulo': 'tiene 3 lados', 'rectángulo': 'tiene 4 lados, dos largos y dos cortos',
+    'óvalo': 'es redondo pero estirado', 'rombo': 'tiene 4 lados y está parado en una punta',
+    'pentágono': 'tiene 5 lados', 'hexágono': 'tiene 6 lados'
+  };
+
   var FIGURAS_JUEGO = {
     id: 'figuras',
     nombre: 'Figuras',
@@ -365,7 +376,11 @@ window.Matematica = (function () {
     },
     ganchos: function () {
       return T.ganchos(function (it) { return nombreFigura(it.figura); }, {
-        fallo: function (it, r) { return 'No es un ' + r.toLowerCase() + '.'; },
+        // «Un triángulo tiene 3 lados: ¿ésta también?»
+        fallo: function (it, r) {
+          var como = COMO_ES[r.toLowerCase()];
+          return como ? 'Un ' + r.toLowerCase() + ' ' + como + ': ¿ésta también?' : '';
+        },
         revelado: function (it) { return 'Es un ' + nombreFigura(it.figura).toLowerCase() + '.'; }
       });
     },
@@ -563,7 +578,7 @@ window.Matematica = (function () {
     if (r === it.resultado - 1) return 'Muy cerca: te faltó uno.';
     if (!suma && r === it.a + it.b) return 'Esa es la suma, y acá hay que restar.';
     if (suma && r === Math.abs(it.a - it.b)) return 'Esa es la resta, y acá hay que sumar.';
-    return 'No es ' + r + '.';
+    return '';
   }
 
   function pistaCuenta(it, intento) {
@@ -880,7 +895,6 @@ window.Matematica = (function () {
     },
     ganchos: function () {
       return T.ganchos(function (it) { return it.respuesta; }, {
-        fallo: function (it, r) { return 'No va el ' + r + '.'; },
         pista: function (it, intento) {
           if (intento === 1) return 'Fijate cuánto cambia de un número al siguiente.';
           var m = it.muestra;
@@ -1034,7 +1048,6 @@ window.Matematica = (function () {
     },
     ganchos: function () {
       return T.ganchos(function (it) { return it.texto; }, {
-        fallo: function (it, respuesta) { return 'No son las ' + respuesta + '.'; },
         pista: function (it, intento) {
           if (intento === 1) return 'Mirá primero la aguja corta: es la que marca la hora.';
           return it.minuto === 0
@@ -1145,7 +1158,7 @@ window.Matematica = (function () {
           if (r === it.resultado + it.a || r === it.resultado - it.a ||
               r === it.resultado + it.b || r === it.resultado - it.b) return 'Te corriste un lugar en la tabla.';
           if (r === it.a + it.b) return 'Esa es la suma, y acá hay que multiplicar.';
-          return 'No, ' + r + ' no es.';
+          return '';
         },
         pista: function (it, intento) {
           if (it.b === 1) return 'Cualquier número por 1 da el mismo número.';
@@ -1251,7 +1264,7 @@ window.Matematica = (function () {
       return T.ganchos(function (it) { return it.respuesta; }, {
         fallo: function (it, r) {
           if (it.modo === 'mitad' && r === it.n * 2) return 'Ese es el doble, y acá es la mitad.';
-          return 'No es ' + r + '.';
+          return '';
         },
         pista: function (it, intento) {
           if (it.modo === 'doble') {
@@ -1375,7 +1388,6 @@ window.Matematica = (function () {
     ganchos: function () {
       var nombres = { 1: 'unidades', 10: 'decenas', 100: 'centenas', 1000: 'unidades de mil' };
       return T.ganchos(function (it) { return it.respuesta; }, {
-        fallo: function (it, r) { return 'No vale ' + r + '.'; },
         pista: function (it, intento) {
           if (intento === 1) return 'Contá los lugares desde la derecha: unidades, decenas, centenas…';
           return 'El ' + it.cifra + ' está en el lugar de las ' + nombres[it.respuesta / it.cifra] + '.';
@@ -1476,7 +1488,10 @@ window.Matematica = (function () {
     },
     ganchos: function () {
       return T.ganchos(function (it) { return it.respuesta; }, {
-        fallo: function (it, r) { return 'No: ' + r + ' × ' + it.d + ' no da ' + it.a + '.'; },
+        fallo: function (it, r) {
+          var n = Number(r);
+          return isNaN(n) ? '' : 'Probá: ' + n + ' × ' + it.d + ' da ' + n * it.d + ', y buscamos ' + it.a + '.';
+        },
         pista: function (it, intento) {
           if (intento === 1) return '¿Qué número por ' + it.d + ' da ' + it.a + '?';
           return 'Recorré la tabla del ' + it.d + ': ' + it.d + ', ' + it.d * 2 + ', ' + it.d * 3 + '… hasta llegar a ' + it.a + '.';
@@ -1617,7 +1632,7 @@ window.Matematica = (function () {
     },
     ganchos: function () {
       return T.ganchos(function (it) { return it.respuesta; }, {
-        fallo: function (it, r) { return 'No da ' + r + '. ¿Qué cuenta hay que hacer?'; },
+        fallo: function () { return 'Leé el cuento otra vez: ¿qué cuenta hay que hacer?'; },
         revelado: function (it) {
           return 'Era ' + it.a + ' ' + it.op + ' ' + it.b + ' = ' + it.respuesta + '.';
         }
@@ -1763,9 +1778,9 @@ window.Matematica = (function () {
     },
     ganchos: function () {
       return T.ganchos(function (it) { return it.respuesta; }, {
-        fallo: function (it, r) { return 'No es ' + r + '. Contá las partes pintadas y las partes en total.'; },
+        fallo: function () { return 'Contá las partes pintadas y las partes en total.'; },
         revelado: function (it) {
-          return 'Era ' + it.respuesta + ': ' + it.n + ' pintadas de ' + it.d + ' partes iguales.';
+          return 'Era ' + it.respuesta + ': ' + it.n + (it.n === 1 ? ' pintada' : ' pintadas') + ' de ' + it.d + ' partes iguales.';
         }
       });
     },

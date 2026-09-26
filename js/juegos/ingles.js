@@ -54,9 +54,13 @@ window.Ingles = (function () {
       forma: 'palabra',
       mostrar: en,
       consigna: function (it) { return '¿Cómo se dice <b>' + it.que + '</b>?'; },
-      textoFallo: function () { return 'Esa no es.'; },
+      // lo que quiere decir la que eligió: «cat es el gato»
+      textoFallo: function (it, r) {
+        var otra = juego && juego.ITEMS.filter(function (x) { return x.r === r; })[0];
+        return otra ? '<span lang="en">' + r.charAt(0).toUpperCase() + r.slice(1) + '</span> es ' + otra.que + '.' : '';
+      },
       textoRevelado: function (it) {
-        return '<b>' + it.que + '</b> se dice <span lang="en">' + it.r + '</span>.';
+        return '<b>' + it.que.charAt(0).toUpperCase() + it.que.slice(1) + '</b> se dice <span lang="en">' + it.r + '</span>.';
       },
       repaso: function (it) {
         return { simbolo: it.emoji || '🔤', nombre: it.que, dato: 'En inglés: ' + it.r };
@@ -93,7 +97,8 @@ window.Ingles = (function () {
       });
     }
 
-    return T.banco(completo);
+    var juego = T.banco(completo);
+    return juego;
   }
 
   function esChico() { return document.documentElement.classList.contains('registro-chico'); }
@@ -410,7 +415,10 @@ window.Ingles = (function () {
       // ellas se leía «name??», como un error
       return '¿Qué quiere decir «<b lang="en">' + it.ingles + '</b>»?';
     },
-    textoFallo: function () { return 'No quiere decir eso.'; },
+    textoFallo: function (it, r) {
+      var otra = FRASES.filter(function (f) { return f[1] === r; })[0];
+      return otra ? '«' + r + '» se dice <span lang="en">' + otra[0] + '</span>.' : '';
+    },
     textoRevelado: function (it) {
       return '<span lang="en">' + it.ingles + '</span> quiere decir «' + it.r + '».';
     },
@@ -461,7 +469,13 @@ window.Ingles = (function () {
       return '¿Qué falta?<br><span class="frase-en" lang="en">' +
              it.frase.replace('___', '<b class="hueco">___</b>') + '</span>';
     },
-    textoFallo: function () { return 'Ahí no va esa.'; },
+    textoFallo: function (it, r) {
+      return {
+        am: 'Con <span lang="en">I</span>, y sólo con <span lang="en">I</span>, va <span lang="en">am</span>.',
+        is: 'Con uno solo (<span lang="en">he, she, it</span>) va <span lang="en">is</span>.',
+        are: 'Con varios, y con <span lang="en">you</span>, va <span lang="en">are</span>.'
+      }[r] || '';
+    },
     textoRevelado: function (it) { return it.pista; },
     repaso: function (it) {
       return { simbolo: '🔤', nombre: it.frase.replace('___', it.r), dato: T.plano(it.pista) };

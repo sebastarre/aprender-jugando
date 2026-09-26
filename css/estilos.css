@@ -118,6 +118,7 @@
   --cruz-blanca: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='3.2' stroke-linecap='round'%3E%3Cpath d='M7 7l10 10M17 7L7 17'/%3E%3C/svg%3E");
   --ojo: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z'/%3E%3Ccircle cx='12' cy='12' r='3'/%3E%3C/svg%3E");
   --lamparita: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9.2 18h5.6M10.2 21.3h3.6M12 2.8a6.3 6.3 0 0 0-3.7 11.4c.7.5 1.1 1.3 1.1 2.1v.7h5.2v-.7c0-.8.4-1.6 1.1-2.1A6.3 6.3 0 0 0 12 2.8z'/%3E%3C/svg%3E");
+  --otra-vez: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4.5 12a7.5 7.5 0 1 0 2.2-5.3L4.5 8.8'/%3E%3Cpath d='M4.5 4.8v4h4'/%3E%3C/svg%3E");
   --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 5l7 7-7 7'/%3E%3C/svg%3E");
   --mas: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round'%3E%3Cpath d='M12 5v14M5 12h14'/%3E%3C/svg%3E");
 }
@@ -2212,7 +2213,11 @@ body.rindiendo .vidas { display: none; }
 .aviso.bien, .aviso.mal, .aviso.dato, .aviso.pista { text-align: left; }
 .aviso.bien::before, .aviso.mal::before, .aviso.dato::before, .aviso.pista::before { width: 26px; }
 .aviso.bien  { background: var(--exito-osc); color: #ffffff; --aviso-dibujo: var(--tilde); }
-.aviso.mal   { background: var(--error-osc); color: #ffffff; --aviso-dibujo: var(--cruz); }
+/* Al errar, el cartel no reta: el botón elegido ya se marca en rojo con
+   su cruz, y el cartel es la parte que anima a probar otra vez. Crema,
+   como la pista y como la respuesta de las lecciones, con la flecha de
+   «otra vez» en lugar de la cruz. */
+.aviso.mal   { background: #FFF1C7; color: #5A3B00; --aviso-dibujo: var(--otra-vez); }
 /* «Era ésta»: el dato, en azul, sin ser ni premio ni reto */
 .aviso.dato  { background: var(--seleccion); color: var(--tinta); --aviso-dibujo: var(--ojo); }
 /* La pista es ayuda, no reto: crema con letra oscura, para leerla con

@@ -1656,7 +1656,7 @@
       ? 'Pasá el nivel ' + (nivel.numero - 1) + ' para abrir éste.'
       : nivel.test
         ? 'Una sola oportunidad por pregunta y sin pistas. Se pasa con 7 de cada 10.'
-        : 'Tres intentos por pregunta, con pistas si te equivocás.';
+        : 'Tres intentos por pregunta, y una ayudita si hace falta.';
 
     var jugar = $('btn-hoja-jugar');
     jugar.hidden = !abierto;
@@ -1803,10 +1803,12 @@
     var bien = r.aciertos + ' de ' + r.total + (r.total === 1 ? ' correcta.' : ' correctas.');
     if (!u.paso) {
       // «¡Casi!» sólo si estuvo cerca: con 1 de 10 no es casi, y un chico se da cuenta
-      titulo = r.total && r.aciertos / r.total >= 0.5 ? '¡Casi!' : '¡A practicar un poco más!';
+      var cerca = r.total && r.aciertos / r.total >= 0.5;
+      titulo = cerca ? '¡Casi!' : '¡Buen intento!';
       texto = bien + (nivel.test
-        ? ' El desafío se pasa con ' + Math.ceil(r.total * 0.7) + '. Repasá lo de abajo y probá de nuevo.'
-        : ' Te faltó un poquito: probá otra vez, que las pistas te ayudan.');
+        ? ' El desafío se pasa con ' + Math.ceil(r.total * 0.7) + '. Repasá lo de abajo y volvé a intentarlo: ¡vos podés!'
+        : cerca ? ' Te faltó muy poquito: probá otra vez, que ya casi lo tenés.'
+        : ' Jugando se aprende: probá otra vez, que las pistas te ayudan.');
     } else if (u.termino) {
       titulo = '¡Terminaste ' + u.juego.nombre + '!';
       texto = bien + ' Pasaste los ' + nivelesDelMapa(u.juego).length + ' niveles.';
@@ -1838,7 +1840,7 @@
     var lista = $('nivel-fin-lista');
     Util.vaciar(lista);
     $('nivel-fin-repaso').hidden = !r.errores.length;
-    r.errores.forEach(function (item) { lista.appendChild(itemRepaso(u.materia.modulo.repaso(item))); });
+    pintarTarjetasRepaso(lista, r.errores, function () { return u.materia; });
 
     pintarPremio($('nivel-fin-monedas'), u.premio);
     var meta = $('nivel-fin-meta');
@@ -2577,14 +2579,17 @@
   }
 
   function tituloSegun(estrellas) {
-    return ['Seguí practicando', '¡Bien!', '¡Muy bien!', '¡Excelente!'][estrellas];
+    return ['¡Buen intento!', '¡Bien!', '¡Muy bien!', '¡Excelente!'][estrellas];
   }
 
   /* Lo que se le dice al terminar habla de qué salió y qué falta, no de
      puntos. Lo que falló ya quedó anotado para el repaso de los próximos
      días, y se lo cuenta: el error tiene un lugar a donde ir. */
   function comentario(r, estrellas) {
-    var n = r.errores.length;
+    // las mismas que muestra la lista de abajo: una pregunta repetida cuenta una vez
+    var distintas = {};
+    r.errores.forEach(function (item, i) { distintas[item && item.id !== undefined ? item.id : 'i' + i] = true; });
+    var n = Object.keys(distintas).length;
     if (!n) return 'Todas bien. Ya podés probar el nivel siguiente.';
     if (n === 1) return 'Te costó una: la tenés abajo, y va a volver a salir en el repaso de mañana.';
     return 'Te costaron ' + n + ': las tenés abajo, y van a volver a salir en el repaso de los próximos días.';
@@ -2600,9 +2605,22 @@
     var lista = $('lista-repaso');
     Util.vaciar(lista);
     caja.hidden = errores.length === 0;
+    pintarTarjetasRepaso(lista, errores, function (item) { return materia || materiaPorId(item.__materia); });
+  }
+
+  /* Las tarjetas de «para repasar», sin repetir: una pregunta que salió
+     dos veces en la ronda y se erró las dos se muestra una sola vez. Ver
+     el mismo error dos veces pesa el doble y no enseña nada nuevo. */
+  function pintarTarjetasRepaso(lista, errores, materiaDe) {
+    var vistas = {};
     errores.forEach(function (item) {
-      var m = materia || materiaPorId(item.__materia);
-      if (m) lista.appendChild(itemRepaso(m.modulo.repaso(item)));
+      var m = materiaDe(item);
+      if (!m) return;
+      var datos = m.modulo.repaso(item);
+      var clave = (datos.nombre || '') + '|' + (datos.dato || '');
+      if (vistas[clave]) return;
+      vistas[clave] = true;
+      lista.appendChild(itemRepaso(datos));
     });
   }
 
@@ -2752,7 +2770,7 @@
     $('titulo-fin').textContent = r.aciertos === r.total ? '¡Te las sacaste todas!' : 'Repaso terminado';
     $('subtitulo-fin').textContent = r.aciertos
       ? 'Sacaste ' + Util.plural(r.aciertos, 'cosa', 'cosas') + ' de tu lista de repaso.'
-      : 'No salió ninguna esta vez. Quedan para el próximo repaso.';
+      : 'Éstas todavía cuestan, y está bien: vuelven en el próximo repaso para seguir practicándolas.';
     $('stat-puntos').textContent = r.puntos;
     $('stat-aciertos').textContent = r.aciertos + '/' + r.total;
     $('stat-precision').textContent = r.precision + '%';
@@ -2944,7 +2962,7 @@
 
     $('nota-grande').textContent = nota;
     $('nota-grande').className = 'nota-grande ' + (nota >= 6 ? 'aprobado' : 'desaprobado');
-    $('titulo-nota').textContent = nota >= 6 ? '¡Aprobaste!' : 'No alcanzó';
+    $('titulo-nota').textContent = nota >= 6 ? '¡Aprobaste!' : nota >= 4 ? '¡Casi!' : '¡Buen intento!';
     $('subtitulo-nota').textContent = Examen.comentario(nota);
 
     var stats = $('nota-stats');
@@ -2966,9 +2984,7 @@
     var lista = $('lista-repaso-examen');
     Util.vaciar(lista);
     caja.hidden = r.errores.length === 0;
-    r.errores.forEach(function (item) {
-      lista.appendChild(itemRepaso(materiaPorId(item.__materia).modulo.repaso(item)));
-    });
+    pintarTarjetasRepaso(lista, r.errores, function (item) { return materiaPorId(item.__materia); });
 
     Sonido.tocar(nota >= 6 ? 'record' : 'fin');
     irA('#/nota');

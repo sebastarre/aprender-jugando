@@ -251,7 +251,8 @@ window.Tablero = (function () {
         Opciones.marcar(respuesta, 'elegida');
         Opciones.bloquear();
       },
-      textoFallo: textos.fallo || function () { return 'No es esa.'; },
+      // sin un texto propio, el motor dice algo amable («¡Buen intento!»)
+      textoFallo: textos.fallo || null,
       // la ayuda de cada intento fallado; sin pista, el aviso de siempre
       pista: textos.pista || null,
       textoRevelado: textos.revelado || function (it) {

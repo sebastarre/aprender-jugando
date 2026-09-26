@@ -179,14 +179,16 @@ window.Geografia = (function () {
       mapa.marcar(idClickeado, 'fallo');
       setTimeout(function () { if (mapa) mapa.desmarcar(idClickeado, 'fallo'); }, MARCA_FALLO);
     },
+    // qué país tocó, que también es aprender; si tocó el mar, lo amable lo dice el motor
     textoFallo: function (pais, idClickeado) {
       var nombre = nombreDe(idClickeado);
-      var texto = (nombre && nombre !== pais.nombre) ? 'Ese es ' + nombre + '.' : '¡Casi!';
+      var partes = [];
+      if (nombre && nombre !== pais.nombre) partes.push('Ese es ' + nombre + '.');
       if (pais.mini && !pistaDada) {
         pistaDada = true;
-        texto += ' Es muy chiquito: buscá el puntito 🔍 ·';
+        partes.push('Es muy chiquito: buscá el puntito 🔍.');
       }
-      return texto;
+      return partes.join(' ');
     },
     alRevelar: function (pais) {
       if (!mapa) return;
@@ -304,7 +306,6 @@ window.Geografia = (function () {
     visual: function (it) {
       return '<div class="visual-emoji" role="img" aria-label="' + it.r + '">' + it.emoji + '</div>';
     },
-    textoFallo: function () { return 'Ese no es.'; },
     textoRevelado: function (it) { return 'Es ' + it.r + '.'; },
     repaso: function (it) { return { simbolo: it.emoji, nombre: it.r, dato: 'Un lugar de la Tierra' }; }
   });
@@ -351,7 +352,7 @@ window.Geografia = (function () {
     visual: function (it) {
       return '<div class="visual-emoji" role="img" aria-label="' + it.que + '">' + it.emoji + '</div>';
     },
-    textoFallo: function (it, r) { return 'Ahí no: ' + it.que + ' no se ve ' + r + '.'; },
+    textoFallo: function (it, r) { return it.que.charAt(0).toUpperCase() + it.que.slice(1) + ' no se ve ' + r + '.'; },
     textoRevelado: function (it) { return it.que.charAt(0).toUpperCase() + it.que.slice(1) + ' se ve ' + it.r + '.'; },
     repaso: function (it) { return { simbolo: it.emoji, nombre: it.que, dato: 'Se ve ' + it.r }; }
   });
@@ -536,7 +537,7 @@ window.Geografia = (function () {
       ganchos: function () {
         return con(ganchosMapa, {
           textoRevelado: function (pais) {
-            return 'Era ' + pais.nombre + ': ahí está ' + pais.capital;
+            return 'Era ' + pais.nombre + ': ahí está ' + pais.capital + '.';
           }
         });
       }

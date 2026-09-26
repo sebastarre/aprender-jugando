@@ -559,8 +559,46 @@ matemática salen de los números de cada cuenta y no están escritas a mano. En
 el examen no hay pistas: ahí se mide.
 
 Un juego agrega pistas con `pista: function (item, intento)` en sus ganchos
-(`Tablero.ganchos`) o en su banco (`Tablero.banco`). Sin pista, el aviso de
-fallo es el de siempre.
+(`Tablero.ganchos`) o en su banco (`Tablero.banco`). Sin pista, el cartel dice
+algo amable y una invitación a probar otra vez (ver «Cuando se equivoca»).
+
+## Cuando se equivoca
+
+Equivocarse es parte de aprender, y la app lo trata así. Antes, un error era
+una banda roja con una cruz: «No son 5. Te quedan 2 intentos». Arrancaba con
+«No», contaba para atrás como una amenaza y, para el que todavía no lee, era
+mudo. Ahora:
+
+- **El botón elegido** se marca en rojo suave con su cruz y la mascota duda:
+  con eso alcanza para saber que no era ésa.
+- **El cartel no reta, anima.** Es crema, como las pistas, con una flecha de
+  «otra vez» en lugar de la cruz. Dice primero algo amable y verdadero («¡Buen
+  intento!», «Todavía no.»; «¡Casi!» sólo cuando de verdad estuvo cerca), si
+  se puede algo que enseñe, y al final una invitación: «¡Probá otra vez!»,
+  «¡Dale, que vos podés!». Nunca «mal» ni «te queda 1 intento»: los corazones
+  ya lo muestran.
+- **Lo que eligió también enseña.** Cada juego dice qué es: «El gato hace
+  «¡Miau!»», «Cat es el gato», «En el mar viven el delfín y el pulpo»,
+  «Probá: 6 × 7 da 42, y buscamos 56». O hace una pregunta para pensar: «Un pez
+  respira con branquias: ¿el delfín también?», «Pensá: ¿para qué sirve la
+  nariz?».
+- **Si le sale después de errar**, se festeja eso: «¡Bien! Lo pensaste otra vez
+  y te salió», «¡Eso! No te rendiste, y te salió».
+- **Al mostrar la que era**, cierra con lo que ganó: «¡Ahora ya lo sabés!», «La
+  próxima te sale», «Así se aprende». Si la explicación es larga queda más
+  tiempo, y si la voz la está leyendo, se la espera antes de pasar.
+- **De 4 a 7, la voz lo dice**, como lo diría un grande al lado.
+- **Los finales tampoco retan:** «¡Buen intento!» en vez de «¡A practicar un
+  poco más!» o «No alcanzó», «Para repasar» en vez de «Lo que erraste», y
+  siempre con qué hacer ahora. La lista de repaso no repite una pregunta que
+  se erró dos veces.
+
+En las lecciones pasa lo mismo: «Todavía no. Mirá otra vez con calma y probá
+de nuevo», y en la predicción «¡Bien que lo pensaste! Era…».
+
+Los textos generales están en `js/nucleo/motor.js` (`ANIMO`, `OTRA_VEZ`,
+`UNA_MAS`, `CONSUELO`) y los de cada juego en su `textoFallo`. Un juego que no
+dice nada propio recibe los generales.
 
 ## Modo examen
 

@@ -45,7 +45,6 @@ window.Ciencias = (function () {
       items: filas.map(function (f) { return { id: f[0], p: f[1], r: f[2], m: f[3] }; }),
       forma: 'frase',
       consigna: function (it) { return it.p; },
-      textoFallo: function () { return 'No es esa.'; },
       textoRevelado: function (it) { return 'Era «' + it.r + '».'; },
       repaso: function (it) { return { simbolo: def.simbolo, nombre: T.plano(it.p), dato: it.r }; }
     }, def));
@@ -71,8 +70,8 @@ window.Ciencias = (function () {
     ['lobo', '🐺', 'el lobo', '¡Auuuu!'],
     ['pajaro', '🐦', 'el pajarito', '¡Pío, pío!']
   ];
-  var NOMBRE_DE = {};
-  SONIDOS.forEach(function (s) { NOMBRE_DE[s[1]] = s[2]; });
+  var NOMBRE_DE = {}, RUIDO_DE = {};
+  SONIDOS.forEach(function (s) { NOMBRE_DE[s[1]] = s[2]; RUIDO_DE[s[1]] = s[3]; });
 
   function mayuscula(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
 
@@ -93,7 +92,10 @@ window.Ciencias = (function () {
     forma: 'emoji',
     etiqueta: function (v) { return NOMBRE_DE[v] || v; },
     consigna: function (it) { return '¿Quién hace <b>«' + it.sonido + '»</b>?'; },
-    textoFallo: function (it, r) { return mayuscula(NOMBRE_DE[r] || 'Ése') + ' no hace así.'; },
+    // lo que hace el que eligió: se equivocó, pero aprendió otro ruido
+    textoFallo: function (it, r) {
+      return NOMBRE_DE[r] ? mayuscula(NOMBRE_DE[r]) + ' hace «' + RUIDO_DE[r] + '».' : '';
+    },
     textoRevelado: function (it) { return mayuscula(it.quien) + ' hace «' + it.sonido + '».'; },
     repaso: function (it) { return { simbolo: it.r, nombre: mayuscula(it.quien), dato: 'Hace «' + it.sonido + '»' }; }
   });
@@ -137,7 +139,11 @@ window.Ciencias = (function () {
     etiqueta: function (v) { return PARTE[v] || v; },
     excluir: function (it) { return LA_BOCA.indexOf(it.r) >= 0 ? LA_BOCA : []; },
     consigna: function (it) { return it.p; },
-    textoFallo: function (it, r) { return 'No, ' + (PARTE[r] || 'eso') + ' no.'; },
+    textoFallo: function (it, r) {
+      var parte = PARTE[r];
+      if (!parte) return '';
+      return 'Pensá: ¿para qué ' + (/^(los|las) /.test(parte) ? 'sirven ' : 'sirve ') + parte + '?';
+    },
     textoRevelado: function (it) { return '¡' + mayuscula(PARTE[it.r]) + '!'; },
     repaso: function (it) { return { simbolo: it.r, nombre: T.plano(it.p), dato: mayuscula(PARTE[it.r]) }; }
   });
@@ -182,7 +188,14 @@ window.Ciencias = (function () {
     forma: 'palabra',
     consigna: function (it) { return '¿Dónde vive <b>' + it.quien + '</b>?'; },
     visual: function (it) { return '<div class="visual-emoji" aria-hidden="true">' + it.emoji + '</div>'; },
-    textoFallo: function () { return 'Ahí no vive.'; },
+    textoFallo: function (it, r) {
+      var otros = HABITATS.filter(function (h) { return h[3] === r && h[2] !== it.quien; })
+        .map(function (h) { return h[2]; });
+      if (!otros.length) return '';
+      otros = Util.mezclar(otros).slice(0, 2);
+      return mayuscula(r.replace(/^\S+ /, '').toLowerCase()) + (otros.length > 1 ? ' viven ' : ' vive ') +
+             otros.join(' y ') + '.';
+    },
     textoRevelado: function (it) { return mayuscula(it.quien) + ' vive ' + it.r.replace(/^\S+ /, '').toLowerCase() + '.'; },
     repaso: function (it) { return { simbolo: it.emoji, nombre: mayuscula(it.quien), dato: 'Vive ' + it.r.replace(/^\S+ /, '').toLowerCase() }; }
   });
@@ -232,7 +245,7 @@ window.Ciencias = (function () {
     },
     // «es un ser vivo» y no «está vivo»: «la piedra no está vivo» no concuerda
     textoFallo: function (it, r) {
-      return mayuscula(QUE_ES[r]) + (it.vivo ? ' no es un ser vivo.' : ' sí es un ser vivo.');
+      return mayuscula(QUE_ES[r]) + (it.vivo ? ' no es un ser vivo: no nace ni crece.' : ' sí es un ser vivo: nace y crece.');
     },
     textoRevelado: function (it) {
       return it.vivo
@@ -314,7 +327,7 @@ window.Ciencias = (function () {
     mostrar: conPista(PISTAS_DIETA),
     consigna: function (it) { return '¿Qué es <b>' + it.quien + '</b>?'; },
     visual: function (it) { return '<div class="visual-emoji" aria-hidden="true">' + it.emoji + '</div>'; },
-    textoFallo: function () { return 'No, pensá qué come.'; },
+    textoFallo: function (it) { return 'Pensá qué come ' + it.quien + '.'; },
     /* Dicho al revés para no tener que concordar: «la vaca es herbívora»
        pero «el león es carnívoro» y «el águila es carnívora», y eso
        habría que anotarlo animal por animal. */
@@ -370,7 +383,10 @@ window.Ciencias = (function () {
     mostrar: conPista(PISTAS_CLASE),
     consigna: function (it) { return '¿Qué es <b>' + it.quien + '</b>?'; },
     visual: function (it) { return '<div class="visual-emoji" aria-hidden="true">' + it.emoji + '</div>'; },
-    textoFallo: function (it, r) { return 'No es un ' + r + '.'; },
+    // «Un pez respira con branquias: ¿el delfín también?»
+    textoFallo: function (it, r) {
+      return PISTAS_CLASE[r] ? 'Un ' + r + ' ' + PISTAS_CLASE[r] + ': ¿' + it.quien + ' también?' : '';
+    },
     textoRevelado: function (it) {
       // «un ave», como «un águila»: la a del principio lleva la fuerza
       return mayuscula(it.quien) + ' es un ' + it.r + ': ' + PISTAS_CLASE[it.r] + '.';

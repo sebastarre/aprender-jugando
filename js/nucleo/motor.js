@@ -39,11 +39,34 @@ window.Motor = (function () {
     temporizadores = [];
   }
 
+  /* ---------------------- lo que se dice al errar ----------------------
+
+     Equivocarse es parte de aprender, y el cartel lo tiene que decir así.
+     Nunca «mal», ni una cuenta regresiva de intentos («te queda 1»: los
+     corazones ya lo muestran, y dicho suena a amenaza). Primero algo amable
+     y verdadero —«¡Casi!» sólo lo dice cada juego cuando de verdad estuvo
+     cerca—, si se puede algo que enseñe, y al final una invitación a
+     probar otra vez. Van variando, como cuando lo dice una persona. */
+  var ANIMO = ['¡Buen intento!', 'Todavía no.', 'Mmm, esa no era.'];
+  var OTRA_VEZ = ['¡Probá otra vez!', '¡Otra vez, sin apuro!', '¡Dale, que vos podés!'];
+  var UNA_MAS = ['¡Una vez más, vos podés!', '¡Una más, con calma!', '¡Dale, que ya casi!'];
+  // si el juego ya invita a hacer algo («Contá…», «Pensá…»), no hace falta otra invitación
+  var YA_INVITA = /(?:^|[\s¿¡])(?:Contá|Tocá|Decí|Pensá|Mirá|Leé|Escuchá|Probá|Fijate)(?=[\s:,.])/;
+  // cuando al final se muestra la que era: lo que se aprendió, no lo que se perdió
+  var CONSUELO = ['¡Ahora ya lo sabés!', 'La próxima te sale.', 'Así se aprende.'];
+
   /* ---------------------- cartel de mensajes ---------------------- */
   function aviso(texto, tipo) {
     var el = Util.$('aviso');
-    // los textos de algunos juegos marcan palabras en inglés con <span lang>: acá va sólo el texto
-    el.textContent = String(texto).replace(/<[^>]*>/g, '');
+    /* Con sus marcas: <b> y las palabras en inglés con <span lang>, así la
+       voz las lee en inglés. El texto es de los juegos, no del usuario;
+       por las dudas, cualquier otra etiqueta se saca. Va todo en un solo
+       renglón de texto: el cartel es flex, y suelto cada <b> sería un
+       pedazo aparte. */
+    Util.vaciar(el);
+    var renglon = Util.crear('span', 'aviso-texto');
+    renglon.innerHTML = String(texto).replace(/<(?!\/?(?:b|span)\b)[^>]*>/g, '');
+    el.appendChild(renglon);
     el.className = 'aviso ' + (tipo || '');
     el.style.animation = 'none';
     void el.offsetWidth;                // reinicia la animación de entrada
@@ -216,12 +239,13 @@ window.Motor = (function () {
     luego(function () { caja.classList.remove('sube'); }, 400);
 
     /* El acierto dice qué pasó, no cuántos puntos dio: los puntos
-       compiten con el contenido en vez de reforzarlo. Si salió en un
-       segundo o tercer intento, se lo dice: es feedback, no un premio.
+       compiten con el contenido en vez de reforzarlo. Si salió después de
+       errar, se festeja eso: que lo pensó otra vez y no se rindió.
        Y si con éste llegó a una racha redonda, se festeja la racha. */
     aviso(hito ? '¡' + Util.plural(e.racha, 'seguida', 'seguidas').replace(/^\d+/, numeroEnLetras(e.racha)) + '!'
       : e.intento === 0 ? festejo()
-      : '¡Bien! Te salió al ' + (e.intento === 1 ? 'segundo' : 'tercer') + ' intento.', 'bien');
+      : e.intento === 1 ? '¡Bien! Lo pensaste otra vez y te salió.'
+      : '¡Eso! No te rendiste, y te salió.', 'bien');
     luego(siguiente, hito ? ESPERA_ACIERTO + 350 : ESPERA_ACIERTO);
   }
 
@@ -258,8 +282,8 @@ window.Motor = (function () {
       return;
     }
 
-    var cola = 'Te ' + (quedan === 1 ? 'queda 1 intento' : 'quedan ' + quedan + ' intentos');
-    var propio = e.cfg.textoFallo ? e.cfg.textoFallo(item, respuesta, quedan) : '';
+    // lo que dice el juego de esa respuesta («El gato hace «¡Miau!»»), o algo amable
+    var propio = (e.cfg.textoFallo && e.cfg.textoFallo(item, respuesta, quedan)) || Util.alAzar(ANIMO);
 
     /* Andamiaje: cada intento que falla trae más ayuda que el anterior.
        Primero una pista para pensar («empezá por las unidades»), después
@@ -267,9 +291,10 @@ window.Motor = (function () {
        explicación. Sin esto, los intentos 2 y 3 eran sólo otra chance de
        tocar un botón, y con cuatro opciones se acertaba por descarte. */
     var pista = e.cfg.pista ? e.cfg.pista(item, e.intento, respuesta) : '';
-    // la lamparita la dibuja el cartel (.aviso.pista), no va escrita
-    if (pista) aviso((propio ? propio + ' ' : '') + pista, 'pista');
-    else aviso((propio ? propio + ' ' : '¡Casi! ') + cola, 'mal');
+    // el dibujito lo pone el cartel (la lamparita o la flecha de «otra vez»), no va escrito
+    if (pista) aviso(propio + ' ' + pista, 'pista');
+    else if (YA_INVITA.test(propio)) aviso(propio, 'mal');
+    else aviso(propio + ' ' + Util.alAzar(quedan === 1 ? UNA_MAS : OTRA_VEZ), 'mal');
 
     luego(function () { if (e) e.bloqueado = false; }, ESPERA_FALLO);
   }
@@ -279,8 +304,30 @@ window.Motor = (function () {
     e.errores.push(item);
     Sonido.tocar('revelar');
     if (e.cfg.alRevelar) e.cfg.alRevelar(item);
-    aviso(e.cfg.textoRevelado ? e.cfg.textoRevelado(item) : 'Era esta.', 'dato');
-    luego(siguiente, ESPERA_REVELAR);
+    var texto = e.cfg.textoRevelado ? e.cfg.textoRevelado(item) : 'Era esta.';
+    // un cierre amable, salvo que el juego ya traiga el suyo («¡Ahora ya sabés dónde queda!»)
+    var plano = String(texto).replace(/<[^>]*>/g, '').trim();
+    if (!/!$/.test(plano)) {
+      if (!/[.?…»)]$/.test(plano)) texto += '.';
+      texto += ' ' + Util.alAzar(CONSUELO);
+    }
+    aviso(texto, 'dato');
+    // una explicación larga necesita más tiempo para leerla
+    var largo = String(texto).replace(/<[^>]*>/g, '').length;
+    luego(pasarCuandoCalle, Math.min(4000, Math.max(ESPERA_REVELAR, largo * 45)));
+  }
+
+  /* Si la voz está leyendo la que era (de 4 a 7 se lee sola), se la
+     espera antes de pasar: la pregunta siguiente la cortaba justo en la
+     explicación, que es lo que había que aprender. Con un tope, por si
+     la voz se queda colgada. */
+  function pasarCuandoCalle() {
+    var hasta = Date.now() + 5000;
+    (function mirar() {
+      if (!e) return;
+      if (window.Voz && Voz.leyendo() && Date.now() < hasta) return luego(mirar, 200);
+      siguiente();
+    })();
   }
 
   function festejo() {
