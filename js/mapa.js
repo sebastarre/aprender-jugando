@@ -395,6 +395,10 @@ window.Mapa = (function () {
 
   return {
     crear: crear,
+    /* El dibujo solo, sin zoom ni arrastre: lo usan las lecciones de
+       geografía, que muestran un mapa quieto para tocar. Devuelve
+       { svg, alto, proy }. */
+    svgDe: construirSVG,
     zonas: listaZonas,
     paisesDeZona: paisesDeZona,
     ZONAS: ZONAS

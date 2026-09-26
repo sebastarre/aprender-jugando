@@ -191,12 +191,19 @@ window.Util = (function () {
     return new Promise(function (res) { setTimeout(res, ms); });
   }
 
+  /** Que una cuenta no se parta entre dos renglones: «12 − 7 = 5» va
+      entera, con espacios que no cortan alrededor de cada signo. */
+  function cuentasEnteras(texto) {
+    return String(texto).replace(/(\d)\s([+\u2212\u00d7\u00f7=])\s(?=\d)/g, '$1\u00a0$2\u00a0');
+  }
+
   return {
     mezclar: mezclar, muestra: muestra, muestraPesada: muestraPesada,
     alAzar: alAzar, unaDe: unaDe,
     limitar: limitar, $: $, crear: crear, vaciar: vaciar,
     oscurecer: oscurecer, aclarar: aclarar,
     contraste: contraste, cartel: cartel,
-    escapar: escapar, bandera: bandera, esperar: esperar, plural: plural
+    escapar: escapar, bandera: bandera, esperar: esperar, plural: plural,
+    cuentasEnteras: cuentasEnteras
   };
 })();

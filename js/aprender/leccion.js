@@ -1,6 +1,12 @@
 /* ============================================================
-   Visor de lecciones: muestra los pasos de a uno, con los puntitos
-   de progreso arriba y el botón para avanzar abajo.
+   Visor de lecciones: muestra los pasos de a uno, con la barra de
+   avance arriba y el botón para seguir abajo.
+
+   Cada paso lo cuenta la mascota, desde un globito, con frases cortas
+   (la voz las lee): una lección para chicos no puede ser un párrafo de
+   manual. Abajo del globo va lo que se mira o se toca —el dibujo o la
+   actividad—, y si hay, el truco y la práctica «¿Y vos?». Es la misma
+   forma que la pantalla de juego: la mascota pregunta, el chico hace.
 
    Una lección tiene tres partes:
      1. los pasos, que la voz va leyendo;
@@ -95,33 +101,31 @@ window.Leccion = (function () {
     Util.vaciar(caja);
 
     var tarjeta = Util.crear('div', 'paso-tarjeta');
-    tarjeta.appendChild(Util.crear('h2', 'paso-titulo', datos.titulo));
-
-    /* Lecciones activas: si el paso trae una predicción, primero se le
-       pregunta al chico qué le parece, y recién después se muestra la
-       explicación. Contestar antes de leer le da algo propio contra qué
+    /* Lecciones activas: si el paso trae una predicción, primero la
+       mascota le pregunta al chico qué le parece, y recién después
+       explica. Contestar antes de leer le da algo propio contra qué
        comparar lo que lee; tocar «Siguiente» no le da nada. */
-    if (datos.prediccion && !respondidas[paso]) {
-      pintarPrediccion(caja, tarjeta, datos.prediccion);
-      return;
-    }
-    if (datos.prediccion) tarjeta.appendChild(cartelDeRespuesta(respondidas[paso]));
+    var preguntando = datos.prediccion && !respondidas[paso];
+    var respuesta = datos.prediccion && respondidas[paso];
+    var gesto = datos.gesto ||
+      (preguntando ? 'piensa' : respuesta ? (respuesta.bien ? 'festejo' : 'hola') : paso === 0 ? 'hola' : 'normal');
+    tarjeta.appendChild(narrador(preguntando ? datos.prediccion.pregunta : datos.texto, gesto, respuesta));
 
-    /* Primero lo que se mira o se toca y después el texto: un chico mira
-       el dibujo antes que las letras, y la voz lee el texto igual. */
-    if (datos.visual) {
+    // lo que se mira o se toca, abajo del globo
+    if (datos.visual && !(preguntando && datos.prediccion.sinDibujo)) {
       var visual = Util.crear('div', 'paso-visual');
       visual.innerHTML = datos.visual();
       tarjeta.appendChild(visual);
     }
-    if (datos.interactivo) {
+    if (datos.interactivo && !preguntando) {
       // una función cuando usa dibujos de un juego, que se cargan después
       Actividades.montar(tarjeta, typeof datos.interactivo === 'function' ? datos.interactivo() : datos.interactivo);
     }
 
-    var texto = Util.crear('p', 'paso-texto');
-    texto.innerHTML = datos.texto;          // el contenido es nuestro, no del usuario
-    tarjeta.appendChild(texto);
+    if (preguntando) {
+      pintarPrediccion(caja, tarjeta, datos.prediccion);
+      return;
+    }
 
     if (datos.video) {
       var marco = Util.crear('div', 'paso-video');
@@ -139,7 +143,7 @@ window.Leccion = (function () {
     if (datos.truco) {
       var truco = Util.crear('div', 'paso-truco');
       truco.appendChild(Iconos.crear('lamparita', 'truco-icono'));
-      truco.appendChild(Util.crear('span', null, datos.truco));
+      truco.appendChild(Util.crear('span', null, Util.cuentasEnteras(datos.truco)));
       tarjeta.appendChild(truco);
     }
 
@@ -167,7 +171,7 @@ window.Leccion = (function () {
     var bloque = Util.crear('div', 'paso-practica');
     bloque.appendChild(Util.crear('p', 'practica-titulo', '¿Y vos?'));
     var pregunta = Util.crear('p', 'paso-texto practica-pregunta');
-    pregunta.innerHTML = pr.pregunta;
+    pregunta.innerHTML = Util.cuentasEnteras(pr.pregunta);
     bloque.appendChild(pregunta);
     var errores = 0;
     var aquiPaso = paso;
@@ -176,6 +180,8 @@ window.Leccion = (function () {
       if (practicadas[aquiPaso]) return;
       var bien = i === pr.correcta;
       if (cartel) cartel.remove();
+      var mascota = tarjeta.querySelector('.narrador-mascota');
+      if (mascota) Mascota.gesto(mascota, bien ? 'festejo' : 'animo');
       if (bien) {
         practicadas[aquiPaso] = { bien: true, texto: '¡Eso! ' + (pr.explicacion || '') };
         Sonido.tocar('acierto');
@@ -230,8 +236,26 @@ window.Leccion = (function () {
     Util.vaciar(caja);
 
     var tarjeta = Util.crear('div', 'paso-tarjeta paso-final paso-ejercicio');
-    tarjeta.appendChild(Mascota.crear('hola', 'final-mascota'));
-    tarjeta.appendChild(Util.crear('h2', 'paso-titulo', '¡Ahora te toca a vos!'));
+    tarjeta.appendChild(Mascota.crear(leccion.aprendiste ? 'festejo' : 'hola', 'final-mascota'));
+    /* Antes del ejercicio, lo que aprendió, en dos o tres frases: cerrar
+       con un resumen ayuda a que quede, y es lo que un grande le
+       preguntaría («¿qué aprendiste?»). */
+    if (leccion.aprendiste) {
+      tarjeta.appendChild(Util.crear('h2', 'paso-titulo', '¡Aprendiste algo nuevo!'));
+      var lista = Util.crear('ul', 'aprendiste');
+      leccion.aprendiste.forEach(function (idea) {
+        var item = Util.crear('li');
+        item.appendChild(Iconos.crear('tilde', 'aprendiste-tilde'));
+        var texto = Util.crear('span');
+        texto.innerHTML = Util.cuentasEnteras(idea);
+        item.appendChild(texto);
+        lista.appendChild(item);
+      });
+      tarjeta.appendChild(lista);
+      tarjeta.appendChild(Util.crear('h3', 'ejercicio-titulo', '¡Ahora te toca a vos!'));
+    } else {
+      tarjeta.appendChild(Util.crear('h2', 'paso-titulo', '¡Ahora te toca a vos!'));
+    }
     tarjeta.appendChild(Util.crear('p', 'paso-texto', ej.consigna));
     tarjeta.appendChild(Util.crear('p', 'ejercicio-regla',
       Util.plural(ej.cantidad || 5, 'pregunta') + ' · Para completar la lección tenés que acertar ' +
@@ -273,7 +297,7 @@ window.Leccion = (function () {
 
   function cartelDeRespuesta(r) {
     var p = Util.crear('p', 'leccion-respuesta ' + (r.bien ? 'bien' : 'mal'));
-    p.innerHTML = r.texto;                // el contenido es nuestro, no del usuario
+    p.innerHTML = Util.cuentasEnteras(r.texto);   // el contenido es nuestro, no del usuario
     return p;
   }
 
@@ -285,9 +309,23 @@ window.Leccion = (function () {
     el.scrollIntoView({ block: 'nearest', behavior: quieto ? 'auto' : 'smooth' });
   }
 
-  /** Un paso con predicción, antes de contestarla. */
+  /** La mascota contando: ella a la izquierda y lo que dice en un globito.
+      Después de una predicción, primero reacciona a lo que contestó el
+      chico y recién después sigue: en ese orden se lee y lo dice la voz. */
+  function narrador(html, gesto, respuesta) {
+    var fila = Util.crear('div', 'narrador');
+    fila.appendChild(Mascota.crear(gesto, 'narrador-mascota'));
+    var globo = Util.crear('div', 'narrador-globo');
+    if (respuesta) globo.appendChild(cartelDeRespuesta(respuesta));
+    var texto = Util.crear('p', 'paso-texto');
+    texto.innerHTML = Util.cuentasEnteras(html);  // el contenido es nuestro, no del usuario
+    globo.appendChild(texto);
+    fila.appendChild(globo);
+    return fila;
+  }
+
+  /** Un paso con predicción, antes de contestarla: la pregunta ya está en el globo. */
   function pintarPrediccion(caja, tarjeta, pred) {
-    tarjeta.appendChild(Util.crear('p', 'paso-texto prediccion-pregunta', pred.pregunta));
     tarjeta.appendChild(opcionesDe(pred.opciones, function (i) {
       var bien = i === pred.correcta;
       Sonido.tocar(bien ? 'acierto' : 'clic');
@@ -439,7 +477,10 @@ window.Leccion = (function () {
       if (p.prediccion && !respondidas[paso]) return leerTarjeta();
       var dicho = p.prediccion ? [respondidas[paso].texto] : [];
       var practica = p.practica && !practicadas[paso] ? ['¿Y vos? ' + p.practica.pregunta] : [];
-      return [p.titulo + '.'].concat(dicho, [p.texto, p.truco ? 'Un truco: ' + p.truco : null], practica);
+      // la consigna de «tocar la que es»: sin ella, el que no lee no sabe qué buscar
+      var consigna = Util.$('leccion-cuerpo').querySelector('.act-consigna');
+      return dicho.concat([p.texto, consigna && consigna.textContent ? consigna.innerHTML : null,
+                           p.truco ? 'Un truco: ' + p.truco : null], practica);
     }
     return leerTarjeta();
   }
@@ -448,7 +489,7 @@ window.Leccion = (function () {
   function leerTarjeta() {
     var partes = [];
     Util.$('leccion-cuerpo')
-      .querySelectorAll('.paso-titulo, .paso-texto, .resultado-cifra, .ejercicio-regla, .leccion-opcion')
+      .querySelectorAll('.paso-titulo, .aprendiste li, .ejercicio-titulo, .paso-texto, .resultado-cifra, .ejercicio-regla, .leccion-opcion')
       .forEach(function (e) { partes.push(e.textContent + '.'); });
     return partes;
   }

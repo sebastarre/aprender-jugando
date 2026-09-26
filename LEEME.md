@@ -10,7 +10,7 @@
 
 App para chicos con dos mitades que se apoyan una en la otra:
 
-- **Aprender** — cursitos cortos que explican algo con dibujos y ejemplos.
+- **Aprender** — cursitos cortos que cuenta la mascota, con dibujos y cosas para tocar.
 - **Jugar** — juegos para practicar eso mismo.
 
 Cada lección termina ofreciendo el juego donde usar lo que se acaba de leer, y
@@ -378,6 +378,12 @@ del paso; las actividades están en `js/aprender/actividades.js`):
 | Filas y columnas | Puntitos con «Filas − 3 +» y «Columnas − 4 +», y la cuenta al lado | Qué es multiplicar |
 | Sílabas | Palabras que se escuchan de a golpes, iluminando cada sílaba | Qué es una sílaba, Armar palabras |
 | La torta | Porciones que se pintan tocándolas: 3/4, «es la mitad» | Las fracciones |
+| Ordenar | Tocar una cosa y después el grupo donde va; si no va ahí, dice por qué | Qué es un ser vivo, La ciudad, el campo y el mar, am/is/are |
+| Tocar la que es | Una fila de palabras, letras o sílabas y hay que tocar la que se pide, en varias rondas | Las vocales, Clases de palabras, Dónde va la tilde |
+| Repartir | Una para cada plato, por turno, hasta que no queda ninguna: 6 ÷ 2 | Dividir es repartir |
+| Los bloques | Barras de diez y cubitos: diez cubitos se cambian por una barra (la que «te llevás») y una barra se desarma para prestar | Sumar llevándose una, Restar pidiendo prestado |
+| El agua | Enfriar y calentar la misma agua: hielo, agua y vapor, con el termómetro y el nombre de cada cambio | Sólido, líquido y gaseoso |
+| El mapa | Un mapa quieto para tocar: los continentes, los países de alrededor según el rumbo, la capital de cada país | Qué es un continente, Cómo se lee un mapa, Qué es una capital |
 
 Nada de esto se corrige: es para probar. Lo que se corrige es la práctica
 **«¿Y vos?»** del final de algunos pasos: una pregunta sobre lo que se acaba de
@@ -385,18 +391,33 @@ ver, que hay que contestar bien para seguir. Si sale mal dice por qué y se
 prueba de nuevo; al segundo error muestra cuál era, para no trabarse. Campo
 `practica` del paso: `{ pregunta, opciones, correcta, explicacion, pista }`.
 
-En cada paso va primero el dibujo o la actividad y después el texto: un chico
-mira antes de leer, y la voz lee el texto igual. Arriba, una barra que se
+**La mascota cuenta la lección.** Cada paso lo dice la mascota desde un
+globito, con una o dos frases cortas, como le hablaría un grande a un chico
+(la voz las lee), y abajo va lo que se mira o se toca. Antes cada paso tenía un
+título arriba y un párrafo de manual; los títulos, además, delataban la
+respuesta de la pregunta que venía abajo. La mascota cambia de cara según lo
+que pasa: saluda al empezar, piensa cuando pregunta, festeja cuando se acierta
+y da ánimo cuando no. Después de una predicción primero reacciona a lo que
+contestó el chico y recién después sigue contando. Arriba, una barra que se
 llena como la de los juegos dice cuánto falta.
 
+**Lo que aprendió.** Antes del ejercicio, la lección cierra con «¡Aprendiste
+algo nuevo!» y dos o tres frases con lo importante (campo `aprendiste` de la
+lección). Es lo que un grande le preguntaría, y repasarlo al final ayuda a que
+quede.
+
+Cómo se escribe una lección nueva está al principio de
+`js/aprender/contenido.js`: arrancar con algo para mirar o tocar y no con una
+definición, frases de veinte palabras o menos, y pistas que enseñan y animan.
+
 **Lecciones para los más chicos.** Había 17 lecciones y sólo dos eran para
-menos de 6 años. Ahora son 35: de las 18 nuevas, 15 son de 4 a 7 (contar de a
+menos de 6 años. Ahora son 37: de las 20 nuevas, 17 son de 4 a 7 (contar de a
 uno, las figuras, sumar es juntar, restar es sacar, dónde hay más, las
 vocales, palabras que riman, armar palabras, los contrarios, los ruidos de los
-animales, los cinco sentidos, qué es un ser vivo, las partes de la planta, y
-los animales y las frutas en inglés) y tres para los más grandes (dividir es
-repartir, las fracciones y qué comen los animales). Son cortas, con poco texto
-y mucho para tocar. El «¿No sabés cómo se hace?» de cada juego lleva a la
+animales, los cinco sentidos, qué es un ser vivo, las partes de la planta, los
+lugares de la Tierra, la ciudad, el campo y el mar, y los animales y las frutas
+en inglés) y tres para los más grandes (dividir es repartir, las fracciones y
+qué comen los animales). Son cortas, con poco texto y mucho para tocar. El «¿No sabés cómo se hace?» de cada juego lleva a la
 lección de su edad: la de sumar juntando a los de 5, la de llevarse una a los
 de 7.
 
