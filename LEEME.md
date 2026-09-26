@@ -45,7 +45,14 @@ y, una vez instalada, **funciona sin internet**: la primera visita guarda los
 ## Publicar cambios
 
 La página vive en el repositorio `sebastarre/aprender-jugando`, rama `main`,
-servida por GitHub Pages. Para que los cambios lleguen al celular:
+servida por GitHub Pages. Antes de subir, conviene correr las pruebas (ver
+«Las pruebas», abajo):
+
+```bash
+node herramientas/probar.mjs
+```
+
+Para que los cambios lleguen al celular:
 
 ```bash
 node herramientas/generar-sw.js
@@ -59,6 +66,28 @@ El primer comando es importante: `sw.js` guarda la lista de archivos y una
 versión sacada del contenido. Si no se regenera, los celulares que ya tienen
 la app siguen usando la copia vieja. Con la versión nueva, la app se actualiza
 sola la próxima vez que se abre con internet.
+
+## Las pruebas
+
+`node herramientas/probar.mjs` prueba la app entera en unos tres minutos y
+medio, sin instalar nada: alcanza con Node 22 o más nuevo y Edge o Chrome
+(si el navegador está en otro lado, se le dice con la variable `NAVEGADOR`).
+Levanta un servidor propio para la carpeta, abre el navegador sin ventana
+con un perfil nuevo y lo maneja por el protocolo de depuración (CDP).
+
+| Prueba | Qué mira |
+|---|---|
+| `lecciones` | Cada paso de cada lección, equivocándose y acertando en cada pregunta; que ningún dibujo delate la respuesta de su predicción; que arranque el ejercicio de cada una. |
+| `juegos` | Todos los niveles (del camino y de la pantalla de opciones) de los 60 juegos, unas 14.000 preguntas: ninguna dos veces seguida ni más de dos veces por nivel, una sola respuesta correcta, ningún texto que diga «undefined» o «NaN», y que cada pregunta se pueda rearmar desde su clave (si no, el repaso la pierde). |
+| `trazos` | Que cada letra y cada número se pueda trazar entero, con un dedo lento y con uno rápido. |
+| `partidas` | Seis niveles jugados enteros tocando botones como un chico, equivocándose, hasta la pantalla del final. |
+
+En todas, además, que la página no tire ningún error. Se puede correr una
+sola: `node herramientas/probar.mjs juegos`. Si algo falla, dice qué y
+dónde, y termina con código 1. El perfil de prueba va sin voz (se prueba el
+recorrido: esperar a que la voz lea cada explicación haría que una partida
+tarde minutos), y el navegador no pasa por el service worker (si no, la app
+guardada contestaba antes que la página del perfil nuevo).
 
 ## Los juegos
 
@@ -1580,6 +1609,7 @@ js/
 assets/banderas/           Una imagen por país (ar.png, br.png, ...)
 herramientas/              Scripts para regenerar los datos (no hacen falta para jugar)
 herramientas/dibujos.html  Muestrario de todos los dibujos, para revisarlos
+herramientas/probar.mjs    Las pruebas de toda la app (ver «Las pruebas»)
 .claude/                   Servidor local opcional para desarrollo
 ```
 
