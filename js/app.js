@@ -2467,10 +2467,8 @@
     pintarPremio($('premio-monedas'), premio);
     pintarBarraSuperior();
 
-    // La mascota, con el disfraz que el chico tenga puesto. Ya no cambia
-    // de cara según el resultado: las ilustraciones son fijas, así que
-    // eso lo cuentan las estrellas y el texto de abajo.
-    Mascota.gesto($('mascota-fin'));
+    // La mascota pone la cara de cómo le fue: festeja, saluda o le da ánimo
+    Mascota.gesto($('mascota-fin'), estrellas >= 2 ? 'festejo' : estrellas === 1 ? 'hola' : 'animo');
 
     /* Las tres estrellas son la partida perfecta: ahí sí van papelitos.
        Con dos o menos no, porque un festejo que sale siempre deja de
@@ -2743,10 +2741,8 @@
     pintarPremio($('premio-monedas'), premio);
     pintarBarraSuperior();
 
-    // La mascota, con el disfraz que el chico tenga puesto. Ya no cambia
-    // de cara según el resultado: las ilustraciones son fijas, así que
-    // eso lo cuentan las estrellas y el texto de abajo.
-    Mascota.gesto($('mascota-fin'));
+    // La mascota pone la cara de cómo le fue: festeja, saluda o le da ánimo
+    Mascota.gesto($('mascota-fin'), estrellas >= 2 ? 'festejo' : estrellas === 1 ? 'hola' : 'animo');
 
     /* Las tres estrellas son la partida perfecta: ahí sí van papelitos.
        Con dos o menos no, porque un festejo que sale siempre deja de

@@ -141,8 +141,9 @@ window.Motor = (function () {
   }
 
   /* La pantalla reacciona: la mascota salta con un acierto y duda con un
-     error. El motor sólo avisa con una clase; lo que se ve lo pone el CSS. */
-  var reaccionEnCurso = null;
+     error. El motor avisa con una clase (el movimiento lo pone el CSS) y le
+     cambia la cara a la mascota del globo. */
+  var reaccionEnCurso = null, caraEnCurso = null;
   function reaccionar(clase) {
     var pantalla = Util.$('pantalla-juego');
     if (!pantalla) return;
@@ -151,6 +152,14 @@ window.Motor = (function () {
     pantalla.classList.add(clase);
     clearTimeout(reaccionEnCurso);
     reaccionEnCurso = setTimeout(function () { pantalla.classList.remove(clase); }, 900);
+    /* Y le cambia la cara un ratito: festeja el acierto y, si no salió,
+       levanta el puño para darle ánimo (nunca una cara triste). */
+    var mascota = pantalla.querySelector('.pregunta-mascota');
+    if (mascota && window.Mascota) {
+      Mascota.gesto(mascota, clase === 'reaccion-bien' ? 'festejo' : 'animo');
+      clearTimeout(caraEnCurso);
+      caraEnCurso = setTimeout(function () { Mascota.gesto(mascota, 'normal'); }, 1100);
+    }
   }
 
   /* La racha: cuántas seguidas bien al primer intento. Con tres o más la

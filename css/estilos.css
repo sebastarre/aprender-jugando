@@ -662,23 +662,24 @@ a { color: var(--primario-osc); text-underline-offset: .2em; text-decoration-thi
   border-radius: 50%;
   background: var(--marca-acento);
 }
+/* parada en el borde de abajo de la tarjeta: el dibujo deja un aire
+   chiquito debajo de los pies, que queda afuera */
 .seguir-bichito {
   position: absolute;
-  right: 8px;
-  bottom: -18px;
-  height: 196px;
+  right: -4px;
+  bottom: -8px;
+  height: 200px;
 }
 /* El dibujo de la materia, apoyado en el piso al lado de la mascota. */
 .seguir-materia {
   position: absolute;
-  left: -14px;
-  bottom: 10px;
+  left: -22px;
+  bottom: 4px;
   width: 74px;
   height: 74px;
   z-index: 1;
 }
 .registro-chico .seguir { min-height: 236px; }
-.registro-chico .seguir-bichito { height: 214px; }
 
 /* En la tableta y en la compu la tarjeta tiene 720px: la frase crece y
    la escena también, para que no quede un charco de color en el medio. */
@@ -693,7 +694,7 @@ a { color: var(--primario-osc); text-underline-offset: .2em; text-decoration-thi
   .seguir-que { font-size: clamp(2rem, 4.2vw, 2.7rem); }
   .seguir-sol { top: -52px; right: -40px; width: 230px; height: 230px; }
   .seguir-bichito,
-  .registro-chico .seguir-bichito { right: 26px; bottom: -22px; height: 258px; }
+  .registro-chico .seguir-bichito { right: 26px; bottom: -10px; height: 258px; }
   .seguir-materia { left: 6px; bottom: 16px; width: 96px; height: 96px; }
 }
 
@@ -5049,8 +5050,8 @@ body.en-bienvenida .pie { display: none; }
 /* ============================================================
    La mascota
 
-   Viene de js/nucleo/mascota.js como una imagen adentro de una caja: la
-   caja pone el alto y la imagen se acomoda.
+   Viene de js/nucleo/mascota.js como un dibujo SVG adentro de una caja:
+   la caja pone el alto y el dibujo se acomoda, con su proporción.
    ============================================================ */
 .mascota { display: block; line-height: 0; }
 .mascota-img {
@@ -5058,11 +5059,14 @@ body.en-bienvenida .pie { display: none; }
   width: auto;
   height: 100%;
   max-width: 100%;
+  aspect-ratio: 4 / 5;          /* la del dibujo, 200 × 250: sin esto el SVG no sabe su ancho */
   margin: 0 auto;
-  object-fit: contain;
-  -webkit-user-drag: none;
+  overflow: visible;
   user-select: none;
 }
+/* en la tarjeta del inicio la escena es angosta: la mascota se sale un
+   poco hacia la izquierda antes que achicarse */
+.seguir-bichito .mascota-img { max-width: none; }
 
 /* ---------------- El pie ---------------- */
 .pie {

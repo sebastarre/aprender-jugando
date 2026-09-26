@@ -56,9 +56,11 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
 <div class="arranque" id="arranque" aria-hidden="true">
   <div class="arranque-caja">
     <span class="arranque-insignia">
-      <!-- La mascota, que es la cara de la app. Antes era un globo
-           terráqueo, de cuando la app se llamaba «Aprender Jugando». -->
-      <img class="arranque-globo" src="assets/mascotas/gato-leon.webp" alt="" width="267" height="420">
+      <!-- La mascota, que es la cara de la app: el gato disfrazado de león,
+           saludando. Es un archivo aparte (lo escribe
+           herramientas/generar-iconos.js con Mascota.svg) porque la cortina
+           aparece antes de que carguen los scripts. -->
+      <img class="arranque-globo" src="assets/mascota.svg" alt="" width="200" height="250">
     </span>
     <p class="arranque-nombre">
       <span class="arranque-palabra"><i style="--l:0">B</i><i style="--l:1">i</i><i style="--l:2">c</i><i style="--l:3">h</i><i style="--l:4">i</i><i style="--l:5">t</i><i style="--l:6">o</i></span>
@@ -582,7 +584,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
          leer cuando se lo toca. -->
     <div class="pregunta" id="pregunta">
       <div class="pregunta-cabeza">
-        <div class="pregunta-mascota" data-mascota="hola" aria-hidden="true"></div>
+        <div class="pregunta-mascota" data-mascota="normal" aria-hidden="true"></div>
         <div class="pregunta-globo">
           <div class="pregunta-texto" id="pregunta-texto"></div>
           <button class="btn-escuchar" id="btn-escuchar" type="button" aria-label="Escuchar la pregunta" hidden>

@@ -171,7 +171,7 @@ Lo que no es: ni de bebés (nada de pasteles lavados en todo, ni letras con somb
 
 **Key Characteristics:**
 - Papel blanco, tinta azul marino y cinco primarios planos de juguete, sin degradados.
-- Dibujos propios de trazo marino grueso (js/nucleo/dibujos.js), sobre manchas de color con forma de témpera.
+- Dibujos propios de trazo marino grueso (js/nucleo/dibujos.js), sobre manchas de color con forma de témpera. La mascota está dibujada igual (js/nucleo/mascota.js).
 - Lo que se aprieta tiene un escalón abajo y se hunde; lo que no, es plano.
 - Dos registros por edad sobre el mismo sistema: más grande y con menos texto de 4 a 7.
 - Movimiento calmo: un solo momento de autor (el arranque) y respuesta a lo que hace el chico.
@@ -295,6 +295,9 @@ Los dibujos de las materias y de las puertas se apoyan sobre una mancha con form
 
 ### Navigation
 - **Style:** no hay barra de pestañas. El inicio es el fondo de todo: una barra con la carita del chico, sus cuentas (racha, estrellas y monedas, que es la única que se toca) y el candado de los grandes, a la derecha. Cada pantalla tiene su flecha de volver redonda, pegada arriba al scrollear.
+
+### La mascota
+Un gato o un perro con un disfraz de otro animal, dibujado en SVG con el trazo de tinta de 5 (en un lienzo de 200 × 250) y rellenos planos. Proporciones de cachorro: la capucha casi tan grande como el cuerpo, la cara grande asomando con un ribete un tono más oscuro que el traje, ojos grandes y bajos con dos brillos, cachetes rosa y un brillo blanco de juguete en la capucha. El animal y los disfraces tienen colores propios, que no siguen los temas de la tienda. Cinco gestos: normal, hola, festejo, piensa y ánimo; nunca una cara triste.
 
 ### La tarjeta del próximo paso
 El cielo pleno con la mascota parada a la derecha sobre un sol girasol, el dibujo de la materia a sus pies, y a la izquierda: un globito blanco con el saludo («¡Buenas tardes, Sebas!», lo dice la mascota), la frase grande («Seguí con «Contar»», con el nivel para los grandes) y un botón blanco con el triángulo de empezar.

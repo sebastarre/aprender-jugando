@@ -31,6 +31,7 @@
        ?compartir=1    la tarjeta de 1200×630 que se ve al compartir el link
        ?ancho=&alto=   la tarjeta en otro tamaño (Google Play pide 1024×500) -->
 <div id="lienzo"></div>
+<script src="../js/nucleo/mascota.js"></script>
 <script>
 var params = new URLSearchParams(location.search);
 var COMPARTIR = params.get('compartir') === '1';
@@ -44,17 +45,20 @@ var ALTO = COMPARTIR ? 630 : LADO;
 var SALIDA_ANCHO = parseInt(params.get('ancho') || ANCHO, 10);
 var SALIDA_ALTO = parseInt(params.get('alto') || ALTO, 10);
 
-/* La mascota mide 267×420. La cabeza (con la melena) va de x=5 a 262
-   y de y=0 a 215, con el centro en (133, 110). */
-var IMG = { ancho: 267, alto: 420, cabeza: 257, cx: 133, cy: 110 };
+/* La mascota la dibuja js/nucleo/mascota.js, en un lienzo de 200×250.
+   La cabeza (con la melena) va de x=11 a 189 y de y=9 a 187, con el
+   centro en (100, 98). */
+var IMG = { ancho: 200, alto: 250, cabeza: 178, cx: 100, cy: 98 };
 
 var radio = (RECTO || RELLENO || COMPARTIR) ? 0 : LADO * 0.22;
 
 function mascota(anchoCabeza, cx, cy) {
   var s = anchoCabeza / IMG.cabeza;
   var x = cx - IMG.cx * s, y = cy - IMG.cy * s;
-  return '<image href="../assets/mascotas/gato-leon.webp" x="' + x.toFixed(1) + '" y="' + y.toFixed(1) +
-    '" width="' + (IMG.ancho * s).toFixed(1) + '" height="' + (IMG.alto * s).toFixed(1) + '"/>';
+  // el mismo dibujo de la app, metido como un SVG adentro del ícono
+  return Mascota.svg('gato', 'leon', 'hola').replace('<svg class="mascota-img"',
+    '<svg x="' + x.toFixed(1) + '" y="' + y.toFixed(1) +
+    '" width="' + (IMG.ancho * s).toFixed(1) + '" height="' + (IMG.alto * s).toFixed(1) + '"');
 }
 
 // los colores de la portada: el cielo y el sol (DESIGN.md, «cielo» y «girasol»)

@@ -5,7 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Los dibujos de Bichito Curioso</title>
 <!-- Muestrario de js/nucleo/dibujos.js: todos los dibujos, a dos tamaños,
-     sobre blanco y sobre color. Sirve para revisarlos al agregar uno. -->
+     sobre blanco y sobre color. Abajo, la mascota (js/nucleo/mascota.js):
+     cada animal con cada disfraz, y los cinco gestos. Sirve para revisarlos
+     al agregar uno. -->
 <style>
   @font-face { font-family: 'Baloo 2'; src: url('../assets/fuentes/baloo2.woff2') format('woff2'); font-weight: 400 800; }
   body { margin: 0; padding: 24px; font-family: 'Baloo 2', sans-serif; color: #27304A; background: #fff; }
@@ -16,12 +18,19 @@
   figure svg { width: 110px; height: 110px; display: block; margin: 0 auto 6px; }
   figure.chico svg { width: 56px; height: 56px; }
   figcaption { font-weight: 700; }
+  h2 { margin: 28px 0 12px; }
+  .mascotas figure svg { width: 120px; height: 150px; }
 </style>
 </head>
 <body>
 <h1>Los dibujos</h1>
 <div class="grilla" id="grilla"></div>
+<h2>La mascota</h2>
+<div class="grilla mascotas" id="mascotas"></div>
+<h2>Sus gestos</h2>
+<div class="grilla mascotas" id="gestos"></div>
 <script src="../js/nucleo/dibujos.js"></script>
+<script src="../js/nucleo/mascota.js"></script>
 <script>
   var nombres = ['geografia', 'matematica', 'lengua', 'ciencias', 'ingles', 'jugar', 'aprender',
                  'repaso', 'meta', 'tienda', 'personalizar', 'ajustes', 'candado', 'nene', 'nena', 'adulto'];
@@ -33,6 +42,24 @@
       f.innerHTML = Dibujos.svg(n) + '<figcaption>' + n + '</figcaption>';
       g.appendChild(f);
     });
+  });
+
+  function figura(caja, dibujo, texto, clase) {
+    var f = document.createElement('figure');
+    if (clase) f.className = clase;
+    f.innerHTML = dibujo + '<figcaption>' + texto + '</figcaption>';
+    caja.appendChild(f);
+  }
+  var m = document.getElementById('mascotas');
+  Object.keys(Mascota.BASES).forEach(function (animal) {
+    Object.keys(Mascota.DISFRACES).forEach(function (disfraz) {
+      figura(m, Mascota.svg(animal, disfraz, 'normal'), Mascota.comoTexto(animal, disfraz));
+    });
+  });
+  var gestos = document.getElementById('gestos');
+  ['normal', 'hola', 'festejo', 'piensa', 'animo'].forEach(function (gesto) {
+    figura(gestos, Mascota.svg('gato', 'leon', gesto), gesto);
+    figura(gestos, Mascota.svg('perro', 'zorro', gesto), gesto, 'color');
   });
 </script>
 </body>

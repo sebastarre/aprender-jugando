@@ -92,15 +92,18 @@ colores comprables son material existente, no obligaciones.
   descartadas explícitamente: lo que manda es cómo se ven las apps infantiles.
 - Nombre: **Bichito Curioso** (antes «Aprender Jugando»).
 - **La mascota**: un gato o un perro (lo elige el chico) disfrazado de león,
-  zorro, dino, abeja, pingüino, tiburón o dragón. Ilustraciones propias en
-  `assets/mascotas/`. El gato disfrazado de león es la cara del ícono.
+  zorro, dino, abeja, pingüino, tiburón o dragón. Dibujada en SVG con el
+  idioma de los dibujos de la app, con gestos (saluda, festeja, piensa, da
+  ánimo) y nunca con cara triste. El gato disfrazado de león es la cara del
+  ícono. El dueño pidió que fuera «más linda» (septiembre de 2026) y eligió
+  esta versión dibujada frente a las ilustraciones anteriores.
 - Voz: castellano rioplatense, de vos, cálido. El error avisa, no reta. Los
   premios no ocupan el centro: mientras se juega no hay puntos.
 
 ## Evidence on Hand
 
-- Ilustraciones de la mascota: `assets/mascotas/` (14 WebP, gato y perro × 7
-  disfraces).
+- La mascota: `js/nucleo/mascota.js` (gato y perro × 7 disfraces × 5 gestos,
+  en SVG).
 - Dibujos para contar: `assets/contar/` (10 PNG).
 - Banderas (194) y mapa del mundo propios, dentro del proyecto.
 - Íconos propios en `js/nucleo/iconos.js`.

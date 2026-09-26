@@ -46,6 +46,19 @@ const ICONOS = [
     query: '&compartir=1&ancho=1024&alto=500', carpeta: 'play' }
 ];
 
+/* La mascota de la cortina del arranque (index.html): el gato disfrazado
+   de león, saludando, como archivo SVG suelto. Sale del mismo dibujo que
+   usa la app, js/nucleo/mascota.js. */
+{
+  global.window = {};
+  global.document = { readyState: 'complete', querySelectorAll: () => [] };
+  require(path.join(RAIZ, 'js', 'nucleo', 'mascota.js'));
+  const dibujo = window.Mascota.svg('gato', 'leon', 'hola')
+    .replace('<svg class="mascota-img"', '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="250"');
+  fs.writeFileSync(path.join(DESTINO, 'mascota.svg'), dibujo + '\n');
+  console.log('mascota.svg  ' + Math.round(dibujo.length / 1024 * 10) / 10 + ' KB');
+}
+
 const exe = navegador();
 const perfil = path.join(os.tmpdir(), 'iconos-aprender-jugando');
 fs.mkdirSync(DESTINO, { recursive: true });

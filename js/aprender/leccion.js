@@ -349,7 +349,7 @@ window.Leccion = (function () {
 
     var tarjeta = Util.crear('div', 'paso-tarjeta paso-final paso-resultado' +
                                     (r.aprobado ? ' aprobado' : ''));
-    tarjeta.appendChild(Mascota.crear('hola', 'final-mascota'));
+    tarjeta.appendChild(Mascota.crear(r.aprobado ? 'festejo' : 'animo', 'final-mascota'));
     tarjeta.appendChild(Util.crear('h2', 'paso-titulo',
       r.aprobado ? '¡Completaste la lección!'
         : r.aciertos >= aprobarCon(leccion.ejercicio) - 1 ? '¡Casi!' : '¡Buen intento!'));

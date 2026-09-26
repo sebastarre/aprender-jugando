@@ -893,49 +893,56 @@ juegos de más grandes.
 ## La mascota
 
 Un **gato o un perro**, lo elige el chico en Personalización y no se
-compra: es de quién es la mascota. Aparece en la bienvenida y al terminar
-una partida.
+compra: es de quién es la mascota. Aparece en la bienvenida, en la tarjeta
+del inicio, en el globo de la pregunta (de 4 a 7), en las lecciones, en el
+mapa y al terminar una partida.
 
 Encima lleva siempre un **disfraz de otro animal**. Vienen tres gratis
 (león, zorro y dinosaurio) y hay cuatro en la tienda: abeja (90), pingüino
 (100), tiburón (120) y dragón (150).
 
-Son **ilustraciones**, no dibujos en código: una por cada combinación de
-animal y disfraz, 2 × 7 = 14 archivos en `assets/mascotas/`. El animal
-tiene sus colores propios y no sigue la paleta que el chico arme —un gato
-que a veces es verde deja de ser un personaje—, y los disfraces traen los
+**Está dibujada en código**, en SVG (`js/nucleo/mascota.js`), con el mismo
+idioma que los dibujos de la app: trazo azul marino grueso y redondo y
+rellenos planos de juguete. Proporciones de cachorro —la cabeza casi tan
+grande como el cuerpo, ojos grandes y bajos, cachetes rosados—, que es lo
+que hace tierno a un personaje, y en tamaño chico se sigue leyendo. El
+animal tiene sus colores propios y no sigue la paleta que el chico arme: un
+gato que a veces es verde deja de ser un personaje. Los disfraces traen los
 suyos, que para eso son disfraces.
 
-**Lo que se perdió al pasar a ilustraciones:** antes la mascota estaba
-dibujada en SVG y cambiaba de cara según cómo le había ido (festejaba con
-dos o tres estrellas, saludaba con una, ponía cara de «ups» con ninguna).
-Con imágenes fijas eso ya no pasa: el resultado lo cuentan las estrellas y
-el texto. Recuperarlo significaría las mismas 14 imágenes por cada gesto.
+**Tiene gestos**, según lo que pasa:
+
+| Gesto | Cómo es | Dónde |
+|---|---|---|
+| `normal` | Parada, sonriendo | El globo de la pregunta, el mapa, las vistas de la tienda |
+| `hola` | Saluda con la mano | La bienvenida, el inicio, las lecciones |
+| `festejo` | Los brazos arriba y los ojos felices | Al acertar, al pasar con dos o tres estrellas, al completar una lección |
+| `piensa` | La mano en el mentón | El «¿por qué?» de las lecciones, la bienvenida |
+| `animo` | El puño arriba: «¡vamos!» | Al errar, al terminar sin estrellas, al no aprobar un ejercicio |
+
+Nunca pone cara triste: cuando algo no sale, da ánimo. En el juego, la del
+globo cambia de cara un ratito con cada respuesta (`Motor`, `reaccionar`).
+
+Se pide con `Mascota.crear(gesto, clase)`, se le cambia la cara con
+`Mascota.gesto(caja, gesto)`, y en el HTML basta con
+`<div data-mascota="hola"></div>`. `Mascota.svg(animal, disfraz, gesto)`
+devuelve el dibujo suelto: lo usan el ícono (`herramientas/icono.html`) y la
+cortina del arranque, que está escrita en `index.html` porque aparece antes
+de que carguen los scripts.
+
+Antes fueron ilustraciones: 14 imágenes WebP, una por combinación de animal
+y disfraz, sin gestos. Quedan en la historia de git (hasta el commit
+12ef46a), junto con la herramienta que las preparaba.
 
 ### Cómo se agrega un disfraz
 
-Las imágenes originales son PNG de 1024×1024 con fondo blanco y pesan más
-de un mega cada una: 16,5 MB las catorce, cuando la app entera pesa 1,46.
-No van al repositorio. Se procesan con:
-
-```bash
-node herramientas/preparar-mascotas.js "<carpeta con los PNG>"
-```
-
-Eso hace tres cosas con cada una: le saca el fondo blanco, la recorta a lo
-que ocupa el dibujo y la guarda en WebP. Los catorce quedan en **367 KB**,
-45 veces menos.
-
-El fondo no se saca borrando «todo lo blanco»: la panza, las patitas y los
-ojos también son blancos y quedarían agujereados. Se hace una inundación
-desde los bordes que se frena contra el contorno negro del dibujo, así que
-sólo desaparece el blanco de afuera.
-
-La correspondencia entre el nombre del archivo original y qué es cada uno
-está en la tabla `QUE_ES` de esa herramienta, porque los nombres que larga
-el generador de imágenes no dicen nada. Si se regeneran las imágenes hay
-que actualizar esa tabla. Después, los nombres y precios van en
-`js/nucleo/mascota.js`.
+En `js/nucleo/mascota.js`: los colores y el precio en `DISFRACES` (traje,
+el ribete de la capucha un tono más oscuro, la panza y lo que haga falta),
+y lo que lo distingue en las funciones de las partes: `adornosAtras` (lo que
+asoma por arriba de la capucha: orejas, púas, antenas), `adornosAdelante`
+(lo que va sobre la cara), `cola` y `alas`. Todo en el lienzo de 200 × 250,
+sin ids, para que se pueda repetir en la misma pantalla. Para verlo junto a
+los demás, `herramientas/dibujos.html`.
 
 ## Los colores se compran de a uno
 
@@ -1374,7 +1381,7 @@ js/
   nucleo/util.js           Utilidades chicas (mezclar, crear elementos, etc.)
   nucleo/iconos.js         Los íconos de la app, dibujados en SVG
   nucleo/dibujos.js        Los dibujos grandes: uno por materia y por lugar del inicio
-  nucleo/mascota.js        La mascota: qué animal y qué disfraz están puestos
+  nucleo/mascota.js        La mascota dibujada: el gato o el perro, sus disfraces y sus gestos
   nucleo/almacen.js        Perfiles, récords, historial y errores en localStorage
   nucleo/foto.js           Achica y recorta la foto que el chico elige de la galería
   nucleo/sonido.js         Sonidos generados con Web Audio (sin archivos)
