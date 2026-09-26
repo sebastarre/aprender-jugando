@@ -2305,6 +2305,42 @@ body.rindiendo .vidas { display: none; }
 
 .figura { display: block; width: clamp(110px, 32vw, 150px); height: auto; }
 .figura-ancha { width: clamp(180px, 56vw, 260px); }
+/* cien cuadraditos: decimales y porcentajes */
+.cuadricula { width: clamp(150px, 42vw, 190px); }
+
+/* la plata: billetes dibujados, y lo que se compra con su precio */
+.billetes { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; max-width: 420px; }
+.billete { display: block; width: clamp(84px, 24vw, 112px); height: auto; }
+.compras { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+.compra {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 96px;
+  padding: 8px 12px;
+  border: 2px solid var(--borde);
+  border-radius: var(--radio-s);
+  background: var(--tarjeta);
+}
+.compra-dibujo { font-size: var(--dibujo-chico); line-height: 1.1; }
+.compra-nombre { font-size: .8rem; font-weight: 700; color: var(--tinta-suave); }
+.compra b { font-size: 1.25rem; font-weight: 800; }
+
+/* leer y entender: el texto va como en un libro, alineado a la izquierda */
+.lectura {
+  max-width: 34rem;
+  margin-inline: auto;
+  padding: 14px 16px;
+  text-align: left;
+  font-size: 1.0625rem;
+  line-height: 1.55;
+  border: 2px solid var(--borde);
+  border-radius: var(--radio-s);
+  background: var(--tarjeta);
+}
+.lectura-titulo { display: block; margin-bottom: 4px; font-size: 1.1em; font-weight: 800; color: var(--primario-osc); }
+.lectura p { margin: 0; }
 
 /* los problemas son un cuento de dos o tres renglones */
 .consigna-larga {

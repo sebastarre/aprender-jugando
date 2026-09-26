@@ -14,11 +14,13 @@ App para chicos con dos mitades que se apoyan una en la otra:
 - **Jugar** — juegos para practicar eso mismo.
 
 Cada lección termina ofreciendo el juego donde usar lo que se acaba de leer, y
-cada juego tiene su lección al lado. Hay cinco materias con 49 juegos entre
+cada juego tiene su lección al lado. Hay seis materias con 58 juegos entre
 todas: **Geografía** (6, de reconocer una montaña a las capitales del mundo en
-un mapa interactivo), **Matemática** (12, de contar a fracciones), **Lengua**
-(11, de la primera letra a las tildes), **Ciencias** (10, de los ruidos de los
-animales al sistema solar) e **Inglés** (10, de los colores al verbo *to be*).
+un mapa interactivo), **Matemática** (16, de contar a porcentajes), **Lengua**
+(12, de la primera letra a leer y entender un texto), **Ciencias** (10, de los
+ruidos de los animales al sistema solar), **Inglés** (10, de los colores al
+verbo *to be*) e **Historia** (4, de los símbolos patrios a la vida en la
+colonia).
 Cada materia tiene juegos para cada edad de 4 a 12 años, ordenados de menor a
 mayor, y ninguno está cerrado: la edad recomienda, no prohíbe.
 
@@ -178,7 +180,7 @@ y cada uno guarda su propio récord.
 
 Antes de los niveles, la pantalla previa preguntaba «¿cuántas preguntas: 5, 10
 o todas?». Era una pregunta de máquina: no decía nada de lo que había adentro
-y un chico de cinco no tenía cómo contestarla. Entre los 49 juegos hay 158
+y un chico de cinco no tenía cómo contestarla. Entre los 58 juegos hay 181
 niveles.
 
 En los juegos de lista, el nivel dice qué preguntas entran: los primeros N de
@@ -469,6 +471,44 @@ cuerpo, la escuela y las acciones en inglés. Si el dibujo de un paso muestra
 la respuesta a su predicción (las banderas con su nombre, «lápiz → lápices»),
 la predicción lleva `sinDibujo: true` y el dibujo aparece recién al contestar.
 
+## Más para los grandes: 10 a 12 años
+
+Los de 10 a 12 tenían pocos juegos propios. Ahora hay nueve más, cada uno con
+su camino de niveles y su lección:
+
+- **La plata** (7 a 11): contar billetes, cuánto se paga por todo, el vuelto y
+  «¿te alcanza?». Los billetes están dibujados, sin caras ni fechas, y los
+  precios son redondos: con la inflación, un precio «real» envejece en meses.
+  La mala de siempre en el vuelto es sumar en vez de restar ($500 − $350 no
+  son $850), y si la eligen, el cartel lo explica.
+- **Medidas** (9 a 12): con qué unidad se mide cada cosa (un lápiz no se mide
+  en kilómetros), pasar de una a otra (en 1 m hay 100 cm), medio kilo y un
+  cuarto de hora, y el tiempo aparte, porque no va de a diez: si alguien dice
+  que 2 horas son 200 minutos, el cartel le recuerda que una hora tiene 60.
+- **Números con coma** (9 a 12): décimos en una barra y centésimos en cien
+  cuadraditos (cada columna es un décimo), escribirlos, compararlos y sumarlos.
+  Las preguntas de comparar traen siempre la trampa: que el más largo no sea el
+  más grande (0,5 le gana a 0,45). Los números se guardan en milésimos enteros,
+  así no hay errores de coma flotante y 0,5 y 0,50 son el mismo.
+- **Porcentajes** (10 a 12): el 50 % es la mitad, el 25 % la cuarta parte, el
+  10 % la décima parte, en cien cuadraditos y en problemas de descuentos.
+- **Leer y entender** (Lengua, 8 a 12): ocho textos cortos escritos para la
+  app (un cuento, una nota sobre el yaguareté, una carta, una receta) con
+  tres preguntas cada uno: lo que el texto dice, lo que no dice pero se
+  entiende, y qué quiere decir una palabra. La pista dice dónde buscar, no la
+  respuesta. No tiene «¡Cosas nuevas!»: presentar un texto sería leérselo.
+- **Historia**, una materia nueva, con cuatro juegos: **Símbolos patrios**
+  (6 a 10), **Fechas patrias** (7 a 12), **Los próceres** (8 a 12) y **Cómo se
+  vivía** (9 a 12: los pueblos originarios y la colonia). Se pregunta lo que
+  enseñan los manuales de la escuela; donde los historiadores no se ponen de
+  acuerdo (los paraguas del 25 de mayo, las cintas de French y Beruti), no. Su
+  color es el rosa y su dibujo, la escarapela.
+
+Los juegos de lista con pista y dato (Ciencias, Historia y Leer y entender)
+salen todos de `Tablero.cuestionario`. La voz ahora lee «$350» como «350
+pesos» y «25 %» como «25 por ciento» (antes decía dólares). Con estos, son 61
+lecciones.
+
 ## Racha y meta del día
 
 En el cartel del inicio hay una llamita con **los días seguidos** que jugó.
@@ -496,8 +536,8 @@ mucho perdía los días viejos de la cuenta.
 ## El mapa de niveles
 
 Cada juego tiene su **camino de niveles**, como en los juegos de mapa: al tocar
-un juego se entra al mapa, y no a una pantalla de opciones. Son **674 niveles**
-en los 49 juegos, entre 10 y 20 por juego según cuánto hay para aprender.
+un juego se entra al mapa, y no a una pantalla de opciones. Son **784 niveles**
+en los 58 juegos, entre 10 y 20 por juego según cuánto hay para aprender.
 
 **Cómo se juega**
 
@@ -927,7 +967,7 @@ color hasta que aguantara letra blanca — y oscurecer un naranja da marrón, as
 que Lengua abría con un cartel color barro y Contar con uno color ladrillo.
 
 Al revés funciona mejor: **el cartel va del tono más vivo y la letra va oscura
-encima**. Las cinco materias tienen su par medido a mano (`alegre` y `tinta` en
+encima**. Las seis materias tienen su par medido a mano (`alegre` y `tinta` en
 `MATERIAS`, de 6,1:1 a 7,8:1). Los cincuenta y pico de juegos lo sacan solos
 con `Util.cartel(color)`, que prueba tonos del más saturado al más lavado y
 corta en el primero que llega a 4,6:1 contra su propia letra. El cartel es
@@ -1496,10 +1536,11 @@ js/
   nucleo/arranque.js       La cortina del nombre al abrir la app
   mapa.js                  Motor del mapa: proyección, dibujo, zoom y clics
   juegos/geografia.js      Los seis juegos de geografía
-  juegos/matematica.js     Los doce juegos de matemática
-  juegos/lengua.js         Los once juegos de lengua
+  juegos/matematica.js     Los dieciséis juegos de matemática
+  juegos/lengua.js         Los doce juegos de lengua
   juegos/ciencias.js       Los diez juegos de ciencias
   juegos/ingles.js         Los diez juegos de inglés
+  juegos/historia.js       Los cuatro juegos de historia
   juegos/examen.js         Modo examen: mezcla juegos y pone la nota
   juegos/repaso.js         Modo repaso: rearma las preguntas que se fallaron
   aprender/contenido.js    El texto y los dibujos de las lecciones

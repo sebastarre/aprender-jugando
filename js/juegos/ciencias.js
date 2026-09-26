@@ -39,24 +39,8 @@ window.Ciencias = (function () {
     };
   }
 
-  /**
-   * Un juego de pregunta y respuesta escrita, con las malas a mano. Cada
-   * fila trae además una pista para pensar (sale al equivocarse) y un
-   * dato que explica la respuesta (sale al acertar y al mostrar la que
-   * era): antes, al errar sólo decía «¡Buen intento!», sin enseñar nada.
-   *   [id, pregunta, respuesta, malas, pista, dato]
-   */
-  function cuestionario(def, filas) {
-    return T.banco(Object.assign({
-      items: filas.map(function (f) { return { id: f[0], p: f[1], r: f[2], m: f[3], pista: f[4], dato: f[5] }; }),
-      forma: 'frase',
-      consigna: function (it) { return it.p; },
-      pista: function (it) { return it.pista || ''; },
-      textoAcierto: function (it) { return it.dato || ''; },
-      textoRevelado: function (it) { return 'Era «' + it.r + '».' + (it.dato ? ' ' + it.dato : ''); },
-      repaso: function (it) { return { simbolo: def.simbolo, nombre: T.plano(it.p), dato: it.r }; }
-    }, def));
-  }
+  // pregunta y respuesta escrita, con pista y dato (ver Tablero.cuestionario)
+  var cuestionario = T.cuestionario;
 
   /* ============================================================
      ¿Quién hace…?

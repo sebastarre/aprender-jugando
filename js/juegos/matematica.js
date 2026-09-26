@@ -1,7 +1,7 @@
 /* ============================================================
    Materia: Matemática.
 
-   Doce juegos que se responden eligiendo entre tarjetas. Cada uno dice
+   Dieciséis juegos que se responden eligiendo entre tarjetas. Cada uno dice
    entre qué edades se muestra (edadMin–edadMax), tomado de en qué año
    de la primaria se enseña cada tema según el Diseño Curricular de la
    Provincia de Buenos Aires (2018) y los NAP:
@@ -14,10 +14,14 @@
      7–9    La hora           «leer la hora en relojes de aguja» (2.º)
      7–9    Dobles y mitades  cálculo mental (2.º)
      7–9    Cuánto vale       unos, dieces y cienes (2.º)
+     7–11   La plata          contar billetes, pagar y el vuelto (1.º a 3.º)
      7–12   Problemas         suma y resta desde 1.º, las cuatro en 3.º
      8–12   Tablas            «la tabla pitagórica» (3.º)
      8–12   Divisiones        multiplicación y división (3.º)
      9–12   Fracciones        «fracciones de uso frecuente» (4.º)
+     9–12   Medidas           metros, kilos, litros y horas (4.º y 5.º)
+     9–12   Números con coma  décimos y centésimos (4.º y 5.º)
+    10–12   Porcentajes       el 50 % es la mitad, descuentos (6.º)
 
    La edad máxima es para no mostrarle a un chico de once el juego de
    contar manzanitas: hasta ahí se sigue viendo, después se esconde.
@@ -1870,11 +1874,1057 @@ window.Matematica = (function () {
     }
   };
 
+  /** Cien cuadraditos con `n` pintados, de a columnas: cada columna
+      entera es un décimo (o un 10 %), y cada cuadradito, un centésimo. */
+  function dibujarCuadricula(n) {
+    var lleno = '#E5533D', vacio = '#ffffff', linea = '#27304A', lado = 18, celdas = '';
+    for (var c = 0; c < 10; c++) {
+      for (var f = 0; f < 10; f++) {
+        celdas += '<rect x="' + (6 + c * lado) + '" y="' + (6 + f * lado) + '" width="' + lado + '" height="' + lado +
+                  '" fill="' + (c * 10 + f < n ? lleno : vacio) + '"/>';
+      }
+    }
+    // las columnas marcadas más fuerte que las filas: cada una es un décimo
+    var columnas = '', filas = '';
+    for (var k = 1; k < 10; k++) {
+      columnas += 'M' + (6 + k * lado) + ' 6V186';
+      filas += 'M6 ' + (6 + k * lado) + 'H186';
+    }
+    return '<svg class="figura cuadricula" viewBox="0 0 192 192" role="img" aria-label="Cien cuadraditos, ' + n + ' pintados">' + celdas +
+      '<path d="' + filas + '" stroke="' + linea + '" stroke-width="1" opacity=".35" fill="none"/>' +
+      '<path d="' + columnas + '" stroke="' + linea + '" stroke-width="2" opacity=".7" fill="none"/>' +
+      '<rect x="6" y="6" width="180" height="180" rx="2" fill="none" stroke="' + linea + '" stroke-width="3"/></svg>';
+  }
+
+  function Mayuscula(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+  /** Los que son enteros y positivos, sin repetir. */
+  function enterasPositivas(lista) {
+    return lista.filter(function (v, i) { return v > 0 && v === Math.floor(v) && lista.indexOf(v) === i; });
+  }
+
+  /* ============================================================
+     La plata
+     ============================================================ */
+  /* Billetes dibujados, sin caras ni fechas: lo que se aprende es a
+     contar y a dar el vuelto, y un billete con la cara de alguien pasa
+     de moda (o de circulación) antes que la app. Cada valor tiene su
+     color, como los de verdad, para encontrarlos de un vistazo. Los
+     precios son redondos y no buscan ser los del kiosco: con la
+     inflación, cualquier precio «real» envejece en meses. */
+  var COLOR_BILLETE = { 10: '#F4B183', 20: '#F28B82', 50: '#C9B0EE', 100: '#9FCBF0',
+                        200: '#A8D5A2', 500: '#FFD966', 1000: '#F6A5C0', 2000: '#8FD8D2' };
+
+  function dibujarBillete(valor) {
+    var tinta = '#27304A';
+    return '<svg class="billete" viewBox="0 0 120 60" role="img" aria-label="Un billete de ' + valor + ' pesos">' +
+      '<rect x="2" y="2" width="116" height="56" rx="8" fill="' + COLOR_BILLETE[valor] + '" stroke="' + tinta + '" stroke-width="3"/>' +
+      '<rect x="9" y="9" width="102" height="42" rx="5" fill="none" stroke="' + tinta + '" stroke-width="1.5" stroke-dasharray="3 3" opacity=".4"/>' +
+      '<circle cx="34" cy="30" r="13" fill="#ffffff" fill-opacity=".65" stroke="' + tinta + '" stroke-width="2"/>' +
+      '<text x="34" y="36" text-anchor="middle" font-size="17" font-weight="800" fill="' + tinta + '">$</text>' +
+      '<text x="82" y="38" text-anchor="middle" font-size="' + (valor >= 1000 ? 21 : 24) + '" font-weight="800" fill="' + tinta + '">' + valor + '</text>' +
+      '</svg>';
+  }
+
+  function verBilletes(lista) {
+    return '<div class="billetes">' + lista.map(dibujarBillete).join('') + '</div>';
+  }
+
+  var BARATAS = [
+    { nombre: 'un caramelo', emoji: '🍬' }, { nombre: 'un chupetín', emoji: '🍭' },
+    { nombre: 'un lápiz', emoji: '✏️' }, { nombre: 'un globo', emoji: '🎈' },
+    { nombre: 'una banana', emoji: '🍌' }, { nombre: 'una manzana', emoji: '🍎' },
+    { nombre: 'un alfajor', emoji: '🍫' }, { nombre: 'un jugo', emoji: '🧃' }
+  ];
+  var CARAS = [
+    { nombre: 'una pelota', emoji: '⚽' }, { nombre: 'una mochila', emoji: '🎒' },
+    { nombre: 'un libro', emoji: '📕' }, { nombre: 'una remera', emoji: '👕' },
+    { nombre: 'un rompecabezas', emoji: '🧩' }, { nombre: 'un par de zapatillas', emoji: '👟' },
+    { nombre: 'un autito', emoji: '🚗' }, { nombre: 'un cuaderno', emoji: '📓' }
+  ];
+  var COSAS_PLATA = BARATAS.concat(CARAS);
+
+  function verCompras(compras) {
+    return '<div class="compras">' + compras.map(function (c) {
+      var cosa = COSAS_PLATA[c[0]];
+      return '<span class="compra"><span class="compra-dibujo" aria-hidden="true">' + cosa.emoji + '</span>' +
+             '<span class="compra-nombre">' + Mayuscula(cosa.nombre) + '</span><b>$' + c[1] + '</b></span>';
+    }).join('') + '</div>';
+  }
+
+  /* Cada nivel: con qué billetes se cuenta, con cuáles se paga, cuánto
+     cuesta como mucho una cosa y hasta cuánto suma una compra. */
+  var TAMANOS_PLATA = [
+    { id: 'chicos', nombre: 'Hasta $100', icono: 'nivel-1', detalle: 'Billetes de 10, 20 y 50',
+      billetes: [10, 20, 50], pagos: [50, 100], paso: 5, hasta: 90, tope: 100, cosas: [0, 1, 2, 3, 4, 5, 6, 7] },
+    { id: 'medianos', nombre: 'Hasta $1000', icono: 'nivel-2', detalle: 'Billetes de hasta 500',
+      billetes: [20, 50, 100, 200, 500], pagos: [500, 1000], paso: 10, hasta: 900, tope: 1000, cosas: [4, 5, 6, 7, 8, 10, 12, 15] },
+    { id: 'grandes', nombre: 'Hasta $5000', icono: 'nivel-3', detalle: 'Billetes de 1000 y 2000',
+      billetes: [100, 200, 500, 1000, 2000], pagos: [1000, 2000], paso: 50, hasta: 2000, tope: 5000, cosas: [8, 9, 10, 11, 12, 13, 14, 15] }
+  ];
+
+  var ALCANZA = ['Sí, y me sobra', 'Sí, justo', 'No, me falta'];
+
+  function suma(lista) { return lista.reduce(function (s, v) { return s + v; }, 0); }
+  function deMayorAMenor(lista) { return lista.slice().sort(function (a, b) { return b - a; }); }
+
+  function plataContar(billetes) {
+    var b = deMayorAMenor(billetes);
+    return { id: 'dinero:contar:' + b.join('-'), juego: 'dinero', modo: 'contar', billetes: b, respuesta: suma(b) };
+  }
+  function plataTotal(compras) {
+    return { id: 'dinero:total:' + compras.map(function (c) { return c[0] + '_' + c[1]; }).join('-'), juego: 'dinero',
+             modo: 'total', compras: compras, respuesta: suma(compras.map(function (c) { return c[1]; })) };
+  }
+  function plataVuelto(cosa, precio, pago) {
+    return { id: 'dinero:vuelto:' + cosa + '_' + precio + ':' + pago, juego: 'dinero', modo: 'vuelto',
+             cosa: cosa, precio: precio, pago: pago, respuesta: pago - precio };
+  }
+  function plataAlcanza(cosa, precio, billetes) {
+    var b = deMayorAMenor(billetes), tengo = suma(b);
+    return { id: 'dinero:alcanza:' + cosa + '_' + precio + ':' + b.join('-'), juego: 'dinero', modo: 'alcanza',
+             cosa: cosa, precio: precio, billetes: b, tengo: tengo,
+             respuesta: tengo > precio ? ALCANZA[0] : tengo === precio ? ALCANZA[1] : ALCANZA[2] };
+  }
+
+  /** Un precio redondo (de a `t.paso`) entre dos pasos y `hasta`. */
+  function precioDe(t, hasta) {
+    return entero(2, Math.max(2, Math.floor(hasta / t.paso) - 1)) * t.paso;
+  }
+
+  function plataNueva(modo, t, billetes) {
+    var cosas = Util.mezclar(t.cosas.slice());
+    if (modo === 'contar') {
+      var lista = [];
+      var cuantos = entero(2, t.id === 'chicos' ? 4 : 5);
+      for (var i = 0; i < cuantos; i++) lista.push(Util.alAzar(billetes || t.billetes));
+      return plataContar(lista);
+    }
+    if (modo === 'total') {
+      // dos cosas; en los grandes, a veces tres
+      var cuantas = t.id === 'grandes' && Math.random() < 0.4 ? 3 : 2;
+      var compras = [], resto = t.tope;
+      for (var k = 0; k < cuantas; k++) {
+        var p = precioDe(t, Math.min(t.hasta, resto - t.paso * 2 * (cuantas - k - 1)));
+        resto -= p;
+        compras.push([cosas[k], p]);
+      }
+      return plataTotal(compras);
+    }
+    if (modo === 'vuelto') {
+      var pago = Util.alAzar(t.pagos);
+      return plataVuelto(cosas[0], precioDe(t, pago), pago);
+    }
+    // ¿alcanza? Lo que tiene, en billetes; el precio, un poco más, un poco menos o justo
+    var tiene = [];
+    var n = entero(2, 3);
+    for (var j = 0; j < n; j++) tiene.push(Util.alAzar(t.billetes));
+    var total = suma(tiene);
+    var cual = Math.random();
+    var diferencia = entero(1, 4) * t.paso * (t.id === 'chicos' ? 1 : 5);
+    var precio = cual < 0.2 ? total : cual < 0.6 ? total + diferencia : Math.max(t.paso, total - diferencia);
+    return plataAlcanza(cosas[0], precio, tiene);
+  }
+
+  /* Las malas de la plata: sumar en vez de restar (el vuelto de $350
+     pagando con $500 no son $850), olvidarse de un billete, y errarle
+     por un billete chico. */
+  function malasDePlata(it) {
+    var r = it.respuesta;
+    var paso = r >= 1000 ? 100 : r >= 100 ? 50 : 10;
+    var c = [r + paso, r - paso, r + 10, r - 10, r + 100, r - 100];
+    if (it.modo === 'vuelto') c.unshift(it.pago + it.precio, it.precio);
+    if (it.modo === 'contar' && it.billetes.length > 1) c.unshift(r - it.billetes[it.billetes.length - 1]);
+    return distractores(r, c, 3, 1);
+  }
+
+  var EN_PESOS = { numerico: true, pizarra: true,
+                   mostrar: function (v) { return '$' + v; },
+                   etiqueta: function (v) { return v + ' pesos'; } };
+
+  function vueltoTexto(it) { return '$' + it.pago + ' − $' + it.precio + ' = $' + it.respuesta + '.'; }
+  function alcanzaTexto(it) {
+    if (it.tengo > it.precio) return 'Tenés $' + it.tengo + ': te sobran $' + (it.tengo - it.precio) + '.';
+    if (it.tengo === it.precio) return 'Tenés $' + it.tengo + ': justo lo que cuesta.';
+    return 'Tenés $' + it.tengo + ': te faltan $' + (it.precio - it.tengo) + '.';
+  }
+  function cuentaDePlata(it) {
+    if (it.modo === 'contar') return it.billetes.map(function (b) { return '$' + b; }).join(' + ') + ' = $' + it.respuesta + '.';
+    if (it.modo === 'total') return it.compras.map(function (c) { return '$' + c[1]; }).join(' + ') + ' = $' + it.respuesta + '.';
+    if (it.modo === 'vuelto') return vueltoTexto(it);
+    return alcanzaTexto(it);
+  }
+
+  var DINERO = {
+    id: 'dinero',
+    nombre: 'La plata',
+    icono: 'dinero',
+    color: '#059669',
+    suave: '#d1fae5',
+    texto: 'Contar billetes y dar el vuelto',
+    edadMin: 7,
+    edadMax: 11,
+
+    opciones: function () {
+      return [{ id: 'tamano', esNivel: true, titulo: 'Elegí el nivel', tipo: 'grilla', items: TAMANOS_PLATA }];
+    },
+    cantidades: cantidadesFijas,
+    resumen: function (sel) { return deLista(TAMANOS_PLATA, sel.tamano).nombre + ' · ' + sel.cantidad + ' preguntas'; },
+    examen: function (comun, edad) { return { tamano: !edad || edad <= 8 ? 'chicos' : edad <= 10 ? 'medianos' : 'grandes' }; },
+    /* Primero contar la plata que hay, después pagar, después el vuelto
+       (que es restar contando para arriba) y por último comparar: ¿me
+       alcanza? Todo con billetes chicos, y recién ahí con los grandes. */
+    mapa: function () {
+      return mapaDe(DINERO, [
+        ['Contar billetes', 'De $10, $20 y $50', { modos: ['contar'], tamano: 'chicos' }],
+        ['¿Cuánto pagás?', 'Dos cosas del kiosco', { modos: ['total'], tamano: 'chicos' }],
+        ['El vuelto', 'Pagás con $50 o $100', { modos: ['vuelto'], tamano: 'chicos' }],
+        ['¿Te alcanza?', 'Contá lo que tenés', { modos: ['alcanza'], tamano: 'chicos' }],
+        ['Desafío', 'Hasta $100', { tamano: 'chicos' }, 'desafio'],
+        ['Billetes grandes', 'De $100, $200 y $500', { modos: ['contar'], tamano: 'medianos', billetes: [50, 100, 200, 500] }],
+        ['Compras de hasta $1000', 'Sumá los precios', { modos: ['total'], tamano: 'medianos' }],
+        ['Vuelto de $500 y $1000', 'Contá para arriba', { modos: ['vuelto'], tamano: 'medianos' }],
+        ['Todo hasta $1000', 'Contar, pagar y el vuelto', { tamano: 'medianos' }],
+        ['Desafío', 'Hasta $1000', { tamano: 'medianos' }, 'desafio'],
+        ['Compras grandes', 'Con billetes de $1000 y $2000', { modos: ['total', 'vuelto', 'alcanza'], tamano: 'grandes' }],
+        ['Gran desafío', 'La plata', { tamano: 'grandes' }, 'desafio']
+      ]);
+    },
+    preguntas: function (sel) {
+      var t = deLista(TAMANOS_PLATA, sel.tamano);
+      var modos = sel.modos || ['contar', 'total', 'vuelto', 'alcanza'];
+      return T.variadas(sel.cantidad, function () { return plataNueva(Util.alAzar(modos), t, sel.billetes); });
+    },
+    montar: function (it) {
+      prepararTablero();
+      if (it.modo === 'contar') {
+        consigna('¿Cuánta <b>plata</b> hay?');
+        T.visual(verBilletes(it.billetes));
+        return armarRespuestas(it.respuesta, malasDePlata(it), EN_PESOS);
+      }
+      if (it.modo === 'total') {
+        consigna('¿Cuánto tenés que pagar <b>por todo</b>?');
+        T.visual(verCompras(it.compras));
+        return armarRespuestas(it.respuesta, malasDePlata(it), EN_PESOS);
+      }
+      var cosa = COSAS_PLATA[it.cosa];
+      if (it.modo === 'vuelto') {
+        consigna('<span class="consigna-larga">Comprás <b>' + cosa.nombre + '</b> de <b>$' + it.precio + '</b> y pagás con <b>$' + it.pago + '</b>. ¿Cuánto te dan de <b>vuelto</b>?</span>');
+        T.visual(verCompras([[it.cosa, it.precio]]));
+        return armarRespuestas(it.respuesta, malasDePlata(it), EN_PESOS);
+      }
+      consigna('<span class="consigna-larga">Tenés esta plata. ¿Te alcanza para <b>' + cosa.nombre + '</b> de <b>$' + it.precio + '</b>?</span>');
+      T.visual(verBilletes(it.billetes));
+      armarRespuestas(it.respuesta, ALCANZA.filter(function (a) { return a !== it.respuesta; }), { forma: 'frase', orden: ALCANZA });
+    },
+    ganchos: function () {
+      return T.ganchos(function (it) { return it.respuesta; }, {
+        fallo: function (it, r) {
+          if (it.modo === 'vuelto' && r === it.pago + it.precio) return 'Ésa es la suma. El vuelto es lo que sobra: hay que restar.';
+          return '';
+        },
+        pista: function (it, intento) {
+          if (it.modo === 'contar') {
+            if (intento === 1) return 'Empezá por el billete más grande y andá sumando los otros.';
+            var parciales = [], va = 0;
+            it.billetes.slice(0, -1).forEach(function (b) { va += b; parciales.push('$' + va); });
+            return 'Sumalos de a uno: ' + parciales.join(', ') + '… ¿y con el último?';
+          }
+          if (it.modo === 'total') {
+            return intento === 1 ? 'Sumá los precios de todo lo que comprás.'
+              : 'Sumá por partes: primero los cienes, después las decenas.';
+          }
+          if (it.modo === 'vuelto') {
+            return intento === 1 ? 'El vuelto es lo que sobra: lo que pagaste menos lo que cuesta.'
+              : 'Contá para arriba: desde $' + it.precio + ' hasta $' + it.pago + '.';
+          }
+          return intento === 1 ? 'Primero contá cuánta plata tenés.'
+            : 'Tenés $' + it.tengo + '. Comparalo con $' + it.precio + '.';
+        },
+        revelado: function (it) {
+          return (it.modo === 'alcanza' ? 'Era «' + it.respuesta + '». ' : 'Era $' + it.respuesta + '. ') + cuentaDePlata(it);
+        },
+        acierto: cuentaDePlata
+      });
+    },
+    deClave: function (resto) {
+      var p = resto.split(':');
+      function num(s) { return parseInt(s, 10); }
+      function par(s) { var q = s.split('_'); return [num(q[0]), num(q[1])]; }
+      function billetes(s) { return s.split('-').map(num); }
+      function validos(b) { return b.length > 0 && b.every(function (v) { return COLOR_BILLETE[v]; }); }
+      function cosaValida(c) { return !!COSAS_PLATA[c[0]] && c[1] > 0; }
+      if (p[0] === 'contar' && p.length === 2) {
+        var b = billetes(p[1]);
+        return validos(b) ? plataContar(b) : null;
+      }
+      if (p[0] === 'total' && p.length === 2) {
+        var cs = p[1].split('-').map(par);
+        return cs.every(cosaValida) ? plataTotal(cs) : null;
+      }
+      if (p[0] === 'vuelto' && p.length === 3) {
+        var c = par(p[1]), pago = num(p[2]);
+        return cosaValida(c) && pago > c[1] ? plataVuelto(c[0], c[1], pago) : null;
+      }
+      if (p[0] === 'alcanza' && p.length === 3) {
+        var c2 = par(p[1]), b2 = billetes(p[2]);
+        return cosaValida(c2) && validos(b2) ? plataAlcanza(c2[0], c2[1], b2) : null;
+      }
+      return null;
+    },
+    repaso: function (it) {
+      var nombre = it.modo === 'contar' ? 'Los billetes: ' + it.billetes.map(function (b) { return '$' + b; }).join(', ')
+        : it.modo === 'total' ? 'Comprar ' + it.compras.map(function (c) { return COSAS_PLATA[c[0]].nombre; }).join(' y ')
+        : it.modo === 'vuelto' ? 'El vuelto de $' + it.pago + ' por $' + it.precio
+        : '¿Te alcanza para $' + it.precio + '?';
+      return { simbolo: '💵', nombre: nombre, dato: it.modo === 'alcanza' ? it.respuesta : 'Era $' + it.respuesta };
+    }
+  };
+
+  /* ============================================================
+     Medidas
+     ============================================================ */
+  // [singular, plural, qué mide]
+  var UNIDADES = {
+    km: ['kilómetro', 'kilómetros', 'longitud'], m: ['metro', 'metros', 'longitud'],
+    cm: ['centímetro', 'centímetros', 'longitud'], mm: ['milímetro', 'milímetros', 'longitud'],
+    t: ['tonelada', 'toneladas', 'peso'], kg: ['kilo', 'kilos', 'peso'], g: ['gramo', 'gramos', 'peso'],
+    l: ['litro', 'litros', 'capacidad'], ml: ['mililitro', 'mililitros', 'capacidad'],
+    dia: ['día', 'días', 'tiempo'], h: ['hora', 'horas', 'tiempo'], min: ['minuto', 'minutos', 'tiempo'], s: ['segundo', 'segundos', 'tiempo']
+  };
+  // de la más grande a la más chica: así van los botones, siempre en el mismo lugar
+  var MAGNITUDES = { longitud: ['km', 'm', 'cm', 'mm'], peso: ['t', 'kg', 'g'], capacidad: ['l', 'ml'], tiempo: ['dia', 'h', 'min', 's'] };
+  var MAGNITUDES_TODAS = ['longitud', 'peso', 'capacidad', 'tiempo'];
+  // cuántas de la unidad de al lado entran en una: en 1 km hay 1000 m
+  var EQUIVALE = { km: ['m', 1000], m: ['cm', 100], cm: ['mm', 10], t: ['kg', 1000], kg: ['g', 1000],
+                   l: ['ml', 1000], dia: ['h', 24], h: ['min', 60], min: ['s', 60] };
+  // hasta cuántas se preguntan: 7 días, no 9; 5 horas en minutos, no 9
+  var HASTA_CUANTAS = { dia: 7, h: 5, min: 5 };
+
+  // [id, qué se mide, en qué unidad]
+  var QUE_SE_MIDE = [
+    ['ciudades', 'la distancia entre dos ciudades', 'km'], ['viaje', 'un viaje en auto a otra provincia', 'km'],
+    ['pileta', 'el largo de una pileta', 'm'], ['edificio', 'la altura de un edificio', 'm'], ['aula', 'el largo del aula', 'm'],
+    ['lapiz', 'el largo de un lápiz', 'cm'], ['pie', 'el largo de tu pie', 'cm'], ['cuaderno', 'el ancho de un cuaderno', 'cm'],
+    ['hormiga', 'el largo de una hormiga', 'mm'], ['moneda', 'el grosor de una moneda', 'mm'],
+    ['camion', 'lo que pesa un camión cargado', 't'], ['elefante', 'lo que pesa un elefante', 't'],
+    ['papas', 'lo que pesa una bolsa de papas', 'kg'], ['perro', 'lo que pesa un perro grande', 'kg'],
+    ['caramelo', 'lo que pesa un caramelo', 'g'], ['carta', 'lo que pesa una carta', 'g'],
+    ['balde', 'el agua de un balde', 'l'], ['botella', 'la gaseosa de una botella grande', 'l'],
+    ['jarabe', 'una cucharadita de jarabe', 'ml'], ['vaso', 'el jugo de un vaso', 'ml'],
+    ['vacaciones', 'las vacaciones de invierno', 'dia'], ['pelicula', 'lo que dura una película', 'h'],
+    ['recreo', 'lo que dura un recreo', 'min'], ['aplauso', 'lo que dura un aplauso', 's']
+  ];
+  // [id, cuánto, en qué unidad se pregunta, cuánto es, la unidad grande]
+  var MITADES = [
+    ['medio-kilo', 'medio kilo', 'g', 500, 'kg'], ['cuarto-kilo', 'un cuarto kilo', 'g', 250, 'kg'],
+    ['kilo-y-medio', 'un kilo y medio', 'g', 1500, 'kg'], ['medio-litro', 'medio litro', 'ml', 500, 'l'],
+    ['litro-y-medio', 'un litro y medio', 'ml', 1500, 'l'], ['medio-metro', 'medio metro', 'cm', 50, 'm'],
+    ['metro-y-medio', 'un metro y medio', 'cm', 150, 'm'], ['medio-km', 'medio kilómetro', 'm', 500, 'km'],
+    ['media-hora', 'media hora', 'min', 30, 'h'], ['cuarto-hora', 'un cuarto de hora', 'min', 15, 'h'],
+    ['hora-y-media', 'una hora y media', 'min', 90, 'h']
+  ];
+
+  var TIPOS_MEDIDA = [
+    { id: 'largo', nombre: 'El largo', icono: 'nivel-1', detalle: 'Kilómetros, metros, centímetros', mags: ['longitud'] },
+    { id: 'peso', nombre: 'Peso y capacidad', icono: 'nivel-2', detalle: 'Kilos, gramos, litros', mags: ['peso', 'capacidad'] },
+    { id: 'tiempo', nombre: 'El tiempo', icono: 'nivel-3', detalle: 'Días, horas, minutos', mags: ['tiempo'] },
+    { id: 'todo', nombre: 'Todas', icono: 'nivel-4', detalle: 'Todo mezclado', mags: ['longitud', 'peso', 'capacidad', 'tiempo'] }
+  ];
+
+  function singular(u) { return UNIDADES[u][0]; }
+  function plural(u) { return UNIDADES[u][1]; }
+  function cantidadDe(n, u) { return n + ' ' + (n === 1 ? singular(u) : plural(u)); }
+  function cuantosDe(u) { return u === 'h' || u === 't' ? '¿Cuántas' : '¿Cuántos'; }
+
+  function medidaUnidad(fila) {
+    return { id: 'medidas:unidad:' + fila[0], juego: 'medidas', modo: 'unidad', cosa: fila[1], unidad: fila[2],
+             respuesta: plural(fila[2]) };
+  }
+  function medidaConvertir(grande, n, sentido) {
+    var chica = EQUIVALE[grande][0], f = EQUIVALE[grande][1];
+    return { id: 'medidas:convertir:' + grande + ':' + n + ':' + sentido, juego: 'medidas', modo: 'convertir',
+             grande: grande, chica: chica, factor: f, n: n, sentido: sentido,
+             respuesta: sentido === 'abajo' ? n * f : n };
+  }
+  function medidaMitad(fila) {
+    return { id: 'medidas:mitad:' + fila[0], juego: 'medidas', modo: 'mitad', texto: fila[1], unidad: fila[2],
+             grande: fila[4], respuesta: fila[3] };
+  }
+
+  function magnitudDe(u) { return UNIDADES[u][2]; }
+
+  /* Las malas de convertir: multiplicar por otro número (en 1 m no hay
+     10 cm ni 1000), y con el tiempo, contar de a cien: una hora no tiene
+     100 minutos. */
+  function malasDeMedida(it) {
+    var r = it.respuesta, c;
+    if (it.modo === 'convertir' && it.sentido === 'abajo') {
+      c = [it.n * 10, it.n * 100, it.n * 1000, it.n * it.factor * 10, it.n + it.factor];
+    } else if (it.modo === 'convertir') {
+      var total = it.n * it.factor;
+      c = [total / 10, total / 100, total / 1000, it.n * 10, it.n + 1, it.n - 1, it.n + 2];
+    } else if (magnitudDe(it.unidad) === 'tiempo') {
+      c = [r / 60 * 100, r * 2, r / 2, r + 15, r - 15];
+    } else {
+      c = [r * 2, r / 2, r * 10, r / 10, r + 100, r - 100];
+    }
+    return distractores(r, enterasPositivas(c), 3, 1);
+  }
+
+  function consignaDeMedida(it) {
+    if (it.modo === 'unidad') {
+      return magnitudDe(it.unidad) === 'tiempo' ? '¿En qué se mide <b>' + it.cosa + '</b>?'
+        : '¿Con qué unidad medirías <b>' + it.cosa + '</b>?';
+    }
+    if (it.modo === 'mitad') return cuantosDe(it.unidad) + ' <b>' + plural(it.unidad) + '</b> hay en <b>' + it.texto + '</b>?';
+    if (it.sentido === 'abajo') return cuantosDe(it.chica) + ' <b>' + plural(it.chica) + '</b> hay en <b>' + cantidadDe(it.n, it.grande) + '</b>?';
+    return cuantosDe(it.grande) + ' <b>' + plural(it.grande) + '</b> son <b>' + cantidadDe(it.n * it.factor, it.chica) + '</b>?';
+  }
+
+  function dichoDeMedida(it) {
+    if (it.modo === 'unidad') return Mayuscula(it.cosa) + ' se mide en ' + plural(it.unidad) + '.';
+    if (it.modo === 'mitad') return Mayuscula(it.texto) + ' son ' + cantidadDe(it.respuesta, it.unidad) + '.';
+    if (it.sentido === 'abajo') return cantidadDe(it.n, it.grande) + ' son ' + cantidadDe(it.respuesta, it.chica) + '.';
+    return cantidadDe(it.n * it.factor, it.chica) + ' son ' + cantidadDe(it.n, it.grande) + '.';
+  }
+
+  var PISTA_UNIDAD = {
+    longitud: 'Los kilómetros son para distancias muy largas, y los milímetros, para cosas chiquititas.',
+    peso: 'Las toneladas son para cosas pesadísimas, y los gramos, para cosas livianas.',
+    capacidad: 'Los litros son para bastante líquido, y los mililitros, para muy poquito.',
+    tiempo: 'Pensá si dura unos segundos, unos minutos, unas horas o varios días.'
+  };
+
+  var MEDIDAS = {
+    id: 'medidas',
+    nombre: 'Medidas',
+    icono: 'medidas',
+    color: '#0891b2',
+    suave: '#cffafe',
+    texto: 'Metros, kilos, litros y horas',
+    edadMin: 9,
+    edadMax: 12,
+
+    opciones: function () {
+      return [{ id: 'tipo', esNivel: true, titulo: 'Elegí qué medir', tipo: 'grilla', items: TIPOS_MEDIDA }];
+    },
+    cantidades: cantidadesFijas,
+    resumen: function (sel) { return deLista(TIPOS_MEDIDA, sel.tipo).nombre + ' · ' + sel.cantidad + ' preguntas'; },
+    examen: function () { return { tipo: 'todo' }; },
+    /* Primero con qué se mide cada cosa (un lápiz no se mide en
+       kilómetros), después pasar de una unidad a otra, de a una por vez:
+       metros y centímetros, kilómetros y metros, kilos y gramos… El
+       tiempo va solo, porque no es de a diez: 1 hora son 60 minutos. */
+    mapa: function () {
+      return mapaDe(MEDIDAS, [
+        ['¿Con qué se mide?', 'Kilómetros, metros o centímetros', { modos: ['unidad'], mags: ['longitud'] }],
+        ['Metros y centímetros', 'En 1 metro hay 100 cm', { modos: ['convertir'], pares: ['m'], sentido: 'abajo' }],
+        ['Kilómetros y metros', 'En 1 km hay 1000 m', { modos: ['convertir'], pares: ['km', 'cm'], sentido: 'abajo' }],
+        ['Kilos y gramos', 'Lo que pesa cada cosa', { modos: ['unidad', 'convertir'], mags: ['peso'], sentido: 'abajo' }],
+        ['Desafío', 'Largo y peso', { modos: ['unidad', 'convertir'], mags: ['longitud', 'peso'], sentido: 'abajo' }, 'desafio'],
+        ['Litros y mililitros', 'Lo que entra en cada cosa', { modos: ['unidad', 'convertir'], mags: ['capacidad'], sentido: 'abajo' }],
+        ['Medio y cuarto', 'Medio kilo son 500 gramos', { modos: ['mitad'] }],
+        ['El tiempo', 'Días, horas, minutos y segundos', { modos: ['unidad', 'convertir'], mags: ['tiempo'], sentido: 'abajo' }],
+        ['De chica a grande', '300 cm son 3 m', { modos: ['convertir'], sentido: 'arriba' }],
+        ['Desafío', 'Todas las medidas', {}, 'desafio'],
+        ['Todo mezclado', 'Largo, peso, capacidad y tiempo', {}],
+        ['Gran desafío', 'Medidas', {}, 'desafio']
+      ]);
+    },
+    preguntas: function (sel) {
+      var mags = sel.mags || (sel.tipo ? deLista(TIPOS_MEDIDA, sel.tipo).mags : MAGNITUDES_TODAS);
+      var modos = sel.modos || ['unidad', 'convertir', 'mitad'];
+      var pares = sel.pares || Object.keys(EQUIVALE).filter(function (u) { return mags.indexOf(magnitudDe(u)) >= 0; });
+      var cosas = QUE_SE_MIDE.filter(function (f) { return mags.indexOf(magnitudDe(f[2])) >= 0; });
+      var mitades = MITADES.filter(function (f) { return mags.indexOf(magnitudDe(f[2])) >= 0; });
+      return T.variadas(sel.cantidad, function () {
+        var modo = Util.alAzar(modos);
+        if (modo === 'unidad' && cosas.length) return medidaUnidad(Util.alAzar(cosas));
+        if (modo === 'mitad' && mitades.length) return medidaMitad(Util.alAzar(mitades));
+        var grande = Util.alAzar(pares);
+        // de chica a grande, una de cada tres: es la que más cuesta
+        var sentido = sel.sentido || (Math.random() < 0.34 ? 'arriba' : 'abajo');
+        return medidaConvertir(grande, entero(sentido === 'arriba' ? 2 : 1, HASTA_CUANTAS[grande] || 9), sentido);
+      });
+    },
+    montar: function (it) {
+      prepararTablero();
+      ocultarVisual();
+      consigna(consignaDeMedida(it));
+      if (it.modo === 'unidad') {
+        var orden = MAGNITUDES[magnitudDe(it.unidad)].map(plural);
+        return armarRespuestas(it.respuesta, orden.filter(function (u) { return u !== it.respuesta; }), { orden: orden });
+      }
+      armarRespuestas(it.respuesta, malasDeMedida(it), ESCRITO);
+    },
+    ganchos: function () {
+      return T.ganchos(function (it) { return it.respuesta; }, {
+        // contar el tiempo de a cien: 2 horas no son 200 minutos
+        fallo: function (it, r) {
+          var chica = it.modo === 'mitad' ? it.unidad : it.chica;
+          if ((chica === 'min' || chica === 's') && it.sentido !== 'arriba' && r === it.respuesta / 60 * 100) {
+            return 'Ojo: ' + (chica === 'min' ? 'una hora no tiene 100 minutos' : 'un minuto no tiene 100 segundos') + ', tiene 60.';
+          }
+          return '';
+        },
+        pista: function (it, intento) {
+          if (it.modo === 'unidad') {
+            return intento === 1 ? PISTA_UNIDAD[magnitudDe(it.unidad)]
+              : 'Imaginate ' + it.cosa + ': ¿' + (magnitudDe(it.unidad) === 'tiempo' ? 'dura mucho o poco' : 'es mucho o poquito') + '?';
+          }
+          var grande = it.grande, chica = it.modo === 'mitad' ? it.unidad : it.chica;
+          if (intento === 1) return 'En 1 ' + singular(grande) + ' hay ' + EQUIVALE[grande][1] + ' ' + plural(chica) + '.';
+          if (it.modo === 'mitad') return 'Medio es la mitad, y un cuarto, la mitad de la mitad.';
+          return it.sentido === 'abajo' ? 'Son ' + it.n + ' veces ' + it.factor + '.'
+            : '¿Cuántas veces entra ' + it.factor + ' en ' + it.n * it.factor + '?';
+        },
+        revelado: function (it) { return (it.modo === 'unidad' ? 'Era en ' + it.respuesta + '. ' : 'Era ' + it.respuesta + '. ') + dichoDeMedida(it); },
+        acierto: dichoDeMedida
+      });
+    },
+    deClave: function (resto) {
+      var p = resto.split(':'), i;
+      if (p[0] === 'unidad') {
+        for (i = 0; i < QUE_SE_MIDE.length; i++) if (QUE_SE_MIDE[i][0] === p[1]) return medidaUnidad(QUE_SE_MIDE[i]);
+        return null;
+      }
+      if (p[0] === 'mitad') {
+        for (i = 0; i < MITADES.length; i++) if (MITADES[i][0] === p[1]) return medidaMitad(MITADES[i]);
+        return null;
+      }
+      if (p[0] === 'convertir' && EQUIVALE[p[1]] && /^\d+$/.test(p[2]) && (p[3] === 'abajo' || p[3] === 'arriba')) {
+        return medidaConvertir(p[1], parseInt(p[2], 10), p[3]);
+      }
+      return null;
+    },
+    repaso: function (it) {
+      return { simbolo: '📏', nombre: T.plano(consignaDeMedida(it)), dato: dichoDeMedida(it) };
+    }
+  };
+
+  /* ============================================================
+     Números decimales
+     ============================================================ */
+  /* Los valores se guardan en milésimos enteros (0,75 es 750): así ni
+     sumar ni comparar tiene los errores de redondeo de la coma flotante,
+     y 0,5 y 0,50 son el mismo número (500). */
+  function coma(mil) {
+    var ent = Math.floor(mil / 1000);
+    var dec = String(mil % 1000 + 1000).slice(1).replace(/0+$/, '');
+    return dec ? ent + ',' + dec : String(ent);
+  }
+  function cifrasDe(mil) {
+    var s = coma(mil), p = s.indexOf(',');
+    return p < 0 ? 0 : s.length - p - 1;
+  }
+  /** Con ceros al final, hasta tener `cifras` después de la coma: 0,5 → 0,50. */
+  function conCeros(mil, cifras) {
+    var s = coma(mil), faltan = cifras - cifrasDe(mil);
+    if (faltan <= 0) return s;
+    return s + (s.indexOf(',') < 0 ? ',' : '') + new Array(faltan + 1).join('0');
+  }
+  /** «0,12» → 120. */
+  function aMilesimos(texto) {
+    var p = texto.split(',');
+    return parseInt(p[0], 10) * 1000 + (p[1] ? parseInt((p[1] + '000').slice(0, 3), 10) : 0);
+  }
+  function darVuelta(n) { return parseInt(String(n < 10 ? '0' + n : n).split('').reverse().join(''), 10); }
+
+  var HASTA_29 = ['cero', 'uno', 'dos', 'tres', 'cuatro', 'cinco', 'seis', 'siete', 'ocho', 'nueve', 'diez',
+    'once', 'doce', 'trece', 'catorce', 'quince', 'dieciséis', 'diecisiete', 'dieciocho', 'diecinueve', 'veinte',
+    'veintiuno', 'veintidós', 'veintitrés', 'veinticuatro', 'veinticinco', 'veintiséis', 'veintisiete', 'veintiocho', 'veintinueve'];
+  var DECENAS_EN_LETRAS = ['', '', '', 'treinta', 'cuarenta', 'cincuenta', 'sesenta', 'setenta', 'ochenta', 'noventa'];
+
+  /** Del 1 al 99, antes de un sustantivo: «un décimo», «veintiún centésimos». */
+  function enLetras(n) {
+    var s = n < 30 ? HASTA_29[n] : DECENAS_EN_LETRAS[Math.floor(n / 10)] + (n % 10 ? ' y ' + HASTA_29[n % 10] : '');
+    return s.replace(/veintiuno$/, 'veintiún').replace(/uno$/, 'un');
+  }
+  /** «siete décimos», «dos enteros y treinta y cinco centésimos». */
+  function decimalEnLetras(mil) {
+    var ent = Math.floor(mil / 1000), cifras = cifrasDe(mil);
+    var parte = cifras === 1 ? (mil % 1000) / 100 : (mil % 1000) / 10;
+    var nombre = (cifras === 1 ? 'décimo' : 'centésimo') + (parte === 1 ? '' : 's');
+    var dec = enLetras(parte) + ' ' + nombre;
+    return ent ? enLetras(ent) + (ent === 1 ? ' entero' : ' enteros') + ' y ' + dec : dec;
+  }
+
+  /** Un número con hasta `largo` cifras después de la coma, sin un 0 al final. */
+  function decimalAlAzar(largo) {
+    for (;;) {
+      var k = entero(1, largo);
+      var v = entero(1, Math.pow(10, k) - 1) * Math.pow(10, 3 - k);
+      if (v % Math.pow(10, 4 - k) !== 0) return v;
+    }
+  }
+
+  function decimalDibujo(n, partes) {
+    var v = n * 1000 / partes;
+    return { id: 'decimales:dibujo:' + n + ':' + partes, juego: 'decimales', modo: 'dibujo', n: n, partes: partes,
+             valor: v, respuesta: coma(v) };
+  }
+  function decimalEscrito(mil) {
+    return { id: 'decimales:leer:' + mil, juego: 'decimales', modo: 'leer', valor: mil, respuesta: coma(mil) };
+  }
+  function decimalComparar(sentido, valores) {
+    var v = sentido === 'menor' ? Math.min.apply(null, valores) : Math.max.apply(null, valores);
+    return { id: 'decimales:comparar:' + sentido + ':' + valores.join('-'), juego: 'decimales', modo: 'comparar',
+             sentido: sentido, valores: valores, valor: v, respuesta: coma(v) };
+  }
+  function decimalCuenta(op, a, b) {
+    var v = op === '+' ? a + b : a - b;
+    return { id: 'decimales:' + (op === '+' ? 'sumar' : 'restar') + ':' + a + ':' + b, juego: 'decimales',
+             modo: 'cuenta', op: op, a: a, b: b, valor: v, respuesta: coma(v) };
+  }
+
+  /* Para comparar, cuatro números con la misma parte entera, y la
+     trampa de siempre adentro: que el más largo no sea el más grande
+     (0,5 le gana a 0,45, aunque 45 sea más que 5). */
+  function paraComparar(ent, largo, sentido) {
+    var vals;
+    for (var vuelta = 0; vuelta < 200; vuelta++) {
+      vals = [];
+      while (vals.length < 4) {
+        var v = ent * 1000 + decimalAlAzar(largo);
+        if (vals.indexOf(v) < 0) vals.push(v);
+      }
+      var r = sentido === 'menor' ? Math.min.apply(null, vals) : Math.max.apply(null, vals);
+      var trampa = vals.some(function (x) {
+        return sentido === 'menor' ? cifrasDe(x) < cifrasDe(r) : cifrasDe(x) > cifrasDe(r);
+      });
+      if (trampa) return vals;
+    }
+    return vals;
+  }
+
+  function decimalNuevo(modo, sel) {
+    var largo = sel.largo || 2;
+    var enteros = sel.enteros && Math.random() < 0.6;
+    if (modo === 'dibujo') {
+      var partes = sel.partes || (largo >= 2 ? Util.alAzar([10, 100]) : 10);
+      var n;
+      do { n = partes === 10 ? entero(1, 9) : entero(1, 99); } while (partes === 100 && n % 10 === 0);
+      return decimalDibujo(n, partes);
+    }
+    if (modo === 'leer') return decimalEscrito((enteros ? entero(1, 9) * 1000 : 0) + decimalAlAzar(Math.min(2, largo)));
+    if (modo === 'comparar') {
+      var sentido = sel.sentido || Util.alAzar(['mayor', 'menor']);
+      return decimalComparar(sentido, paraComparar(enteros ? entero(1, 9) : 0, Math.max(2, largo), sentido));
+    }
+    var op = modo === 'restar' ? '−' : '+';
+    for (;;) {
+      var a = (enteros ? entero(1, 5) * 1000 : 0) + decimalAlAzar(Math.min(2, largo));
+      var b = decimalAlAzar(Math.min(2, largo));
+      if (op === '−' && a < b) { var x = a; a = b; b = x; }
+      if (a !== b) return decimalCuenta(op, a, b);
+    }
+  }
+
+  /** «0,25 + 0,5 = 0,30»: sumar las cifras de después de la coma como si fueran enteros. */
+  function sinAlinear(it) {
+    var pa = coma(it.a).split(','), pb = coma(it.b).split(',');
+    var ea = parseInt(pa[0], 10), eb = parseInt(pb[0], 10);
+    var da = parseInt(pa[1] || '0', 10), db = parseInt(pb[1] || '0', 10);
+    var ent = it.op === '+' ? ea + eb : ea - eb, dec = it.op === '+' ? da + db : da - db;
+    return ent < 0 || dec < 0 ? null : aMilesimos(ent + ',' + dec);
+  }
+
+  /* Las malas son los errores de siempre: la cifra un lugar corrida
+     (0,07 por 0,7), leer lo que no está pintado, dar vuelta las cifras,
+     y en las cuentas, sumar sin poner la coma debajo de la coma. */
+  function malasDeDecimal(it) {
+    var v = it.valor, c = [];
+    if (it.modo === 'dibujo' && it.partes === 10) {
+      c = [it.n * 10, it.n * 1000, (10 - it.n) * 100, 1000 + it.n * 100];
+    } else if (it.modo === 'dibujo') {
+      c = [it.n * 100, it.n, (100 - it.n) * 10, darVuelta(it.n) * 10];
+    } else if (it.modo === 'leer') {
+      var ent = Math.floor(v / 1000), cifras = cifrasDe(v);
+      var d = cifras === 1 ? (v % 1000) / 100 : (v % 1000) / 10;
+      c = cifras === 1
+        ? [ent * 1000 + d * 10, (ent * 10 + d) * 1000, ent * 100 + d * 10, d * 1000 + ent * 100, d * 1000 + 100]
+        : [ent * 1000 + d, (ent * 100 + d) * 100, (ent * 100 + d) * 1000, ent * 1000 + darVuelta(d) * 10, (ent + 1) * 1000 + d * 10];
+    } else if (it.modo === 'comparar') {
+      return it.valores.filter(function (x) { return x !== v; }).map(coma);
+    } else {
+      c = [sinAlinear(it), v + 100, v - 100, v + 10, v - 10, v + 1000];
+    }
+    var vistos = {};
+    vistos[coma(v)] = true;
+    var malas = [];
+    Util.mezclar(c).forEach(function (x) {
+      if (malas.length >= 3 || x === null || x <= 0 || vistos[coma(x)]) return;
+      vistos[coma(x)] = true;
+      malas.push(coma(x));
+    });
+    return malas;
+  }
+
+  function consignaDeDecimal(it) {
+    if (it.modo === 'dibujo') return '¿Qué número muestra el dibujo?';
+    if (it.modo === 'leer') return '¿Cómo se escribe <b>' + decimalEnLetras(it.valor) + '</b>?';
+    if (it.modo === 'comparar') return '¿Cuál es el número <b>' + it.sentido + '</b>?';
+    return '¿Cuánto es <b>' + coma(it.a) + ' ' + it.op + ' ' + coma(it.b) + '</b>?';
+  }
+
+  /** El que le sigue al elegido, para decir por qué gana: 0,50 le gana a 0,45. */
+  function segundoDe(it) {
+    var otros = it.valores.filter(function (x) { return x !== it.valor; });
+    return it.sentido === 'menor' ? Math.min.apply(null, otros) : Math.max.apply(null, otros);
+  }
+
+  function dichoDeDecimal(it) {
+    if (it.modo === 'dibujo') {
+      return (it.partes === 10 ? it.n + ' de 10 partes' : it.n + ' de 100 cuadraditos') + ': ' + decimalEnLetras(it.valor) + ', ' + it.respuesta + '.';
+    }
+    if (it.modo === 'leer') return Mayuscula(decimalEnLetras(it.valor)) + ' se escribe ' + it.respuesta + '.';
+    if (it.modo === 'comparar') {
+      var otro = segundoDe(it), cifras = Math.max(cifrasDe(it.valor), cifrasDe(otro));
+      return it.respuesta + ' es el ' + it.sentido + ': ' + conCeros(it.valor, cifras) +
+        (it.sentido === 'menor' ? ' es menos que ' : ' es más que ') + conCeros(otro, cifras) + '.';
+    }
+    return coma(it.a) + ' ' + it.op + ' ' + coma(it.b) + ' = ' + it.respuesta + '.';
+  }
+
+  var TIPOS_DECIMAL = [
+    { id: 'decimos', nombre: 'Décimos', icono: 'nivel-1', detalle: 'De 0,1 a 0,9', largo: 1 },
+    { id: 'centesimos', nombre: 'Centésimos', icono: 'nivel-2', detalle: 'Hasta 0,99', largo: 2 },
+    { id: 'enteros', nombre: 'Con enteros', icono: 'nivel-3', detalle: 'Como 2,35', largo: 2, enteros: true }
+  ];
+
+  var DECIMALES = {
+    id: 'decimales',
+    nombre: 'Números con coma',
+    icono: 'decimales',
+    color: '#9333ea',
+    suave: '#f3e8ff',
+    texto: 'Décimos y centésimos',
+    edadMin: 9,
+    edadMax: 12,
+
+    opciones: function () {
+      return [{ id: 'tipo', esNivel: true, titulo: 'Elegí el nivel', tipo: 'grilla', items: TIPOS_DECIMAL }];
+    },
+    cantidades: cantidadesFijas,
+    resumen: function (sel) { return deLista(TIPOS_DECIMAL, sel.tipo).nombre + ' · ' + sel.cantidad + ' preguntas'; },
+    examen: function (comun, edad) { return { tipo: edad && edad >= 11 ? 'enteros' : 'centesimos' }; },
+    /* Primero ver el decimal (7 de 10 partes pintadas es 0,7), después
+       escribirlo, después compararlo —donde está la trampa: 0,5 es más
+       que 0,45— y recién al final hacer cuentas con coma. */
+    mapa: function () {
+      return mapaDe(DECIMALES, [
+        ['Décimos con dibujo', '7 de 10 partes es 0,7', { modos: ['dibujo'], largo: 1 }],
+        ['Escribir décimos', 'Siete décimos es 0,7', { modos: ['leer'], largo: 1 }],
+        ['Centésimos con dibujo', '35 de 100 es 0,35', { modos: ['dibujo'], partes: 100 }],
+        ['Escribir centésimos', 'Treinta y cinco centésimos', { modos: ['leer'], largo: 2 }],
+        ['Desafío', 'Décimos y centésimos', { modos: ['dibujo', 'leer'], largo: 2 }, 'desafio'],
+        ['¿Cuál es el mayor?', '0,5 le gana a 0,45', { modos: ['comparar'], largo: 2, sentido: 'mayor' }],
+        ['¿Cuál es el menor?', 'Mirá primero los décimos', { modos: ['comparar'], largo: 2, sentido: 'menor' }],
+        ['Sumar décimos', '0,7 + 0,5', { modos: ['sumar'], largo: 1 }],
+        ['Sumar y restar', 'La coma debajo de la coma', { modos: ['sumar', 'restar'], largo: 2 }],
+        ['Desafío', 'Comparar, sumar y restar', { modos: ['comparar', 'sumar', 'restar'], largo: 2 }, 'desafio'],
+        ['Con enteros', 'Como 2,4 y 2,35', { modos: ['leer', 'comparar', 'sumar'], largo: 2, enteros: true }],
+        ['Gran desafío', 'Números con coma', { largo: 2, enteros: true }, 'desafio']
+      ]);
+    },
+    preguntas: function (sel) {
+      var tipo = sel.tipo ? deLista(TIPOS_DECIMAL, sel.tipo) : {};
+      var conf = Object.assign({ largo: tipo.largo, enteros: tipo.enteros }, sel);
+      var modos = sel.modos || (conf.largo === 1 ? ['dibujo', 'leer', 'sumar'] : ['dibujo', 'leer', 'comparar', 'sumar', 'restar']);
+      return T.variadas(sel.cantidad, function () { return decimalNuevo(Util.alAzar(modos), conf); });
+    },
+    montar: function (it) {
+      prepararTablero();
+      consigna(consignaDeDecimal(it));
+      if (it.modo === 'dibujo') T.visual(it.partes === 10 ? dibujarFraccion(it.n, 10, 'barra') : dibujarCuadricula(it.n));
+      else ocultarVisual();
+      armarRespuestas(it.respuesta, malasDeDecimal(it), {});
+    },
+    ganchos: function () {
+      return T.ganchos(function (it) { return it.respuesta; }, {
+        fallo: function (it, r) {
+          if (it.modo === 'comparar') {
+            var elegido = aMilesimos(r);
+            if (it.sentido === 'mayor' && cifrasDe(elegido) > cifrasDe(it.valor)) return 'Tiene más cifras, pero no es más grande.';
+            if (it.sentido === 'menor' && cifrasDe(elegido) < cifrasDe(it.valor)) return 'Tiene menos cifras, pero no es más chico.';
+          }
+          if (it.modo === 'cuenta' && sinAlinear(it) !== null && r === coma(sinAlinear(it))) {
+            return 'Cuidado: los décimos se suman con los décimos, y los centésimos, con los centésimos.';
+          }
+          return '';
+        },
+        pista: function (it, intento) {
+          if (it.modo === 'dibujo') {
+            if (it.partes === 10) return intento === 1 ? 'Contá las partes pintadas: cada una es un décimo.' : 'Hay ' + it.n + ' partes pintadas de 10.';
+            return intento === 1 ? 'Cada columna entera es un décimo, y cada cuadradito, un centésimo.' : 'Hay ' + it.n + ' cuadraditos pintados de 100.';
+          }
+          if (it.modo === 'leer') {
+            return intento === 1 ? 'Después de la coma, el primer lugar es de los décimos, y el segundo, de los centésimos.'
+              : cifrasDe(it.valor) === 1 ? 'Los décimos van justo después de la coma.' : 'Los centésimos ocupan dos lugares después de la coma.';
+          }
+          if (it.modo === 'comparar') {
+            if (intento === 1) return 'Mirá primero la cifra que va justo después de la coma: los décimos.';
+            var cifras = Math.max.apply(null, it.valores.map(cifrasDe));
+            return 'Con ceros se ven mejor: ' + it.valores.map(function (x) { return conCeros(x, cifras); }).join(', ') + '.';
+          }
+          var lugares = Math.max(cifrasDe(it.a), cifrasDe(it.b));
+          return intento === 1
+            ? 'Poné la coma debajo de la coma, y completá con ceros: ' + conCeros(it.a, lugares) + ' ' + it.op + ' ' + conCeros(it.b, lugares) + '.'
+            : (it.op === '+' ? 'Sumá' : 'Restá') + ' como con números enteros, y después poné la coma en el mismo lugar.';
+        },
+        revelado: function (it) { return 'Era ' + it.respuesta + '. ' + dichoDeDecimal(it); },
+        acierto: dichoDeDecimal
+      });
+    },
+    deClave: function (resto) {
+      var p = resto.split(':');
+      function num(s) { return /^\d+$/.test(s) ? parseInt(s, 10) : NaN; }
+      if (p[0] === 'dibujo' && (p[2] === '10' || p[2] === '100')) {
+        var n = num(p[1]);
+        return n >= 1 && n < num(p[2]) ? decimalDibujo(n, num(p[2])) : null;
+      }
+      if (p[0] === 'leer') {
+        var v = num(p[1]);
+        return v > 0 && v % 10 === 0 && v % 1000 !== 0 ? decimalEscrito(v) : null;
+      }
+      if (p[0] === 'comparar' && (p[1] === 'mayor' || p[1] === 'menor')) {
+        var vals = String(p[2]).split('-').map(num);
+        return vals.length === 4 && vals.every(function (x) { return x > 0; }) ? decimalComparar(p[1], vals) : null;
+      }
+      if ((p[0] === 'sumar' || p[0] === 'restar') && num(p[1]) > 0 && num(p[2]) > 0) {
+        var op = p[0] === 'sumar' ? '+' : '−';
+        return op === '−' && num(p[1]) <= num(p[2]) ? null : decimalCuenta(op, num(p[1]), num(p[2]));
+      }
+      return null;
+    },
+    repaso: function (it) {
+      return { simbolo: '🔟', nombre: T.plano(consignaDeDecimal(it)) + (it.modo === 'comparar' ? ' ' + it.valores.map(coma).join(', ') : ''),
+               dato: 'Era ' + it.respuesta };
+    }
+  };
+
+  /* ============================================================
+     Porcentajes
+     ============================================================ */
+  function pct(p) { return p + ' %'; }
+
+  // qué parte del todo es cada porcentaje, y los botones de la más grande a la más chica
+  var PARTE_DE = { 100: 'todo', 75: 'tres cuartos', 50: 'la mitad', 25: 'la cuarta parte', 20: 'la quinta parte', 10: 'la décima parte' };
+  var PARTES_EN_ORDEN = ['todo', 'tres cuartos', 'la mitad', 'la cuarta parte', 'la quinta parte', 'la décima parte'];
+
+  var COMO_SE_CALCULA = {
+    100: 'El 100 % es todo.',
+    75: 'El 75 % son tres cuartas partes: tres veces el 25 %.',
+    50: 'El 50 % es la mitad.',
+    25: 'El 25 % es la cuarta parte: la mitad de la mitad.',
+    20: 'El 20 % es la quinta parte: dividir por 5.',
+    10: 'El 10 % es la décima parte: dividir por 10.',
+    5: 'El 5 % es la mitad del 10 %.',
+    1: 'El 1 % es dividir por 100.'
+  };
+
+  // [id, el cuento con {b} y {p}, cuántos]
+  var GRUPOS = [
+    ['grado', 'En un grado de <b>{b} chicos</b>, faltó el <b>{p}</b>. ¿Cuántos chicos faltaron?', 'chicos'],
+    ['figuritas', 'Juana tiene <b>{b} figuritas</b> y el <b>{p}</b> son brillantes. ¿Cuántas son brillantes?', 'figuritas'],
+    ['arboles', 'En una plaza hay <b>{b} árboles</b> y el <b>{p}</b> tiene flores. ¿Cuántos tienen flores?', 'árboles']
+  ];
+
+  function mcd(a, b) { return b ? mcd(b, a % b) : a; }
+
+  function porDe(p, base) {
+    return { id: 'porcentajes:de:' + p + ':' + base, juego: 'porcentajes', modo: 'de', p: p, base: base, respuesta: base * p / 100 };
+  }
+  function porDibujo(p) {
+    return { id: 'porcentajes:dibujo:' + p, juego: 'porcentajes', modo: 'dibujo', p: p, respuesta: pct(p) };
+  }
+  function porParte(p) {
+    return { id: 'porcentajes:parte:' + p, juego: 'porcentajes', modo: 'parte', p: p, respuesta: PARTE_DE[p] };
+  }
+  /* cual: 'descuento' (cuánto te descuentan), 'pagas' (cuánto pagás) o
+     el id de un grupo (cuántos de los chicos, de las figuritas…) */
+  function porProblema(cual, p, base, cosa) {
+    var parte = base * p / 100;
+    return { id: 'porcentajes:problema:' + cual + ':' + p + ':' + base + ':' + cosa, juego: 'porcentajes', modo: 'problema',
+             cual: cual, p: p, base: base, cosa: cosa, parte: parte, respuesta: cual === 'pagas' ? base - parte : parte };
+  }
+
+  function porcentajeNuevo(modo, pcts) {
+    var p = Util.alAzar(pcts);
+    if (modo === 'parte') {
+      var conParte = pcts.filter(function (x) { return PARTE_DE[x]; });
+      return porParte(conParte.length ? Util.alAzar(conParte) : 50);
+    }
+    if (modo === 'dibujo') return porDibujo(entero(1, 19) * 5);
+    if (modo === 'problema') {
+      var cual = Util.alAzar(['descuento', 'pagas', 'grupo']);
+      if (cual === 'grupo') {
+        for (;;) {
+          var base = Util.alAzar([20, 25, 30, 40, 50, 60, 80, 100]);
+          if (base * p % 100 === 0) return porProblema(entero(0, GRUPOS.length - 1), p, base, 0);
+          p = Util.alAzar(pcts);
+        }
+      }
+      return porProblema(cual, p, entero(2, 30) * 100, entero(8, COSAS_PLATA.length - 1));
+    }
+    // el 25 % de un número que se puede dividir por 4, el 5 % de uno que se puede dividir por 20…
+    var m = 100 / mcd(p, 100);
+    var desde = Math.max(1, Math.ceil(10 / m));
+    var hasta = Math.max(desde + 3, Math.floor((p <= 5 ? 1000 : 200) / m));
+    return porDe(p, m * entero(desde, hasta));
+  }
+
+  function malasDePorcentaje(it) {
+    if (it.modo === 'parte') return Util.muestra(PARTES_EN_ORDEN.filter(function (x) { return x !== it.respuesta; }), 3);
+    if (it.modo === 'dibujo') {
+      var ps = [100 - it.p, it.p + 10, it.p - 10, it.p + 5, it.p - 5, Math.floor(it.p / 10)];
+      return distractores(it.p, ps.filter(function (x) { return x > 0 && x < 100; }), 3, 1).map(pct);
+    }
+    var r = it.respuesta, parte = it.modo === 'de' ? r : it.parte, base = it.base;
+    var c = it.modo === 'problema' && it.cual === 'pagas'
+      ? [parte, base, r + 100, r - 100, base - parte * 2]
+      : [base - parte, parte * 2, parte / 2, it.p, base / 10, r + 10, r - 10];
+    return distractores(r, enterasPositivas(c), 3, 1);
+  }
+
+  function consignaDePorcentaje(it) {
+    if (it.modo === 'de') return '¿Cuánto es el <b>' + pct(it.p) + ' de ' + it.base + '</b>?';
+    if (it.modo === 'dibujo') return '¿Qué porcentaje está <b>pintado</b>?';
+    if (it.modo === 'parte') return '¿Qué parte del todo es el <b>' + pct(it.p) + '</b>?';
+    if (typeof it.cual === 'number') {
+      return GRUPOS[it.cual][1].replace('{b}', it.base).replace('{p}', pct(it.p));
+    }
+    var cosa = Mayuscula(COSAS_PLATA[it.cosa].nombre);
+    return '<b>' + cosa + '</b> cuesta <b>$' + it.base + '</b> y tiene un <b>' + pct(it.p) + ' de descuento</b>. ' +
+      (it.cual === 'pagas' ? '¿Cuánto pagás?' : '¿Cuánta plata te descuentan?');
+  }
+
+  function dichoDePorcentaje(it) {
+    if (it.modo === 'de') return 'El ' + pct(it.p) + ' de ' + it.base + ' es ' + it.respuesta + '.';
+    if (it.modo === 'dibujo') return it.p + ' de 100 cuadraditos: el ' + pct(it.p) + '.';
+    if (it.modo === 'parte') return 'El ' + pct(it.p) + ' es ' + it.respuesta + ': ' + it.p + ' de cada 100.';
+    if (typeof it.cual === 'number') return 'El ' + pct(it.p) + ' de ' + it.base + ' es ' + it.respuesta + '.';
+    if (it.cual === 'pagas') return 'Te descuentan $' + it.parte + ': $' + it.base + ' − $' + it.parte + ' = $' + it.respuesta + '.';
+    return 'El ' + pct(it.p) + ' de $' + it.base + ' es $' + it.respuesta + '.';
+  }
+
+  function pistaConcreta(p, base) {
+    if (p === 50) return 'Buscá la mitad de ' + base + '.';
+    if (p === 25) return 'La mitad de ' + base + ' es ' + base / 2 + '. ¿Y la mitad de eso?';
+    if (p === 75) return 'El 25 % de ' + base + ' es ' + base / 4 + '. Ahora, tres veces eso.';
+    if (p === 5) return 'El 10 % de ' + base + ' es ' + base / 10 + '. ¿Y la mitad de eso?';
+    if (p === 100) return 'El 100 % es todo: ' + base + ' entero.';
+    return 'Dividí ' + base + ' por ' + 100 / p + '.';
+  }
+
+  var TIPOS_PORCENTAJE = [
+    { id: 'faciles', nombre: 'El 50, el 25 y el 10 %', icono: 'nivel-1', detalle: 'La mitad, la cuarta y la décima parte', pcts: [50, 25, 10] },
+    { id: 'todos', nombre: 'Todos los porcentajes', icono: 'nivel-3', detalle: 'Del 1 % al 100 %', pcts: [1, 5, 10, 20, 25, 50, 75, 100] }
+  ];
+
+  var PORCENTAJES = {
+    id: 'porcentajes',
+    nombre: 'Porcentajes',
+    icono: 'porcentajes',
+    color: '#be123c',
+    suave: '#ffe4e6',
+    texto: 'El 50 % es la mitad',
+    edadMin: 10,
+    edadMax: 12,
+
+    opciones: function () {
+      return [{ id: 'tipo', esNivel: true, titulo: 'Elegí el nivel', tipo: 'grilla', items: TIPOS_PORCENTAJE }];
+    },
+    cantidades: cantidadesFijas,
+    resumen: function (sel) { return deLista(TIPOS_PORCENTAJE, sel.tipo).nombre + ' · ' + sel.cantidad + ' preguntas'; },
+    examen: function (comun, edad) { return { tipo: edad && edad >= 11 ? 'todos' : 'faciles' }; },
+    /* Cada porcentaje primero como una parte que ya se conoce (el 50 %
+       es la mitad, el 25 % la cuarta parte), y recién después las
+       cuentas y los problemas de descuentos, que es donde se usan. */
+    mapa: function () {
+      return mapaDe(PORCENTAJES, [
+        ['El 100 % y el 50 %', 'Todo y la mitad', { modos: ['parte', 'de'], pcts: [100, 50] }],
+        ['El 50 %', 'La mitad de 80', { modos: ['de'], pcts: [50] }],
+        ['El 25 %', 'La mitad de la mitad', { modos: ['parte', 'de'], pcts: [25, 50] }],
+        ['El 10 %', 'Dividir por 10', { modos: ['parte', 'de'], pcts: [10] }],
+        ['Desafío', '100, 50, 25 y 10 %', { modos: ['parte', 'de'], pcts: [100, 50, 25, 10] }, 'desafio'],
+        ['En 100 cuadraditos', '¿Qué parte está pintada?', { modos: ['dibujo'] }],
+        ['El 75 % y el 20 %', 'Tres cuartos y un quinto', { modos: ['parte', 'de'], pcts: [75, 20] }],
+        ['Problemas', 'Descuentos y grupos', { modos: ['problema'], pcts: [10, 25, 50] }],
+        ['Más problemas', '¿Cuánto pagás?', { modos: ['problema'], pcts: [10, 20, 25, 50, 75] }],
+        ['Desafío', 'Porcentajes y problemas', { modos: ['de', 'dibujo', 'problema'], pcts: [10, 20, 25, 50, 75] }, 'desafio'],
+        ['El 5 % y el 1 %', 'Los más chiquitos', { modos: ['de'], pcts: [5, 1] }],
+        ['Gran desafío', 'Todos los porcentajes', { pcts: [1, 5, 10, 20, 25, 50, 75] }, 'desafio']
+      ]);
+    },
+    preguntas: function (sel) {
+      var pcts = sel.pcts || deLista(TIPOS_PORCENTAJE, sel.tipo).pcts;
+      var modos = sel.modos || ['de', 'parte', 'dibujo', 'problema'];
+      return T.variadas(sel.cantidad, function () { return porcentajeNuevo(Util.alAzar(modos), pcts); });
+    },
+    montar: function (it) {
+      prepararTablero();
+      consigna(it.modo === 'problema' ? '<span class="consigna-larga">' + consignaDePorcentaje(it) + '</span>' : consignaDePorcentaje(it));
+      if (it.modo === 'dibujo' || it.modo === 'parte') T.visual(dibujarCuadricula(it.p));
+      else ocultarVisual();
+      if (it.modo === 'parte') return armarRespuestas(it.respuesta, malasDePorcentaje(it), { forma: 'frase', orden: PARTES_EN_ORDEN });
+      if (it.modo === 'dibujo') return armarRespuestas(it.respuesta, malasDePorcentaje(it), {});
+      armarRespuestas(it.respuesta, malasDePorcentaje(it), it.modo === 'problema' && typeof it.cual !== 'number' ? EN_PESOS : CALCULO);
+    },
+    ganchos: function () {
+      return T.ganchos(function (it) { return it.respuesta; }, {
+        fallo: function (it, r) {
+          if (it.modo === 'de' && r === it.base - it.respuesta) return 'Eso es lo que queda. Se pregunta cuánto es el ' + pct(it.p) + '.';
+          if (it.modo === 'de' && r === it.p) return 'Ése es el porcentaje. ¿Cuánto es de ' + it.base + '?';
+          if (it.modo === 'problema' && it.cual === 'pagas' && r === it.parte) return 'Eso es lo que te descuentan. ¿Cuánto pagás, entonces?';
+          if (it.modo === 'problema' && it.cual === 'descuento' && r === it.base - it.parte) return 'Eso es lo que pagás. ¿Cuánto te descuentan?';
+          return '';
+        },
+        pista: function (it, intento) {
+          if (it.modo === 'dibujo') {
+            return intento === 1 ? 'Son 100 cuadraditos: cada uno es el 1 %.'
+              : 'Cada columna tiene 10 cuadraditos: es el 10 %. Contá las columnas enteras y después los sueltos.';
+          }
+          if (it.modo === 'parte') {
+            return intento === 1 ? 'El ' + pct(it.p) + ' es ' + it.p + ' de cada 100.'
+              : it.p === 75 ? 'Pensá en 25 + 25 + 25.' : '¿Cuántas veces entra ' + it.p + ' en 100?';
+          }
+          if (intento === 1) return COMO_SE_CALCULA[it.p];
+          if (it.modo === 'problema' && it.cual === 'pagas') return 'Primero calculá cuánto te descuentan, y después restáselo a $' + it.base + '.';
+          return pistaConcreta(it.p, it.base);
+        },
+        revelado: function (it) {
+          return (typeof it.respuesta === 'number' ? 'Era ' + (it.modo === 'problema' && typeof it.cual !== 'number' ? '$' : '') + it.respuesta
+            : 'Era «' + it.respuesta + '»') + '. ' + dichoDePorcentaje(it);
+        },
+        acierto: dichoDePorcentaje
+      });
+    },
+    deClave: function (resto) {
+      var p = resto.split(':');
+      function num(s) { return /^\d+$/.test(s) ? parseInt(s, 10) : NaN; }
+      if (p[0] === 'de' && num(p[1]) > 0 && num(p[1]) <= 100 && num(p[2]) > 0 && num(p[1]) * num(p[2]) % 100 === 0) return porDe(num(p[1]), num(p[2]));
+      if (p[0] === 'dibujo' && num(p[1]) > 0 && num(p[1]) < 100) return porDibujo(num(p[1]));
+      if (p[0] === 'parte' && PARTE_DE[p[1]]) return porParte(num(p[1]));
+      if (p[0] === 'problema' && p.length === 5) {
+        var cual = p[1] === 'descuento' || p[1] === 'pagas' ? p[1] : num(p[1]);
+        var pp = num(p[2]), base = num(p[3]), cosa = num(p[4]);
+        if ((typeof cual === 'number' ? GRUPOS[cual] : COSAS_PLATA[cosa]) && pp > 0 && base * pp % 100 === 0) return porProblema(cual, pp, base, cosa);
+      }
+      return null;
+    },
+    repaso: function (it) {
+      return { simbolo: '💯', nombre: T.plano(consignaDePorcentaje(it)), dato: 'Era ' + (typeof it.respuesta === 'number' && it.modo === 'problema' && typeof it.cual !== 'number' ? '$' : '') + it.respuesta };
+    }
+  };
+
   /* ============================================================ */
 
   // en el orden de las edades, que es como se muestran
   var JUEGOS = [CONTAR, FIGURAS_JUEGO, COMPARAR, CUENTAS, SERIE, RELOJ,
-                DOBLES, POSICION, PROBLEMAS, TABLAS, DIVISION, FRACCIONES];
+                DOBLES, POSICION, DINERO, PROBLEMAS, TABLAS, DIVISION, FRACCIONES,
+                MEDIDAS, DECIMALES, PORCENTAJES];
   var NUEVOS = {};
   JUEGOS.forEach(function (j) {
     Tablero.conJugar(j);
@@ -1894,6 +2944,8 @@ window.Matematica = (function () {
     dibujarReloj: dibujarReloj,
     dibujarFigura: dibujarFigura,
     dibujarFraccion: dibujarFraccion,
+    dibujarBillete: dibujarBillete,
+    dibujarCuadricula: dibujarCuadricula,
     claveItem: function (item) { return item.id; },
     /**
      * Qué juego sabe dibujar esta pregunta. Acá es obligatorio: una tabla

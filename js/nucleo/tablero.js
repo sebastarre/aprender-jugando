@@ -900,6 +900,26 @@ window.Tablero = (function () {
     return juego;
   }
 
+  /**
+   * Un banco de pregunta y respuesta escrita, con las malas a mano. Cada
+   * fila trae además una pista para pensar (sale al equivocarse) y un
+   * dato que explica la respuesta (sale al acertar y al mostrar la que
+   * era): antes, al errar sólo decía «¡Buen intento!», sin enseñar nada.
+   *   [id, pregunta, respuesta, malas, pista, dato]
+   * Lo usan Ciencias, Historia y la comprensión de textos de Lengua.
+   */
+  function cuestionario(def, filas) {
+    return banco(Object.assign({
+      items: filas.map(function (f) { return { id: f[0], p: f[1], r: f[2], m: f[3], pista: f[4], dato: f[5] }; }),
+      forma: 'frase',
+      consigna: function (it) { return it.p; },
+      pista: function (it) { return it.pista || ''; },
+      textoAcierto: function (it) { return it.dato || ''; },
+      textoRevelado: function (it) { return 'Era «' + it.r + '».' + (it.dato ? ' ' + it.dato : ''); },
+      repaso: function (it) { return { simbolo: def.simbolo, nombre: plano(it.p), dato: it.r }; }
+    }, def));
+  }
+
   /* ======================== 3. materia ======================== */
 
   /** El jugar() de siempre: armar las preguntas y arrancar el motor. */
@@ -973,6 +993,7 @@ window.Tablero = (function () {
     cantidadesDeBanco: cantidadesDeBanco,
     resumenDeCantidad: resumenDeCantidad,
     banco: banco,
+    cuestionario: cuestionario,
     posicionesDeDesafio: posicionesDeDesafio,
     conJugar: conJugar,
     materia: materia

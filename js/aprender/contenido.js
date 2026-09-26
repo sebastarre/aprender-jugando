@@ -338,6 +338,33 @@ window.Lecciones = (function () {
     return window.Matematica ? Matematica.dibujarFraccion(n, d, 'circulo') : '';
   }
 
+  /** Billetes dibujados, en fila: [50, 20]. */
+  function billetes(lista) {
+    return window.Matematica ? '<div class="billetes">' + lista.map(Matematica.dibujarBillete).join('') + '</div>' : '';
+  }
+
+  /** Una barra partida en 10, con `n` partes pintadas: los décimos. */
+  function decimos(n) {
+    return window.Matematica ? Matematica.dibujarFraccion(n, 10, 'barra') : '';
+  }
+
+  /** Cien cuadraditos con `n` pintados: los centésimos, y los porcentajes. */
+  function cuadricula(n) {
+    return window.Matematica ? Matematica.dibujarCuadricula(n) : '';
+  }
+
+  /** Dos columnas: una cosa y lo que es (1 metro, 100 centímetros). */
+  function tabla(pares) {
+    return '<div class="lista-en">' + pares.map(function (p) {
+      return '<div class="lista-en-fila"><b>' + p[0] + '</b><span>' + p[1] + '</span></div>';
+    }).join('') + '</div>';
+  }
+
+  /** Un texto corto para leer, con su título, como en el juego «Leer y entender». */
+  function lectura(titulo, texto) {
+    return '<div class="lectura"><b class="lectura-titulo">' + titulo + '</b><p>' + texto + '</p></div>';
+  }
+
   /** Una planta con sus partes, de la raíz a la flor. */
   function planta() {
     var t = ' stroke="#27304A" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"';
@@ -996,6 +1023,162 @@ window.Lecciones = (function () {
           texto: 'Y al final, pensá si tiene sentido: si regaló caramelos, no puede tener <b>más</b> que antes.',
           gesto: 'piensa',
           practica: { pregunta: '«Mateo tenía <b>12</b> caramelos y regaló <b>4</b>.» ¿Cuántos le quedan?', opciones: ['8', '16', '3'], correcta: 0, explicacion: 'Regaló: le quedan menos. 12 − 4 = 8.', pista: '¿Tiene más o menos que antes? Si tiene menos, se resta.' }
+        }
+      ]
+    },
+
+
+    {
+      id: 'la-plata',
+      materia: 'matematica',
+      titulo: 'La plata',
+      icono: 'dinero',
+      edadMin: 7,
+      minutos: 3,
+      resumen: 'Contar billetes y calcular el vuelto.',
+      juego: 'matematica/dinero',
+      ejercicio: { juego: 'matematica/dinero', nivel: 'chicos', cantidad: 5, consigna: 'Contá la plata y calculá el vuelto.' },
+      reflexion: {"pregunta":"¿Por qué dos billetes pueden ser más plata que cinco?","razones":["Porque importa cuánto vale cada billete","Porque los billetes grandes pesan más","Porque cinco es poquito"],"correcta":0,"porque":"Dos billetes de $100 son $200, y cinco de $10 son sólo $50.","grande":"La próxima vez que vayan a comprar, ayudá a un grande a contar la plata y el vuelto."},
+      aprendiste: [
+        'Se cuenta lo que <b>vale</b> cada billete: uno de $50 y uno de $20 son $70.',
+        'Conviene empezar por el billete <b>más grande</b>.',
+        'El <b>vuelto</b> es lo que sobra: lo que pagaste menos lo que cuesta.'
+      ],
+      pasos: [
+        {
+          texto: '¡Hola! Para comprar algo, primero contamos la <b>plata</b>. Un billete de $20 y uno de $10 son <b>$30</b>.',
+          visual: function () { return billetes([20, 10]); }
+        },
+        {
+          prediccion: {"pregunta":"¿Cuánta plata hay acá?","opciones":["$70","$2","$30"],"correcta":0,"explicacion":"$50 + $20 = $70. Se cuenta lo que vale cada billete, no cuántos billetes hay."},
+          texto: 'Se cuenta lo que <b>vale</b> cada billete, no cuántos hay. Conviene empezar por el <b>más grande</b>.',
+          visual: function () { return billetes([50, 20]); }
+        },
+        {
+          texto: 'El <b>vuelto</b> es lo que te devuelven si pagás con más. Un alfajor de $70, pagado con $100: te dan <b>$30</b>.',
+          gesto: 'festejo',
+          visual: function () { return billetes([100]); },
+          truco: 'Para el vuelto, contá para arriba: de $70 a $100 faltan $30.',
+          practica: { pregunta: 'Comprás un jugo de <b>$60</b> y pagás con <b>$100</b>. ¿Cuánto te dan de vuelto?', opciones: ['$40', '$160', '$60'], correcta: 0, explicacion: 'De $60 a $100 faltan $40: ése es el vuelto.', pista: 'Contá para arriba: desde $60 hasta $100.' }
+        }
+      ]
+    },
+
+    {
+      id: 'las-medidas',
+      materia: 'matematica',
+      titulo: 'Las medidas',
+      icono: 'medidas',
+      edadMin: 9,
+      minutos: 3,
+      resumen: 'Metros, kilos, litros y horas.',
+      juego: 'matematica/medidas',
+      ejercicio: { juego: 'matematica/medidas', nivel: 'largo', cantidad: 5, consigna: 'Elegí la unidad y pasá de una a otra.' },
+      reflexion: {"pregunta":"¿Por qué no medimos el largo de un lápiz en kilómetros?","razones":["Porque daría un número chiquitísimo","Porque los lápices no se miden","Porque los kilómetros son para el peso"],"correcta":0,"porque":"Un lápiz mide unos 15 centímetros: en kilómetros sería 0,00015. La unidad que conviene hace que el número sea fácil.","grande":"Medí con un grande algo de tu casa con una cinta métrica, y decí en qué unidad lo mediste."},
+      aprendiste: [
+        'Cada cosa se mide con la unidad que conviene: un lápiz en <b>centímetros</b>, un viaje en <b>kilómetros</b>.',
+        'En 1 metro hay <b>100 cm</b>, en 1 kilómetro hay <b>1000 m</b> y en 1 kilo hay <b>1000 g</b>.',
+        'El tiempo no va de a diez: 1 hora son <b>60 minutos</b>.'
+      ],
+      pasos: [
+        {
+          texto: '¡Hola! Para medir, elegimos la <b>unidad</b> que conviene. Un lápiz se mide en <b>centímetros</b>; un viaje, en <b>kilómetros</b>.',
+          visual: function () { return emojis(['✏️', '🚗']); }
+        },
+        {
+          prediccion: {"pregunta":"¿Cuántos centímetros te parece que hay en 1 metro?","opciones":["100","10","1000"],"correcta":0,"sinDibujo":true,"explicacion":"En 1 metro hay 100 centímetros: «centi» quiere decir cien."},
+          texto: 'Las unidades se pasan de una a otra: en <b>1 metro</b> hay <b>100 centímetros</b>, y en <b>1 kilómetro</b>, <b>1000 metros</b>.',
+          visual: function () { return tabla([['1 kilómetro', '1000 metros'], ['1 metro', '100 centímetros'], ['1 centímetro', '10 milímetros']]); }
+        },
+        {
+          texto: 'Con el peso pasa igual: en <b>1 kilo</b> hay <b>1000 gramos</b>. Y en <b>1 litro</b> hay <b>1000 mililitros</b>.',
+          visual: function () { return tabla([['1 kilo', '1000 gramos'], ['medio kilo', '500 gramos'], ['1 litro', '1000 mililitros']]); },
+          truco: '«Kilo» quiere decir mil: un kilómetro son mil metros, y un kilo, mil gramos.',
+          practica: { pregunta: '¿Cuántos gramos hay en <b>2 kilos</b>?', opciones: ['2000', '200', '20'], correcta: 0, explicacion: 'Cada kilo tiene 1000 gramos: 2 kilos son 2000 gramos.', pista: 'En 1 kilo hay 1000 gramos. ¿Y en 2?' }
+        },
+        {
+          texto: 'El tiempo es distinto: no va de a diez. <b>1 hora</b> son <b>60 minutos</b>, y 1 minuto, <b>60 segundos</b>.',
+          gesto: 'piensa',
+          practica: { pregunta: '¿Cuántos minutos son <b>2 horas</b>?', opciones: ['120', '200', '60'], correcta: 0, explicacion: 'Cada hora son 60 minutos: 60 + 60 = 120.', pista: 'Una hora no tiene 100 minutos: tiene 60.' }
+        }
+      ]
+    },
+
+    {
+      id: 'numeros-con-coma',
+      materia: 'matematica',
+      titulo: 'Números con coma',
+      icono: 'decimales',
+      edadMin: 9,
+      minutos: 3,
+      resumen: 'Décimos y centésimos.',
+      juego: 'matematica/decimales',
+      ejercicio: { juego: 'matematica/decimales', nivel: 'decimos', cantidad: 5, consigna: 'Leé y escribí números con coma.' },
+      reflexion: {"pregunta":"¿Por qué 0,5 es más que 0,45?","razones":["Porque 5 décimos es más que 4 décimos","Porque tiene menos cifras","Porque 5 es impar"],"correcta":0,"porque":"Después de la coma se mira primero el lugar de los décimos: 5 le gana a 4. Con ceros se ve: 0,50 y 0,45.","grande":"Buscá con un grande un precio o una medida con coma, y leélo en voz alta."},
+      aprendiste: [
+        'Partido en 10, cada parte es un <b>décimo</b>: 0,3 son tres décimos.',
+        'Partido en 100, cada parte es un <b>centésimo</b>: 0,35 son treinta y cinco centésimos.',
+        'Para comparar, completá con ceros: <b>0,5 es 0,50</b>, que es más que 0,45.'
+      ],
+      pasos: [
+        {
+          texto: '¡Hola! Si partís algo en <b>10 partes iguales</b>, cada una es un <b>décimo</b>. Acá hay 3 pintadas: <b>0,3</b>.',
+          visual: function () { return decimos(3); }
+        },
+        {
+          prediccion: {"pregunta":"Hay 7 partes pintadas de 10. ¿Cómo te parece que se escribe?","opciones":["0,7","7","0,07"],"correcta":0,"explicacion":"Siete décimos se escribe 0,7: el 7 va justo después de la coma."},
+          texto: 'El primer lugar después de la coma es el de los <b>décimos</b>: siete décimos es <b>0,7</b>.',
+          visual: function () { return decimos(7); }
+        },
+        {
+          texto: 'Partido en <b>100</b>, cada cuadradito es un <b>centésimo</b>. Acá hay 35 pintados: <b>0,35</b>.',
+          visual: function () { return cuadricula(35); },
+          truco: 'Cada columna entera es un décimo: 35 centésimos son 3 columnas y 5 cuadraditos.'
+        },
+        {
+          texto: 'Ojo con la trampa: <b>0,5</b> es más que <b>0,45</b>, aunque 45 parezca más. Con un cero se ve: 0,50 le gana a 0,45.',
+          gesto: 'piensa',
+          visual: function () { return '<div class="fila-figuras">' + cuadricula(50) + cuadricula(45) + '</div>'; },
+          practica: { pregunta: '¿Cuál es el número <b>mayor</b>?', opciones: ['0,6', '0,58', '0,125'], correcta: 0, explicacion: '0,6 es 0,600: le gana a 0,580 y a 0,125.', pista: 'Mirá primero la cifra que va justo después de la coma.' }
+        }
+      ]
+    },
+
+    {
+      id: 'los-porcentajes',
+      materia: 'matematica',
+      titulo: 'Los porcentajes',
+      icono: 'porcentajes',
+      edadMin: 10,
+      minutos: 3,
+      resumen: 'Por ciento quiere decir «de cada 100».',
+      juego: 'matematica/porcentajes',
+      ejercicio: { juego: 'matematica/porcentajes', nivel: 'faciles', cantidad: 5, consigna: 'Calculá la mitad, la cuarta y la décima parte.' },
+      reflexion: {"pregunta":"¿Por qué el 100 % de algo es todo?","razones":["Porque son 100 de cada 100","Porque 100 es un número muy grande","Porque es el descuento más grande"],"correcta":0,"porque":"Por ciento es «de cada 100»: 100 de cada 100 no deja nada afuera.","grande":"Buscá con un grande un cartel de descuento, y calculen cuánto sale."},
+      aprendiste: [
+        '<b>Por ciento</b> quiere decir «de cada 100».',
+        'El <b>50 %</b> es la mitad, el <b>25 %</b> la cuarta parte y el <b>10 %</b> la décima parte.',
+        'Con un descuento, pagás el precio menos lo que te descuentan.'
+      ],
+      pasos: [
+        {
+          texto: '¡Hola! <b>Por ciento</b> quiere decir «de cada 100». Acá hay 100 cuadraditos y 50 pintados: el <b>50 %</b>.',
+          visual: function () { return cuadricula(50); }
+        },
+        {
+          prediccion: {"pregunta":"Si el 50 % son 50 de cada 100, ¿qué parte del todo te parece que es?","opciones":["La mitad","La cuarta parte","Todo"],"correcta":0,"sinDibujo":true,"explicacion":"50 de cada 100 es la mitad: el 50 % es la mitad."},
+          texto: 'El <b>50 %</b> es la <b>mitad</b>, el <b>25 %</b> es la <b>cuarta parte</b>, y el <b>10 %</b>, la <b>décima parte</b>.',
+          visual: function () { return tabla([['100 %', 'todo'], ['50 %', 'la mitad'], ['25 %', 'la cuarta parte'], ['10 %', 'la décima parte']]); }
+        },
+        {
+          texto: 'El 50 % de 80 es la mitad: <b>40</b>. Y el 10 % de 80 es dividir por 10: <b>8</b>.',
+          truco: 'El 25 % es la mitad de la mitad: la mitad de 80 es 40, y la mitad de 40 es 20.',
+          practica: { pregunta: '¿Cuánto es el <b>25 % de 40</b>?', opciones: ['10', '20', '25'], correcta: 0, explicacion: 'La mitad de 40 es 20, y la mitad de 20 es 10.', pista: 'El 25 % es la mitad de la mitad.' }
+        },
+        {
+          texto: 'Los porcentajes están en los <b>descuentos</b>: una remera de $800 con 25 % de descuento sale $200 menos, o sea <b>$600</b>.',
+          gesto: 'festejo',
+          visual: function () { return emojis(['👕', '🏷️']); }
         }
       ]
     },
@@ -1756,6 +1939,46 @@ window.Lecciones = (function () {
           texto: 'No hay que confundirlos: los <b>sinónimos</b> dicen lo mismo y los <b>contrarios</b>, lo opuesto.',
           truco: 'Los sinónimos sirven para no repetir la misma palabra cuando escribís.',
           practica: { pregunta: '¿Qué palabra dice lo mismo que <b>lindo</b>?', opciones: ['bonito', 'feo', 'sucio'], correcta: 0, explicacion: 'Lindo y bonito son sinónimos.', pista: 'Buscá la que dice lo mismo, no lo opuesto.' }
+        }
+      ]
+    },
+
+
+    {
+      id: 'leer-y-entender',
+      materia: 'lengua',
+      titulo: 'Leer y entender',
+      icono: 'comprension',
+      edadMin: 8,
+      minutos: 3,
+      resumen: 'Buscar en el texto y descubrir lo que no dice.',
+      juego: 'lengua/comprension',
+      ejercicio: { juego: 'lengua/comprension', nivel: 'n1', cantidad: 5, consigna: 'Leé cada texto y contestá.' },
+      reflexion: {"pregunta":"¿Por qué conviene volver a leer cuando no sabés una respuesta?","razones":["Porque la respuesta o sus pistas están en el texto","Porque así se termina más rápido","Porque la segunda vez el texto cambia"],"correcta":0,"porque":"El texto tiene todo lo que hace falta: lo que dice, y las pistas de lo que no dice.","grande":"Leé un cuento con un grande y hacele una pregunta que no esté escrita en el cuento."},
+      aprendiste: [
+        'Algunas respuestas están <b>escritas</b> en el texto: se buscan releyendo.',
+        'Otras se descubren con las <b>pistas</b> del texto, como un detective.',
+        'Las palabras de alrededor ayudan a entender una <b>palabra nueva</b>.'
+      ],
+      pasos: [
+        {
+          texto: '¡Hola! Leer bien es <b>entender</b> lo que dice el texto. Y si no te acordás de algo, ¡se vale volver a leer!',
+          visual: function () { return emojis(['📖', '🔎']); }
+        },
+        {
+          texto: 'Algunas respuestas están <b>escritas</b> en el texto: hay que buscarlas. Leé esto con atención.',
+          visual: function () { return lectura('Después de la lluvia', 'Tomi volvió de la escuela, dejó el paraguas mojado en la puerta y se sacó las botas llenas de barro. Después se tomó una leche calentita.'); },
+          practica: { pregunta: '¿Qué se tomó Tomi?', opciones: ['Una leche calentita', 'Un jugo', 'Un té'], correcta: 0, explicacion: 'Lo dice la última oración: «se tomó una leche calentita».', pista: 'Buscá en la última oración.' }
+        },
+        {
+          prediccion: {"pregunta":"¿Qué tiempo hacía cuando Tomi volvió de la escuela?","opciones":["Llovía","Hacía mucho calor","Nevaba"],"correcta":0,"explicacion":"El texto no lo dice, pero el paraguas mojado y las botas con barro son pistas: llovía."},
+          texto: 'Otras respuestas <b>no están escritas</b>: se descubren con las <b>pistas</b> del texto, como un detective.',
+          gesto: 'piensa',
+          visual: function () { return lectura('Después de la lluvia', 'Tomi volvió de la escuela, dejó el paraguas mojado en la puerta y se sacó las botas llenas de barro. Después se tomó una leche calentita.'); }
+        },
+        {
+          texto: 'Y a veces hay que descubrir qué quiere decir una <b>palabra nueva</b>. Las otras palabras de la oración ayudan.',
+          practica: { pregunta: '«El perro estaba <b>exhausto</b> después de correr toda la tarde.» ¿Qué quiere decir <b>exhausto</b>?', opciones: ['Muy cansado', 'Muy contento', 'Muy sucio'], correcta: 0, explicacion: 'Después de correr toda la tarde, el perro estaba muy cansado: exhausto.', pista: 'Pensá cómo quedás vos después de correr toda la tarde.' }
         }
       ]
     },
@@ -2715,6 +2938,162 @@ window.Lecciones = (function () {
         }
       ]
     },
+
+    /* ============ HISTORIA ============ */
+
+    {
+      id: 'los-simbolos-patrios',
+      materia: 'historia',
+      titulo: 'Los símbolos patrios',
+      icono: 'simbolos',
+      edadMin: 6,
+      minutos: 2,
+      resumen: 'La bandera, la escarapela, el himno y el escudo.',
+      juego: 'historia/simbolos',
+      ejercicio: { juego: 'historia/simbolos', nivel: 'n1', cantidad: 5, consigna: 'Contestá sobre la bandera y la escarapela.' },
+      reflexion: {"pregunta":"¿Por qué nos ponemos de pie cuando se iza la bandera?","razones":["Por respeto a lo que nos representa a todos","Para ver mejor","Porque hace frío"],"correcta":0,"porque":"Los símbolos patrios nos representan a todos: tratarlos con respeto es respetarnos entre todos.","grande":"Buscá con un grande una bandera argentina en tu barrio, y contá dónde la viste."},
+      aprendiste: [
+        'La <b>bandera</b> es celeste y blanca, con el Sol de Mayo. La creó <b>Manuel Belgrano</b>.',
+        'La <b>escarapela</b> fue el primer símbolo patrio.',
+        'El <b>Himno Nacional</b> y el <b>escudo</b> también son símbolos patrios.'
+      ],
+      pasos: [
+        {
+          texto: '¡Hola! Los <b>símbolos patrios</b> nos representan a todos. El más conocido es la <b>bandera</b>: celeste y blanca, con el <b>Sol de Mayo</b>.',
+          visual: function () { return bandera('AR'); }
+        },
+        {
+          prediccion: {"pregunta":"¿Quién te parece que creó la bandera?","opciones":["Manuel Belgrano","Cristóbal Colón","Un rey de España"],"correcta":0,"explicacion":"La creó Manuel Belgrano, en 1812, en Rosario, a orillas del río Paraná."},
+          texto: 'La creó <b>Manuel Belgrano</b> en 1812. Por eso el <b>20 de junio</b>, el día en que murió, es el <b>Día de la Bandera</b>.'
+        },
+        {
+          texto: 'La <b>escarapela</b> fue el primer símbolo patrio. Es celeste y blanca, y la llevamos en el pecho para las fiestas patrias.',
+          gesto: 'festejo',
+          visual: function () { return lugar('historia'); },
+          practica: { pregunta: '¿Qué día es el <b>Día de la Escarapela</b>?', opciones: ['El 18 de mayo', 'El 9 de julio', 'El 20 de junio'], correcta: 0, explicacion: 'El 18 de mayo, una semana antes del 25 de mayo.', pista: 'Es en mayo, poquito antes del 25.' }
+        },
+        {
+          texto: 'También son símbolos el <b>Himno Nacional</b>, que cantamos en los actos, y el <b>escudo</b>: sus dos manos que se dan la mano son la <b>unión</b>.',
+          visual: function () { return emojis(['🎶', '🤝']); }
+        }
+      ]
+    },
+
+    {
+      id: 'las-fechas-patrias',
+      materia: 'historia',
+      titulo: 'Las fechas patrias',
+      icono: 'fechas',
+      edadMin: 7,
+      minutos: 3,
+      resumen: 'El 25 de mayo, el 9 de julio y más.',
+      juego: 'historia/fechas',
+      ejercicio: { juego: 'historia/fechas', nivel: 'n1', cantidad: 5, consigna: 'Contestá qué recordamos en cada fecha.' },
+      reflexion: {"pregunta":"¿Por qué primero fue la Revolución y después la Independencia?","razones":["Porque primero tuvieron un gobierno propio, y después se animaron a declararse libres","Porque así lo decidió el rey","Porque fue todo el mismo día"],"correcta":0,"porque":"En 1810 se formó un gobierno patrio; en 1816, seis años después, se le dijo al mundo que éramos un país libre.","grande":"Preguntale a un grande qué hacía en la escuela para el 25 de mayo."},
+      aprendiste: [
+        'El <b>25 de mayo de 1810</b> fue la Revolución de Mayo: el primer gobierno patrio.',
+        'El <b>9 de julio de 1816</b>, en Tucumán, se declaró la independencia.',
+        'Otras fechas recuerdan a los próceres: Belgrano, San Martín y Sarmiento.'
+      ],
+      pasos: [
+        {
+          texto: '¡Hola! En las <b>fechas patrias</b> recordamos cosas importantes de nuestro país. Las dos más grandes son el <b>25 de mayo</b> y el <b>9 de julio</b>.',
+          visual: function () { return bandera('AR'); }
+        },
+        {
+          prediccion: {"pregunta":"El 25 de mayo de 1810, en Buenos Aires, la gente quería gobernarse sola. ¿Qué te parece que pasó?","opciones":["Se formó el primer gobierno patrio","Se fundó la ciudad","Llegó Colón"],"correcta":0,"explicacion":"Se formó la Primera Junta: el primer gobierno patrio. Fue la Revolución de Mayo."},
+          texto: 'El <b>25 de mayo de 1810</b> fue la <b>Revolución de Mayo</b>: frente al <b>Cabildo</b> se formó la <b>Primera Junta</b>, el primer gobierno patrio.',
+          visual: function () { return emojis(['🏛️']); }
+        },
+        {
+          texto: 'Seis años después, el <b>9 de julio de 1816</b>, en <b>Tucumán</b>, se declaró la <b>independencia</b>: ya no dependíamos del rey de España.',
+          truco: 'Mayo de 1810, la Revolución. Julio de 1816, la Independencia.',
+          practica: { pregunta: '¿Qué recordamos el <b>9 de julio</b>?', opciones: ['La independencia', 'La Revolución de Mayo', 'El Día de la Bandera'], correcta: 0, explicacion: 'El 9 de julio de 1816 se declaró la independencia, en Tucumán.', pista: 'Pasó en Tucumán, seis años después de la Revolución.' }
+        },
+        {
+          texto: 'Hay más: el <b>20 de junio</b> recordamos a Belgrano, el <b>17 de agosto</b> a San Martín, y el <b>11 de septiembre</b> a Sarmiento.',
+          gesto: 'festejo',
+          visual: function () { return tabla([['20 de junio', 'Día de la Bandera'], ['17 de agosto', 'San Martín'], ['11 de septiembre', 'Día del Maestro']]); }
+        }
+      ]
+    },
+
+    {
+      id: 'los-proceres',
+      materia: 'historia',
+      titulo: 'Los próceres',
+      icono: 'proceres',
+      edadMin: 8,
+      minutos: 3,
+      resumen: 'San Martín, Belgrano, Juana Azurduy y más.',
+      juego: 'historia/proceres',
+      ejercicio: { juego: 'historia/proceres', nivel: 'n1', cantidad: 5, consigna: 'Contestá sobre San Martín y Belgrano.' },
+      reflexion: {"pregunta":"¿Por qué recordamos a los próceres?","razones":["Porque lo que hicieron ayudó a que fuéramos un país libre","Porque eran famosos","Porque salen en los libros"],"correcta":0,"porque":"Gracias a lo que hicieron —pelear por la independencia, crear la bandera, abrir escuelas— hoy somos un país libre.","grande":"Preguntale a un grande qué prócer le gusta más, y por qué."},
+      aprendiste: [
+        '<b>San Martín</b> cruzó los Andes y ayudó a liberar la Argentina, Chile y Perú.',
+        '<b>Belgrano</b> creó la bandera y donó su premio para hacer escuelas.',
+        '<b>Juana Azurduy</b>, <b>Güemes</b> y <b>Sarmiento</b> también son próceres.'
+      ],
+      pasos: [
+        {
+          texto: '¡Hola! Los <b>próceres</b> son personas que ayudaron a que nuestro país fuera libre. El más conocido es <b>José de San Martín</b>.',
+          visual: function () { return emojis(['🎖️']); }
+        },
+        {
+          prediccion: {"pregunta":"San Martín llevó un ejército a Chile por un camino dificilísimo. ¿Por dónde te parece que pasó?","opciones":["Por la cordillera de los Andes","Por el mar, en barco","Por la selva"],"correcta":0,"sinDibujo":true,"explicacion":"Cruzó la cordillera de los Andes en 1817, con el Ejército de los Andes, a caballo y en mula."},
+          texto: 'San Martín cruzó la <b>cordillera de los Andes</b> y ayudó a liberar la <b>Argentina</b>, <b>Chile</b> y <b>Perú</b>. Le decimos el <b>Padre de la Patria</b>.',
+          visual: function () { return emojis(['⛰️', '🐴']); }
+        },
+        {
+          texto: '<b>Manuel Belgrano</b> creó la bandera, y con el premio que ganó por dos batallas mandó a hacer <b>escuelas</b>.',
+          visual: function () { return bandera('AR'); },
+          practica: { pregunta: '¿Qué pidió hacer Belgrano con su premio?', opciones: ['Escuelas', 'Un palacio', 'Estatuas suyas'], correcta: 0, explicacion: 'Donó el premio para hacer cuatro escuelas: para él, aprender era lo más importante.', pista: 'Pensá en lo que más le importaba: que todos aprendieran.' }
+        },
+        {
+          texto: 'Hubo muchos más: <b>Juana Azurduy</b> peleó por la independencia, <b>Güemes</b> defendió el norte y <b>Sarmiento</b> abrió escuelas.',
+          gesto: 'festejo',
+          visual: function () { return tabla([['Juana Azurduy', 'peleó en el Alto Perú'], ['Güemes', 'defendió el norte'], ['Sarmiento', 'abrió escuelas']]); }
+        }
+      ]
+    },
+
+    {
+      id: 'como-se-vivia',
+      materia: 'historia',
+      titulo: 'Cómo se vivía',
+      icono: 'colonia',
+      edadMin: 9,
+      minutos: 3,
+      resumen: 'Los pueblos originarios y la vida en la colonia.',
+      juego: 'historia/colonia',
+      ejercicio: { juego: 'historia/colonia', nivel: 'n2', cantidad: 5, consigna: 'Contestá sobre los pueblos originarios y la colonia.' },
+      reflexion: {"pregunta":"¿Por qué en la colonia se vendía el agua casa por casa?","razones":["Porque no había caños ni canillas","Porque el agua era un lujo de reyes","Porque a nadie le gustaba ir al río"],"correcta":0,"porque":"Sin caños ni canillas, alguien tenía que llevar el agua del río hasta las casas: el aguatero.","grande":"Preguntale a un grande qué cosas de hoy no existían cuando era chico."},
+      aprendiste: [
+        'Antes de los españoles vivían acá muchos <b>pueblos originarios</b>, y hoy siguen viviendo.',
+        'En la <b>colonia</b> no había luz eléctrica ni canillas: había velas, aguateros y carretas.',
+        'Por las calles pasaban vendedores, y de noche el <b>sereno</b> anunciaba la hora.'
+      ],
+      pasos: [
+        {
+          texto: '¡Hola! Mucho antes de que llegaran los españoles, acá vivían los <b>pueblos originarios</b>: diaguitas, guaraníes, tehuelches y muchos más.',
+          visual: function () { return emojis(['🌽', '🧉']); }
+        },
+        {
+          prediccion: {"pregunta":"Los diaguitas vivían en las montañas del noroeste. ¿Cómo te parece que cultivaban en las laderas?","opciones":["Haciendo terrazas, como escalones","Con tractores","No cultivaban nada"],"correcta":0,"explicacion":"Hacían terrazas en las laderas, como escalones, para que el agua no se llevara la tierra."},
+          texto: 'Cada pueblo vivía a su manera: los diaguitas hacían <b>terrazas</b>, los guaraníes ya tomaban <b>mate</b> y los tehuelches cazaban en la <b>Patagonia</b>.'
+        },
+        {
+          texto: 'Después, esto fue una <b>colonia</b> de España. No había luz eléctrica ni canillas: de noche se prendían <b>velas</b>.',
+          visual: function () { return emojis(['🕯️']); },
+          practica: { pregunta: 'En la colonia, ¿cómo llegaba el agua a las casas?', opciones: ['La traía el aguatero en su carro', 'Por la canilla', 'En botellas'], correcta: 0, explicacion: 'El aguatero sacaba agua del río y la vendía casa por casa.', pista: 'Todavía no había canillas.' }
+        },
+        {
+          texto: 'Por las calles pasaban vendedores, como la <b>mazamorrera</b> y el <b>aguatero</b>. Y de noche, el <b>sereno</b> anunciaba la hora.',
+          gesto: 'festejo',
+          visual: function () { return tabla([['el aguatero', 'vendía agua'], ['la mazamorrera', 'vendía mazamorra'], ['el sereno', 'cuidaba de noche']]); }
+        }
+      ]
+    }
   ];
 
   function porId(id) {

@@ -190,10 +190,16 @@ window.Voz = (function () {
       .replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\u{FE0F}\u{200D}]/gu, ' ')
       .replace(/[«»"“”]/g, '')
       .replace(/_{2,}/g, ' … ')
+      // la plata y los porcentajes: «$350» es «350 pesos», no «dólares»
+      .replace(/\$\s?(\d+)/g, function (m, n) { return n + ' pesos'; })
+      .replace(/(\d)\s*%/g, '$1 por ciento')
       .replace(/(\d)\s*\+\s*(\d)/g, '$1 más $2')
       .replace(/(\d)\s*[−-]\s*(\d)/g, '$1 menos $2')
       .replace(/(\d)\s*[×x]\s*(\d)/g, '$1 por $2')
       .replace(/(\d)\s*÷\s*(\d)/g, '$1 dividido $2')
+      // «1000 pesos − 350 pesos»: entre palabras, el signo suelto también se dice
+      .replace(/ − /g, ' menos ')
+      .replace(/ \+ /g, ' más ')
       .replace(/\s*=\s*/g, ' es igual a ')
       .replace(/→/g, ', ')
       .replace(/\s+/g, ' ')

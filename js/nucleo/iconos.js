@@ -51,6 +51,14 @@ window.Iconos = (function () {
           '<path d="M9 4h6"/>',
           '<path d="M7.6 15.5h8.8"/>']
     },
+    // Historia: la escarapela, con sus dos cintitas
+    historia: {
+      b: ['<circle cx="12" cy="9.5" r="6.5"/>'],
+      t: ['<path d="M8.8 14.6 7 21l2.7-1.2 1.6 2.2 1-6.2"/>',
+          '<path d="M15.2 14.6 17 21l-2.7-1.2-1.6 2.2-1-6.2"/>',
+          '<circle cx="12" cy="9.5" r="6.5"/>',
+          '<circle cx="12" cy="9.5" r="2.8"/>']
+    },
 
     /* ---- juegos de geografía ---- */
     paises: {
@@ -385,6 +393,25 @@ window.Iconos = (function () {
       b: [], t: ['<path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none" opacity=".55"/>',
                  '<circle cx="12" cy="12" r="8.5"/>', '<path d="M12 3.5v17"/>']
     },
+    // un billete: el círculo del medio y las dos rayitas de las puntas
+    dinero: {
+      b: ['<rect x="2.5" y="6.5" width="19" height="11" rx="2.5"/>'],
+      t: ['<rect x="2.5" y="6.5" width="19" height="11" rx="2.5"/>',
+          '<circle cx="12" cy="12" r="2.6"/>', '<path d="M6 10v4M18 10v4"/>']
+    },
+    // una regla con sus marcas
+    medidas: {
+      b: ['<rect x="2.5" y="8" width="19" height="8" rx="2"/>'],
+      t: ['<rect x="2.5" y="8" width="19" height="8" rx="2"/>',
+          '<path d="M6.5 8v3.5M10.5 8v2.2M14.5 8v3.5M18.5 8v2.2"/>']
+    },
+    decimales: {
+      b: [], t: ['<text x="12" y="16.6" text-anchor="middle" font-size="11" font-weight="800" fill="currentColor" stroke="none">0,5</text>']
+    },
+    porcentajes: {
+      b: [], t: ['<path d="M18 5.5 6 18.5" stroke-width="2.6"/>',
+                 '<circle cx="7.3" cy="7.3" r="2.5"/>', '<circle cx="16.7" cy="16.7" r="2.5"/>']
+    },
 
     /* ---- juegos de lengua ---- */
     letras: {
@@ -555,6 +582,43 @@ window.Iconos = (function () {
       b: ['<circle cx="12" cy="12" r="5.5"/>'],
       t: ['<circle cx="12" cy="12" r="5.5"/>',
           '<path d="M4.6 15c-2 1.8-2.6 3.3-1.6 3.9 1.8 1.1 7-1.3 11.6-5.4 4.6-4.1 7-8.3 5.3-9.4-1-.6-2.6-.1-4.6 1.3"/>']
+    },
+
+    /* ---- juegos de lengua (los nuevos) ---- */
+    // una hoja con renglones: un texto para leer
+    comprension: {
+      b: ['<rect x="5" y="3" width="14" height="18" rx="2.5"/>'],
+      t: ['<rect x="5" y="3" width="14" height="18" rx="2.5"/>',
+          '<path d="M8.5 8h7M8.5 11.5h7M8.5 15h4"/>']
+    },
+
+    /* ---- juegos de historia ---- */
+    // el Sol de Mayo
+    simbolos: {
+      b: ['<circle cx="12" cy="12" r="4.2"/>'],
+      t: ['<circle cx="12" cy="12" r="4.2"/>',
+          '<path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/>']
+    },
+    // una hoja de almanaque
+    fechas: {
+      b: ['<rect x="3.5" y="5" width="17" height="15.5" rx="3"/>'],
+      t: ['<rect x="3.5" y="5" width="17" height="15.5" rx="3"/>',
+          '<path d="M3.5 10h17M8 3v4M16 3v4"/>',
+          '<circle cx="12" cy="15" r="1.6" fill="currentColor" stroke="none"/>']
+    },
+    /* una medalla con su cinta. La primera versión era el sombrero de
+       dos puntas de los granaderos, y chiquito se leía como un ojo. */
+    proceres: {
+      b: ['<circle cx="12" cy="15" r="5.5"/>'],
+      t: ['<path d="M8.5 3 12 9.5 15.5 3"/>', '<circle cx="12" cy="15" r="5.5"/>',
+          '<path d="m12 12.2.9 1.8 2 .3-1.45 1.4.35 2-1.8-.95-1.8.95.35-2-1.45-1.4 2-.3Z" fill="currentColor" stroke="none"/>']
+    },
+    // el Cabildo: los arcos de abajo y la torre del medio
+    colonia: {
+      b: ['<path d="M4.5 12.5h15v8h-15Z"/>'],
+      t: ['<path d="M3 20.5h18"/>', '<path d="M4.5 20.5v-8h15v8"/>',
+          '<path d="M10 12.5V7.5h4v5M11 7.5V4.5h2v3"/>',
+          '<path d="M7 20.5v-3a1.5 1.5 0 0 1 3 0v3M14 20.5v-3a1.5 1.5 0 0 1 3 0v3"/>']
     }
   };
 

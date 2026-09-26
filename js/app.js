@@ -56,16 +56,17 @@
    *           lo resuelven las apps del rubro y es lo que hace que la
    *           pantalla se vea de caramelo en vez de de oficina.
    *
-   *   tinta   la letra que va sobre `alegre`. Los cinco pares están
+   *   tinta   la letra que va sobre `alegre`. Los seis pares están
    *           medidos de a uno: el peor da 6,1:1 (Inglés) y el mejor
    *           7,7:1 (Lengua).
    *
    *   dibujo  el dibujo de la materia en js/nucleo/dibujos.js: el globo,
-   *           las formas, los bloques de letras, la lupa y el globito
-   *           que dice «Hi!». Es lo que se ve en su ficha y en su cartel.
+   *           las formas, los bloques de letras, la lupa, el globito
+   *           que dice «Hi!» y la escarapela. Es lo que se ve en su
+   *           ficha y en su cartel.
    *
    * Los colores son los primarios de juguete del rediseño (cielo, coral,
-   * girasol, verde y violeta), los mismos de los dibujos. Lengua es la
+   * girasol, verde, violeta y rosa), los mismos de los dibujos. Lengua es la
    * única cuyo `color` no aguanta un dibujo blanco encima (el amarillo da
    * 2,4:1): donde lleva círculo, el dibujo va en tinta (ver tarjeta()).
    */
@@ -101,6 +102,12 @@
       color: '#7B5AE0', suave: '#ECE6FD',
       alegre: '#A58CF5', tinta: '#23104F',
       texto: 'Palabras y frases en inglés', modulo: Ingles
+    },
+    {
+      id: 'historia', nombre: 'Historia', icono: 'historia', dibujo: 'historia',
+      color: '#D6457A', suave: '#FDE4EE',
+      alegre: '#FF93B4', tinta: '#4A0F26',
+      texto: 'Fechas patrias, próceres y símbolos', modulo: Historia
     }
   ];
 
@@ -419,7 +426,7 @@
         { donde: '#seguir', titulo: 'Lo que sigue',
           texto: 'Acá siempre está el próximo paso: el juego que venía jugando, en el nivel que le toca. Un toque y a jugar.' },
         { donde: '#menu-jugar', titulo: 'Jugar',
-          texto: 'Cinco materias con juegos para su edad. Cada juego es un camino de niveles, con un desafío cada cinco.' },
+          texto: 'Seis materias con juegos para su edad. Cada juego es un camino de niveles, con un desafío cada cinco.' },
         { donde: '#menu-aprender', titulo: 'Aprender',
           texto: 'Lecciones cortas con dibujos, leídas en voz alta, que terminan con un ejercicio.' },
         { donde: '#meta-hoy', titulo: 'La meta del día',
@@ -861,7 +868,7 @@
       break;
     }
     var edad = edadDelChico();
-    var orden = ['matematica', 'lengua', 'geografia', 'ciencias', 'ingles'];
+    var orden = ['matematica', 'lengua', 'geografia', 'ciencias', 'historia', 'ingles'];
     for (var k = 0; k < orden.length; k++) {
       var mm = materiaPorId(orden[k]);
       if (!mm || !mm.disponible || materiaOculta(mm)) continue;

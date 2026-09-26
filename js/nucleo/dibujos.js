@@ -28,7 +28,7 @@ window.Dibujos = (function () {
     cielo: '#3AA3E8', coral: '#F2644E', girasol: '#FFC93C', verde: '#4DBF6B',
     violeta: '#8B6CF0', rosa: '#FF93B4', agua: '#C7EBFD', blanco: '#FFFFFF',
     naranja: '#FF9A3C', piel: '#F2B48E', pelo: '#7A4A2E', pelo2: '#3B2A22',
-    canas: '#8C94A6', pasto: '#9ED98B'
+    canas: '#8C94A6', pasto: '#9ED98B', celeste: '#74ACDF'
   };
 
   // el trazo de todos los dibujos: grueso, redondo, del color de la tinta
@@ -116,6 +116,25 @@ window.Dibujos = (function () {
     circ(80, 24, 2.2, T, ' stroke-width="0"') + circ(89, 24, 2.2, T, ' stroke-width="0"') + circ(98, 24, 2.2, T, ' stroke-width="0"') +
     camino('M14 42 q0 -12 12 -12 h52 q12 0 12 12 v32 q0 12 -12 12 h-34 l-16 16 v-16 h-2 q-12 0 -12 -12 z', C.blanco) +
     letra(52, 71, 'Hi!', C.violeta, 32);
+
+  // Historia: la escarapela, celeste y blanca, con sus dos cintas
+  D.historia = (function () {
+    // los pliegues de la cinta, como rayitas alrededor
+    var pliegues = '';
+    for (var i = 0; i < 20; i++) {
+      var a = i * Math.PI / 10;
+      pliegues += 'M' + (60 + Math.cos(a) * 27).toFixed(1) + ' ' + (50 + Math.sin(a) * 27).toFixed(1) +
+                  ' L' + (60 + Math.cos(a) * 36).toFixed(1) + ' ' + (50 + Math.sin(a) * 36).toFixed(1) + ' ';
+    }
+    return camino('M50 72 L36 112 L44 106 L50 114 L62 76 Z', C.celeste) +
+      camino('M70 72 L84 112 L76 106 L70 114 L58 76 Z', C.celeste) +
+      raya('M54 80 L44 106', C.blanco, 4) + raya('M66 80 L76 106', C.blanco, 4) +
+      circ(60, 50, 38, C.celeste) +
+      raya(pliegues, T, 2, ' opacity=".3"') +
+      circ(60, 50, 25, C.blanco) +
+      circ(60, 50, 13, C.celeste) +
+      brillo('M33 40 a29 29 0 0 1 12 -15');
+  })();
 
   /* ---------- los lugares grandes ---------- */
 

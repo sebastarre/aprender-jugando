@@ -1,7 +1,7 @@
 /* ============================================================
    Materia: Lengua.
 
-   Once juegos. Las edades salen de en qué año se enseña cada tema según
+   Doce juegos. Las edades salen de en qué año se enseña cada tema según
    el Diseño Curricular de la Provincia de Buenos Aires (2018):
 
      4–6    La primera letra     🍎 → M          (Nivel Inicial)
@@ -13,6 +13,7 @@
      8–11   Plurales             lápiz → lápices («-z/-ces», 3.º)
      8–12   Ortografía           vaca, vaka…     (mb, nv, reglas sin excepción: 3.º)
      8–12   Sinónimos            contento → feliz (3.º)
+     8–12   Leer y entender      un texto corto y tres preguntas (comprensión lectora, 3.º a 6.º)
      9–12   Tildes               camión, camion… («reglas generales de acentuación», 4.º)
     10–12   Clases de palabras   correr → verbo  (sustantivo, adjetivo, verbo en 3.º;
                                                   con adverbio, más adelante)
@@ -802,8 +803,83 @@ window.Lengua = (function () {
     return 'Mirala letra por letra.';
   }
 
+  /* ============================================================
+     Leer y entender
+     ============================================================ */
+
+  /* Textos cortos escritos para la app, de los tipos que se leen en la
+     escuela: un cuento, una nota sobre un animal, una carta, una receta.
+     Cada uno trae tres preguntas: lo que el texto dice (se encuentra
+     releyendo), lo que no dice pero se entiende (si a la mañana había
+     charcos, de noche llovió) y qué quiere decir una palabra. La pista
+     no dice la respuesta: dice dónde buscarla. */
+  var TEXTOS = {
+    tortuga: ['La tortuga de Lucía', 'Lucía tiene una tortuga que se llama Pancha. Pancha come lechuga y tomate, y los días de sol sale al patio a calentarse. En invierno casi no se mueve: se esconde debajo de unas hojas secas y duerme hasta que vuelve el calor. Lucía siempre le deja un platito con agua.'],
+    tormenta: ['La tormenta', 'El sábado a la tarde el cielo se puso gris y empezó a soplar un viento fuerte. Mateo juntó la ropa del tendedero justo antes de que cayeran las primeras gotas. Esa noche se cortó la luz, así que la familia cenó con velas y jugó a las cartas hasta tarde. A la mañana, el patio estaba lleno de charcos.'],
+    hornero: ['El hornero', 'El hornero es un pájaro marrón que vive en casi toda la Argentina. Es famoso por su nido: lo construye con barro y pasto, y tiene forma de horno de pan, con una entrada y un pasillo adentro. El macho y la hembra trabajan juntos, y pueden tardar varias semanas en terminarlo. Es el ave nacional de la Argentina.'],
+    plaza: ['Una tarde en la plaza', 'Sofía y su abuelo fueron a la plaza con una bolsa de pan duro. Se sentaron en un banco cerca del lago, y enseguida llegaron los patos. Uno chiquito no se animaba a acercarse, así que Sofía le tiró las miguitas bien cerca, para que comiera tranquilo. Cuando se terminó el pan, el abuelo le compró un helado.'],
+    carta: ['Una carta', 'Querida abuela: te escribo desde el campamento. Ayer hicimos una caminata larguísima hasta una cascada, y llevé la mochila todo el camino sin quejarme. A la noche, en el fogón, cantamos canciones y comimos malvaviscos. Te extraño mucho, pero me estoy divirtiendo. El domingo vuelvo y te cuento todo. Un beso, Tomás.'],
+    receta: ['Licuado de banana', 'Para hacer un licuado de banana necesitás una banana, un vaso de leche y una cucharada de azúcar. Primero, pelá la banana y cortala en rodajas. Después, poné la banana, la leche y el azúcar en la licuadora. Pedile a un grande que la prenda un minuto. Por último, serví el licuado en un vaso y tomalo enseguida.'],
+    yaguarete: ['El yaguareté', 'El yaguareté es el felino más grande de América. Tiene la piel amarilla con manchas negras en forma de rosetas, y es un gran nadador. Antes vivía en buena parte de la Argentina, pero hoy quedan muy pocos, en algunas selvas y montes del norte. Por eso está en peligro de extinción, y hay personas que trabajan para protegerlo.'],
+    faro: ['El faro del fin del mundo', 'En el canal Beagle, cerca de Ushuaia, hay un faro sobre una isla chiquita de piedra. Está pintado de rojo y blanco, y se llama Les Éclaireurs. De noche, su luz les avisa a los barcos que navegan por el canal dónde hay rocas, para que no choquen. Muchos turistas lo visitan en barco y lo llaman «el faro del fin del mundo».']
+  };
+
+  function textoDe(it) {
+    var t = TEXTOS[it.id.split(':')[1].split('-')[0]];
+    return '<div class="lectura"><b class="lectura-titulo">' + t[0] + '</b><p>' + t[1] + '</p></div>';
+  }
+
+  // lo que se encuentra releyendo; el resto se piensa
+  var LO_QUE_DICE = ['tortuga-1', 'tortuga-2', 'tormenta-1', 'hornero-1', 'plaza-1', 'carta-1', 'carta-2',
+                     'receta-1', 'yaguarete-1', 'yaguarete-3', 'faro-1', 'faro-2'];
+
+  var COMPRENSION_JUEGO = T.cuestionario({
+    id: 'comprension',
+    nombre: 'Leer y entender',
+    icono: 'comprension',
+    color: '#0d9488',
+    suave: '#ccfbf1',
+    texto: 'Textos cortos con preguntas',
+    edadMin: 8,
+    edadMax: 12,
+    niveles: [
+      { nombre: 'Lo que dice el texto', filtro: function (it) { return LO_QUE_DICE.indexOf(it.id.split(':')[1]) >= 0; } },
+      { nombre: 'Pensar un poco más' }
+    ],
+    simbolo: '📖',
+    visual: textoDe
+  }, [
+    ['tortuga-1', '¿Qué come Pancha?', 'Lechuga y tomate', ['Carne y huevos', 'Galletitas', 'Pescado'], 'Buscalo en la segunda oración.', 'El texto dice: «Pancha come lechuga y tomate».'],
+    ['tortuga-2', '¿Qué hace Pancha en invierno?', 'Duerme escondida bajo unas hojas', ['Sale al patio todos los días', 'Se va de viaje', 'Come más que nunca'], 'Buscá la parte que habla del invierno.', 'En invierno se esconde debajo de unas hojas secas y duerme.'],
+    ['tortuga-3', '¿Por qué Pancha casi no se mueve en invierno?', 'Porque hace frío', ['Porque está enojada', 'Porque no tiene comida', 'Porque Lucía no la deja'], 'Fijate qué tiene que volver para que se despierte.', 'Duerme hasta que vuelve el calor: se queda quieta porque hace frío.'],
+    ['tormenta-1', '¿Qué hizo Mateo antes de que empezara a llover?', 'Juntó la ropa del tendedero', ['Cerró las ventanas', 'Se fue a dormir', 'Prendió las velas'], 'Buscá la oración que habla de las primeras gotas.', 'Juntó la ropa justo antes de que cayeran las primeras gotas.'],
+    ['tormenta-2', '¿Por qué cenaron con velas?', 'Porque se cortó la luz', ['Porque era un cumpleaños', 'Porque les gustaba', 'Porque no tenían lámparas'], 'Fijate qué pasó esa noche.', 'Se cortó la luz, así que cenaron con velas.'],
+    ['tormenta-3', '¿Qué pasó durante la noche?', 'Llovió mucho', ['Nevó', 'Salió el sol', 'No pasó nada'], 'Mirá cómo estaba el patio a la mañana.', 'Si a la mañana había charcos, es que de noche llovió mucho.'],
+    ['hornero-1', '¿Con qué construye su nido el hornero?', 'Con barro y pasto', ['Con ramitas y plumas', 'Con piedras', 'Con hojas secas'], 'Buscá la palabra «construye».', 'El hornero hace su nido con barro y pasto.'],
+    ['hornero-2', '¿Por qué se llama «hornero»?', 'Porque su nido parece un horno', ['Porque le gusta el calor', 'Porque come pan', 'Porque vive en las panaderías'], 'Fijate a qué se parece su nido.', 'Su nido tiene forma de horno de pan: de ahí viene su nombre.'],
+    ['hornero-3', '¿De qué trata el texto?', 'De un pájaro y su nido', ['De cómo se hace el pan', 'De un viaje al campo', 'De una panadería'], 'Pensá de qué habla cada oración.', 'El texto cuenta cómo es el hornero y cómo hace su nido.'],
+    ['plaza-1', '¿Con quién fue Sofía a la plaza?', 'Con su abuelo', ['Con su mamá', 'Con una amiga', 'Sola'], 'Está en la primera oración.', 'Sofía fue a la plaza con su abuelo.'],
+    ['plaza-2', '¿Para qué llevaron el pan duro?', 'Para darles de comer a los patos', ['Para comérselo ellos', 'Para hacer sándwiches', 'Para tirarlo a la basura'], 'Fijate quiénes llegaron enseguida.', 'Llevaron el pan para los patos: por eso llegaron enseguida.'],
+    ['plaza-3', 'Por lo que hizo con el pato chiquito, ¿cómo es Sofía?', 'Amable con los animales', ['Miedosa', 'Enojona', 'Distraída'], 'Pensá por qué le tiró las miguitas cerca.', 'Sofía pensó en el pato que tenía miedo: es amable con los animales.'],
+    ['carta-1', '¿Quién escribe la carta?', 'Tomás', ['La abuela', 'Un maestro', 'La mamá de Tomás'], 'Fijate cómo termina la carta: ahí va la firma.', 'La carta la firma Tomás, al final.'],
+    ['carta-2', '¿Dónde está Tomás?', 'En un campamento', ['En la escuela', 'En la casa de la abuela', 'En la playa'], 'Está al principio de la carta.', 'Tomás escribe desde el campamento.'],
+    ['carta-3', '¿Cómo se siente Tomás?', 'Contento, aunque extraña', ['Aburrido', 'Asustado', 'Enojado'], 'Buscá lo que dice de cómo la está pasando.', 'Dice que extraña mucho, pero que se está divirtiendo.'],
+    ['receta-1', '¿Qué hay que hacer primero?', 'Pelar la banana y cortarla', ['Prender la licuadora', 'Servir el licuado', 'Poner la leche'], 'Buscá la palabra «primero».', 'Primero se pela la banana y se corta en rodajas.'],
+    ['receta-2', '¿Para qué sirve este texto?', 'Para explicar cómo se hace algo', ['Para contar un cuento', 'Para vender licuadoras', 'Para dar una noticia'], 'Fijate que dice qué hacer, paso por paso.', 'Es una receta: explica cómo se hace algo, paso por paso.'],
+    ['receta-3', '¿Por qué hay que pedirle a un grande que prenda la licuadora?', 'Porque puede lastimar', ['Porque es muy pesada', 'Porque hace mucho ruido', 'Porque hace frío'], 'Pensá qué tiene adentro una licuadora.', 'La licuadora tiene cuchillas filosas: con un grande es más seguro.'],
+    ['yaguarete-1', '¿Cómo es la piel del yaguareté?', 'Amarilla con manchas negras', ['Negra con rayas blancas', 'Toda marrón', 'Gris con puntitos'], 'Buscá la palabra «piel».', 'Tiene la piel amarilla con manchas negras en forma de rosetas.'],
+    ['yaguarete-2', '¿Qué quiere decir que está <b>en peligro de extinción</b>?', 'Que puede desaparecer para siempre', ['Que es un animal peligroso', 'Que está enfermo', 'Que vive escondido'], 'Fijate que el texto dice que quedan muy pocos.', 'Estar en peligro de extinción es que quedan tan pocos que pueden desaparecer.'],
+    ['yaguarete-3', '¿Qué hace muy bien el yaguareté?', 'Nadar', ['Volar', 'Cavar túneles', 'Correr en la nieve'], 'Buscá la palabra «nadador».', 'El texto dice que es un gran nadador.'],
+    ['faro-1', '¿Para qué sirve el faro?', 'Para que los barcos no choquen', ['Para iluminar la ciudad', 'Para que duerman los turistas', 'Para mirar pájaros'], 'Buscá lo que hace su luz de noche.', 'Su luz avisa dónde hay rocas, para que los barcos no choquen.'],
+    ['faro-2', '¿De qué colores está pintado el faro?', 'Rojo y blanco', ['Azul y blanco', 'Verde y amarillo', 'Todo negro'], 'Buscá la palabra «pintado».', 'El faro está pintado de rojo y blanco.'],
+    ['faro-3', '¿Qué quiere decir <b>navegan</b>?', 'Viajan por el agua', ['Vuelan', 'Se hunden', 'Duermen'], 'Pensá en lo que hacen los barcos.', 'Navegar es viajar en barco por el agua.']
+  ]);
+  /* Sin «¡Cosas nuevas!» antes de las preguntas: presentar un texto es
+     leérselo al chico, y leerlo es justo lo que se practica. */
+  delete COMPRENSION_JUEGO.presentar;
+
   var JUEGOS = [PRIMERA_LETRA, VOCAL_QUE_FALTA, ARMAR_JUEGO, RIMAS_JUEGO, CONTRARIOS_JUEGO, SILABAS_JUEGO,
-                PLURALES_JUEGO, ORTOGRAFIA_JUEGO, SINONIMOS_JUEGO, TILDES_JUEGO, CLASES_JUEGO];
+                PLURALES_JUEGO, ORTOGRAFIA_JUEGO, SINONIMOS_JUEGO, COMPRENSION_JUEGO, TILDES_JUEGO, CLASES_JUEGO];
 
   var modulo = T.materia('lengua', JUEGOS);
   /** Para las pruebas. */
