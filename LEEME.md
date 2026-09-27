@@ -1032,7 +1032,7 @@ si ese camino ya lo terminó, el que se le recomienda después; si nunca jugó, 
 más avanzado de su edad que todavía no terminó.
 
 Abajo, **las dos puertas** (Jugar y Aprender), cada una con su dibujo sobre una
-mancha de color; **Para hoy** (la meta, el repaso y la prueba gratis, que se
+mancha de color; **Para hoy** (la meta, el repaso y el aviso del plan, que se
 esconde entera si no hay ninguna de las tres); y chico lo que se usa menos: la
 mascota y los ajustes.
 
@@ -1209,32 +1209,49 @@ correcto en el mapa, el borde de una tarjeta— donde no llevan texto encima.
 
 ## La mensualidad
 
-**Prueba gratis y después suscripción mensual de Google Play.** Todo el código
-está en `js/nucleo/suscripcion.js`; la pantalla es `#/plan` («Tu plan», en
-Configuración).
+**Suscripción mensual de Google Play, con la prueba gratis de Google Play.**
+Todo el código está en `js/nucleo/suscripcion.js`; la pantalla es `#/plan`
+(«Tu plan», en Configuración).
 
 ### Cómo funciona
 
-- Los primeros **7 días** está todo abierto, sin tarjeta.
-- Terminada la prueba, los chicos pueden seguir mirando la app, pero para
-  **empezar** un juego, una lección, un repaso o un examen hace falta la
-  suscripción. Lo que ya hicieron no se pierde nunca.
-- Un grande toca «Suscribirme con Google Play». Antes se pide el **PIN del modo
-  parental** (si no hay, se crea ahí): es una app para chicos y un chico no
-  puede suscribirse solo. Google cobra, renueva cada mes y maneja las
-  cancelaciones; la app nunca ve una tarjeta.
+- La **prueba gratis de 7 días es la de Google Play**: una oferta de la
+  suscripción. Un grande toca «Empezar la prueba gratis», pone el **PIN del
+  modo parental** (si no hay, se crea ahí: es una app para chicos y un chico
+  no puede suscribirse solo) y la activa en la hoja de Google, con su cuenta.
+  Desde ahí está todo abierto. Al terminar la prueba, Google cobra el primer
+  mes, salvo que se haya cancelado antes: entonces no se cobra nada.
+- Antes la prueba la contaba la app (siete días desde que se abría), y quien
+  borraba los datos volvía a empezar. Ahora quién tiene derecho a la prueba lo
+  decide Google: una vez por cuenta.
+- Sin suscripción —antes de empezar la prueba, o si se cortó— los chicos
+  pueden mirar la app, pero para **empezar** un juego, una lección, un repaso
+  o un examen hace falta. Lo que ya hicieron no se pierde nunca.
+- Los estados (`Suscripcion.estado()`): `libre` (la web), `nueva` (nunca se
+  suscribió en este aparato), `activa` (pagada o en los días de prueba: para
+  Google es lo mismo) y `vencida` (la tuvo y ya no).
 - Al abrir la app se le pregunta a Google si la suscripción sigue activa. Sin
   internet se confía en la última respuesta durante 35 días.
 - La suscripción es **del aparato**, no de cada chico: cubre a todos los
   hermanos que jueguen en ese celular. No viaja en la copia de seguridad.
-- En el inicio, un cartel avisa sólo en los **últimos 3 días** de prueba y
-  cuando terminó. Antes no: un «te quedan 7 días» todos los días le habla de
-  plata al chico, y la app es para él.
+- En el inicio, un cartel aparece sólo cuando hace falta un grande: para
+  empezar la prueba o porque terminó la suscripción. Durante la prueba no se
+  cuentan días en pantalla: le hablaría de plata al chico, y los días los lleva
+  Google, que es quien cobra.
+- Los días de la prueba y el precio se leen de Google (`getDetails`: el precio
+  y `freeTrialPeriod`); si no se puede, se muestran los de `CONFIG`.
 
 **Sólo se cobra adentro de la app de Google Play**, que es el único lugar
 donde se puede pagar. En la página web (y en iPhone) todo sigue abierto: si
 no, un chico quedaría bloqueado sin que el grande tenga cómo pagar. Hasta que
 la app esté publicada en Google Play, nada cambia para nadie.
+
+La app sabe que está en la de Google Play si la abrió la app de Android (el
+referrer `android-app://`) o si Google Play le contestó. No alcanza con que
+exista `getDigitalGoodsService`: **Edge de escritorio la trae**, pero Google
+Play no le contesta, y con ese criterio la web en Edge frenaba a los chicos
+con un plan imposible de pagar. Por eso el dato guardado ahora es `play` y se
+ignora el `enPlay` de antes, que pudo quedar mal anotado.
 
 ### Lo que se configura
 
@@ -1244,7 +1261,7 @@ Arriba de todo en `js/nucleo/suscripcion.js`, en `CONFIG`:
 |---|---|
 | `producto` | El ID de la suscripción en Play Console (`bichito_mensual`) |
 | `precioDeReferencia` | El precio que se muestra si no se puede leer el de Google. **El precio real lo pone Google** desde Play Console, y la app lo lee de ahí |
-| `diasDePrueba` | Los días gratis (7) |
+| `diasDePrueba` | Los días gratis que se muestran si no se pueden leer de Google (7). **Tienen que coincidir con la oferta de Play Console** |
 | `fichaDePlay` | El link a la ficha de Google Play, para el botón «Descargar» de la web |
 | `soloEnLaAppDePlay` | `true`: en la web no se cobra. `false`: se cobra en todos lados |
 
@@ -1260,30 +1277,41 @@ Arriba de todo en `js/nucleo/suscripcion.js`, en `CONFIG`:
    Ojo: va en la raíz del dominio, no en `/aprender-jugando/`, así que hay que
    crear el repositorio `sebastarre.github.io` para alojarlo (o pasar la app a
    un dominio propio).
-4. **Crear la suscripción** en Play Console → Monetizar → Suscripciones, con el
-   ID `bichito_mensual`, período mensual y el precio. **Sin prueba gratis en
-   Play**: la prueba ya la da la app, y con las dos se sumarían.
+4. **Crear la suscripción** en Play Console → Monetizar → Productos →
+   Suscripciones, con el ID `bichito_mensual`:
+   - **Plan básico**: renovación automática, período de 1 mes, y el precio
+     (por país, o el de Argentina y que Google convierta el resto). Activarlo.
+   - **La prueba gratis es una oferta de ese plan**: «Agregar oferta» → ID
+     `prueba-7-dias` → elegibilidad **«Adquisición de nuevos clientes»** (sólo
+     quien nunca tuvo esta suscripción) → una fase **«Prueba gratis»** de
+     **7 días**. Activarla. Google la aplica sola en la hoja de pago a quien le
+     corresponde; la app no tiene que pedirla.
+   - Si se cambian los días de la oferta, cambiar también `diasDePrueba`.
 5. **La app es para chicos**: completar el programa «Diseñado para familias»
    de Google Play. El pago detrás del PIN parental ya cumple con que un chico no
    pueda comprar solo.
 6. **Probar con cuentas de prueba** (Play Console → Configuración → Pruebas de
-   licencia): compran sin que se cobre.
+   licencia): compran sin que se cobre. Con esas cuentas los tiempos se
+   aceleran: la prueba gratis y cada mes duran unos minutos, así que se puede
+   ver entero el paso de «nueva» a «activa» y de ahí a «vencida» al cancelar.
 
 ### Lo que falta y conviene saber
 
-- **Sin servidor.** La app le pregunta a Google desde el celular. Alcanza para
-  que funcione, pero quien sepa borrar los datos del navegador puede volver a
-  empezar la prueba. Para cerrarlo hace falta un servidor que valide las
-  compras con la API de Google Play.
+- **Sin servidor.** La app le pregunta a Google desde el celular. Como la
+  prueba ahora la da Google, borrar los datos ya no la vuelve a empezar. Un
+  servidor que valide las compras con la API de Google Play sigue siendo lo
+  más seguro, pero no hace falta para arrancar.
 - **El reconocimiento de la compra.** Google devuelve la plata de una
   suscripción que no se «reconoce» en 3 días. Con la facturación de Play
   activada en la TWA, la documentación de Chrome indica que se reconoce sola,
   pero **hay que confirmarlo con una compra de prueba** antes de publicar: si a
   los 3 días Google la reembolsa, hay que reconocerla desde un servidor.
 - La compra y el precio de Google se probaron con una imitación de Google Play
-  en el navegador (el recorrido completo: prueba vencida, freno, PIN, pago,
+  en el navegador (el recorrido completo: sin suscripción, freno, PIN, pago,
   cancelación y activación). Con Google Play de verdad todavía no se probó,
-  porque la app no está publicada.
+  porque la app no está publicada: **la prueba gratis de Play sólo se puede
+  ver con la app subida a Play Console** (alcanza la pista de prueba interna)
+  y una cuenta de prueba.
 
 ## Perfiles y modo parental
 
@@ -1570,8 +1598,8 @@ borrarlo ahí es borrarlo del todo.
 ### Recomendable, no obligatorio
 
 - **Validar la suscripción en un servidor.** Hoy la app confía en lo que le
-  dice Google en el aparato. Alcanza para arrancar, pero quien borre los datos
-  puede volver a empezar la prueba gratis.
+  dice Google en el aparato. Alcanza para arrancar (la prueba gratis la da
+  Google, así que borrar los datos no la vuelve a empezar).
 - **Grabar las voces** con `node herramientas/generar-voces.mjs --generar`,
   para que suenen igual de naturales en todos los teléfonos (la app ya está
   lista: ver «Qué voz», más arriba). Hace falta elegir la voz y una cuenta

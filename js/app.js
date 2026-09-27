@@ -3569,9 +3569,10 @@
      El cobro y el estado viven en js/nucleo/suscripcion.js; acá sólo se
      pintan. La pantalla es para el grande: explica antes de pedir. */
 
-  function textoDeDias(n) {
-    return n === 1 ? 'Te queda 1 día de prueba gratis' : 'Te quedan ' + n + ' días de prueba gratis';
-  }
+  /* La prueba gratis es la de Google Play: se empieza desde su hoja de
+     pago y la cuenta Google (ver js/nucleo/suscripcion.js). Los días que
+     dura los dice la oferta de Play Console. */
+  function diasGratis(est) { return Util.plural(est.dias, 'día') + ' gratis'; }
 
   function pintarPlan() {
     var est = Suscripcion.estado();
@@ -3583,8 +3584,8 @@
     chip.textContent = {
       libre: 'En la página web todo está abierto',
       activa: 'Tu suscripción está activa',
-      prueba: textoDeDias(est.dias),
-      vencida: 'Terminó la prueba gratis'
+      nueva: 'Probalo ' + diasGratis(est),
+      vencida: 'Terminó la suscripción'
     }[est.tipo];
 
     // los números salen de lo que hay, así no quedan viejos cuando se sume un juego
@@ -3592,16 +3593,25 @@
     var lecciones = window.Lecciones ? Lecciones.LECCIONES.length : 0;
     $('plan-cuenta-juegos').textContent = 'Los ' + juegos + ' juegos';
     $('plan-cuenta-lecciones').textContent = 'Las ' + lecciones + ' lecciones';
-    $('plan-paso-prueba').textContent = Util.plural(cfg.diasDePrueba, 'día') + ' gratis';
+    function textosConDias(est) {
+      if (est.tipo === 'nueva') chip.textContent = 'Probalo ' + diasGratis(est);
+      $('plan-paso-prueba').textContent = diasGratis(est);
+      $('plan-precio-nota').textContent = est.tipo === 'nueva'
+        ? 'Los primeros ' + Util.plural(est.dias, 'día') + ' son gratis. Si la cancelás antes de que terminen, no se cobra nada.'
+        : 'Se renueva sola cada mes. La cancelás cuando quieras desde Google Play.';
+    }
+    textosConDias(est);
 
     $('plan-precio').textContent = cfg.precioDeReferencia;
-    Suscripcion.precio().then(function (p) { $('plan-precio').textContent = p; });
-    $('plan-precio-nota').textContent = est.tipo === 'activa'
-      ? 'Se renueva sola cada mes. La cancelás cuando quieras desde Google Play.'
-      : 'Los primeros ' + Util.plural(cfg.diasDePrueba, 'día') + ' son gratis y sin tarjeta. Cancelás cuando quieras.';
+    // el precio y los días de la oferta los dice Google (si se puede preguntarle)
+    Suscripcion.precio().then(function (p) {
+      $('plan-precio').textContent = p;
+      textosConDias(Suscripcion.estado());
+    });
 
     $('plan-puerta').hidden = true;
     $('plan-mensaje').hidden = true;
+    $('btn-plan-suscribirme').textContent = est.tipo === 'nueva' ? 'Empezar la prueba gratis' : 'Suscribirme con Google Play';
     $('btn-plan-suscribirme').hidden = est.tipo === 'activa' || !enPlay;
     $('btn-plan-revisar').hidden = !enPlay || est.tipo === 'activa';
 
@@ -3664,33 +3674,32 @@
     Suscripcion.comprar().then(function (est) {
       pintarPlan();
       if (est.tipo !== 'activa') {
-        mensajeDelPlan('Google Play registró el pago. Si en un rato no se activa, tocá «Ya pagué».', 'info');
+        mensajeDelPlan('Google Play registró la suscripción. Si en un rato no se activa, tocá «Ya me suscribí».', 'info');
       }
     }).catch(function (e) {
       $('btn-plan-suscribirme').hidden = false;
       mensajeDelPlan(
-        e.motivo === 'cancelado' ? 'No se hizo ningún pago.'
+        e.motivo === 'cancelado' ? 'No se empezó nada ni se hizo ningún pago.'
           : e.motivo === 'sin-play' ? 'La suscripción se paga desde la app de Google Play.'
           : 'Google Play no pudo completar el pago. Probá de nuevo en un rato.',
         e.motivo === 'cancelado' ? 'info' : 'mal');
     });
   }
 
-  /* En el inicio, sólo los últimos 3 días de prueba y cuando terminó. Un
-     cartel de «te quedan 7 días» todos los días le habla al chico de
-     plata, y la app es para él; el grande ve el plan en Configuración. */
-  var AVISAR_PRUEBA_DESDE = 3;
-
+  /* En el inicio, sólo cuando hace falta un grande: para empezar la
+     prueba o porque terminó la suscripción. Durante la prueba no se
+     cuentan días en pantalla: le hablaría al chico de plata, y los días
+     los lleva Google, que es quien cobra. */
   function pintarPlanDelInicio() {
     var tarjeta = $('plan-hoy');
     if (!tarjeta) return;
     var est = Suscripcion.estado();
-    tarjeta.hidden = !(est.tipo === 'vencida' || (est.tipo === 'prueba' && est.dias <= AVISAR_PRUEBA_DESDE));
+    tarjeta.hidden = !(est.tipo === 'nueva' || est.tipo === 'vencida');
     if (tarjeta.hidden) return;
     tarjeta.classList.toggle('vencida', est.tipo === 'vencida');
-    $('plan-hoy-titulo').textContent = est.tipo === 'prueba' ? 'Prueba gratis' : 'Terminó la prueba gratis';
-    $('plan-hoy-texto').textContent = est.tipo === 'prueba'
-      ? textoDeDias(est.dias) + '. Mostrale el plan a un grande.'
+    $('plan-hoy-titulo').textContent = est.tipo === 'nueva' ? 'Probalo gratis' : 'Terminó la suscripción';
+    $('plan-hoy-texto').textContent = est.tipo === 'nueva'
+      ? 'Para empezar a jugar, pedile a un grande que active la prueba gratis.'
       : 'Para seguir jugando, pedile a un grande que mire el plan.';
   }
 
@@ -3699,8 +3708,8 @@
     $('config-plan-dato').textContent = {
       libre: 'En la página web todo está abierto. La suscripción se paga desde la app de Google Play.',
       activa: 'Suscripción activa. Se renueva sola cada mes.',
-      prueba: textoDeDias(est.dias) + '.',
-      vencida: 'Terminó la prueba gratis. Para seguir jugando hace falta la suscripción.'
+      nueva: 'Los primeros ' + Util.plural(est.dias, 'día') + ' son gratis, desde Google Play.',
+      vencida: 'Terminó la suscripción. Para seguir jugando hace falta suscribirse.'
     }[est.tipo];
   }
 
@@ -4660,9 +4669,10 @@
        el tiempo del día cumplido, no se empieza nada nuevo. */
     if (materiaOculta(materiaDeLaRuta(partes))) return irA('#/');
     if (partes[0] === 'tienda' && !Almacen.control().tienda) return irA('#/personalizacion');
-    /* Terminó la prueba gratis y no hay suscripción: se puede mirar la
-       app, pero no empezar un juego, una lección ni un repaso. Son las
-       mismas rutas que cuentan tiempo, las que son «usar» la app. */
+    /* Sin suscripción (todavía no se empezó la prueba gratis, o terminó):
+       se puede mirar la app, pero no empezar un juego, una lección ni un
+       repaso. Son las mismas rutas que cuentan tiempo, las que son «usar»
+       la app. En la web no se frena nada. */
     if (RUTAS_CON_TIEMPO.indexOf(partes[0]) >= 0 && Suscripcion.bloquea()) {
       cortarPartida();
       return irA('#/plan');
@@ -5082,7 +5092,7 @@
       mensajeDelPlan('Revisando con Google Play…');
       Suscripcion.revisar().then(function (est) {
         pintarPlan();
-        mensajeDelPlan(est.tipo === 'activa' ? '¡Listo! Tu suscripción está activa.'
+        mensajeDelPlan(est.tipo === 'activa' ? '¡Listo! Todo está abierto.'
           : Suscripcion.enLaAppDePlay()
             ? 'Google Play no encontró una suscripción en esta cuenta.'
             : 'Esto se revisa desde la app instalada con Google Play.');

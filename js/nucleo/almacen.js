@@ -993,10 +993,12 @@ window.Almacen = (function () {
   /* La mensualidad (js/nucleo/suscripcion.js). Es del aparato y no de
      cada chico: la suscripción de Google Play es de la cuenta del
      celular, y cubre a todos los hermanos que jueguen en él.
-       pruebaDesde  cuándo empezó la prueba gratis
-       activa       si la última vez Google dijo que estaba pagada
+       activa       si la última vez Google dijo que estaba activa (pagada o en la prueba)
        verificada   cuándo fue esa última vez
-       enPlay       si alguna vez se abrió desde la app de Google Play */
+       tuvo         si alguna vez estuvo activa en este aparato
+       play         si alguna vez se abrió desde la app de Google Play (y Google contestó)
+       enPlay       de antes: en Edge de escritorio podía quedar mal anotado, ya no se usa
+       pruebaDesde  de antes, cuando la prueba gratis la contaba la app: ya no se usa */
   /* ---------------------- el camino de niveles ----------------------
 
      Las estrellas de cada nivel del mapa de cada juego, la mejor vez. Un

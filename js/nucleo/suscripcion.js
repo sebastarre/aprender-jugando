@@ -1,5 +1,5 @@
 /* ============================================================
-   La mensualidad: prueba gratis y después, suscripción de Google Play.
+   La mensualidad: la suscripción de Google Play, con su prueba gratis.
 
    Cómo se cobra. La app se publica en Google Play como una «TWA» (la
    misma página web, empaquetada como app de Android) y la suscripción
@@ -17,10 +17,16 @@
    sin darle al grande ninguna forma de pagar. Si algún día se quiere
    cobrar también en la web, está CONFIG.soloEnLaAppDePlay.
 
+   La prueba gratis es la de Google Play: una oferta de la suscripción
+   (ver LEEME, «La mensualidad»). El grande la empieza desde la hoja de
+   pago de Google, con su cuenta; mientras dura, Google dice que la
+   suscripción está activa, y al terminar cobra, salvo que la haya
+   cancelado. La app no cuenta días: antes contaba siete desde que se
+   abría, y quien borraba los datos volvía a empezar. Ahora quién tiene
+   derecho a la prueba lo decide Google (una vez por cuenta).
+
    Lo que sabe la app vive en este aparato (Almacen.plan()), no en un
-   servidor. Alcanza para que funcione, pero quien sepa borrar los datos
-   del navegador puede volver a empezar la prueba. Para algo a prueba de
-   eso hace falta un servidor que valide las compras con Google.
+   servidor: la última respuesta de Google, para poder jugar sin señal.
    ============================================================ */
 window.Suscripcion = (function () {
   'use strict';
@@ -35,6 +41,9 @@ window.Suscripcion = (function () {
        lee de ahí. Éste es el que se muestra cuando no se puede leer (en
        la web, o sin internet). Tiene que coincidir con el de Play. */
     precioDeReferencia: '$ 4.000',
+    /* Los días de prueba también los pone Google (la oferta de Play
+       Console); éstos se muestran cuando no se pueden leer. Tienen que
+       coincidir con los de la oferta. */
     diasDePrueba: 7,
     // la ficha en Google Play, para el botón «Descargar» de la web; vacía, no se muestra
     fichaDePlay: '',
@@ -52,19 +61,29 @@ window.Suscripcion = (function () {
 
   var servicio = null;
   var precioLeido = null;
+  var diasLeidos = null;       // los de la oferta de prueba, como los dice Google
 
   /* ---------------- dónde estamos ---------------- */
 
-  /** ¿Estamos adentro de la app de Google Play? */
+  /**
+   * ¿Estamos adentro de la app de Google Play? Sí, si la abrió la app de
+   * Android (la TWA abre la página con un referrer «android-app://», sólo
+   * en la primera carga) o si Google Play contestó alguna vez (conectar()).
+   * Las dos cosas se anotan para las cargas siguientes.
+   *
+   * No alcanza con que exista getDigitalGoodsService: Edge de escritorio
+   * la trae, pero Google Play no le contesta. Antes eso bastaba, y en la
+   * web con Edge la app frenaba a los chicos con un plan que ahí no se
+   * puede pagar. Por eso el dato es `play` y no el `enPlay` de antes, que
+   * pudo quedar mal anotado en esas computadoras.
+   */
   function enLaAppDePlay() {
-    var p = Almacen.plan();
-    if (p.enPlay) return true;
-    /* La TWA abre la página con un referrer «android-app://». Sólo viene
-       en la primera carga, así que se anota para las siguientes. */
-    var desdePlay = 'getDigitalGoodsService' in window ||
-                    String(document.referrer).indexOf('android-app://') === 0;
-    if (desdePlay) Almacen.guardarPlan({ enPlay: true });
-    return desdePlay;
+    if (Almacen.plan().play) return true;
+    if (String(document.referrer).indexOf('android-app://') === 0) {
+      Almacen.guardarPlan({ play: true });
+      return true;
+    }
+    return false;
   }
 
   /** ¿En este aparato se cobra? */
@@ -74,20 +93,6 @@ window.Suscripcion = (function () {
 
   /* ---------------- el estado ---------------- */
 
-  function pruebaDesde() {
-    var p = Almacen.plan();
-    if (!p.pruebaDesde) {
-      Almacen.guardarPlan({ pruebaDesde: Date.now() });
-      return Date.now();
-    }
-    return p.pruebaDesde;
-  }
-
-  function diasDePruebaQueQuedan() {
-    var pasados = Math.floor((Date.now() - pruebaDesde()) / DIA);
-    return Math.max(0, CONFIG.diasDePrueba - pasados);
-  }
-
   function activa() {
     var p = Almacen.plan();
     return !!(p.activa && p.verificada && Date.now() - p.verificada < CONFIANZA_SIN_CONEXION);
@@ -96,18 +101,21 @@ window.Suscripcion = (function () {
   /**
    * Cómo está el plan en este aparato:
    *   'libre'    acá no se cobra (la web)
-   *   'activa'   pagó
-   *   'prueba'   todavía está en los días gratis
-   *   'vencida'  terminó la prueba y no hay suscripción
+   *   'activa'   hay suscripción: pagada, o en los días de prueba de Google
+   *   'nueva'    todavía no empezó la prueba gratis
+   *   'vencida'  tuvo la suscripción y ya no la tiene (canceló, o no se pudo cobrar)
+   * `dias` son los de la prueba gratis, para mostrarlos.
    */
   function estado() {
-    var dias = diasDePruebaQueQuedan();
-    var tipo = !cobra() ? 'libre' : activa() ? 'activa' : dias > 0 ? 'prueba' : 'vencida';
-    return { tipo: tipo, dias: dias };
+    var tipo = !cobra() ? 'libre' : activa() ? 'activa' : Almacen.plan().tuvo ? 'vencida' : 'nueva';
+    return { tipo: tipo, dias: diasLeidos || CONFIG.diasDePrueba };
   }
 
   /** ¿Hay que frenar a un chico que quiere empezar a jugar? */
-  function bloquea() { return estado().tipo === 'vencida'; }
+  function bloquea() {
+    var t = estado().tipo;
+    return t === 'nueva' || t === 'vencida';
+  }
 
   /* ---------------- hablar con Google ---------------- */
 
@@ -115,7 +123,12 @@ window.Suscripcion = (function () {
     if (servicio) return Promise.resolve(servicio);
     if (!('getDigitalGoodsService' in window)) return Promise.resolve(null);
     return window.getDigitalGoodsService(METODO)
-      .then(function (s) { servicio = s; return s; })
+      .then(function (s) {
+        servicio = s;
+        // contestó Google Play: estamos en su app
+        if (s && !Almacen.plan().play) Almacen.guardarPlan({ play: true });
+        return s;
+      })
       .catch(function () { return null; });
   }
 
@@ -132,13 +145,23 @@ window.Suscripcion = (function () {
     }
   }
 
-  /** El precio por mes, como lo dice Google; o el de referencia. */
+  /** «P7D» → 7, «P1W» → 7, «P1M» → 30: la duración de la prueba, en días. */
+  function aDias(periodo) {
+    var m = /^P(?:(\d+)Y)?(?:(\d+)M)?(?:(\d+)W)?(?:(\d+)D)?$/.exec(String(periodo || ''));
+    if (!m) return null;
+    var dias = (+m[1] || 0) * 365 + (+m[2] || 0) * 30 + (+m[3] || 0) * 7 + (+m[4] || 0);
+    return dias || null;
+  }
+
+  /** El precio por mes, como lo dice Google; o el de referencia. De paso, los días de prueba. */
   function precio() {
     if (precioLeido) return Promise.resolve(precioLeido);
     return conectar().then(function (s) {
       if (!s) return CONFIG.precioDeReferencia;
       return s.getDetails([CONFIG.producto]).then(function (lista) {
-        precioLeido = lista && lista[0] ? formatear(lista[0].price) : CONFIG.precioDeReferencia;
+        var item = lista && lista[0];
+        precioLeido = item ? formatear(item.price) : CONFIG.precioDeReferencia;
+        if (item) diasLeidos = aDias(item.freeTrialPeriod);
         return precioLeido;
       });
     }).catch(function () { return CONFIG.precioDeReferencia; });
@@ -155,14 +178,18 @@ window.Suscripcion = (function () {
       if (!s) return estado();
       return s.listPurchases().then(function (compras) {
         var hay = (compras || []).some(function (c) { return c.itemId === CONFIG.producto; });
-        Almacen.guardarPlan({ activa: hay, verificada: Date.now() });
+        var cambio = { activa: hay, verificada: Date.now() };
+        // la tuvo alguna vez: si se corta, ya no es «nueva» sino «vencida»
+        if (hay) cambio.tuvo = true;
+        Almacen.guardarPlan(cambio);
         return estado();
       });
     }).catch(function () { return estado(); });
   }
 
   /**
-   * Abre la hoja de pago de Google. Se resuelve con el estado nuevo, o
+   * Abre la hoja de pago de Google, que ofrece sola la prueba gratis a
+   * quien le corresponde (la oferta de Play Console). Se resuelve con el estado nuevo, o
    * se rechaza con un Error cuyo `motivo` es 'sin-play' (no estamos en
    * la app de Play), 'cancelado' (cerró la hoja) u 'otro'.
    */
@@ -196,6 +223,7 @@ window.Suscripcion = (function () {
     estado: estado,
     bloquea: bloquea,
     precio: precio,
+    aDias: aDias,           // para las pruebas
     revisar: revisar,
     comprar: comprar
   };
