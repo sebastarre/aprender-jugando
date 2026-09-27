@@ -399,9 +399,31 @@ para **elegir otra**: tocar una la elige y dice una frase de prueba. «Automáti
 deja que la app elija sola. Lo elegido es del aparato, como el sonido.
 
 La voz depende de lo que traiga cada teléfono. Para que suene igual de bien en
-todos habría que grabar las lecciones con una voz generada y guardarlas como
-audio (el texto de las lecciones es fijo, así que se puede); las preguntas de
-los juegos se arman al azar y seguirían con la voz del aparato.
+todos, la app ya sabe usar **voces grabadas**, aunque todavía no hay ninguna:
+
+- La unidad es la **frase**, la misma que usa la voz del aparato (un idioma y
+  una oración). Cada frase tiene una **clave** que sale de su texto y de la
+  voz con que se grabó, y su audio va en `assets/voz/<clave>.mp3`. Si existe
+  `assets/voz/manifiesto.json`, la app sabe cuáles hay.
+- Al decir algo, si **todas** sus frases están grabadas, suenan las
+  grabaciones; si falta alguna, se dice todo con la voz del aparato (dos voces
+  en la misma oración suenan peor que una robótica). Si un archivo no llega
+  (sin red y sin copia), lo que falta sigue con la voz del aparato. Sin
+  manifiesto, todo es como antes.
+- Los audios no se guardan al instalar: se guardan a medida que suenan, en una
+  caché aparte que no se borra con cada versión (`aprender-jugando-voz`).
+- `node herramientas/generar-voces.mjs` junta las frases fijas pidiéndoselas a
+  la propia app (cada paso de las lecciones, los carteles del juego, y las
+  preguntas, respuestas y carteles de los juegos de lista) y las deja en
+  `herramientas/voz/frases.json` para revisarlas: hoy son unas 6.900 frases,
+  170.000 caracteres (Azure regala 500.000 por mes en las voces neuronales).
+  Lo que se arma al vuelo (las cuentas, la plata, los nombres) no se graba.
+- Con `--generar` las pide a **Azure Speech** (por defecto `es-AR-ElenaNeural`
+  y `en-US-JennyNeural`, cambiables con `VOZ_ES` y `VOZ_EN`) y escribe el
+  manifiesto. La clave va en las variables de entorno `AZURE_SPEECH_KEY` y
+  `AZURE_SPEECH_REGION`, nunca en un archivo. Después, `generar-sw.js`.
+  Cambiar de voz cambia todas las claves: nunca suena una grabación vieja
+  mezclada con una nueva, y `--limpiar` borra las que quedaron sin usar.
 
 **El ejercicio.** Al terminar de leer no dice «¡Listo!»: dice «¡Ahora te toca a
 vos!» y arma cinco preguntas de un juego, del nivel que mejor ejercita lo que
@@ -1550,8 +1572,10 @@ borrarlo ahí es borrarlo del todo.
 - **Validar la suscripción en un servidor.** Hoy la app confía en lo que le
   dice Google en el aparato. Alcanza para arrancar, pero quien borre los datos
   puede volver a empezar la prueba gratis.
-- **Grabar las lecciones con una voz generada**, para que suenen igual de
-  naturales en todos los teléfonos (ver «Qué voz», más arriba).
+- **Grabar las voces** con `node herramientas/generar-voces.mjs --generar`,
+  para que suenen igual de naturales en todos los teléfonos (la app ya está
+  lista: ver «Qué voz», más arriba). Hace falta elegir la voz y una cuenta
+  de Azure Speech.
 
 ## Estructura
 
@@ -1610,6 +1634,7 @@ assets/banderas/           Una imagen por país (ar.png, br.png, ...)
 herramientas/              Scripts para regenerar los datos (no hacen falta para jugar)
 herramientas/dibujos.html  Muestrario de todos los dibujos, para revisarlos
 herramientas/probar.mjs    Las pruebas de toda la app (ver «Las pruebas»)
+herramientas/generar-voces.mjs  Junta las frases fijas y las graba (ver «Qué voz»)
 .claude/                   Servidor local opcional para desarrollo
 ```
 

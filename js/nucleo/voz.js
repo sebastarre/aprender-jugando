@@ -11,6 +11,18 @@
    Lo que está marcado con lang="en" se lee con voz en inglés. Sin eso,
    la voz castellana lee «red» como «red» de pescar, que en una lección
    de inglés es enseñar mal.
+
+   Las voces grabadas. Si en assets/voz/ hay un manifiesto.json, las
+   frases que lista están grabadas (assets/voz/<clave>.mp3) y suenan
+   ésas en vez de la voz del aparato: una voz neuronal elegida, igual en
+   todos los teléfonos. La unidad es la frase, igual que para la síntesis
+   (un idioma y una oración), y la clave sale de su texto: así los textos
+   fijos (las lecciones, las preguntas de las listas, los mensajes del
+   juego) se graban una vez, y lo que se arma al vuelo (una cuenta, un
+   nombre) sigue con la voz del aparato. Si falta grabar alguna frase de
+   lo que hay que decir, se dice todo con la del aparato: dos voces en la
+   misma oración suenan peor que una robótica. Las frases se juntan y se
+   graban con herramientas/generar-voces.mjs.
    ============================================================ */
 window.Voz = (function () {
   'use strict';
@@ -18,6 +30,43 @@ window.Voz = (function () {
   var sintesis = window.speechSynthesis || null;
   var voces = [];
   var turno = 0;              // cada decir() nuevo deja sin efecto al anterior
+
+  /* ---------------------- las voces grabadas ---------------------- */
+
+  var grabadas = null;        // { voces: { es, en }, hay: { clave: true } } si hay manifiesto
+  var sonandoGrabada = false; // una tanda de grabaciones en curso (con sus pausas)
+  /* Un solo reproductor para todo: en iPhone un audio sólo suena si lo
+     destrabó un toque, y el destrabado es del elemento, no de la página. */
+  var reproductor = typeof Audio === 'function' ? new Audio() : null;
+
+  if (window.fetch && reproductor) {
+    fetch('assets/voz/manifiesto.json').then(function (r) { return r.ok ? r.json() : null; }).then(function (m) {
+      if (!m || !m.frases || !m.frases.length) return;
+      grabadas = { voces: m.voces || {}, hay: {} };
+      m.frases.forEach(function (c) { grabadas.hay[c] = true; });
+    }).catch(function () { /* sin manifiesto (o sin red): la voz del aparato */ });
+  }
+
+  /* La clave de una frase: 16 cifras hexadecimales de su texto, su idioma
+     y la voz con que se grabó (otra voz, otras claves: nunca suena una
+     grabación vieja). Son dos resúmenes de 32 bits pegados; el generador
+     avisa si dos frases chocaran. */
+  function claveDe(texto, idioma, voz) {
+    var s = (voz || idioma) + '|' + texto;
+    var a = 0x811c9dc5, b = 0x5bd1e995;
+    for (var i = 0; i < s.length; i++) {
+      var c = s.charCodeAt(i);
+      a = Math.imul(a ^ c, 0x01000193) >>> 0;
+      b = Math.imul(b ^ c, 0x5bd1e995) >>> 0;
+      b = (b ^ (b >>> 15)) >>> 0;
+    }
+    return ('0000000' + a.toString(16)).slice(-8) + ('0000000' + b.toString(16)).slice(-8);
+  }
+
+  function archivoDe(f) {
+    var clave = claveDe(f.texto, f.idioma, grabadas.voces[f.idioma]);
+    return grabadas.hay[clave] ? 'assets/voz/' + clave + '.mp3' : null;
+  }
 
   function cargarVoces() {
     try { voces = sintesis.getVoices() || []; } catch (e) { voces = []; }
@@ -173,7 +222,7 @@ window.Voz = (function () {
     });
   }
 
-  function hay() { return !!sintesis; }
+  function hay() { return !!sintesis || !!grabadas; }
 
   /** ¿Hay una voz en castellano instalada? Sin voces cargadas, no se sabe. */
   function tieneCastellano() {
@@ -245,6 +294,8 @@ window.Voz = (function () {
   /** Corta lo que se esté diciendo. */
   function parar() {
     turno++;
+    sonandoGrabada = false;
+    if (reproductor && !reproductor.paused) { try { reproductor.pause(); } catch (e) { /* nada */ } }
     if (sintesis) { try { sintesis.cancel(); } catch (e) { /* nada */ } }
   }
 
@@ -260,10 +311,19 @@ window.Voz = (function () {
    */
   function decir(html, opciones) {
     opciones = opciones || {};
-    if (!sintesis) return false;
+    var frases = frasesDe(html);
+    if (!frases.length) return false;
+    var archivos = grabadas ? frases.map(archivoDe) : [];
+    var todas = !!grabadas && archivos.every(Boolean);
+    if (!todas && !sintesis) return false;
     parar();
     var mio = turno;
+    if (todas) return decirGrabado(frases, archivos, opciones, mio);
+    return decirConSintesis(html, frases, opciones, mio);
+  }
 
+  /** Lo que se va a decir, de a una frase: { texto, idioma, parte, empieza }. */
+  function frasesDe(html) {
     var frases = [];
     [].concat(html).forEach(function (h, parte) {
       if (!h) return;
@@ -276,8 +336,49 @@ window.Voz = (function () {
         });
       });
     });
-    if (!frases.length) return false;
+    return frases;
+  }
 
+  /* Las grabaciones, una detrás de la otra en el mismo reproductor. Si
+     un archivo no llega (sin red y sin copia guardada), lo que falta se
+     dice con la voz del aparato. */
+  function decirGrabado(frases, archivos, opciones, mio) {
+    var i = 0;
+    sonandoGrabada = true;
+    function siguiente() {
+      if (mio !== turno) return;
+      if (i >= frases.length) {
+        sonandoGrabada = false;
+        if (opciones.alTerminar) opciones.alTerminar();
+        return;
+      }
+      var f = frases[i], archivo = archivos[i];
+      i++;
+      var pausa = opciones.alEmpezarParte && f.empieza && i > 1 && opciones.pausa ? opciones.pausa * 1000 : 0;
+      setTimeout(function () {
+        if (mio !== turno) return;
+        var fallado = false;
+        // el error llega dos veces (el del reproductor y el de play()): se atiende uno
+        var fallo = function () {
+          if (mio !== turno || fallado) return;
+          fallado = true;
+          reproductor.onended = reproductor.onerror = null;
+          sonandoGrabada = false;
+          if (sintesis) decirConSintesis(null, frases.slice(i - 1), opciones, mio);
+        };
+        reproductor.onended = siguiente;
+        reproductor.onerror = fallo;
+        reproductor.src = archivo;
+        if (opciones.alEmpezarParte && f.empieza) opciones.alEmpezarParte(f.parte);
+        var p = reproductor.play();
+        if (p && p.catch) p.catch(fallo);
+      }, pausa);
+    }
+    siguiente();
+    return true;
+  }
+
+  function decirConSintesis(html, frases, opciones, mio) {
     frases.forEach(function (f, i) {
       if (opciones.alEmpezarParte && f.empieza && i > 0 && opciones.pausa) {
         /* Un silencio: una frase vacía con volumen cero no suena en todos
@@ -311,7 +412,9 @@ window.Voz = (function () {
         if (mio !== turno || motivo === 'interrupted' || motivo === 'canceled') return;
         if (voz && !voz.localService && !rotas[voz.name]) {
           rotas[voz.name] = true;
-          decir(html, opciones);
+          if (html) return decir(html, opciones);
+          parar();
+          decirConSintesis(null, frases, opciones, turno);
         }
       };
       if (i === frases.length - 1) {
@@ -325,13 +428,24 @@ window.Voz = (function () {
   }
 
   function leyendo() {
-    return !!(sintesis && (sintesis.speaking || sintesis.pending));
+    return sonandoGrabada || !!(sintesis && (sintesis.speaking || sintesis.pending));
   }
 
   /* En iPhone la primera frase tiene que salir de un toque del chico;
      la que sale de un cambio de pantalla no suena. Una frase vacía
      dicha en el primer toque destraba las siguientes. */
+  // un WAV vacío: alcanza para que el primer toque destrabe el reproductor
+  var SILENCIO = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';
+
   function despertar() {
+    // el reproductor de las grabaciones también se destraba acá, con un silencio
+    if (reproductor) {
+      try {
+        reproductor.src = SILENCIO;
+        var p = reproductor.play();
+        if (p && p.catch) p.catch(function () { /* nada */ });
+      } catch (e) { /* nada */ }
+    }
     if (!sintesis) return;
     try {
       var u = new SpeechSynthesisUtterance(' ');
@@ -348,6 +462,11 @@ window.Voz = (function () {
     parar: parar,
     leyendo: leyendo,
     opciones: opciones,
-    tramos: tramos        // para las pruebas
+    /** ¿Hay voces grabadas en este aparato? */
+    grabadas: function () { return !!grabadas; },
+    // para las pruebas y para herramientas/generar-voces.mjs
+    tramos: tramos,
+    frasesDe: frasesDe,
+    claveDe: claveDe
   };
 })();

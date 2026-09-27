@@ -2,7 +2,7 @@
    Guarda toda la app en el celular para que funcione sin internet. */
 'use strict';
 
-const VERSION = 'aprender-jugando-48975feddb';
+const VERSION = 'aprender-jugando-0e1e73dedb';
 const ARCHIVOS = [
   "./assets/banderas/ad.png",
   "./assets/banderas/ae.png",
@@ -272,9 +272,16 @@ async function precargar() {
   }
 }
 
+/* Las voces grabadas (assets/voz/*.mp3) no se guardan al instalar: son
+   miles de frases y la mayoría de los chicos oye unas pocas. Se guardan
+   cuando suenan, en una caché aparte que no se borra con cada versión:
+   el nombre de cada archivo sale de su texto y de la voz, así que un
+   archivo guardado nunca queda viejo. */
+const VOCES = 'aprender-jugando-voz';
+
 async function borrarViejos() {
   const nombres = await caches.keys();
-  await Promise.all(nombres.filter(n => n !== VERSION).map(n => caches.delete(n)));
+  await Promise.all(nombres.filter(n => n !== VERSION && n !== VOCES).map(n => caches.delete(n)));
 }
 
 self.addEventListener('install', (evento) => {
@@ -314,7 +321,9 @@ self.addEventListener('fetch', (evento) => {
 
     const respuesta = await fetch(pedido);
     if (respuesta && respuesta.ok && respuesta.type === 'basic') {
-      const cache = await caches.open(VERSION);
+      const ruta = new URL(pedido.url).pathname;
+      const esVoz = ruta.indexOf('/assets/voz/') >= 0 && ruta.endsWith('.mp3');
+      const cache = await caches.open(esVoz ? VOCES : VERSION);
       cache.put(pedido, respuesta.clone());
     }
     return respuesta;

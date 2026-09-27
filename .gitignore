@@ -4,6 +4,8 @@
 
 # Descargas temporales de las herramientas
 herramientas/cache/
+# la lista de frases para grabar: se rearma cada vez (generar-voces.mjs)
+herramientas/voz/
 
 # Archivos del sistema
 Thumbs.db

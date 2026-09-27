@@ -438,6 +438,10 @@ window.Motor = (function () {
   }
 
   return {
+    /* Las frases fijas de los carteles, para grabarlas con las voces
+       (herramientas/generar-voces.mjs). Las que llevan el nombre del
+       chico no: ésas las dice la voz del aparato. */
+    FRASES: [].concat(BIEN, BIEN_AL_SEGUNDO, BIEN_AL_TERCERO, RACHA, ANIMO, OTRA_VEZ, UNA_MAS, REVELAR, CONSUELO),
     jugar: jugar,
     responder: responder,
     abandonar: abandonar,
