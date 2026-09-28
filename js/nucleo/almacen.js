@@ -996,8 +996,9 @@ window.Almacen = (function () {
        activa       si la última vez Google dijo que estaba activa (pagada o en la prueba)
        verificada   cuándo fue esa última vez
        tuvo         si alguna vez estuvo activa en este aparato
-       play         si alguna vez se abrió desde la app de Google Play (y Google contestó)
-       enPlay       de antes: en Edge de escritorio podía quedar mal anotado, ya no se usa
+       playConfirmado  si alguna vez Google Play contestó: estamos en su app
+       play, enPlay    de antes: se anotaban con señales que fallaban (Edge de
+                       escritorio, links abiertos desde Gmail), ya no se usan
        pruebaDesde  de antes, cuando la prueba gratis la contaba la app: ya no se usa */
   /* ---------------------- el camino de niveles ----------------------
 

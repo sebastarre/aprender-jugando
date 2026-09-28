@@ -66,24 +66,21 @@ window.Suscripcion = (function () {
   /* ---------------- dónde estamos ---------------- */
 
   /**
-   * ¿Estamos adentro de la app de Google Play? Sí, si la abrió la app de
-   * Android (la TWA abre la página con un referrer «android-app://», sólo
-   * en la primera carga) o si Google Play contestó alguna vez (conectar()).
-   * Las dos cosas se anotan para las cargas siguientes.
+   * ¿Estamos adentro de la app de Google Play? Sí, sólo si Google Play
+   * contestó alguna vez (conectar()); se anota para las cargas siguientes.
    *
-   * No alcanza con que exista getDigitalGoodsService: Edge de escritorio
-   * la trae, pero Google Play no le contesta. Antes eso bastaba, y en la
-   * web con Edge la app frenaba a los chicos con un plan que ahí no se
-   * puede pagar. Por eso el dato es `play` y no el `enPlay` de antes, que
-   * pudo quedar mal anotado en esas computadoras.
+   * No alcanza con otras señales, y las dos fallaron:
+   *   - que exista getDigitalGoodsService: Edge de escritorio la trae,
+   *     pero Google Play no le contesta;
+   *   - un referrer «android-app://»: lo trae cualquier link abierto desde
+   *     una app de Android (Gmail, la de Google, WhatsApp), no sólo la
+   *     nuestra.
+   * Con cualquiera de las dos, la web frenaba a los chicos frente a un plan
+   * que ahí no se puede pagar. Por eso el dato es `playConfirmado`: los
+   * `enPlay` y `play` de antes pudieron quedar mal anotados.
    */
   function enLaAppDePlay() {
-    if (Almacen.plan().play) return true;
-    if (String(document.referrer).indexOf('android-app://') === 0) {
-      Almacen.guardarPlan({ play: true });
-      return true;
-    }
-    return false;
+    return !!Almacen.plan().playConfirmado;
   }
 
   /** ¿En este aparato se cobra? */
@@ -126,7 +123,7 @@ window.Suscripcion = (function () {
       .then(function (s) {
         servicio = s;
         // contestó Google Play: estamos en su app
-        if (s && !Almacen.plan().play) Almacen.guardarPlan({ play: true });
+        if (s && !Almacen.plan().playConfirmado) Almacen.guardarPlan({ playConfirmado: true });
         return s;
       })
       .catch(function () { return null; });

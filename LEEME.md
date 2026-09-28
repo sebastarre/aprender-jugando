@@ -1246,12 +1246,15 @@ donde se puede pagar. En la página web (y en iPhone) todo sigue abierto: si
 no, un chico quedaría bloqueado sin que el grande tenga cómo pagar. Hasta que
 la app esté publicada en Google Play, nada cambia para nadie.
 
-La app sabe que está en la de Google Play si la abrió la app de Android (el
-referrer `android-app://`) o si Google Play le contestó. No alcanza con que
-exista `getDigitalGoodsService`: **Edge de escritorio la trae**, pero Google
-Play no le contesta, y con ese criterio la web en Edge frenaba a los chicos
-con un plan imposible de pagar. Por eso el dato guardado ahora es `play` y se
-ignora el `enPlay` de antes, que pudo quedar mal anotado.
+La app sabe que está en la de Google Play sólo si Google Play le contestó
+(la Digital Goods API se conecta). Dos señales más simples fallaron: que exista
+`getDigitalGoodsService` (**Edge de escritorio la trae** y Google Play no le
+contesta) y el referrer `android-app://` (lo trae **cualquier link abierto
+desde una app de Android**, como Gmail o WhatsApp, no sólo nuestra app). Con
+cualquiera de las dos, la web frenaba a los chicos con un plan imposible de
+pagar. Por eso el dato guardado es `playConfirmado`, y se ignoran `play` y
+`enPlay`, que pudieron quedar mal anotados. En la app de Play, hasta que Google
+contesta (un instante al abrir), no se frena nada.
 
 ### Lo que se configura
 
