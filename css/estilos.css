@@ -352,8 +352,13 @@ a { color: var(--primario-osc); text-underline-offset: .2em; text-decoration-thi
   position: relative;
   width: clamp(150px, 40vw, 190px);
   height: clamp(150px, 40vw, 190px);
-  display: grid;
-  place-items: end center;
+  /* Flex y no grid: en una grilla, el height:100% de la mascota se mide
+     contra la fila, que crece hasta el tamaño propio del dibujo (250px);
+     la mascota se salía de la insignia y tapaba «Bichito». En flex se
+     mide contra la insignia. */
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
 }
 .arranque-insignia::before {
   content: '';
@@ -433,6 +438,15 @@ a { color: var(--primario-osc); text-underline-offset: .2em; text-decoration-thi
 @keyframes arranque-punto {
   0%, 100% { transform: translateY(0); opacity: .5; }
   40%      { transform: translateY(-7px); opacity: 1; }
+}
+
+/* Con el celular acostado (320 a 440 de alto) la cortina mide unos 390px
+   y no entraba: se cortaban «Curioso» y los puntitos. Ahí se achica
+   según el alto. */
+@media (max-height: 440px) {
+  .arranque-caja { gap: 8px; padding: 12px; }
+  .arranque-insignia { width: 42vh; height: 42vh; }
+  .arranque-nombre { font-size: clamp(2rem, 11vh, 2.8rem); }
 }
 
 /* ---- Y atrás de la cortina, el inicio entrando ----
