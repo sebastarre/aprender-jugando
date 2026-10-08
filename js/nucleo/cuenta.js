@@ -64,6 +64,13 @@ window.Cuenta = (function () {
 
   /** { email, id } del grande que entró, o null. */
   function sesion() {
+    /* Con la cuenta apagada no hay sesión, aunque haya una guardada: pudo
+       quedar de cuando estuvo prendida (unas horas, en septiembre de 2026),
+       y con ella el panel mostraría un mail y «Olvidé el PIN» le escribiría
+       al servidor, justo lo que la política de privacidad dice que no
+       pasa. Se ignora y no se borra: si la cuenta se vuelve a prender,
+       sigue sirviendo. */
+    if (!configurada()) return null;
     var s = leer();
     return s && s.email ? { email: s.email, id: s.id } : null;
   }
@@ -73,6 +80,8 @@ window.Cuenta = (function () {
 
   /* ---------------- hablar con Supabase ---------------- */
   function pedir(ruta, cuerpo, token) {
+    // apagada, no sale nada del aparato: ni un pedido suelto
+    if (!configurada()) return Promise.reject(new Error('La cuenta no está prendida en esta versión.'));
     var cabeceras = { 'Content-Type': 'application/json', apikey: CONFIG.clavePublica };
     if (token) cabeceras.Authorization = 'Bearer ' + token;
     return fetch(CONFIG.url.replace(/\/$/, '') + ruta, {

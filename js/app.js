@@ -839,7 +839,8 @@
   /* «¡Buen día, Sebas!»: el saludo de la hora con el nombre adentro. */
   function saludoConNombre(yo) {
     var hola = saludoDeLaHora();
-    return yo && yo.nombre ? hola.replace(/!$/, ', ' + yo.nombre + '!') : hola;
+    // con una función y no un texto: un nombre con «$» se escribiría cambiado
+    return yo && yo.nombre ? hola.replace(/!$/, function () { return ', ' + yo.nombre + '!'; }) : hola;
   }
 
   /**
@@ -1193,7 +1194,19 @@
     }, 1500);
   }
 
+  /* Una copia de verdad pesa poco (con las fotos de todos, menos de un
+     par de megas). Un archivo enorme no es una copia, y leerlo entero
+     puede colgar la página. */
+  var PESO_MAXIMO_COPIA = 8 * 1024 * 1024;
+
   function copiaElegida(archivo) {
+    if (archivo.size > PESO_MAXIMO_COPIA) {
+      return preguntar({
+        titulo: 'Ese archivo no es una copia',
+        texto: 'Es demasiado grande para ser una copia de Bichito Curioso.',
+        si: 'Listo', soloAceptar: true
+      });
+    }
     var lector = new FileReader();
     lector.onload = function () {
       var copia = Almacen.leerCopia(lector.result);
@@ -3602,10 +3615,10 @@
     }
     textosConDias(est);
 
-    $('plan-precio').textContent = cfg.precioDeReferencia;
+    ponerPrecio(cfg.precioDeReferencia);
     // el precio y los días de la oferta los dice Google (si se puede preguntarle)
     Suscripcion.precio().then(function (p) {
-      $('plan-precio').textContent = p;
+      ponerPrecio(p);
       textosConDias(Suscripcion.estado());
     });
 
@@ -3623,6 +3636,15 @@
                      'En esta página web todo sigue abierto.', 'info');
     }
     if (est.tipo === 'activa') mensajeDelPlan('¡Gracias por suscribirte! Todo está abierto.', 'bien');
+  }
+
+  /* Sin un precio leído de Google ni uno de referencia (todavía no está
+     decidido), no se inventa un número: mostrar un precio que no es el
+     que se va a cobrar es publicidad engañosa (Ley 24.240). */
+  function ponerPrecio(p) {
+    var caja = $('plan-precio').parentNode;
+    caja.classList.toggle('sin-numero', !p);
+    $('plan-precio').textContent = p || 'El precio lo muestra Google Play antes de confirmar';
   }
 
   function mensajeDelPlan(texto, tipo) {
@@ -3645,28 +3667,30 @@
     $('plan-mensaje').hidden = true;
     $('btn-plan-suscribirme').hidden = true;
     $('plan-puerta').hidden = false;
-    setTimeout(function () { $('plan-pin').focus(); }, 60);
+    // si venía de muchos intentos fallidos, la espera se ve también acá
+    if (hay) pintarEsperaPin($('plan-pin-error'), $('btn-plan-pin'), $('plan-pin'));
+    else $('btn-plan-pin').disabled = $('plan-pin').disabled = false;
+    setTimeout(function () { if (!$('plan-pin').disabled) $('plan-pin').focus(); }, 60);
   }
 
   function pasarPuertaDelPlan() {
     var valor = $('plan-pin').value.trim();
     var error = $('plan-pin-error');
+    function seguir() {
+      Sonido.tocar('clic');
+      $('plan-puerta').hidden = true;
+      comprarPlan();
+    }
+    /* Con la misma cuenta de fallos que el panel: si no, esta puerta
+       serviría para probar PINs sin ninguna espera. */
+    if (Almacen.hayPin()) return respuestaAlPin(valor, error, $('btn-plan-pin'), $('plan-pin'), seguir);
     if (!/^\d{4}$/.test(valor)) {
       error.textContent = 'Tienen que ser 4 números.';
       error.hidden = false;
       return;
     }
-    if (!Almacen.hayPin()) {
-      Almacen.setPin(valor);
-    } else if (!Almacen.pinCorrecto(valor)) {
-      error.textContent = 'PIN incorrecto.';
-      error.hidden = false;
-      $('plan-pin').value = '';
-      return;
-    }
-    Sonido.tocar('clic');
-    $('plan-puerta').hidden = true;
-    comprarPlan();
+    Almacen.setPin(valor);
+    seguir();
   }
 
   function comprarPlan() {
@@ -3917,46 +3941,278 @@
     if (s) $('cuenta-mail-texto').textContent = 'Entraron con ' + s.email + '. Es la misma para todos los chicos de este aparato.';
   }
 
-  /* ---------------------- modo parental ---------------------- */
-  function pintarParental() {
+  /* ---------------------- el PIN ----------------------
+
+     Lo que lo cuida (la espera después de 5 fallos, las 48 horas de
+     «Olvidé el PIN») vive en js/nucleo/almacen.js; acá se muestra. */
+
+  /** «hoy a las 16:40», «mañana a las 9:05», «el jueves 1/10 a las 16:40». */
+  function diaYHora(ms) {
+    var d = new Date(ms);
+    var hora = d.getHours() + ':' + (d.getMinutes() < 10 ? '0' : '') + d.getMinutes();
+    var hoy = new Date();
+    var dias = Math.round((new Date(d.getFullYear(), d.getMonth(), d.getDate()) -
+                           new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate())) / 86400000);
+    var cuando = dias === 0 ? 'hoy' : dias === 1 ? 'mañana' : dias === -1 ? 'ayer'
+      : 'el ' + DIAS[d.getDay()] + ' ' + d.getDate() + '/' + (d.getMonth() + 1);
+    return cuando + ' a las ' + hora;
+  }
+
+  function textoDeEspera(ms) {
+    var s = Math.ceil(ms / 1000);
+    return s < 60 ? Util.plural(s, 'segundo') : Util.plural(Math.ceil(s / 60), 'minuto');
+  }
+
+  /* Después de 5 fallos seguidos, el campo y el botón quedan quietos y
+     se ve cuánto falta. Sirve para todas las puertas: la del panel, la de
+     agregar un jugador o recuperar una copia, y la de la suscripción. */
+  var relojDelPin = null;
+  function pintarEsperaPin(error, boton, campo) {
+    clearInterval(relojDelPin);
+    function pintar() {
+      var falta = Almacen.esperaPin();
+      boton.disabled = campo.disabled = falta > 0;
+      if (falta > 0) {
+        error.textContent = 'Hubo muchos intentos seguidos. Podés probar de nuevo en ' + textoDeEspera(falta) + '.';
+        error.hidden = false;
+        return true;
+      }
+      clearInterval(relojDelPin);
+      if (error.dataset.espera) error.hidden = true;
+      error.dataset.espera = '';
+      return false;
+    }
+    if (pintar()) {
+      error.dataset.espera = '1';
+      relojDelPin = setInterval(pintar, 1000);
+    }
+  }
+
+  /* Lo que se contesta a un PIN probado. `alAcertar` corre sólo si estaba bien. */
+  function respuestaAlPin(valor, error, boton, campo, alAcertar) {
+    if (!/^\d{4}$/.test(valor)) {
+      error.textContent = 'Tienen que ser 4 números.';
+      error.hidden = false;
+      return;
+    }
+    var r = Almacen.probarPin(valor);
+    if (r === 'bien') return alAcertar();
+    campo.value = '';
+    if (r === 'mal') {
+      error.textContent = 'Ese no es el PIN. Probá otra vez.';
+      error.hidden = false;
+    }
+    pintarEsperaPin(error, boton, campo);   // si con este fallo ya hay que esperar
+    if (!campo.disabled) campo.focus();
+  }
+
+  /* ---------------------- la puerta del PIN ----------------------
+
+     Hay cosas de afuera del panel que son de un grande: sumar un jugador
+     nuevo (arranca sin límite de tiempo y con todas las materias),
+     recuperar una copia (vuelve a los límites de cuando se guardó) y
+     guardar una copia (saca del aparato los datos y las fotos de todos
+     los chicos). Con un PIN puesto, las tres lo piden en un cartel; sin
+     PIN no hay nada que cuidar y pasan derecho. «Olvidé el PIN» no
+     va acá: está en el panel, con su espera. */
+  var puertaPin = null;          // { alPasar, alCancelar } mientras el cartel está abierto
+
+  function pedirPin(texto, alPasar, alCancelar) {
+    if (!Almacen.hayPin()) return alPasar();
+    puertaPin = { alPasar: alPasar, alCancelar: alCancelar };
+    $('puerta-texto').textContent = texto;
+    $('puerta-pin').value = '';
+    $('puerta-error').hidden = true;
+    if (!$('dialogo-pin').open) $('dialogo-pin').showModal();
+    pintarEsperaPin($('puerta-error'), $('btn-puerta-si'), $('puerta-pin'));
+    if (!$('puerta-pin').disabled) $('puerta-pin').focus();
+    else $('btn-puerta-no').focus();
+  }
+
+  /* Adentro del clic (o del Enter) de «Seguir», así lo que venga después
+     todavía cuenta como tocado por alguien: abrir el selector de archivos
+     sólo se puede así. */
+  function pasarPuertaPin() {
+    respuestaAlPin($('puerta-pin').value.trim(), $('puerta-error'), $('btn-puerta-si'), $('puerta-pin'), function () {
+      var alPasar = puertaPin && puertaPin.alPasar;
+      cerrarPuertaPin(false);
+      Sonido.tocar('clic');
+      if (alPasar) alPasar();
+    });
+  }
+
+  function cerrarPuertaPin(cancelado) {
+    var p = puertaPin;
+    puertaPin = null;
+    clearInterval(relojDelPin);
+    if ($('dialogo-pin').open) $('dialogo-pin').close();
+    if (cancelado && p && p.alCancelar) p.alCancelar();
+  }
+
+  /* El jugador nuevo, con PIN: se pasa una vez por la puerta y queda
+     abierta mientras se arma el perfil (la bienvenida tiene varios pasos
+     y ninguno vuelve a pasar por el ruteo). Se cierra al salir. */
+  var puertaDelJugadorNuevo = false;
+
+  /* Si no se pasa, se vuelve a donde estaba: la tarjeta «Nuevo» del
+     inicio o «Agregar jugador» de Configuración. Con replace, para que la
+     flecha del navegador no traiga de nuevo al cartel. */
+  function pedirPinParaJugadorNuevo() {
+    var volver = pantallaActual === 'configuracion' ? '#/configuracion' : '#/';
+    pedirPin('Para sumar un jugador hace falta el PIN del modo parental: cada chico tiene sus propios límites.',
+      function () {
+        puertaDelJugadorNuevo = true;
+        enrutar();
+      },
+      function () { location.replace(volver); });
+  }
+
+  /* ---------------------- modo parental ----------------------
+
+     La tarjeta del PIN tiene tres modos: 'entrar' (hay PIN), 'crear' (se
+     elige uno) y 'repetir' (se escribe otra vez el que se eligió: un PIN
+     con un dedo de más y nadie que lo sepa es un panel cerrado para
+     siempre). «Cambiar PIN» pasa a 'crear' sin borrar el de antes: si
+     se arrepiente a la mitad, queda el que había. */
+  var modoPin = 'entrar';
+  var pinElegido = null;
+
+  function pintarParental(modo) {
     if (!activoAntesDelPanel && Almacen.activo()) activoAntesDelPanel = Almacen.activo().id;
     $('caja-parental').hidden = true;
     $('caja-recuperar').hidden = true;
     $('caja-pin').hidden = false;
     $('error-pin').hidden = true;
     $('campo-pin').value = '';
-    var primeraVez = !Almacen.hayPin();
-    $('texto-pin').textContent = primeraVez
-      ? 'Elegí un PIN de 4 números para proteger esta sección.'
-      : 'Ingresá el PIN para ver el detalle.';
-    $('btn-pin').textContent = primeraVez ? 'Crear PIN' : 'Entrar';
-    $('btn-olvide-pin').hidden = primeraVez;
+    modoPin = modo || (Almacen.hayPin() ? 'entrar' : 'crear');
+    pinElegido = null;
+    pintarCajaPin();
+  }
+
+  function pintarCajaPin() {
+    $('texto-pin').textContent = {
+      entrar: 'Ingresá el PIN para ver el detalle.',
+      crear: Almacen.hayPin() ? 'Elegí el PIN nuevo, de 4 números.' : 'Elegí un PIN de 4 números para proteger esta sección.',
+      repetir: 'Escribilo otra vez, para estar seguros de que es ese.'
+    }[modoPin];
+    $('btn-pin').textContent = { entrar: 'Entrar', crear: 'Seguir', repetir: 'Listo, crear el PIN' }[modoPin];
+    // cambiando un PIN que ya estaba (se vino desde adentro del panel): se puede volver sin cambiarlo
+    $('btn-pin-volver').hidden = modoPin === 'entrar' || !Almacen.hayPin();
+    pintarOlvido();
+    if (modoPin === 'entrar') pintarEsperaPin($('error-pin'), $('btn-pin'), $('campo-pin'));
+    else $('btn-pin').disabled = $('campo-pin').disabled = false;
+    setTimeout(function () { if (!$('campo-pin').disabled) $('campo-pin').focus(); }, 60);
+  }
+
+  /* «Olvidé el PIN», sin cuenta: se pide y se espera. Lo de abajo del
+     campo dice en qué va el pedido, y cuándo se borró el PIN la última
+     vez (si fue hace poco): el grande al que de golpe no le anda su PIN
+     tiene que poder entender por qué. */
+  function pintarOlvido() {
+    var aviso = $('aviso-pin');
+    var boton = $('btn-olvide-pin');
+    aviso.hidden = true;
+    boton.hidden = modoPin !== 'entrar';
+    boton.textContent = 'Olvidé el PIN';
+    if (modoPin !== 'entrar' || Cuenta.sesion()) return;
+
+    var p = Almacen.pedidoBorrarPin();
+    var borrado = Almacen.pinBorradoEl();
+    if (p && Date.now() >= p.hasta) {
+      aviso.textContent = 'Ya pasaron las 48 horas desde que se pidió borrar el PIN (' + diaYHora(p.desde) + ').';
+      boton.textContent = 'Borrar el PIN y elegir otro';
+    } else if (p) {
+      aviso.textContent = 'Se pidió borrar el PIN ' + diaYHora(p.desde) + '. Para que un chico no lo pueda ' +
+        'hacer solo, se va a poder borrar ' + diaYHora(p.hasta) + '. Si te acordás antes, escribilo acá ' +
+        'y el pedido se cancela.';
+      boton.hidden = true;
+    } else if (borrado && Date.now() - borrado < 14 * 86400000) {
+      aviso.textContent = 'El PIN se borró con «Olvidé el PIN» ' + diaYHora(borrado) + ' y se eligió uno nuevo.';
+    } else {
+      return;
+    }
+    aviso.hidden = false;
+  }
+
+  function olvideElPin() {
+    Sonido.tocar('clic');
+    if (Cuenta.sesion()) return empezarRecupero();
+    var p = Almacen.pedidoBorrarPin();
+    if (p && Date.now() >= p.hasta) {
+      return preguntar({
+        titulo: '¿Borramos el PIN?',
+        texto: 'Se borra el de ahora y elegís uno nuevo. Los límites y todo lo demás quedan como estaban.',
+        si: 'Sí, borrar el PIN'
+      }, function () {
+        Almacen.borrarPinOlvidado();
+        pintarParental();
+      });
+    }
+    preguntar({
+      titulo: '¿Pedimos borrar el PIN?',
+      texto: 'Para que un chico no lo pueda borrar solo, el PIN se puede borrar recién 48 horas ' +
+             'después de pedirlo. Si antes te acordás, escribilo y el pedido se cancela.',
+      si: 'Sí, pedirlo'
+    }, function () {
+      Almacen.pedirBorrarPin();
+      pintarCajaPin();
+    });
   }
 
   function intentarPin() {
     var valor = $('campo-pin').value.trim();
+    var error = $('error-pin');
+    error.hidden = true;
+    if (modoPin === 'entrar') {
+      return respuestaAlPin(valor, error, $('btn-pin'), $('campo-pin'), function () {
+        Sonido.tocar('clic');
+        abrirParental(Almacen.pedidoCancelado());
+      });
+    }
     if (!/^\d{4}$/.test(valor)) {
-      $('error-pin').textContent = 'Tienen que ser 4 números.';
-      $('error-pin').hidden = false;
+      error.textContent = 'Tienen que ser 4 números.';
+      error.hidden = false;
       return;
     }
-    if (!Almacen.hayPin()) {
-      Almacen.setPin(valor);
-      return abrirParental();
+    $('campo-pin').value = '';
+    if (modoPin === 'crear') {
+      pinElegido = valor;
+      modoPin = 'repetir';
+      return pintarCajaPin();
     }
-    if (!Almacen.pinCorrecto(valor)) {
-      $('error-pin').textContent = 'PIN incorrecto.';
-      $('error-pin').hidden = false;
-      $('campo-pin').value = '';
+    if (valor !== pinElegido) {
+      pinElegido = null;
+      modoPin = 'crear';
+      pintarCajaPin();
+      error.textContent = 'No eran iguales. Elegilo de nuevo, con calma.';
+      error.hidden = false;
       return;
     }
+    Almacen.setPin(valor);
+    Sonido.tocar('acierto');
     abrirParental();
   }
 
-  function abrirParental() {
+  /* `pedidoCancelado`: cuándo se había pedido borrar el PIN, si entrar
+     con el PIN correcto acaba de cancelar ese pedido. El grande tiene que
+     saberlo: lo pidió él y se acordó, o lo pidió otro. */
+  function abrirParental(pedidoCancelado) {
+    clearInterval(relojDelPin);
     $('caja-pin').hidden = true;
     $('caja-recuperar').hidden = true;
     $('caja-parental').hidden = false;
+    /* El aviso se decide al entrar con el PIN (que lo pasa siempre, haya
+       o no pedido); al repintar el panel por otra cosa, como cambiar de
+       chico, queda como estaba. */
+    var aviso = $('aviso-panel');
+    if (arguments.length) aviso.hidden = !pedidoCancelado;
+    if (pedidoCancelado) {
+      aviso.textContent = 'Alguien tocó «Olvidé el PIN» ' + diaYHora(pedidoCancelado) +
+        '. Como entraste con el PIN, el pedido se canceló y el PIN sigue siendo el mismo.';
+    }
+    var borrado = Almacen.pinBorradoEl();
+    $('nota-pin-borrado').hidden = !borrado;
+    if (borrado) $('nota-pin-borrado').textContent = 'La última vez que se borró el PIN con «Olvidé el PIN» fue ' + diaYHora(borrado) + '.';
     pintarCuentaDelPanel();
 
     var yo = Almacen.activo();
@@ -4624,6 +4880,11 @@
   function enrutar() {
     var partes = (location.hash || '#/').replace(/^#\/?/, '').split('/').filter(Boolean);
 
+    // la puerta del jugador nuevo se cierra al irse a cualquier otro lado
+    if (partes[0] !== 'nuevo-jugador') puertaDelJugadorNuevo = false;
+    // y el cartel del PIN, si se fue con la flecha del navegador con él abierto
+    if (puertaPin) cerrarPuertaPin(false);
+
     // al salir del panel, vuelve a quedar elegido el chico que estaba jugando
     if (activoAntesDelPanel && partes[0] !== 'parental') {
       Almacen.usar(activoAntesDelPanel);
@@ -4657,6 +4918,13 @@
        con la flecha de volver: si fue sin querer, tiene que poder
        arrepentirse. La primera vez no la tiene porque no hay a dónde. */
     if (partes[0] === 'nuevo-jugador') {
+      /* Con PIN y otros chicos ya en el aparato, un perfil nuevo es una
+         manera de salir de los límites: lo arma un grande. El primero de
+         todos no (no hay a quién cuidar), ni el de un aparato sin PIN. */
+      if (Almacen.hayPin() && Almacen.perfiles().length > 0 && !puertaDelJugadorNuevo) {
+        if (!pantallaActual) { pintarInicio(); mostrar('inicio'); }   // entró directo con el link
+        return pedirPinParaJugadorNuevo();
+      }
       cortarPartida();
       empezarJugadorNuevo();
       mostrar('bienvenida');
@@ -4960,14 +5228,22 @@
       Sonido.tocar('clic');
       irA(tipoUltimaPartida === 'repaso' ? '#/repasando' : '#/jugar');
     });
+    /* Guardar también lo hace un grande: el archivo lleva los datos de
+       todos los chicos, con sus fotos, y en el celular se comparte por
+       WhatsApp o Drive con dos toques. Sin PIN puesto, pasa derecho. */
     $('btn-guardar-copia').addEventListener('click', function () {
       Sonido.despertar(); Sonido.tocar('clic');
-      guardarCopia();
+      pedirPin('Guardar una copia saca del aparato los datos de todos los chicos, con sus fotos: hace falta el PIN del modo parental.',
+        guardarCopia);
     });
+    /* Recuperar reemplaza todo, límites incluidos: con PIN, lo hace un grande */
     $('btn-recuperar-copia').addEventListener('click', function () {
       Sonido.despertar(); Sonido.tocar('clic');
-      $('campo-copia').value = '';
-      $('campo-copia').click();
+      pedirPin('Recuperar una copia cambia todo lo de este aparato, también los límites: hace falta el PIN del modo parental.',
+        function () {
+          $('campo-copia').value = '';
+          $('campo-copia').click();
+        });
     });
     $('campo-copia').addEventListener('change', function () {
       var archivo = this.files && this.files[0];
@@ -5084,6 +5360,7 @@
     });
     $('btn-plan-pin-cancelar').addEventListener('click', function () {
       Sonido.tocar('clic');
+      clearInterval(relojDelPin);
       $('plan-puerta').hidden = true;
       $('btn-plan-suscribirme').hidden = false;
     });
@@ -5104,23 +5381,26 @@
     $('campo-pin').addEventListener('keydown', function (ev) {
       if (ev.key === 'Enter') intentarPin();
     });
-    $('btn-olvide-pin').addEventListener('click', function () {
-      if (Cuenta.sesion()) return empezarRecupero();
-      preguntar({
-        titulo: '¿Empezamos de nuevo?',
-        texto: 'Para poder entrar hay que borrar el PIN actual y crear uno nuevo.',
-        si: 'Sí, borrar el PIN'
-      }, function () {
-        Almacen.setPin(null);
-        pintarParental();
-      });
-    });
+    $('btn-olvide-pin').addEventListener('click', olvideElPin);
+    $('btn-pin-volver').addEventListener('click', function () { Sonido.tocar('clic'); abrirParental(); });
     $('btn-verificar-pin').addEventListener('click', verificarRecupero);
     $('campo-codigo-pin').addEventListener('keydown', function (ev) {
       if (ev.key === 'Enter') verificarRecupero();
     });
     $('btn-reenviar-pin').addEventListener('click', empezarRecupero);
-    $('btn-cancelar-recuperar').addEventListener('click', pintarParental);
+    $('btn-cancelar-recuperar').addEventListener('click', function () { pintarParental(); });
+
+    /* la puerta del PIN de afuera del panel (agregar un jugador, recuperar una copia) */
+    $('btn-puerta-si').addEventListener('click', pasarPuertaPin);
+    $('puerta-pin').addEventListener('keydown', function (ev) {
+      if (ev.key === 'Enter') pasarPuertaPin();
+    });
+    $('btn-puerta-no').addEventListener('click', function () { cerrarPuertaPin(true); });
+    // Escape cierra el <dialog> solo: es lo mismo que «Cancelar»
+    $('dialogo-pin').addEventListener('cancel', function (ev) {
+      ev.preventDefault();
+      cerrarPuertaPin(true);
+    });
 
     /* la cuenta */
     $('btn-mandar-codigo').addEventListener('click', mandarCodigo);
@@ -5169,9 +5449,10 @@
       });
     });
 
+    // sin borrar el de ahora: se reemplaza recién cuando el nuevo está confirmado
     $('btn-cambiar-pin').addEventListener('click', function () {
-      Almacen.setPin(null);
-      pintarParental();
+      Sonido.tocar('clic');
+      pintarParental('crear');
     });
     $('btn-borrar-progreso').addEventListener('click', function () {
       var yo = Almacen.activo();

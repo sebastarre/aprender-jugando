@@ -2,7 +2,7 @@
    Guarda toda la app en el celular para que funcione sin internet. */
 'use strict';
 
-const VERSION = 'aprender-jugando-4adb4503d1';
+const VERSION = 'aprender-jugando-62aaacc7dd';
 const ARCHIVOS = [
   "./assets/banderas/ad.png",
   "./assets/banderas/ae.png",
@@ -279,9 +279,15 @@ async function precargar() {
    archivo guardado nunca queda viejo. */
 const VOCES = 'aprender-jugando-voz';
 
+/* Sólo las versiones viejas de esta app: en sebastarre.github.io viven
+   también la versión web (cachés 'bichito-web-…') y cualquier otra
+   página del dueño, y todas comparten el mismo lugar para las cachés.
+   Borrar todo lo ajeno le sacaba a la web el andar sin internet. */
 async function borrarViejos() {
   const nombres = await caches.keys();
-  await Promise.all(nombres.filter(n => n !== VERSION && n !== VOCES).map(n => caches.delete(n)));
+  await Promise.all(nombres
+    .filter(n => n.indexOf('aprender-jugando-') === 0 && n !== VERSION && n !== VOCES)
+    .map(n => caches.delete(n)));
 }
 
 self.addEventListener('install', (evento) => {

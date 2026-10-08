@@ -67,6 +67,18 @@ versión sacada del contenido. Si no se regenera, los celulares que ya tienen
 la app siguen usando la copia vieja. Con la versión nueva, la app se actualiza
 sola la próxima vez que se abre con internet.
 
+Al actualizarse, el service worker borra sólo sus propias cachés viejas (las
+que empiezan con `aprender-jugando-`, menos la de las voces): en
+`sebastarre.github.io` vive también la versión web (`/bichito-curioso/`, con
+cachés `bichito-web-…`), y las cachés son de toda la dirección. Antes borraba
+todo lo ajeno, y con eso le sacaba a la web el andar sin internet.
+
+`index.html` trae una **Content-Security-Policy**: la página sólo carga y
+pide cosas de su propia dirección (más las fotos y copias armadas en el
+momento, `data:` y `blob:`), y no corre código de ningún otro lado. Si algo
+nuevo tiene que hablar con otro servidor (la cuenta de Supabase, por
+ejemplo), hay que sumar su dirección ahí; si no, el navegador lo bloquea.
+
 ## Las pruebas
 
 `node herramientas/probar.mjs` prueba la app entera en unos tres minutos y
@@ -1334,8 +1346,40 @@ toque.
 En **personalización** están las paletas de colores: las tres gratis y las que
 se compran con monedas.
 
-Dentro de configuración está el **modo parental**, protegido con un PIN de 4 números
-que se elige la primera vez que se entra. Es un panel para el grande:
+Dentro de configuración está el **modo parental**, protegido con un PIN de 4
+números que se elige la primera vez que se entra, escribiéndolo dos veces. El
+PIN es una traba para que los chicos no entren sin querer, no una medida de
+seguridad, pero no se esquiva con un toque (lo que lo cuida está en
+`js/nucleo/almacen.js`, en «lo que cuida al PIN», y en `js/app.js`):
+
+- **Cinco fallos seguidos piden esperar**: 30 segundos, después 1 minuto, 2,
+  4… hasta 30 minutos. La espera queda guardada (`ajustes.pinFallos`), así
+  que recargar no la saltea, y acertar la borra. Vale para todas las puertas
+  del PIN, también la de la suscripción.
+- **«Olvidé el PIN» no lo borra en el momento** (con la cuenta apagada; con la
+  cuenta prendida, manda un código al mail): anota el pedido
+  (`ajustes.pinPedido`) y el PIN se puede borrar recién 48 horas después. Si
+  antes alguien pone el PIN correcto, el pedido se cancela y el panel avisa
+  que alguien lo tocó (`ajustes.pinPedidoCancelado`). Cuándo se borró queda
+  en `ajustes.pinBorrado`: lo muestra el panel, en «El panel», y la tarjeta
+  del PIN durante 14 días. Antes ese botón borraba el PIN sin pedir nada, y
+  cualquier chico que lo tocara entraba al panel. Si alguien adelanta el reloj
+  del aparato, adelanta también la espera: sin un servidor no hay otro reloj.
+- **«Cambiar PIN»** deja el de antes hasta que el nuevo está confirmado.
+- **Lo que desarma los límites también lo pide**: agregar un jugador cuando ya
+  hay perfiles (`#/nuevo-jugador`) y «Recuperar una copia». Lo pide un cartel
+  (`#dialogo-pin`, `pedirPin` en `js/app.js`); sin PIN puesto, pasan derecho.
+  Antes, un chico esquivaba su límite de tiempo armándose otro perfil.
+- Ni el PIN ni sus esperas viajan en la copia, y recuperar una copia deja
+  siempre el PIN del aparato. La copia, además, se revisa entera antes de
+  recuperarla (`sanearCopia` en `js/nucleo/almacen.js`): cada dato tiene que
+  tener la forma que espera la app, se sacan las claves `__proto__`,
+  `constructor` y `prototype`, los nombres se recortan a 30 letras, una foto
+  que no es una imagen se descarta, y un archivo de más de 8 MB ni se lee.
+  Así una copia rota o tocada a mano no traba la app. Se aceptan las `.json`
+  de acá y las `.txt` de la versión web.
+
+Es un panel para el grande:
 
 - **De quién.** Con más de un chico en el aparato, arriba se elige de quién ver
   y ajustar. Al cerrar el panel vuelve a quedar elegido el que estaba jugando.
@@ -1560,11 +1604,36 @@ borrarlo ahí es borrarlo del todo.
 
 ### Lo que tenés que hacer vos
 
-1. **Un correo de contacto.** Las páginas legales dicen que se escriba «al
-   correo que figura en la ficha de Google Play». Hace falta ponerlo ahí (Play
-   lo exige) y conviene escribirlo también en `privacidad.html` y
-   `terminos.html`, para la gente que llega por la web.
-2. **El dominio.** Para publicar en Play como app (TWA), Google verifica que la
+1. **Un correo de contacto, y quién es el proveedor.** Hoy las páginas legales
+   mandan a los Issues del repositorio en GitHub, que son públicos: sirven
+   para consultas, no para un pedido de devolución con número de pedido.
+   Antes de cobrar hace falta un mail propio, con un horario de atención, en
+   la ficha de Play (Play lo exige) y en `privacidad.html` y `terminos.html`;
+   y en los términos, quién vende: nombre o razón social, CUIT y domicilio
+   ([Res. SCI 270/2020](https://www.argentina.gob.ar/normativa/nacional/norma-341933/texto);
+   Google Play los muestra igual en la ficha de una app paga).
+2. **Lo legal antes de cobrar** (revisión del 7/10/2026; no reemplaza a un
+   abogado, y conviene que uno mire esto antes de lanzar):
+   - el **botón de arrepentimiento** y el **botón de baja**, dos links a la
+     vista en la app ([Disp. SSDCyLC 954/2025](https://www.boletinoficial.gob.ar/detalleAviso/primera/330827/20250904),
+     arts. 1 y 4, que reemplazó a las Res. 424/2020 y 316/2018), que lleven a
+     `terminos.html#arrepentimiento` y a la baja, con respuesta y número de
+     trámite dentro de las 24 horas. Los 10 días de arrepentimiento ya están
+     en los términos (art. 34 de la Ley 24.240);
+   - en la pantalla del plan, un botón «Administrar o cancelar en Google
+     Play» (`https://play.google.com/store/account/subscriptions?sku=bichito_mensual&package=…`,
+     con el nombre del paquete de la TWA) y, a la vista sin tocar nada, que
+     sin suscripción no se puede jugar ([política de suscripciones de Play](https://support.google.com/googleplay/android-developer/answer/9900533));
+   - el **hosting**: GitHub Pages no permite usarse como hosting gratis de un
+     negocio ([sus límites](https://docs.github.com/en/pages/getting-started-with-github-pages/github-pages-limits)).
+     Para la app paga, un hosting que lo permita y un dominio propio (ver el
+     punto siguiente);
+   - los **mapas**: la Ley 22.963 pide que los mapas de la Argentina que se
+     publican en el país los apruebe el Instituto Geográfico Nacional
+     («Aprobación final de obra», por TAD). Las Malvinas ya van con la
+     Argentina (`herramientas/generar-datos.js`);
+   - la **marca** «Bichito Curioso»: registrarla en el INPI (clases 9 y 41).
+3. **El dominio.** Para publicar en Play como app (TWA), Google verifica que la
    app y la página son del mismo dueño con un archivo
    `/.well-known/assetlinks.json` en la **raíz** del dominio. En
    `sebastarre.github.io/aprender-jugando/` la raíz no es de este proyecto.
@@ -1577,9 +1646,9 @@ borrarlo ahí es borrarlo del todo.
 
    Si cambia la dirección, hay que actualizar `og:url` y `og:image` en
    `index.html`. El `id` del manifiesto **no** hay que tocarlo.
-3. **Empaquetar la app para Android** con Bubblewrap o PWABuilder, a partir de
+4. **Empaquetar la app para Android** con Bubblewrap o PWABuilder, a partir de
    `manifest.json`. Ahí se genera la huella SHA-256 que va en `assetlinks.json`.
-4. **Play Console**:
+5. **Play Console**:
    - la ficha: nombre, descripciones, el ícono y el gráfico de
      `herramientas/play/`, y capturas de pantalla del celular;
    - **Público objetivo**: menores de 13, lo que activa la política de
@@ -1590,11 +1659,26 @@ borrarlo ahí es borrarlo del todo.
      adulto, para **administrar la cuenta**;
    - el cuestionario de **clasificación del contenido**;
    - la URL de la **política de privacidad**: `…/privacidad.html`;
-   - la **suscripción** `bichito_mensual`, con el precio de
-     `CONFIG.precioDeReferencia` (`js/nucleo/suscripcion.js`).
-5. **La cuenta con mail**: seguir «Cómo ponerla en marcha» de la sección «La
-   cuenta». Sin eso la app no pide mail.
-6. **Después de publicar**: poner el link de la ficha en
+   - la **suscripción** `bichito_mensual`, con su precio. Ese mismo precio va
+     en `CONFIG.precioDeReferencia` (`js/nucleo/suscripcion.js`), que hoy está
+     en `null` porque todavía no se decidió: así la app no muestra un número
+     que no se va a cobrar.
+6. **La cuenta con mail**: seguir «Cómo ponerla en marcha» de la sección «La
+   cuenta». Sin eso la app no pide mail. Antes de prenderla, además:
+   - con mails guardados hay una base de datos personales: inscribirla en el
+     [Registro Nacional de Bases de Datos](https://argentina.gob.ar/aaip/datospersonales/registrar-bases-privadas)
+     de la AAIP (es gratis, por TAD), y como Supabase guarda fuera del país,
+     pedir el consentimiento del adulto para esa transferencia (Ley 25.326,
+     art. 12);
+   - que la cuenta quede detrás del PIN y sea optativa, para que un chico no
+     cargue su propio mail; y que se pueda borrar desde la app y desde una
+     página web (Play lo pide);
+   - en Supabase: CAPTCHA en el envío de códigos, un servicio de mails propio
+     con sus límites, y revisar que no hayan quedado usuarios de prueba de
+     septiembre de 2026 (Authentication → Users);
+   - sumar la dirección de Supabase a `connect-src` en la Content-Security-Policy
+     de `index.html`: si no, el navegador bloquea el pedido del código.
+7. **Después de publicar**: poner el link de la ficha en
    `CONFIG.fichaDePlay` (`js/nucleo/suscripcion.js`), para que la web muestre
    «Descargar de Google Play».
 

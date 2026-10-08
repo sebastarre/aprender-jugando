@@ -3,6 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Lo mismo que en privacidad.html: sin scripts, y sólo la letra y el
+     ícono de la misma dirección. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'">
 <title>Términos y suscripción · Bichito Curioso</title>
 <meta name="description" content="Las condiciones de uso de Bichito Curioso y cómo funciona la suscripción.">
 <link rel="icon" type="image/png" href="assets/icono-192.png">
@@ -32,7 +35,7 @@
     padding: 14px 18px;
   }
   .resumen ul { margin: 6px 0 0; padding-left: 20px; }
-  a { color: var(--azul); text-underline-offset: .2em; text-decoration-thickness: 2px; }
+  a { color: var(--azul); text-underline-offset: .2em; text-decoration-thickness: 2px; overflow-wrap: anywhere; }
   ::selection { background: #DDEEFC; }
   li { margin: 4px 0; }
 </style>
@@ -42,15 +45,16 @@
   <a class="marca" href="./"><img src="assets/icono-192.png" alt="" width="48" height="48">Bichito Curioso</a>
 
   <h1>Términos de uso y suscripción</h1>
-  <p class="fecha">Última actualización: 26 de septiembre de 2026</p>
+  <p class="fecha">Última actualización: 7 de octubre de 2026</p>
 
   <div class="resumen">
     <b>La suscripción, en pocas palabras</b>
     <ul>
       <li>Los primeros <b>7 días son gratis</b>, con todo abierto. La prueba se empieza desde Google Play, con la cuenta de Google del adulto.</li>
-      <li>Después se paga <b>por mes</b>, a través de Google Play, al precio que figura en la app y en la ficha de Google Play.</li>
+      <li>Después se paga <b>por mes</b>, a través de Google Play, al precio que muestra Google Play antes de confirmar.</li>
       <li>Se <b>renueva sola</b> cada mes hasta que se cancele.</li>
-      <li>Si se cancela antes de que termine la prueba, <b>no se cobra nada</b>. Se cancela cuando quieras desde <b>Google Play → Pagos y suscripciones</b>.</li>
+      <li>Si se cancela antes de que termine la prueba, <b>no se cobra nada</b>. Se cancela cuando quieras desde <b>Google Play → Pagos y suscripciones</b>. <b>Desinstalar la app no la cancela.</b></li>
+      <li>Tenés <b>10 días</b> para arrepentirte de la contratación (ver «Arrepentimiento»).</li>
     </ul>
   </div>
 
@@ -60,8 +64,8 @@
     Las compras y los ajustes del panel para padres están protegidos con un PIN.</p>
 
   <h2>Qué incluye</h2>
-  <p>Juegos y lecciones de matemática, lengua, ciencias, geografía e inglés. Las monedas y la tienda
-    de adentro de la app son de mentira: se ganan jugando y no se compran con plata.</p>
+  <p>Juegos y lecciones de matemática, lengua, geografía, ciencias, historia e inglés. Las monedas y la
+    tienda de adentro de la app son de mentira: se ganan jugando y no se compran con plata.</p>
 
   <h2>La suscripción</h2>
   <ul>
@@ -71,28 +75,71 @@
     <li><b>Cobro:</b> al terminar la prueba, Google Play cobra la suscripción mensual con el medio de pago de la
       cuenta de Google del adulto, salvo que se haya cancelado antes. Sin suscripción, la app se puede abrir pero no
       se pueden empezar juegos ni lecciones.</li>
-    <li><b>Renovación:</b> se renueva automáticamente cada mes, salvo que se cancele al menos 24 horas antes del
-      próximo cobro.</li>
-    <li><b>Cancelación:</b> desde la app de Google Play → tu perfil → Pagos y suscripciones → Suscripciones.
-      Al cancelar, se sigue teniendo acceso hasta el final del período ya pagado.</li>
-    <li><b>Reembolsos:</b> los maneja Google Play, según su política de reembolsos.</li>
-    <li><b>Precio:</b> puede cambiar; si cambia, Google Play avisa antes del cobro siguiente, como indica su política.</li>
+    <li><b>Renovación:</b> se renueva automáticamente cada mes, salvo que se cancele antes de la fecha de
+      renovación.</li>
+    <li><b>Cancelación:</b> en cualquier momento y sin costo, desde la app de Google Play → tu perfil → Pagos y
+      suscripciones → Suscripciones. Se sigue teniendo acceso hasta el final del período ya pagado.
+      Desinstalar la app no cancela la suscripción.</li>
+    <li><b>Precio:</b> el que muestra Google Play antes de confirmar. Si cambia, Google Play avisa antes del
+      cobro siguiente; si no estás de acuerdo con el precio nuevo, podés cancelar antes de que se aplique, sin
+      costo.</li>
   </ul>
+
+  <h2 id="arrepentimiento">Arrepentimiento</h2>
+  <p>Tenés <b>10 días corridos</b> desde que contrataste la suscripción (el día en que empezaste la prueba
+    gratis, si la usaste) para arrepentirte, sin dar motivos y sin costo: es un derecho que no se puede
+    renunciar (artículo 34 de la Ley 24.240 de Defensa del Consumidor y artículos 1110 a 1112 del Código Civil
+    y Comercial). Si ya se te cobró, te devolvemos todo lo cobrado. Para pedirlo, cancelá la suscripción en
+    Google Play y escribinos (ver «Contacto»). Google Play tiene además su propia política de reembolsos.</p>
 
   <h2>El contenido</h2>
   <p>Hacemos lo posible para que todo lo que enseña la app sea correcto y adecuado para cada edad.
-    Si encontrás un error, avisanos y lo corregimos. Los mapas vienen de Natural Earth (dominio público)
-    y las banderas de flagcdn.com.</p>
+    Si encontrás un error, avisanos y lo corregimos.</p>
+
+  <h2>Propiedad intelectual y créditos</h2>
+  <p>Los textos, los juegos, las lecciones, los demás dibujos y el código de Bichito Curioso son nuestros,
+    salvo las piezas de otros que se nombran abajo, que se usan según sus licencias. Usar la app no da
+    permiso para copiarla ni para publicarla en otro lado.</p>
+  <ul>
+    <li><b>Países:</b> los nombres, las capitales y las regiones contienen datos de
+      <a href="https://github.com/mledoze/countries">world-countries</a>, disponibles bajo la
+      <a href="https://opendatacommons.org/licenses/odbl/1-0/">Open Database License (ODbL) 1.0</a>.
+      La versión adaptada que usa la app (los 193 países miembros de la ONU y el Vaticano, con algunos
+      nombres y capitales retocados) se ofrece bajo la misma licencia.</li>
+    <li><b>Mapas:</b> los contornos de los países son de
+      <a href="https://www.naturalearthdata.com/">Natural Earth</a> (dominio público), en la versión de
+      <a href="https://github.com/topojson/world-atlas">world-atlas</a>, con algunos ajustes.</li>
+    <li><b>Banderas:</b> de <a href="https://flagcdn.com/">flagcdn.com</a>, de
+      <a href="https://flagpedia.net/">Flagpedia</a>.</li>
+    <li><b>Letra:</b> <a href="https://github.com/EkType/Baloo2">Baloo 2</a>, de The Baloo 2 Project
+      Authors, bajo la <a href="assets/fuentes/LICENCIA.txt">SIL Open Font License 1.1</a>.</li>
+    <li><b>Dibujos de contar:</b> se hicieron con ayuda de inteligencia artificial (Higgsfield) y se
+      editaron para la app.</li>
+  </ul>
 
   <h2>Los datos</h2>
   <p>Todo lo que carga el chico queda en el aparato. Los detalles están en la
     <a href="privacidad.html">política de privacidad</a>.</p>
 
+  <h2>Ley aplicable y reclamos</h2>
+  <p>Estos términos se rigen por las leyes de la República Argentina, sin perjuicio de las normas que
+    protejan a quien usa la app en su propio país. Si tenés un problema o un reclamo, escribinos primero
+    (ver «Contacto») y lo vemos juntos. Eso no te quita el derecho a reclamar ante
+    <a href="https://www.argentina.gob.ar/servicio/iniciar-un-reclamo-ante-defensa-del-consumidor">Defensa
+    del Consumidor</a> o ante los tribunales de tu domicilio; para lo que tenga que ver con datos personales,
+    está explicado en la <a href="privacidad.html">política de privacidad</a>.</p>
+
   <h2>Cambios</h2>
-  <p>Si cambian estos términos, lo publicamos en esta página con una fecha nueva.</p>
+  <p>Si cambian estos términos, lo publicamos en esta página con una fecha nueva. Si el cambio afecta la
+    suscripción, lo avisamos en la app antes de que rija, y podés cancelarla sin costo si no estás de
+    acuerdo. Al suscribirte aceptás recibir esta información por medios electrónicos (esta página y los
+    avisos de Google Play).</p>
 
   <h2>Contacto</h2>
-  <p>Escribinos al correo de contacto que figura en la ficha de Bichito Curioso en Google Play.</p>
+  <p>Escribinos en GitHub, donde está publicada la app:
+    <a href="https://github.com/sebastarre/aprender-jugando/issues">github.com/sebastarre/aprender-jugando</a>,
+    en «Issues». Lo que se escribe ahí lo puede leer cualquiera, así que no pongas el nombre ni otros datos
+    del chico, ni números de pedido.</p>
 
   <p><a href="privacidad.html">Política de privacidad</a> · <a href="./">Volver a la app</a></p>
 </main>

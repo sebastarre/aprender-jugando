@@ -81,7 +81,10 @@
     return new Promise(function (resolver) {
       if (!('caches' in window)) return resolver(null);
       caches.keys().then(function (nombres) {
-        var mia = nombres.filter(function (n) { return n.indexOf('aprender-jugando-') === 0; })[0];
+        // la de las voces grabadas también empieza así, pero no es una versión
+        var mia = nombres.filter(function (n) {
+          return n.indexOf('aprender-jugando-') === 0 && n !== 'aprender-jugando-voz';
+        })[0];
         resolver(mia ? mia.replace('aprender-jugando-', '') : null);
       }).catch(function () { resolver(null); });
     });

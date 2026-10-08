@@ -1,0 +1,11 @@
+# Lo lee GitHub Pages, que arma la página con Jekyll. Jekyll convierte cada
+# .md en una página (aunque no tenga cabecera) y publica todas las carpetas:
+# sin esto, cualquiera podría leer las notas internas (LEEME.html) y bajarse
+# las herramientas. Siguen en el repositorio; sólo quedan fuera de la página.
+# No va .nojekyll: haría lo contrario y publicaría todo tal cual, también lo
+# que empieza con punto. Ver «Publicar por primera vez» en el LEEME.
+exclude:
+  - herramientas
+  - LEEME.md
+  - PRODUCT.md
+  - DESIGN.md

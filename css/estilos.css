@@ -4979,6 +4979,14 @@ body.en-bienvenida .pie { display: none; }
 }
 .campo-pin:focus { outline: none; border-color: var(--primario); box-shadow: 0 0 0 4px var(--seleccion); }
 .error-pin { margin: 0 0 12px; color: var(--error-osc); font-weight: 800; }
+/* En qué va el pedido de borrar el PIN: letra chica y gris, debajo del
+   botón, como la letra chica de la cuenta. */
+.nota-pin { margin: 14px 0 0; font-size: .9rem; line-height: 1.45; color: var(--tinta-suave); }
+/* Adentro del panel, si entrar canceló un pedido de borrar el PIN */
+.aviso-panel { margin: 0 auto 18px; }
+/* El PIN en el cartel: entre el texto y los botones */
+#dialogo-pin .campo-pin { margin-bottom: 12px; }
+#dialogo-pin .dialogo-texto { margin-bottom: 16px; }
 .tabla-partidas { display: flex; flex-direction: column; gap: 8px; margin-bottom: 26px; }
 
 .parental-chicos { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin: 0 0 12px; }
@@ -5282,6 +5290,9 @@ body.en-bienvenida .pie { display: none; }
 .plan-precio { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: center; gap: 8px; margin: 0; }
 .plan-precio b { font-size: clamp(2.3rem, 9vw, 3rem); font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
 .plan-precio span { color: var(--tinta-suave); font-size: 1.05rem; font-weight: 700; }
+/* Sin precio decidido: una frase en vez de un número, y sin «por mes» */
+.plan-precio.sin-numero b { font-size: 1.25rem; line-height: 1.3; text-align: center; }
+.plan-precio.sin-numero span { display: none; }
 .plan-precio-nota { margin: 8px 0 18px; color: var(--tinta-suave); }
 .plan-boton { width: 100%; max-width: 420px; }
 .plan-descargar { display: inline-flex; margin-top: 4px; }

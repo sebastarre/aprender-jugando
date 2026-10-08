@@ -3,8 +3,20 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+<!-- El seguro de que nada sale del aparato y de que no corre código de
+     afuera: la página sólo carga y pide cosas de su propia dirección,
+     más las fotos y las copias que se arman en el momento (data: y
+     blob:). Los estilos sueltos ('unsafe-inline') son los style="--x:…"
+     de las burbujas y de las letras de la cortina. El pago de Google Play
+     no pasa por acá (es del navegador), así que no hace falta abrirle
+     nada. frame-ancestors no va porque en un <meta> no funciona. Si algún
+     día se prende la cuenta (js/nucleo/cuenta.js), hay que sumar la
+     dirección de Supabase a connect-src: si no, el mail no sale. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; media-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+
 <title>Bichito Curioso</title>
-<meta name="description" content="Juegos y lecciones cortas para chicos de 4 a 12 años: matemática, lengua, ciencias, geografía e inglés. Sin publicidad y sin cuentas.">
+<meta name="description" content="Juegos y lecciones cortas para chicos de 4 a 12 años: matemática, lengua, geografía, ciencias, historia e inglés. Sin publicidad y sin cuentas.">
 
 <!-- Lo que muestran WhatsApp y las redes cuando alguien comparte el link.
      Las direcciones tienen que ser completas (con https://): una relativa
@@ -13,7 +25,7 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Bichito Curioso">
 <meta property="og:title" content="Bichito Curioso: juegos y lecciones para chicos">
-<meta property="og:description" content="Matemática, lengua, ciencias, geografía e inglés para chicos de 4 a 12 años. Sin publicidad y sin cuentas.">
+<meta property="og:description" content="Matemática, lengua, geografía, ciencias, historia e inglés para chicos de 4 a 12 años. Sin publicidad y sin cuentas.">
 <meta property="og:url" content="https://sebastarre.github.io/aprender-jugando/">
 <meta property="og:image" content="https://sebastarre.github.io/aprender-jugando/assets/compartir.png">
 <meta property="og:image:width" content="1200">
@@ -814,7 +826,10 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
         <button class="btn-gigante" id="btn-guardar-copia" type="button">Guardar una copia</button>
         <button class="btn-secundario" id="btn-recuperar-copia" type="button">Recuperar una copia</button>
       </div>
-      <input id="campo-copia" type="file" accept="application/json,.json" hidden>
+      <!-- Sin «accept»: las copias de la versión web son .txt (y las de
+           acá, .json). Lo que decide si sirve es lo de adentro, que se
+           revisa entero antes de recuperarla (leerCopia en almacen.js). -->
+      <input id="campo-copia" type="file" hidden>
     </div>
 
     <h2 class="etiqueta-grupo">Sobre la app</h2>
@@ -879,9 +894,13 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
       <p class="subtitulo" id="texto-pin">Ingresá el PIN para ver el detalle.</p>
       <input class="campo-pin" id="campo-pin" type="password" inputmode="numeric"
              maxlength="4" autocomplete="off" aria-label="PIN de cuatro números" placeholder="••••">
-      <p class="error-pin" id="error-pin" hidden>PIN incorrecto.</p>
+      <p class="error-pin" id="error-pin" role="alert" hidden></p>
       <button class="btn-gigante" id="btn-pin">Entrar</button>
-      <button class="btn-texto" id="btn-olvide-pin" hidden>Olvidé el PIN</button>
+      <!-- En qué va el pedido de borrar el PIN, o cuándo se borró la
+           última vez. Lo escribe pintarOlvido, en js/app.js. -->
+      <p class="nota-pin" id="aviso-pin" hidden></p>
+      <button class="btn-texto" id="btn-olvide-pin" type="button" hidden>Olvidé el PIN</button>
+      <button class="btn-texto" id="btn-pin-volver" type="button" hidden>No cambiarlo y volver al panel</button>
     </div>
 
     <!-- Recuperar el PIN: un código al mail de la cuenta. Sin él, un chico
@@ -902,6 +921,9 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
       <!-- de quién son los datos, si hay más de un chico en el aparato -->
       <div class="parental-chicos" id="parental-chicos" role="group" aria-label="De quién ver los datos"></div>
       <p class="subtitulo" id="parental-sub"></p>
+      <!-- Si entrar con el PIN canceló un pedido de borrarlo: el grande
+           tiene que saber que alguien tocó «Olvidé el PIN». -->
+      <p class="aviso dato aviso-panel" id="aviso-panel" role="status" hidden></p>
 
       <!-- Mucho para mirar, en cuatro pestañas, en el orden de lo que un
            grande quiere saber primero: cómo viene, qué aprendió, cómo le
@@ -1004,6 +1026,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
         </div>
 
         <h2 class="etiqueta-grupo">El panel</h2>
+        <p class="nota-ranura" id="nota-pin-borrado" hidden></p>
         <div class="acciones-perfil">
           <button class="btn-secundario" id="btn-cambiar-pin">Cambiar PIN</button>
           <button class="btn-secundario peligro" id="btn-borrar-progreso">Borrar el progreso de este jugador</button>
@@ -1069,7 +1092,9 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
 
     <!-- el precio y el botón: lo primero que busca un grande -->
     <div class="plan-precio-tarjeta">
-      <p class="plan-precio"><b id="plan-precio">$ 4.000</b><span>por mes</span></p>
+      <!-- El precio lo escribe pintarPlan: el que dice Google Play, o una
+           frase mientras no esté decidido (nunca un número inventado). -->
+      <p class="plan-precio"><b id="plan-precio"></b><span>por mes</span></p>
       <p class="plan-precio-nota" id="plan-precio-nota"></p>
       <button class="btn-gigante plan-boton" id="btn-plan-suscribirme" type="button">Suscribirme con Google Play</button>
       <p class="plan-mensaje" id="plan-mensaje" role="status" aria-live="polite" hidden></p>
@@ -1094,7 +1119,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
     <h2 class="etiqueta-grupo">Qué incluye</h2>
     <ul class="plan-incluye">
       <li><span class="plan-incluye-icono" data-ico="jugar" aria-hidden="true"></span>
-        <div><b id="plan-cuenta-juegos">Todos los juegos</b><span>De matemática, lengua, ciencias, geografía e inglés, con niveles para chicos de 4 a 12.</span></div></li>
+        <div><b id="plan-cuenta-juegos">Todos los juegos</b><span>De matemática, lengua, geografía, ciencias, historia e inglés, con niveles para chicos de 4 a 12.</span></div></li>
       <li><span class="plan-incluye-icono" data-ico="aprender" aria-hidden="true"></span>
         <div><b id="plan-cuenta-lecciones">Todas las lecciones</b><span>Leídas en voz alta, con una pregunta para pensar y un ejercicio al final.</span></div></li>
       <li><span class="plan-incluye-icono" data-ico="repaso" aria-hidden="true"></span>
@@ -1124,7 +1149,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
       </details>
       <details>
         <summary>¿Cómo cancelo?</summary>
-        <p>En el celular: Google Play → tu foto → Pagos y suscripciones → Suscripciones → Bichito Curioso → Cancelar. Si estás en la prueba gratis, se corta al final de la prueba sin cobrar nada; si ya pagaste, seguís teniendo el plan hasta el final del mes.</p>
+        <p>En el celular: Google Play → tu foto → Pagos y suscripciones → Suscripciones → Bichito Curioso → Cancelar. Si estás en la prueba gratis, se corta al final de la prueba sin cobrar nada; si ya pagaste, seguís teniendo el plan hasta el final del mes. <b>Desinstalar la app no cancela la suscripción.</b> Y tenés 10 días desde que la contrataste para arrepentirte y que te devolvamos todo (ver los <a href="terminos.html#arrepentimiento">términos</a>).</p>
       </details>
       <details>
         <summary>¿Puedo volver a usar la prueba gratis?</summary>
@@ -1168,8 +1193,28 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
   </div>
 </dialog>
 
+<!-- El PIN, para lo que es de un grande y está fuera del panel: agregar
+     un jugador y guardar o recuperar una copia (ver pedirPin en js/app.js).
+     Las mismas piezas del cartel de arriba y de la tarjeta del PIN. -->
+<dialog class="dialogo" id="dialogo-pin" aria-labelledby="puerta-titulo">
+  <div class="dialogo-caja">
+    <h2 class="dialogo-titulo" id="puerta-titulo">Esto lo hace un grande</h2>
+    <p class="dialogo-texto" id="puerta-texto"></p>
+    <input class="campo-pin" id="puerta-pin" type="password" inputmode="numeric"
+           maxlength="4" autocomplete="off" aria-label="PIN de cuatro números" placeholder="••••">
+    <p class="error-pin" id="puerta-error" role="alert" hidden></p>
+    <div class="dialogo-botones">
+      <button class="btn-secundario" type="button" id="btn-puerta-no">Cancelar</button>
+      <button class="btn-gigante" type="button" id="btn-puerta-si">Seguir</button>
+    </div>
+  </div>
+</dialog>
+
+<!-- Los créditos de lo que no es nuestro. El de los países lo pide su
+     licencia (la ODbL): el aviso tiene que estar en la app misma. -->
 <footer class="pie">
-  Hecho para aprender jugando · Mapas de Natural Earth · Banderas de flagcdn.com
+  Hecho para aprender jugando · Mapas de Natural Earth · Banderas de flagcdn.com ·
+  Países: world-countries (ODbL)
 </footer>
 
 <script src="js/datos/paises.js"></script>

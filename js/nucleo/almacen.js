@@ -897,11 +897,17 @@ window.Almacen = (function () {
      se recupera en cualquier aparato.
 
      El PIN del modo parental no viaja en la copia: el archivo lo puede
-     abrir cualquiera, y un PIN escrito ahí adentro dejaría de servir. */
+     abrir cualquiera, y un PIN escrito ahí adentro dejaría de servir.
+     Tampoco lo que lo cuida (los intentos fallidos, el pedido de
+     borrarlo, el aviso de que un pedido se canceló): es del PIN de este
+     aparato. */
+  var DEL_PIN = ['pinFallos', 'pinPedido', 'pinBorrado', 'pinPedidoCancelado'];
+
   function exportar() {
     var copia = JSON.parse(JSON.stringify(datos));
     if (copia.ajustes) {
       copia.ajustes.pin = null;
+      DEL_PIN.forEach(function (k) { delete copia.ajustes[k]; });
       /* El plan tampoco: es de este aparato. Si viajara, una copia de un
          celular con la suscripción paga la activaría en cualquier otro. */
       delete copia.ajustes.plan;
@@ -913,25 +919,110 @@ window.Almacen = (function () {
     });
   }
 
-  /** Lee un archivo de copia. Devuelve los datos si sirve, o null. */
+  /* Lee un archivo de copia. Devuelve los datos si sirve, o null. Un
+     editor o una nube le puede haber agregado al principio la marca de
+     UTF-8, que JSON.parse no entiende: se saca. */
   function leerCopia(texto) {
     try {
-      var leido = JSON.parse(texto);
+      var leido = JSON.parse(String(texto).replace(/^﻿/, ''));
       var d = leido && leido.app === 'aprender-jugando' ? leido.datos : null;
       if (!d || !Array.isArray(d.perfiles) || !d.perfiles.length) return null;
       if (!d.datos || typeof d.datos !== 'object') return null;
-      return d;
+      return sanearCopia(d);
     } catch (e) {
       return null;
     }
+  }
+
+  /* ---- Lo que se acepta de una copia ----
+     La copia es un archivo que anda de mano en mano (WhatsApp, Drive, un
+     mail) y se puede editar con cualquier programa. Antes de reemplazar
+     todo con ella se ordena: cada cosa tiene que tener la forma que
+     espera la app, o se cambia por la de un perfil vacío. Así un archivo
+     roto, o tocado a mano con mala intención, no deja la app trabada al
+     abrirse ni mete nada raro. */
+  /* Con una función y no con un objeto { '__proto__': true }: escrito así
+     en un objeto, '__proto__' no queda como clave, cambia el prototipo. */
+  function prohibida(k) { return k === '__proto__' || k === 'constructor' || k === 'prototype'; }
+  var TOPE_PERFILES_COPIA = 30;
+  var TOPE_NOMBRE = 30;
+  var FOTO_VALIDA = /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+\/]+=*$/;
+
+  function esObjeto(x) { return !!x && typeof x === 'object' && !Array.isArray(x); }
+  // con la del prototipo y no la del objeto: una copia puede traer una clave «hasOwnProperty»
+  function tiene(o, k) { return Object.prototype.hasOwnProperty.call(o, k); }
+
+  /* Una copia limpia de lo leído, sin las claves que tocan el prototipo
+     de los objetos: JSON.parse las deja pasar como si fueran comunes. */
+  function limpio(x, hondo) {
+    if (hondo > 20) return null;
+    if (Array.isArray(x)) return x.map(function (v) { return limpio(v, hondo + 1); });
+    if (!esObjeto(x)) return x;
+    var r = {};
+    Object.keys(x).forEach(function (k) {
+      if (!prohibida(k)) r[k] = limpio(x[k], hondo + 1);
+    });
+    return r;
+  }
+
+  function sanearCopia(crudo) {
+    var d = limpio(crudo, 0);
+    if (!esObjeto(d) || !Array.isArray(d.perfiles) || !esObjeto(d.datos)) return null;
+
+    var vistos = {};
+    var perfiles = d.perfiles.filter(function (p) {
+      var sirve = esObjeto(p) && typeof p.id === 'string' && p.id.length > 0 && p.id.length <= 64 &&
+                  !prohibida(p.id) && !tiene(vistos, p.id);
+      if (sirve) vistos[p.id] = true;
+      return sirve;
+    }).slice(0, TOPE_PERFILES_COPIA);
+    if (!perfiles.length) return null;
+
+    var molde = perfilVacio();
+    var datosLimpios = {};
+    var ids = {};
+    perfiles.forEach(function (p) {
+      ids[p.id] = true;
+      p.nombre = String(p.nombre == null ? 'Jugador' : p.nombre).slice(0, TOPE_NOMBRE);
+      if (typeof p.avatar !== 'string' || !p.avatar || p.avatar.length > 16) p.avatar = AVATARES[0];
+      if (p.foto != null && !(typeof p.foto === 'string' && p.foto.length < 2000000 && FOTO_VALIDA.test(p.foto))) {
+        delete p.foto;
+      }
+      // los datos de cada chico: lo que falta lo completa la app como siempre;
+      // lo que está con otra forma (un texto donde va un número) vuelve al vacío
+      var dp = tiene(d.datos, p.id) && esObjeto(d.datos[p.id]) ? d.datos[p.id] : perfilVacio();
+      Object.keys(molde).forEach(function (k) {
+        var m = molde[k], v = dp[k];
+        if (v === undefined) return;
+        var bien = Array.isArray(m) ? Array.isArray(v)
+          : esObjeto(m) ? esObjeto(v)
+          : typeof m === 'number' ? (typeof v === 'number' && isFinite(v) && v >= 0)
+          : m === null ? (v === null || typeof v === 'string' || typeof v === 'number')
+          : typeof v === typeof m;
+        if (!bien) dp[k] = molde[k];
+      });
+      datosLimpios[p.id] = dp;
+    });
+
+    d.perfiles = perfiles;
+    d.datos = datosLimpios;
+    if (typeof d.activo !== 'string' || !tiene(ids, d.activo)) d.activo = perfiles[0].id;
+    if (!esObjeto(d.ajustes)) d.ajustes = {};
+    return d;
   }
 
   /** Reemplaza todo lo guardado por una copia. Hay que recargar después. */
   function restaurar(d) {
     var pinDeAhora = datos.ajustes && datos.ajustes.pin;
     if (!d.ajustes) d.ajustes = {};
-    // el PIN que ya había en este aparato se queda: la copia no trae ninguno
-    if (!d.ajustes.pin && pinDeAhora) d.ajustes.pin = pinDeAhora;
+    /* El PIN es el de este aparato, haya o no: la copia no trae ninguno, y
+       si un archivo tocado a mano trajera uno, no puede cambiar el de acá. */
+    d.ajustes.pin = pinDeAhora || null;
+    // y con él, lo que lo cuida: una copia no puede borrar una espera
+    DEL_PIN.forEach(function (k) {
+      if (datos.ajustes && datos.ajustes[k]) d.ajustes[k] = datos.ajustes[k];
+      else delete d.ajustes[k];
+    });
     // y el plan también es el de este aparato, venga lo que venga en la copia
     if (datos.ajustes && datos.ajustes.plan) d.ajustes.plan = datos.ajustes.plan;
     else delete d.ajustes.plan;
@@ -985,10 +1076,115 @@ window.Almacen = (function () {
 
   function hayPin() { return !!datos.ajustes.pin; }
   function pinCorrecto(pin) { return datos.ajustes.pin === String(pin); }
+  /* Un PIN nuevo deja atrás los intentos fallidos y el pedido de
+     borrarlo: eran del PIN de antes. */
   function setPin(pin) {
     datos.ajustes.pin = pin ? String(pin) : null;
+    delete datos.ajustes.pinFallos;
+    delete datos.ajustes.pinPedido;
     guardar();
   }
+
+  /* ---------------------- lo que cuida al PIN ----------------------
+
+     El PIN es lo único que separa a un chico de 10 años del panel de los
+     grandes (los límites de tiempo, borrar el progreso, la suscripción).
+     Con cuatro números y tiempo, cualquiera lo adivina probando; y con un
+     «Olvidé el PIN» que lo borrara en el acto, ni hacía falta adivinar.
+     Por eso:
+
+       - Después de 5 intentos fallidos seguidos hay que esperar, y la
+         espera se duplica con cada fallo: 30 segundos, 1 minuto, 2, 4…
+         hasta 30 minutos. Queda guardada, así recargar no la saltea.
+       - «Olvidé el PIN» no lo borra: anota el pedido, y el PIN se puede
+         borrar recién 48 horas después. Si en ese tiempo alguien pone el
+         PIN correcto, el pedido se cancela, y el grande se entera de que
+         alguien lo pidió.
+       - Cuando se borra así, queda anotado cuándo, y el panel lo cuenta.
+
+     Nada de esto viaja en la copia: es del PIN, y el PIN es del aparato.
+     Si alguien adelanta el reloj del aparato, adelanta también la espera;
+     sin un servidor no hay reloj que no se pueda tocar. */
+  var FALLOS_LIBRES = 5;
+  var ESPERA_PRIMERA = 30 * 1000;
+  var ESPERA_TOPE = 30 * 60 * 1000;
+  var ESPERA_OLVIDO = 48 * 60 * 60 * 1000;
+
+  /** Cuánto falta (en milisegundos) para poder volver a probar el PIN. */
+  function esperaPin() {
+    var f = datos.ajustes.pinFallos;
+    return f && f.hasta ? Math.max(0, f.hasta - Date.now()) : 0;
+  }
+
+  /**
+   * Prueba un PIN y lleva la cuenta de los fallos. Devuelve 'bien', 'mal'
+   * o 'espera' (todavía no se puede probar: ni se mira si está bien).
+   * Acertar cancela el pedido de borrarlo; el que lo había pedido queda en
+   * `pedidoCancelado()` para que el panel lo cuente una vez.
+   */
+  function probarPin(pin) {
+    if (esperaPin() > 0) return 'espera';
+    var a = datos.ajustes;
+    if (a.pin === String(pin)) {
+      delete a.pinFallos;
+      /* El aviso se guarda, no queda en memoria: el PIN también se acierta
+         en el cartel de sumar un jugador, de recuperar una copia o de la
+         suscripción, que no abren el panel. Así el grande se entera la
+         próxima vez que entra al panel. */
+      if (a.pinPedido) {
+        a.pinPedidoCancelado = a.pinPedido;
+        delete a.pinPedido;
+      }
+      guardar();
+      return 'bien';
+    }
+    var n = ((a.pinFallos && a.pinFallos.n) || 0) + 1;
+    a.pinFallos = { n: n, hasta: 0 };
+    if (n >= FALLOS_LIBRES) {
+      a.pinFallos.hasta = Date.now() + Math.min(ESPERA_TOPE, ESPERA_PRIMERA * Math.pow(2, n - FALLOS_LIBRES));
+    }
+    guardar();
+    return 'mal';
+  }
+
+  /** Cuándo se había pedido borrar el PIN, si un acierto canceló ese pedido. Se lee una vez. */
+  function pedidoCancelado() {
+    var cuando = datos.ajustes.pinPedidoCancelado || null;
+    if (cuando) {
+      delete datos.ajustes.pinPedidoCancelado;
+      guardar();
+    }
+    return cuando;
+  }
+
+  /** Anota que alguien tocó «Olvidé el PIN». Si ya había un pedido, queda el primero. */
+  function pedirBorrarPin() {
+    if (!datos.ajustes.pinPedido) datos.ajustes.pinPedido = Date.now();
+    guardar();
+    return datos.ajustes.pinPedido;
+  }
+
+  /** { desde, hasta } del pedido de borrar el PIN, o null si no hay ninguno. */
+  function pedidoBorrarPin() {
+    var desde = datos.ajustes.pinPedido;
+    return desde ? { desde: desde, hasta: desde + ESPERA_OLVIDO } : null;
+  }
+
+  /* Borra el PIN olvidado, sólo si el pedido ya cumplió las 48 horas. Si
+     el reloj del aparato quedó antes del pedido (lo atrasaron), no
+     cuenta como cumplido. Devuelve si lo borró. */
+  function borrarPinOlvidado() {
+    var p = pedidoBorrarPin();
+    var ahora = Date.now();
+    if (!p || ahora < p.hasta) return false;
+    setPin(null);
+    datos.ajustes.pinBorrado = ahora;
+    guardar();
+    return true;
+  }
+
+  /** Cuándo se borró el PIN con «Olvidé el PIN» por última vez, o null. */
+  function pinBorradoEl() { return datos.ajustes.pinBorrado || null; }
 
   /* La mensualidad (js/nucleo/suscripcion.js). Es del aparato y no de
      cada chico: la suscripción de Google Play es de la cuenta del
@@ -1074,6 +1270,10 @@ window.Almacen = (function () {
     vozActiva: vozActiva, setVoz: setVoz,
     vozElegida: vozElegida, setVozElegida: setVozElegida,
     quienUsa: quienUsa, setQuienUsa: setQuienUsa,
-    hayPin: hayPin, pinCorrecto: pinCorrecto, setPin: setPin
+    hayPin: hayPin, pinCorrecto: pinCorrecto, setPin: setPin,
+    esperaPin: esperaPin, probarPin: probarPin, pedidoCancelado: pedidoCancelado,
+    pedirBorrarPin: pedirBorrarPin, pedidoBorrarPin: pedidoBorrarPin,
+    borrarPinOlvidado: borrarPinOlvidado, pinBorradoEl: pinBorradoEl,
+    ESPERA_OLVIDO_PIN: ESPERA_OLVIDO
   };
 })();

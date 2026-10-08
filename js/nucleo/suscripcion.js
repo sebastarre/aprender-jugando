@@ -39,8 +39,10 @@ window.Suscripcion = (function () {
     producto: 'bichito_mensual',
     /* El precio lo pone Google: se configura en Play Console y la app lo
        lee de ahí. Éste es el que se muestra cuando no se puede leer (en
-       la web, o sin internet). Tiene que coincidir con el de Play. */
-    precioDeReferencia: '$ 4.000',
+       la web, o sin internet), con el formato '$ 4.000', y tiene que
+       coincidir con el de Play. En null mientras el precio no esté
+       decidido: así la app no muestra un número que no se va a cobrar. */
+    precioDeReferencia: null,
     /* Los días de prueba también los pone Google (la oferta de Play
        Console); éstos se muestran cuando no se pueden leer. Tienen que
        coincidir con los de la oferta. */

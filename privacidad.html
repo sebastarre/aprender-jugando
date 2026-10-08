@@ -3,6 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Qué puede cargar esta página: sólo lo suyo. No tiene scripts, así que
+     no se le permite ninguno, y lo único que trae (la letra y el ícono)
+     sale de la misma dirección. Es un seguro de lo que promete más abajo:
+     si algún día se suma algo de otro sitio, el navegador lo frena en vez
+     de mandarle nada a nadie. frame-ancestors no va porque en un meta el
+     navegador lo ignora. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'">
 <title>Política de privacidad · Bichito Curioso</title>
 <meta name="description" content="Qué datos usa Bichito Curioso, dónde se guardan y cómo se borran.">
 <link rel="icon" type="image/png" href="assets/icono-192.png">
@@ -34,7 +41,10 @@
     padding: 14px 18px;
   }
   .resumen ul { margin: 6px 0 0; padding-left: 20px; }
-  a { color: var(--azul); text-underline-offset: .2em; text-decoration-thickness: 2px; }
+  /* La leyenda que pide la ley: aparte, gris y en letra un poco más chica,
+     para que se vea que es el texto oficial y no algo que decimos nosotros. */
+  .leyenda { margin: 14px 0 0; color: var(--suave); font-size: .95rem; }
+  a { color: var(--azul); text-underline-offset: .2em; text-decoration-thickness: 2px; overflow-wrap: anywhere; }
   ::selection { background: #DDEEFC; }
   li { margin: 4px 0; }
 </style>
@@ -44,76 +54,143 @@
   <a class="marca" href="./"><img src="assets/icono-192.png" alt="" width="48" height="48">Bichito Curioso</a>
 
   <h1>Política de privacidad</h1>
-  <p class="fecha">Última actualización: 23 de septiembre de 2026</p>
+  <p class="fecha">Última actualización: 7 de octubre de 2026</p>
 
   <div class="resumen">
     <b>En pocas palabras</b>
     <ul>
-      <li>Todo lo que carga el chico queda <b>en este aparato</b>, sin pasar por ningún servidor.</li>
+      <li>Todo lo que carga el chico queda <b>en este aparato</b>, sin pasar por ningún servidor nuestro,
+        salvo la lectura en voz alta con voces por internet (ver más abajo).</li>
       <li><b>No hay cuentas</b>, ni correo, ni contraseña.</li>
       <li><b>No hay publicidad</b>, ni herramientas de seguimiento o estadísticas de terceros.</li>
+      <li>La suscripción se paga con <b>Google Play</b>: nunca vemos ni guardamos datos de tarjetas.</li>
       <li>Un adulto puede <b>borrar todo</b> cuando quiera desde el panel para padres.</li>
     </ul>
   </div>
 
   <h2>Quiénes somos</h2>
-  <p>Bichito Curioso es una aplicación educativa para chicos de 4 a 12 años, con juegos y
-    lecciones de matemática, lengua, ciencias, geografía e inglés.</p>
+  <p>Bichito Curioso es una aplicación educativa para chicos de 4 a 12 años, con juegos y lecciones de
+    matemática, lengua, geografía, ciencias, historia e inglés. Esta política vale para la app de Android
+    y para la página desde la que funciona, sebastarre.github.io/aprender-jugando.</p>
 
   <h2>Qué datos usa la app</h2>
   <p>Para funcionar, la app guarda:</p>
   <ul>
     <li>el <b>nombre o apodo</b> y la <b>edad</b> de cada chico, para saludarlo y elegir los juegos de su edad;</li>
     <li>si es nene o nena, si se contesta, sólo para escribirle «listo» o «lista»;</li>
-    <li>si un adulto quiere, una <b>foto</b> tomada de la galería del aparato, para la carita del perfil;</li>
-    <li>su <b>progreso</b>: partidas, respuestas, estrellas, monedas, lecciones leídas y lo que compró en la tienda con monedas de mentira;</li>
-    <li>los <b>ajustes</b>: sonido, voz, meta del día, límites del modo parental y el PIN del panel para padres.</li>
+    <li>si se quiere, una <b>foto</b> para la carita del perfil, elegida en el aparato (según el teléfono, el
+      selector también deja sacarla en el momento; la app no pide permiso para usar la cámara). La puede poner
+      el chico tocando su carita, se quita desde el perfil con «Sacar la foto», y un adulto también la puede
+      borrar desde el panel para padres, junto con el resto de los datos de ese jugador;</li>
+    <li>su <b>progreso</b>: partidas, respuestas, estrellas, monedas, lecciones leídas, cuánto juega cada día
+      y lo que compró en la tienda con monedas de mentira;</li>
+    <li>los <b>ajustes</b>: sonido, voz, meta del día, límites del modo parental, el PIN del panel para padres
+      (con sus intentos fallidos y los pedidos de «Olvidé el PIN») y lo último que dijo Google Play sobre la
+      suscripción (si está activa y cuándo se consultó).</li>
   </ul>
-  <p>Todo eso se guarda en el almacenamiento del navegador o de la app, <b>en este aparato y en ningún otro lado</b>.
-    La foto se achica en el mismo aparato y se queda ahí.</p>
+  <p>Todo eso lo guarda el navegador con el que funciona la app (en Android, por lo general Chrome),
+    <b>en este aparato y en ningún otro lado</b>. No usamos cookies.</p>
 
   <h2>Qué no hacemos</h2>
   <ul>
     <li>No mostramos publicidad.</li>
     <li>No usamos herramientas de estadísticas, seguimiento ni identificadores publicitarios.</li>
-    <li>No pedimos la ubicación, la cámara, el micrófono ni los contactos.</li>
+    <li>No pedimos permiso para usar la ubicación, la cámara, el micrófono ni los contactos.</li>
     <li>No hay chat ni forma de que un chico hable con otras personas.</li>
     <li>No vendemos ni compartimos datos con nadie.</li>
   </ul>
 
+  <h2>Cómo cuidamos los datos</h2>
+  <ul>
+    <li>Los datos del chico <b>no pasan por ningún servidor nuestro</b>: no tenemos ninguno. Se quedan en el
+      navegador de este aparato.</li>
+    <li>La app se baja siempre por una conexión segura (HTTPS) y no carga nada de otros sitios: la letra, los
+      mapas y las banderas vienen con ella.</li>
+    <li>La foto se achica en el mismo aparato, a un cuadradito de 240 píxeles, antes de guardarla, y no se
+      sube a ningún lado.</li>
+    <li>El <b>PIN</b> del panel para padres es una traba para que los chicos no entren sin querer. No es una
+      medida de seguridad: no protege los datos de alguien que use el aparato y sepa buscarlos en el
+      navegador.</li>
+    <li>La <b>copia de seguridad</b> es un archivo común: no está cifrada y no lleva el PIN, así que conviene
+      guardarla en un lugar privado.</li>
+  </ul>
+
+  <h2>Cuánto tiempo se guardan</h2>
+  <p>Los datos quedan en el aparato hasta que un adulto los borra (ver «Cómo borrar los datos»). El historial
+    guarda las últimas 300 partidas de cada jugador y el tiempo de juego de los últimos 60 días: lo más viejo
+    se va borrando solo.</p>
+  <p>Algunos navegadores también borran datos por su cuenta, por ejemplo si el aparato se queda sin lugar.
+    Por eso conviene guardar una copia de vez en cuando.</p>
+
   <h2>La lectura en voz alta</h2>
-  <p>La app puede leer en voz alta las lecciones, las preguntas y el tutorial. Para eso usa las
-    voces que trae el aparato (de Google, Microsoft o Apple). Algunas voces «naturales» funcionan
-    por internet: en ese caso, el sistema del aparato manda el texto que se lee a esa empresa para
-    convertirlo en voz, según su propia política de privacidad. El texto es el de la app; el único
-    dato del chico que puede aparecer es su nombre, en los saludos. La lectura se apaga en
-    Configuración → «Leer en voz alta».</p>
+  <p>La app puede leer en voz alta las lecciones, las preguntas, los carteles de los juegos y el tutorial.
+    Para eso usa las voces que trae el teléfono o el navegador (de Google, Microsoft o Apple), y si no se
+    elige otra, prefiere la que suena más natural. Muchas de esas voces funcionan por internet: en ese caso,
+    el sistema del aparato manda el texto que se lee a esa empresa para convertirlo en voz, según su propia
+    política de privacidad. El texto es el de la app; el único dato del chico que puede aparecer es el nombre
+    de su perfil, en los saludos, en el tutorial y en algunos festejos («¡Muy bien, …!»): por eso conviene
+    usar un apodo. En Configuración, las voces que usan internet dicen «con internet»: se puede elegir otra, o
+    apagar la lectura en «Leer en voz alta».</p>
 
   <h2>Los pagos</h2>
-  <p>La suscripción se cobra a través de Google Play. La app nunca ve ni guarda datos de tarjetas:
-    los maneja Google, según su propia política. La app sólo le pregunta a Google si la suscripción
-    está activa.</p>
+  <p>La suscripción se cobra a través de Google Play. La app nunca ve ni guarda datos de tarjetas: los
+    maneja Google, según su propia política. La app sólo le pregunta a Google si la suscripción está activa,
+    y guarda en el aparato esa respuesta y cuándo la recibió. En la consola de Google Play vemos los datos de
+    cada pedido (número, fecha, producto, importe y país), que usamos sólo para atender un reclamo, una
+    devolución o una baja.</p>
 
   <h2>Las copias de seguridad</h2>
-  <p>Desde Configuración se puede guardar una copia de todo en un archivo. Ese archivo queda en el
-    aparato o donde el adulto decida guardarlo (por ejemplo, su Drive), sin pasar por nosotros.</p>
+  <p>Desde Configuración, en «Una copia de todo», se puede guardar una copia en un archivo: los jugadores,
+    su progreso, sus fotos y los ajustes, sin el PIN ni sus intentos. Ese archivo queda en el aparato o donde
+    el adulto decida guardarlo (por ejemplo, su Drive), sin pasar por nosotros. Como no está cifrado, lo puede
+    abrir cualquiera que lo tenga. La guarda un adulto: con el PIN puesto, guardarla y recuperarla lo piden.</p>
+
+  <h2>Dónde está alojada la app</h2>
+  <p>La app y sus actualizaciones se bajan de GitHub Pages, un servicio de GitHub, Inc. GitHub
+    <a href="https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages#data-collection">registra
+    la dirección IP</a> de quien la abre, por seguridad, según su
+    <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement">declaración
+    de privacidad</a>. Nosotros no recibimos esa dirección ni ningún otro dato de las visitas.</p>
 
   <h2>Cómo borrar los datos</h2>
-  <p>En el panel para padres (el botón «Padres» con candado, arriba a la derecha del inicio), en «Borrar datos», se puede borrar a un
-    jugador o todos los datos de la app. También se borran al desinstalar la app o al borrar los datos
-    del navegador. Como no guardamos copias en ningún servidor, borrarlos del aparato es borrarlos del todo.</p>
+  <p>La forma más segura es el panel para padres: el botón «Padres» con candado, arriba a la derecha del
+    inicio (también en Configuración → «Modo parental»), pestaña «Límites», en «Borrar datos». Ahí se puede
+    borrar a un jugador, con su foto («Borrar a este jugador»), o todo lo de la app («Borrar todos los datos
+    de la app»).</p>
+  <p>La app de Android funciona dentro del navegador del teléfono (por lo general, Chrome), y es el navegador
+    el que guarda los datos. Por eso <b>desinstalar la app puede no borrarlos</b>: antes de desinstalarla, usá
+    «Borrar todos los datos de la app». Si ya la desinstalaste, se borran desde la configuración de Chrome,
+    borrando los datos del sitio sebastarre.github.io; eso borra también lo de cualquier otra página de esa
+    dirección, como la versión web de Bichito Curioso.</p>
+  <p>Como no guardamos nada en ningún servidor, borrarlos del aparato es borrarlos del todo. Las copias que
+    se hayan guardado en archivos son aparte: se borran a mano, como cualquier archivo.</p>
 
   <h2>Los chicos</h2>
-  <p>La app está pensada para chicos, y el adulto responsable es quien la instala y la configura.
-    Seguimos la política para familias de Google Play y la Ley 25.326 de Protección de los Datos
-    Personales de la República Argentina.</p>
+  <p>La app está pensada para chicos, y el adulto responsable es quien la instala y la configura. Lo poco
+    que necesita saber de cada chico se queda en el aparato, y nosotros no lo recibimos. Seguimos la política
+    para familias de Google Play y la Ley 25.326 de Protección de los Datos Personales de la República
+    Argentina.</p>
+
+  <h2>Tus derechos</h2>
+  <p>La Ley 25.326 te da derecho a saber qué datos tuyos o de tu hijo hay guardados (el derecho de acceso),
+    a corregirlos y a pedir que se borren. El acceso es gratis si se pide cada seis meses o más, o antes si hay
+    un interés legítimo (artículo 14, inciso 3, de esa ley). Como nosotros no guardamos ningún dato del chico,
+    todo lo que existe está en el aparato: se ve en el perfil y en el panel para padres, se corrige en
+    Configuración, se guarda entero con «Guardar una copia» y se borra como se explica más arriba. Si igual
+    querés consultarnos algo, escribinos (ver «Contacto»).</p>
+  <p class="leyenda">La AGENCIA DE ACCESO A LA INFORMACIÓN PÚBLICA, en su carácter de Órgano de Control de la
+    Ley N° 25.326, tiene la atribución de atender las denuncias y reclamos que interpongan quienes resulten
+    afectados en sus derechos por incumplimiento de las normas vigentes en materia de protección de datos
+    personales.</p>
 
   <h2>Cambios</h2>
   <p>Si cambia algo de esta política, lo vamos a publicar en esta misma página con una fecha nueva.</p>
 
   <h2>Contacto</h2>
-  <p>Para cualquier consulta sobre privacidad, escribinos al correo de contacto que figura en la
-    ficha de Bichito Curioso en Google Play.</p>
+  <p>Para cualquier consulta sobre privacidad, escribinos en GitHub, donde está publicada la app:
+    <a href="https://github.com/sebastarre/aprender-jugando/issues">github.com/sebastarre/aprender-jugando</a>,
+    en «Issues». Lo que se escribe ahí lo puede leer cualquiera, así que no pongas el nombre ni otros datos
+    del chico.</p>
 
   <p><a href="terminos.html">Términos de uso y suscripción</a> · <a href="./">Volver a la app</a></p>
 </main>
